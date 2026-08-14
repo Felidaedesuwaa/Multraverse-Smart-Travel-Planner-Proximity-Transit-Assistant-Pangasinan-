@@ -1,0 +1,2 @@
+# Multraverse-Smart-Travel-Planner-Proximity-Transit-Assistant-Pangasinan-
+Planning a trip requires juggling multiple apps to budget costs, estimate travel times, find reliable local places, and navigate foreign language barriers. Additionally, travelers using public transport in unfamiliar cities often face the stress of oversleeping or missing their stop due to a lack of location-aware transit alerts.  
