@@ -1,0 +1,18 @@
+export const colors = {
+  oceanBlue: "#0B3C5D",
+  oceanBlueDark: "#082C44",
+  oceanBlueLight: "#DDEAF2",
+  sunsetCoral: "#F16B4E",
+  coralLight: "#FCE0D8",
+  palmGreen: "#2A7B4C",
+  palmGreenLight: "#E3F1E8",
+  islandGreen: "#CFE3B8",
+  gold: "#E8A33D",
+  goldLight: "#FBEBD2",
+  slate: "#8CA0AE",
+  warmSand: "#FDFBF7",
+  white: "#FFFFFF",
+  textPrimary: "#1E2A2F",
+  textMuted: "#6B7876",
+  border: "#E7E1D6",
+};
