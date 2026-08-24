@@ -1,0 +1,10 @@
+server
+server/**
+server/.agents
+server/.claude
+server/.windsurf
+node_modules
+.expo
+dist
+*.log
+.git

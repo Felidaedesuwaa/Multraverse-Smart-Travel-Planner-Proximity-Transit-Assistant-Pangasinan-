@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "Multraverse",
+    "slug": "multraverse",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "web": {
+      "bundler": "metro"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "b42f74cc-5c67-4e39-ad05-5102a85dd00f"
+      }
+    },
+    "android": {
+      "package": "com.jolly18.multraverse"
+    }
+  }
+}
