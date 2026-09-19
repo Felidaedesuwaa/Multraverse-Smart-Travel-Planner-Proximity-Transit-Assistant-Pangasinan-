@@ -119,4 +119,6 @@ export const api = {
 
   // Admin
   getAllUsers: () => request('/api/users'),
+  getAnalytics: () => request('/api/analytics'),
+  getDashboardAnalytics: () => request('/api/analytics/dashboard'),
 }

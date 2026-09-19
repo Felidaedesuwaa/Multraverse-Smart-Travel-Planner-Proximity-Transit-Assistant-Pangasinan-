@@ -8,6 +8,10 @@ npm.cmd run start -- --lan --clear
 cd server
 npm run dev
 
+#run model
+cd ai-service
+.\venv\Scripts\python.exe main.py
+
 #run on android
 npx.cmd expo start --android
 
