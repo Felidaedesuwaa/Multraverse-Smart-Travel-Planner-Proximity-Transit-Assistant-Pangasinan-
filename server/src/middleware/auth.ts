@@ -3,6 +3,7 @@ import { ParamsDictionary } from 'express-serve-static-core'
 import jwt from 'jsonwebtoken'
 
 export interface AuthRequest<P = ParamsDictionary> extends Request<P> {
+  /** String serialization of the authenticated user's MongoDB ObjectId. */
   userId?: string
   userRole?: string
 }

@@ -4,7 +4,7 @@ import fs from 'fs'
 import path from 'path'
 import os from 'os'
 import { authenticate, AuthRequest } from '../middleware/auth'
-import { prisma } from '../lib/prisma'
+import { LocalFood, Phrasebook, Place, RoutePrice } from '../models'
 
 const router = Router()
 router.use(authenticate)
@@ -52,11 +52,7 @@ router.post('/translate', async (req: AuthRequest, res: Response) => {
     const fromField = from.toLowerCase() as 'filipino' | 'pangasinan' | 'english'
     const toField = to.toLowerCase() as 'filipino' | 'pangasinan' | 'english'
 
-    const phrase = await prisma.phrasebook.findFirst({
-      where: {
-        [fromField]: { equals: needle, mode: 'insensitive' },
-      },
-    })
+    const phrase = await Phrasebook.findOne({ [fromField]: { $regex: `^${needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' } })
 
     if (phrase) {
       return res.json({
@@ -143,43 +139,20 @@ router.post('/itinerary', async (req: AuthRequest, res: Response) => {
 
     // ── Pull real data from knowledge base ──────────────
     const [places, routes, foods] = await Promise.all([
-      prisma.place.findMany({
-        where: {
-          OR: [
-            { municipality: { contains: destination, mode: 'insensitive' } },
-            { location: { contains: destination, mode: 'insensitive' } },
-            { name: { contains: destination, mode: 'insensitive' } },
-          ],
-        },
-      }),
-      prisma.routePrice.findMany({
-        where: {
-          OR: [
-            { from: { contains: destination, mode: 'insensitive' } },
-            { to: { contains: destination, mode: 'insensitive' } },
-          ],
-        },
-      }),
-      prisma.localFood.findMany(),
+      Place.find({ $or: ['municipality', 'location', 'name'].map(field => ({ [field]: { $regex: destination, $options: 'i' } })) }),
+      RoutePrice.find({ $or: ['from', 'to'].map(field => ({ [field]: { $regex: destination, $options: 'i' } })) }),
+      LocalFood.find(),
     ])
 
     // If no specific places found, get all places as fallback
     const finalPlaces = places.length > 0
       ? places
-      : await prisma.place.findMany({ take: 6 })
+      : await Place.find().limit(6)
 
     // Get transport routes to destination from common hubs
     const transportRoutes = routes.length > 0
       ? routes
-      : await prisma.routePrice.findMany({
-          where: {
-            OR: [
-              { to: { contains: destination, mode: 'insensitive' } },
-              { from: { equals: 'Dagupan', mode: 'insensitive' } },
-            ],
-          },
-          take: 8,
-        })
+      : await RoutePrice.find({ $or: [{ to: { $regex: destination, $options: 'i' } }, { from: { $regex: '^Dagupan$', $options: 'i' } }] }).limit(8)
 
     const prompt = `You are a Pangasinan travel expert AI assistant.
 Create a detailed ${days}-day travel itinerary for ${destination}, Pangasinan with a total budget of ₱${budget}.

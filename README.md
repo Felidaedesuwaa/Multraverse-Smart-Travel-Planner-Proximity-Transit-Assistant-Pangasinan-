@@ -1,75 +1,172 @@
-# React + TypeScript + Vite
+# Multraverse
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Multraverse is a cross-platform travel companion for Android, iOS, and the web. It includes trip planning, budgets, saved places, transit routes, geofences, phrasebook and translation tools, AI itinerary generation, and admin screens.
 
-Currently, two official plugins are available:
+## Technology
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Frontend:
 
-## React Compiler
+- JavaScript
+- React 19
+- React Native 0.81
+- Expo SDK 54
+- React Navigation
+- Zustand
+- Async Storage
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Backend:
 
-## Expanding the ESLint configuration
+- Node.js
+- TypeScript
+- Express 5
+- MongoDB with Mongoose
+- JWT and bcryptjs authentication
+- CORS
+- Groq, Anthropic, and Google Generative AI SDKs
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Requirements
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- Node.js 18 or newer
+- MongoDB Atlas or a local MongoDB server
+- Expo Go for physical-device testing, or Android Studio/Xcode for native emulators
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Installation
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Install frontend dependencies from the repository root:
 
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Install backend dependencies:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+cd server
+npm install
 ```
+
+Create `server/.env` using `server/.env.example` as a template:
+
+```env
+MONGODB_URI=mongodb+srv://USERNAME:PASSWORD@CLUSTER/multraverse?retryWrites=true&w=majority
+JWT_SECRET=replace-with-a-long-random-secret
+GROQ_API_KEY=
+PORT=3001
+CORS_ORIGINS=http://localhost:8081
+```
+
+`MONGODB_URI` and `JWT_SECRET` are required. `GROQ_API_KEY` is required for Groq-backed AI features. The backend also supports the Anthropic and Google Generative AI integrations when their route configuration and keys are provided.
+
+## Running the Backend
+
+Open a terminal in the repository root and run:
+
+```bash
+cd server
+npm run dev
+```
+
+The API starts at `http://localhost:3001`. Check that it is running at `http://localhost:3001/api/health`. The expected response is `{"status":"ok"}`.
+
+For a compiled backend:
+
+```bash
+cd server
+npm run build
+npm start
+```
+
+## Running the Frontend
+
+Keep the backend running, then open a second terminal at the repository root:
+
+```bash
+npm start
+```
+
+Use the Expo CLI to choose a platform, or run one of these commands directly:
+
+```bash
+npm run web
+npm run android
+npm run ios
+```
+
+For a physical device, connect the device and computer to the same Wi-Fi network. The client detects the Expo development host for native development. For a deployed API or a backend on another machine, set this before starting Expo:
+
+```env
+EXPO_PUBLIC_API_URL=http://YOUR_API_HOST:3001
+```
+
+Web and the iOS simulator use `http://localhost:3001` by default. Android devices may need the computer's LAN IP address.
+
+## Database Seeding
+
+Run these commands from the `server` directory after configuring MongoDB:
+
+```bash
+npm run seed
+npm run seed:kb
+npm run seed:phrases
+```
+
+The seed scripts populate the main data, knowledge base, and phrasebook collections. They are safe to run repeatedly because each script checks whether its data already exists.
+
+## Available Scripts
+
+Root frontend scripts:
+
+| Command           | Description                      |
+| ----------------- | -------------------------------- |
+| `npm start`       | Start Expo                       |
+| `npm run web`     | Start Expo for web               |
+| `npm run android` | Start Expo and open Android      |
+| `npm run ios`     | Start Expo and open iOS          |
+| `npm run build`   | Export the app for all platforms |
+| `npm run lint`    | Run ESLint                       |
+
+Backend scripts from `server/`:
+
+| Command                | Description                          |
+| ---------------------- | ------------------------------------ |
+| `npm run dev`          | Run the API with Nodemon and ts-node |
+| `npm run build`        | Compile the TypeScript API           |
+| `npm start`            | Start the compiled API               |
+| `npm run seed`         | Seed the main collections            |
+| `npm run seed:kb`      | Seed the knowledge base              |
+| `npm run seed:phrases` | Seed the phrasebook                  |
+
+## Project Structure
+
+```text
+multraverse-web/
+  src/                    Expo frontend
+    components/           Shared UI components
+    data/                 Local frontend data
+    layouts/              App layouts
+    lib/                  API and storage helpers
+    pages/                User and admin screens
+    store/                Zustand stores
+    theme/                Colors, spacing, and typography
+    utils/                Frontend utilities
+  public/                 Public web assets
+  server/                 Express backend
+    src/
+      lib/                MongoDB connection
+      middleware/         Authentication middleware
+      models/             Mongoose models
+      routes/             API route modules
+      index.ts            API entry point
+    seeds/                MongoDB seed scripts
+      seed.ts
+      seedKnowledge.ts
+      seedPhrasebook.ts
+    .env.example          Backend environment template
+    package.json          Backend scripts and dependencies
+  app.json               Expo configuration
+  package.json            Frontend scripts and dependencies
+```
+
+## API Routes
+
+The backend provides route groups for authentication, users, trips, budgets, places, transit routes, geofences, AI, and knowledge data. The health check is available at `GET /api/health`.

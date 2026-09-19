@@ -1,0 +1,13 @@
+#install and rebuild the apk
+eas build --platform android --profile preview
+
+#run the frontend
+npm.cmd run start -- --lan --clear
+
+#run the backend
+cd server
+npm run dev
+
+
+jollyarceo@gmail.com / Jolly123456
+Admin: admin@multraverse.ph / Admin123!

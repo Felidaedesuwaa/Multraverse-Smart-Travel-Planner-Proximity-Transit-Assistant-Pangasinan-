@@ -37,7 +37,9 @@ const linking = {
   prefixes: [],
   config: {
     screens: {
-      Login: "login",
+      // Keep the localhost root on the sign-in screen. Protected routes are
+      // only registered after authentication, so deep links cannot bypass it.
+      Login: "",
       Register: "register",
       User: {
         screens: {
@@ -155,10 +157,6 @@ export default function App() {
 
   if (!ready) return <LoadingScreen />;
 
-  const initialRouteName = isAuthenticated
-    ? user?.role === "ADMIN" ? "Admin" : "User"
-    : "Login";
-
   return (
     <NavigationContainer
       linking={linking}
@@ -166,14 +164,19 @@ export default function App() {
         navigationRef.current = ref;
       }}
     >
-      <RootStack.Navigator
-        initialRouteName={initialRouteName}
-        screenOptions={{ headerShown: false }}
-      >
-        <RootStack.Screen name="Login" component={LoginPage} />
-        <RootStack.Screen name="Register" component={RegisterPage} />
-        <RootStack.Screen name="User" component={UserScreens} />
-        <RootStack.Screen name="Admin" component={AdminScreens} />
+      <RootStack.Navigator screenOptions={{ headerShown: false }}>
+        {isAuthenticated ? (
+          user?.role === "ADMIN" ? (
+            <RootStack.Screen name="Admin" component={AdminScreens} />
+          ) : (
+            <RootStack.Screen name="User" component={UserScreens} />
+          )
+        ) : (
+          <>
+            <RootStack.Screen name="Login" component={LoginPage} />
+            <RootStack.Screen name="Register" component={RegisterPage} />
+          </>
+        )}
       </RootStack.Navigator>
     </NavigationContainer>
   );

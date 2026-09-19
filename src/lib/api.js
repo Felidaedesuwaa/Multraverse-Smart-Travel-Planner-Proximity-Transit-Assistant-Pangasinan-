@@ -87,8 +87,11 @@ export const api = {
   getSavedPlaces: () => request('/api/places'),
   createSavedPlace: (data) =>
     request('/api/places', { method: 'POST', body: JSON.stringify(data) }),
+  updateSavedPlace: (id, data) =>
+    request(`/api/places/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteSavedPlace: (id) =>
     request(`/api/places/${id}`, { method: 'DELETE' }),
+  getPublicPlaces: () => request('/api/places/public'),
 
   // Transit Routes
   getTransitRoutes: () => request('/api/transit-routes'),

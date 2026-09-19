@@ -1,19 +1,13 @@
-import { PrismaClient } from '@prisma/client'
-import { PrismaPg } from '@prisma/adapter-pg'
-import { Pool } from 'pg'
 import 'dotenv/config'
-
-const pool = new Pool({ connectionString: process.env.DATABASE_URL })
-const adapter = new PrismaPg(pool)
-const prisma = new PrismaClient({ adapter })
+import { connectDatabase, disconnectDatabase } from '../src/lib/db'
+import { LocalFood, Place, RoutePrice } from '../src/models'
 
 async function main() {
+  await connectDatabase()
   console.log('🌱 Seeding knowledge base...')
 
   // ── Places ─────────────────────────────────────────────
-  await prisma.place.createMany({
-    skipDuplicates: true,
-    data: [
+  if (await Place.countDocuments() === 0) await Place.insertMany([
       {
         name: 'Hundred Islands National Park',
         description: 'A national park consisting of 124 islands and islets at low tide in the Lingayen Gulf. Popular for island hopping, snorkeling, kayaking, and swimming.',
@@ -124,15 +118,12 @@ async function main() {
         tips: 'Visit early morning for the freshest bangus. Try the smoked bangus (tinapa) as a pasalubong.',
         highlights: 'Fresh bangus, seafood, local delicacies, pasalubong items',
       },
-    ],
-  })
+    ])
 
   console.log('✅ Places seeded')
 
   // ── Route Prices ───────────────────────────────────────
-  await prisma.routePrice.createMany({
-    skipDuplicates: true,
-    data: [
+  if (await RoutePrice.countDocuments() === 0) await RoutePrice.insertMany([
       // From Dagupan
       { from: 'Dagupan', to: 'Alaminos', vehicle: 'Bus', price: 95, duration: '2 hours', notes: 'Victory Liner or Five Star bus. Terminal at Perez Blvd, Dagupan.' },
       { from: 'Dagupan', to: 'Lingayen', vehicle: 'Jeepney', price: 25, duration: '30 minutes', notes: 'Jeepney from Dagupan terminal. Frequent trips daily.' },
@@ -163,15 +154,12 @@ async function main() {
       // From Manila
       { from: 'Manila', to: 'Dagupan', vehicle: 'Bus', price: 350, duration: '4.5 hours', notes: 'Victory Liner or Five Star from Cubao or Pasay.' },
       { from: 'Manila', to: 'Alaminos', vehicle: 'Bus', price: 380, duration: '5 hours', notes: 'Victory Liner from Cubao. Direct to Alaminos.' },
-    ],
-  })
+    ])
 
   console.log('✅ Route prices seeded')
 
   // ── Local Food ─────────────────────────────────────────
-  await prisma.localFood.createMany({
-    skipDuplicates: true,
-    data: [
+  if (await LocalFood.countDocuments() === 0) await LocalFood.insertMany([
       {
         name: 'Bangus (Milkfish)',
         description: 'Dagupan is the bangus capital of the Philippines. The milkfish here is boneless, tender, and has a unique flavor due to the brackish water ponds.',
@@ -242,8 +230,7 @@ async function main() {
         where: 'Public markets throughout Pangasinan',
         category: 'Condiment',
       },
-    ],
-  })
+    ])
 
   console.log('✅ Local food seeded')
   console.log('🎉 Knowledge base seeded successfully!')
@@ -252,8 +239,8 @@ async function main() {
 main()
   .catch((e) => {
     console.error('❌ Seed error:', e)
-    process.exit(1)
+    ;(globalThis as any).process?.exit?.(1)
   })
   .finally(async () => {
-    await prisma.$disconnect()
+    await disconnectDatabase()
   })

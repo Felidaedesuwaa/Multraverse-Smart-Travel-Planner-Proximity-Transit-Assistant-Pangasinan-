@@ -1,34 +1,29 @@
 import { Router, Request, Response } from 'express'
-import { prisma } from '../lib/prisma'
+import { Geofence } from '../models'
 import { authenticate, requireAdmin, AuthRequest } from '../middleware/auth'
 
 const router = Router()
 
 router.get('/', authenticate, async (req: Request, res: Response) => {
-  const geofences = await prisma.geofence.findMany({
-    orderBy: { createdAt: 'desc' },
-  })
+  const geofences = await Geofence.find().sort({ createdAt: -1 })
   res.json(geofences)
 })
 
 router.post('/', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
   const { location, zone, radius, coord, x, y } = req.body
-  const geofence = await prisma.geofence.create({
-    data: { location, zone, radius, coord, x, y },
-  })
+  const geofence = await Geofence.create({ location, zone, radius, coord, x, y })
   res.status(201).json(geofence)
 })
 
 router.put('/:id', authenticate, requireAdmin, async (req: AuthRequest<{ id: string }>, res: Response) => {
-  const geofence = await prisma.geofence.update({
-    where: { id: req.params.id },
-    data: req.body,
-  })
+  const geofence = await Geofence.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
+  if (!geofence) return res.status(404).json({ error: 'Geofence not found' })
   res.json(geofence)
 })
 
 router.delete('/:id', authenticate, requireAdmin, async (req: AuthRequest<{ id: string }>, res: Response) => {
-  await prisma.geofence.delete({ where: { id: req.params.id } })
+  const geofence = await Geofence.findByIdAndDelete(req.params.id)
+  if (!geofence) return res.status(404).json({ error: 'Geofence not found' })
   res.json({ message: 'Geofence deleted' })
 })
 

@@ -2,18 +2,15 @@
   "name": "server",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-  "dev": "nodemon --exec ts-node src/index.ts",
-  "build": "tsc",
-  "start": "node dist/index.js",
-  "seed": "ts-node prisma/seed.ts",
-  "seed:kb": "prisma generate && ts-node prisma/seedKnowledge.ts",
-  "seed:phrases": "prisma generate && ts-node prisma/seedPhrasebook.ts",
-  "test": "echo \"Error: no test specified\" && exit 1"
-},
-  "prisma": {
-    "seed": "ts-node prisma/seed.ts"
+    "dev": "nodemon --exec ts-node src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "seed": "ts-node seeds/seed.ts",
+    "seed:kb": "ts-node seeds/seedKnowledge.ts",
+    "seed:phrases": "ts-node seeds/seedPhrasebook.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
@@ -22,15 +19,14 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.117.1",
     "@google/generative-ai": "^0.24.1",
-    "@prisma/adapter-pg": "^7.9.1",
-    "@prisma/client": "^7.9.1",
+    "@types/mongoose": "^5.11.96",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "groq-sdk": "^1.5.0",
     "jsonwebtoken": "^9.0.3",
-    "pg": "^8.23.0"
+    "mongoose": "^9.9.5"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -38,9 +34,7 @@
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.2.0",
-    "@types/pg": "^8.21.0",
     "nodemon": "^3.1.14",
-    "prisma": "^7.9.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3"
   }

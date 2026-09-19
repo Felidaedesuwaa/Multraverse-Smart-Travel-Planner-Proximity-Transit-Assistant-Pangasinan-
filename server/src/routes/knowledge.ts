@@ -1,5 +1,5 @@
 import { Router, Response } from 'express'
-import { prisma } from '../lib/prisma'
+import { LocalFood, Place, RoutePrice } from '../models'
 import { authenticate, requireAdmin, AuthRequest } from '../middleware/auth'
 
 const router = Router()
@@ -8,15 +8,13 @@ router.use(authenticate)
 // ── Places ─────────────────────────────────────────────
 
 router.get('/places', async (req: AuthRequest, res: Response) => {
-  const places = await prisma.place.findMany({
-    orderBy: { createdAt: 'desc' },
-  })
+  const places = await Place.find().sort({ createdAt: -1 })
   res.json(places)
 })
 
 router.post('/places', requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const place = await prisma.place.create({ data: req.body })
+    const place = await Place.create(req.body)
     res.status(201).json(place)
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error'
@@ -26,10 +24,8 @@ router.post('/places', requireAdmin, async (req: AuthRequest, res: Response) => 
 
 router.put('/places/:id', requireAdmin, async (req: AuthRequest<{ id: string }>, res: Response) => {
   try {
-    const place = await prisma.place.update({
-      where: { id: req.params.id },
-      data: req.body,
-    })
+    const place = await Place.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
+    if (!place) return res.status(404).json({ error: 'Place not found' })
     res.json(place)
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error'
@@ -39,7 +35,8 @@ router.put('/places/:id', requireAdmin, async (req: AuthRequest<{ id: string }>,
 
 router.delete('/places/:id', requireAdmin, async (req: AuthRequest<{ id: string }>, res: Response) => {
   try {
-    await prisma.place.delete({ where: { id: req.params.id } })
+    const place = await Place.findByIdAndDelete(req.params.id)
+    if (!place) return res.status(404).json({ error: 'Place not found' })
     res.json({ message: 'Place deleted' })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error'
@@ -50,15 +47,13 @@ router.delete('/places/:id', requireAdmin, async (req: AuthRequest<{ id: string 
 // ── Route Prices ───────────────────────────────────────
 
 router.get('/route-prices', async (req: AuthRequest, res: Response) => {
-  const routes = await prisma.routePrice.findMany({
-    orderBy: { createdAt: 'desc' },
-  })
+  const routes = await RoutePrice.find().sort({ createdAt: -1 })
   res.json(routes)
 })
 
 router.post('/route-prices', requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const route = await prisma.routePrice.create({ data: req.body })
+    const route = await RoutePrice.create(req.body)
     res.status(201).json(route)
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error'
@@ -68,10 +63,8 @@ router.post('/route-prices', requireAdmin, async (req: AuthRequest, res: Respons
 
 router.put('/route-prices/:id', requireAdmin, async (req: AuthRequest<{ id: string }>, res: Response) => {
   try {
-    const route = await prisma.routePrice.update({
-      where: { id: req.params.id },
-      data: req.body,
-    })
+    const route = await RoutePrice.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
+    if (!route) return res.status(404).json({ error: 'Route price not found' })
     res.json(route)
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error'
@@ -81,7 +74,8 @@ router.put('/route-prices/:id', requireAdmin, async (req: AuthRequest<{ id: stri
 
 router.delete('/route-prices/:id', requireAdmin, async (req: AuthRequest<{ id: string }>, res: Response) => {
   try {
-    await prisma.routePrice.delete({ where: { id: req.params.id } })
+    const route = await RoutePrice.findByIdAndDelete(req.params.id)
+    if (!route) return res.status(404).json({ error: 'Route price not found' })
     res.json({ message: 'Route price deleted' })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error'
@@ -92,15 +86,13 @@ router.delete('/route-prices/:id', requireAdmin, async (req: AuthRequest<{ id: s
 // ── Local Food ─────────────────────────────────────────
 
 router.get('/foods', async (req: AuthRequest, res: Response) => {
-  const foods = await prisma.localFood.findMany({
-    orderBy: { createdAt: 'desc' },
-  })
+  const foods = await LocalFood.find().sort({ createdAt: -1 })
   res.json(foods)
 })
 
 router.post('/foods', requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const food = await prisma.localFood.create({ data: req.body })
+    const food = await LocalFood.create(req.body)
     res.status(201).json(food)
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error'
@@ -110,10 +102,8 @@ router.post('/foods', requireAdmin, async (req: AuthRequest, res: Response) => {
 
 router.put('/foods/:id', requireAdmin, async (req: AuthRequest<{ id: string }>, res: Response) => {
   try {
-    const food = await prisma.localFood.update({
-      where: { id: req.params.id },
-      data: req.body,
-    })
+    const food = await LocalFood.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
+    if (!food) return res.status(404).json({ error: 'Food not found' })
     res.json(food)
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error'
@@ -123,7 +113,8 @@ router.put('/foods/:id', requireAdmin, async (req: AuthRequest<{ id: string }>, 
 
 router.delete('/foods/:id', requireAdmin, async (req: AuthRequest<{ id: string }>, res: Response) => {
   try {
-    await prisma.localFood.delete({ where: { id: req.params.id } })
+    const food = await LocalFood.findByIdAndDelete(req.params.id)
+    if (!food) return res.status(404).json({ error: 'Food not found' })
     res.json({ message: 'Food deleted' })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error'

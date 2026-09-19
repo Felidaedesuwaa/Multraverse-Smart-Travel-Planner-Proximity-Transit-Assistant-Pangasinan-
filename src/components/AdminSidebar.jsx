@@ -1,9 +1,11 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import {
   BarChart3, Circle, Compass, LayoutGrid,
-  Radio, Route, Settings, Users, Zap,
+  LogOut, Radio, Route, Settings, Users, Zap,
 } from "lucide-react-native";
+import { useNavigation } from "@react-navigation/native";
 import { colors } from "../theme/colors";
+import { useAuthStore } from "../store/authStore";
 
 const items = [
   { label: "Overview", icon: LayoutGrid, screen: "AdminDashboard" },
@@ -16,6 +18,13 @@ const items = [
 ];
 
 export default function AdminSidebar({ activeScreen = "AdminDashboard", onNavigate }) {
+  const navigation = useNavigation();
+  const logout = useAuthStore((state) => state.logout);
+
+  const handleLogout = async () => {
+    await logout();
+    navigation.reset({ index: 0, routes: [{ name: "Login" }] });
+  };
 
   return (
     <View style={styles.sidebar}>
@@ -66,6 +75,10 @@ export default function AdminSidebar({ activeScreen = "AdminDashboard", onNaviga
           <Text style={styles.statusText}>All systems operational</Text>
         </View>
       </View>
+      <Pressable onPress={handleLogout} accessibilityLabel="Log out" style={styles.logout}>
+        <LogOut size={18} color="#FF9B85" />
+        <Text style={styles.logoutText}>Log out</Text>
+      </Pressable>
     </View>
   );
 }
@@ -149,5 +162,20 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     color: colors.white,
+  },
+  logout: {
+    borderTopWidth: 1,
+    borderTopColor: "rgba(255,255,255,0.1)",
+    paddingTop: 16,
+    marginTop: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 12,
+  },
+  logoutText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#FF9B85",
   },
 });

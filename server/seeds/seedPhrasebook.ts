@@ -1,18 +1,16 @@
-import { PrismaClient } from '@prisma/client'
-import { PrismaPg } from '@prisma/adapter-pg'
-import { Pool } from 'pg'
 import 'dotenv/config'
+import { connectDatabase, disconnectDatabase } from '../src/lib/db'
+import { Phrasebook } from '../src/models'
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL })
-const adapter = new PrismaPg(pool)
-const prisma = new PrismaClient({ adapter })
+declare const process: {
+  exit(code?: number): never
+}
 
 async function main() {
+  await connectDatabase()
   console.log('🌱 Seeding phrasebook...')
 
-  await prisma.phrasebook.createMany({
-    skipDuplicates: true,
-    data: [
+  if (await Phrasebook.countDocuments() === 0) await Phrasebook.insertMany([
       // Greetings
       { filipino: 'Magandang umaga', pangasinan: 'Maong ya bigla', english: 'Good morning', category: 'Greetings' },
       { filipino: 'Magandang hapon', pangasinan: 'Maong ya ngarem', english: 'Good afternoon', category: 'Greetings' },
@@ -67,8 +65,7 @@ async function main() {
       { filipino: 'Mayroon bang bakanteng kwarto?', pangasinan: 'Wala so bakante ya kuarto?', english: 'Is there a vacant room?', category: 'Accommodation' },
       { filipino: 'Magkano ang isang gabi?', pangasinan: 'Magkano so sakey ya labi?', english: 'How much for one night?', category: 'Accommodation' },
       { filipino: 'Gusto ko ng check-in', pangasinan: 'Labay ko so check-in', english: 'I want to check in', category: 'Accommodation' },
-    ],
-  })
+    ])
 
   console.log('✅ Phrasebook seeded with', 44, 'phrases')
   console.log('🎉 Done!')
@@ -76,4 +73,4 @@ async function main() {
 
 main()
   .catch((e) => { console.error('❌', e); process.exit(1) })
-  .finally(async () => { await prisma.$disconnect() })
+  .finally(async () => { await disconnectDatabase() })

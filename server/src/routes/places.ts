@@ -1,28 +1,44 @@
 import { Router, Response } from 'express'
-import { prisma } from '../lib/prisma'
+import { SavedPlace } from '../models'
 import { authenticate, AuthRequest } from '../middleware/auth'
 
 const router = Router()
+
+router.get('/public', async (_req, res: Response) => {
+  const places = await SavedPlace.find({ isPublic: true }).sort({ createdAt: -1 })
+  res.json(places)
+})
+
 router.use(authenticate)
 
 router.get('/', async (req: AuthRequest, res: Response) => {
-  const places = await prisma.savedPlace.findMany({
-    where: { userId: req.userId },
-    orderBy: { createdAt: 'desc' },
-  })
+  const places = await SavedPlace.find({ userId: req.userId }).sort({ createdAt: -1 })
   res.json(places)
 })
 
 router.post('/', async (req: AuthRequest, res: Response) => {
   const { name, category, description, icon } = req.body
-  const place = await prisma.savedPlace.create({
-    data: { userId: req.userId!, name, category, description, icon },
-  })
+  const place = await SavedPlace.create({ userId: req.userId!, name, category, description, icon })
   res.status(201).json(place)
 })
 
+router.put('/:id', async (req: AuthRequest<{ id: string }>, res: Response) => {
+  try {
+    const place = await SavedPlace.findOneAndUpdate(
+      { _id: req.params.id, userId: req.userId },
+      req.body,
+      { new: true, runValidators: true },
+    )
+    if (!place) return res.status(404).json({ error: 'Place not found' })
+    res.json(place)
+  } catch (err: any) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 router.delete('/:id', async (req: AuthRequest<{ id: string }>, res: Response) => {
-  await prisma.savedPlace.delete({ where: { id: req.params.id } })
+  const place = await SavedPlace.findOneAndDelete({ _id: req.params.id, userId: req.userId })
+  if (!place) return res.status(404).json({ error: 'Place not found' })
   res.json({ message: 'Place removed' })
 })
 

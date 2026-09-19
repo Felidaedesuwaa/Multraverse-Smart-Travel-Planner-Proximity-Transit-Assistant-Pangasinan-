@@ -11,6 +11,7 @@ import geofenceRoutes from './routes/geofences'
 import userRoutes from './routes/users'
 import aiRoutes from './routes/ai'
 import knowledgeRoutes from './routes/knowledge'
+import { connectDatabase } from './lib/db'
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -45,6 +46,9 @@ app.use('/api/knowledge', knowledgeRoutes)
 
 app.get('/api/health', (_, res) => res.json({ status: 'ok' }))
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`)
-})
+connectDatabase()
+  .then(() => app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`)))
+  .catch((error) => {
+    console.error('Unable to start server:', error)
+    process.exit(1)
+  })
