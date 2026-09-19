@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import {
   Bell, Bookmark, Compass, Download, Home,
   Languages, LogOut, MapPin, Settings, Sparkles, Wallet,
@@ -26,21 +25,21 @@ const aiItems = [
   { label: "Translator", icon: Languages, screen: "Translator" },
 ];
 
-export default function UserSidebar({ activeScreen = "Dashboard", onNavigate }) {
-  const navigation = useNavigation();
+export default function UserSidebar({ activeScreen = "Dashboard", onNavigate, compact = false }) {
   const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
   const [entries, setEntries] = useState([]);
   const [trips, setTrips] = useState([]);
 
   useEffect(() => {
+    if (compact) return;
     Promise.all([api.getBudget(), api.getTrips()])
       .then(([budgetEntries, userTrips]) => {
         setEntries(budgetEntries);
         setTrips(userTrips);
       })
       .catch(() => {});
-  }, []);
+  }, [compact]);
 
   const name = user?.name || "User";
   const initials = name
@@ -53,7 +52,6 @@ export default function UserSidebar({ activeScreen = "Dashboard", onNavigate }) 
 
   const handleLogout = async () => {
     await logout();
-    navigation.reset({ index: 0, routes: [{ name: "Login" }] });
   };
 
   const handleNavigate = (screen) => {
@@ -65,6 +63,8 @@ export default function UserSidebar({ activeScreen = "Dashboard", onNavigate }) 
     return (
       <Pressable
         key={screen}
+        accessibilityRole="button"
+        accessibilityState={{ selected: active }}
         onPress={() => handleNavigate(screen)}
         style={({ pressed }) => [
           styles.item,
@@ -83,7 +83,7 @@ export default function UserSidebar({ activeScreen = "Dashboard", onNavigate }) 
 
   return (
     <ScrollView
-      style={styles.sidebar}
+      style={[styles.sidebar, compact && styles.compactSidebar]}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
@@ -123,6 +123,7 @@ export default function UserSidebar({ activeScreen = "Dashboard", onNavigate }) 
         {aiItems.map((item) => renderNavItem(item, true))}
       </View>
 
+      {!compact && <>
       {/* Budget Overview */}
       <View>
         <Text style={styles.sectionTitle}>BUDGET OVERVIEW</Text>
@@ -151,16 +152,18 @@ export default function UserSidebar({ activeScreen = "Dashboard", onNavigate }) 
         )}
       </View>
 
+      </>}
       {/* Logout */}
-      <Pressable onPress={handleLogout} style={styles.logout}>
+      <Pressable accessibilityRole="button" onPress={handleLogout} style={styles.logout}>
         <LogOut size={18} color="#FF9B85" />
-        <Text style={styles.logoutText}>Log out</Text>
+        <Text style={styles.logoutText}>Log Out</Text>
       </Pressable>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  compactSidebar: { width: "100%", minWidth: 0, maxWidth: "100%", flex: 1 },
   sidebar: {
     width: 280,
     minWidth: 280,
@@ -238,6 +241,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   item: {
+    minHeight: 48,
     flexDirection: "row",
     alignItems: "center",
     gap: 12,

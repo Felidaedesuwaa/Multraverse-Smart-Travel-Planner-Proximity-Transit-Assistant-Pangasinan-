@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { ActivityIndicator, StyleSheet, View, useWindowDimensions } from "react-native";
+import { ActivityIndicator, Modal, Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Menu, X } from "lucide-react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { colors } from "./theme/colors";
@@ -74,8 +76,14 @@ function UserScreens() {
   const { width } = useWindowDimensions();
   const isWide = width >= 768;
   const [activeScreen, setActiveScreen] = useState("Dashboard");
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (isWide) setMenuOpen(false);
+  }, [isWide]);
 
   const handleNavigate = (screen) => {
+    setMenuOpen(false);
     setActiveScreen(screen);
     navigationRef.current?.navigate("User", { screen });
   };
@@ -88,7 +96,27 @@ function UserScreens() {
         </View>
       )}
       <View style={styles.content}>
-        <UserStack.Navigator screenOptions={{ headerShown: false }}>
+        <UserStack.Navigator
+          screenListeners={({ route }) => ({ focus: () => setActiveScreen(route.name) })}
+          screenOptions={{
+            headerShown: !isWide,
+            headerTitle: "Multraverse",
+            headerTintColor: colors.oceanBlue,
+            headerStyle: { backgroundColor: colors.warmSand },
+            headerBackVisible: false,
+            headerLeft: () => (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Open navigation menu"
+                accessibilityState={{ expanded: menuOpen }}
+                onPress={() => setMenuOpen(true)}
+                style={styles.menuButton}
+              >
+                <Menu size={24} color={colors.oceanBlue} />
+              </Pressable>
+            ),
+          }}
+        >
           <UserStack.Screen name="Dashboard" component={UserDashboard} />
           <UserStack.Screen name="MyTrips" component={MyTrips} />
           <UserStack.Screen name="Budget" component={Budget} />
@@ -100,6 +128,35 @@ function UserScreens() {
           <UserStack.Screen name="Translator" component={Translator} />
         </UserStack.Navigator>
       </View>
+      <Modal
+        visible={!isWide && menuOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setMenuOpen(false)}
+      >
+        <View style={styles.drawerOverlay}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            accessibilityRole="button"
+            accessibilityLabel="Close navigation menu"
+            onPress={() => setMenuOpen(false)}
+          />
+          <SafeAreaView style={[styles.drawer, { width: Math.min(320, width - 32) }]}>
+            <View style={styles.drawerHeader}>
+              <Text style={styles.drawerTitle}>Menu</Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Close navigation menu"
+                onPress={() => setMenuOpen(false)}
+                style={styles.menuButton}
+              >
+                <X size={24} color={colors.white} />
+              </Pressable>
+            </View>
+            <UserSidebar compact activeScreen={activeScreen} onNavigate={handleNavigate} />
+          </SafeAreaView>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -183,6 +240,22 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
+  menuButton: {
+    width: 48,
+    height: 48,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  drawerOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.45)" },
+  drawer: { flex: 1, backgroundColor: colors.oceanBlue },
+  drawerHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingLeft: 18,
+    paddingRight: 6,
+  },
+  drawerTitle: { color: colors.white, fontSize: 18, fontWeight: "700" },
   loading: {
     flex: 1,
     alignItems: "center",

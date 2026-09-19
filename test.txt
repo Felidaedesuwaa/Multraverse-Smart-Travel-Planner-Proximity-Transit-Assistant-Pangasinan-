@@ -8,6 +8,8 @@ npm.cmd run start -- --lan --clear
 cd server
 npm run dev
 
+#run on android
+npx.cmd expo start --android
 
-jollyarceo@gmail.com / Jolly123456
+User: jollyarceo@gmail.com / Jolly123456
 Admin: admin@multraverse.ph / Admin123!

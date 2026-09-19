@@ -92,6 +92,19 @@ npm run android
 npm run ios
 ```
 
+For an Android Studio emulator, start a virtual device in Device Manager, then run:
+
+```bash
+npm run android:emulator
+```
+
+This opens the app in Expo Go (installed automatically on first launch) with Metro
+using localhost. Keep the backend running in another terminal with `cd server`
+and `npm run dev`. The app uses `http://10.0.2.2:3001` to reach the computer's
+backend from the emulator. An explicit `EXPO_PUBLIC_API_URL` overrides this address.
+If Metro's default port is already occupied, use
+`npm run android:emulator -- --port 8082`.
+
 For a physical device, connect the device and computer to the same Wi-Fi network. The client detects the Expo development host for native development. For a deployed API or a backend on another machine, set this before starting Expo:
 
 ```env

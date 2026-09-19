@@ -20,6 +20,11 @@ function getBaseUrl() {
   // Expo Go exposes Metro's LAN host, which is also the computer running
   // Express when the phone and computer are on the same Wi-Fi network.
   const expoHost = getExpoDevHost();
+  // Android Studio's emulator reaches the development computer at 10.0.2.2
+  // when Metro is started with --localhost.
+  if (Platform.OS === "android" && (expoHost === "localhost" || expoHost === "127.0.0.1")) {
+    return "http://10.0.2.2:3001";
+  }
   if (expoHost && expoHost !== "localhost" && expoHost !== "127.0.0.1") {
     return `http://${expoHost}:3001`;
   }
