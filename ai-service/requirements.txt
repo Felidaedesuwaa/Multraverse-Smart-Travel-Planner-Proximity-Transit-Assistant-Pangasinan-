@@ -1,0 +1,11 @@
+fastapi==0.115.0
+uvicorn==0.32.0
+transformers==4.45.0
+torch==2.4.1
+datasets==3.0.0
+peft==0.13.0
+accelerate==1.0.0
+python-dotenv==1.0.0
+sentencepiece==0.2.0
+# PyTorch 2.4 Windows wheels require NumPy 1.x for NumPy interoperability.
+numpy==1.26.4

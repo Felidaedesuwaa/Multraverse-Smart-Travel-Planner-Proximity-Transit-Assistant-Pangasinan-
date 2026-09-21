@@ -12,6 +12,7 @@ import userRoutes from './routes/users'
 import locationRoutes from './routes/locations'
 import aiRoutes from './routes/ai'
 import knowledgeRoutes from './routes/knowledge'
+import analyticsRoutes from './routes/analytics'
 import { connectDatabase } from './lib/db'
 
 const app = express()
@@ -47,6 +48,7 @@ app.use('/api/users', userRoutes)
 app.use('/api/locations', locationRoutes)
 app.use('/api/ai', aiRoutes)
 app.use('/api/knowledge', knowledgeRoutes)
+app.use('/api/analytics', analyticsRoutes)
 
 app.get('/api/health', (_, res) => res.json({ status: 'ok' }))
 

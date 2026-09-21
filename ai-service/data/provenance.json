@@ -1,0 +1,590 @@
+[
+  {
+    "line": 1,
+    "source": "user-provided examples",
+    "group": "example:1",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 2,
+    "source": "user-provided examples",
+    "group": "example:2",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 3,
+    "source": "user-provided examples",
+    "group": "example:3",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 4,
+    "source": "user-provided examples",
+    "group": "example:4",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 5,
+    "source": "user-provided examples",
+    "group": "example:5",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 6,
+    "source": "user-provided examples",
+    "group": "example:6",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 7,
+    "source": "user-provided examples",
+    "group": "example:7",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 8,
+    "source": "user-provided examples",
+    "group": "example:8",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 9,
+    "source": "user-provided examples",
+    "group": "example:9",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 10,
+    "source": "user-provided examples",
+    "group": "example:10",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 11,
+    "source": "user-provided examples",
+    "group": "example:11",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 12,
+    "source": "user-provided examples",
+    "group": "example:12",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 13,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:1",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 14,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:1",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 15,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:2",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 16,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:2",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 17,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:3",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 18,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:3",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 19,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:4",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 20,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:4",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 21,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:5",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 22,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:5",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 23,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:6",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 24,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:6",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 25,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:7",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 26,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:7",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 27,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:8",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 28,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:8",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 29,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:9",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 30,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:9",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 31,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:10",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 32,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:10",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 33,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:11",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 34,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:11",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 35,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:12",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 36,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:12",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 37,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:13",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 38,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:13",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 39,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:14",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 40,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:14",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 41,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:15",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 42,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:15",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 43,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:16",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 44,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:16",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 45,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:17",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 46,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:17",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 47,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:18",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 48,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:18",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 49,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:19",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 50,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:19",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 51,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:20",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 52,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:20",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 53,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:21",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 54,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:21",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 55,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:22",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 56,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:22",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 57,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:23",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 58,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:23",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 59,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:24",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 60,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:24",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 61,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:25",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 62,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:25",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 63,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:26",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 64,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:26",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 65,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:27",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 66,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:27",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 67,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:28",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 68,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:28",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 69,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:29",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 70,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:29",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 71,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:30",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 72,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:30",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 73,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:31",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 74,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:31",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 75,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:32",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 76,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:32",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 77,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:33",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 78,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:33",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 79,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:34",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 80,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:34",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 81,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:35",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 82,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:35",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 83,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:36",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 84,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:36",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 85,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:37",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 86,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:37",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 87,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:38",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 88,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:38",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 89,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:39",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 90,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:39",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 91,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:40",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 92,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:40",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 93,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:41",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 94,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:41",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 95,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:42",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 96,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:42",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 97,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:43",
+    "review_status": "unreviewed"
+  },
+  {
+    "line": 98,
+    "source": "server/seeds/seedPhrasebook.ts",
+    "group": "phrase:43",
+    "review_status": "unreviewed"
+  }
+]

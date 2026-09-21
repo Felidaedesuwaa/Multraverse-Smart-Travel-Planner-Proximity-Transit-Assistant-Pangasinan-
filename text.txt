@@ -1,12 +1,17 @@
 #install and rebuild the apk
 eas build --platform android --profile preview
 
-#run the frontend
+# frontend (project root)
 npm.cmd run start -- --lan --clear
 
-#run the backend
+# backend
 cd server
-npm run dev
+npm.cmd run dev
+
+# AI service
+cd ai-service
+.\venv\Scripts\python.exe main.py
+
 
 #run on android
 npx.cmd expo start --android
