@@ -9,3 +9,7 @@ python-dotenv==1.0.0
 sentencepiece==0.2.0
 # PyTorch 2.4 Windows wheels require NumPy 1.x for NumPy interoperability.
 numpy==1.26.4
+# Local microphone transcription and offline WAV speech output.
+faster-whisper==1.1.0
+pyttsx3==2.98
+pymongo==4.10.1

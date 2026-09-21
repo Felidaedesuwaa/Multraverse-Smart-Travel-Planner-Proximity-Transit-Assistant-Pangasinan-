@@ -10,6 +10,8 @@
     "seed": "ts-node seeds/seed.ts",
     "seed:kb": "ts-node seeds/seedKnowledge.ts",
     "seed:phrases": "ts-node seeds/seedPhrasebook.ts",
+    "seed:planner": "ts-node seeds/seedPlanner.ts",
+    "test:planner": "npm run build && node scripts/check-planner.cjs && node scripts/check-planner-api.cjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -17,14 +19,11 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.117.1",
-    "@google/generative-ai": "^0.24.1",
     "@types/mongoose": "^5.11.96",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "groq-sdk": "^1.5.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.9.5"
   },

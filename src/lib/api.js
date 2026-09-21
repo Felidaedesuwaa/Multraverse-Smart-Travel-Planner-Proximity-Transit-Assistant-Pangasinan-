@@ -94,6 +94,8 @@ export const api = {
 
   // Budget
   getBudget: () => request('/api/budget'),
+  getBudgetSettings: () => request('/api/budget/settings'),
+  updateBudgetSettings: data => request('/api/budget/settings', { method: 'PUT', body: JSON.stringify(data) }),
   createBudgetEntry: (data) =>
     request('/api/budget', { method: 'POST', body: JSON.stringify(data) }),
   deleteBudgetEntry: (id) =>
@@ -118,8 +120,15 @@ export const api = {
     request(`/api/geofences/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
 
   // AI
-  generateItinerary: (data) =>
-    request('/api/ai/itinerary', { method: 'POST', body: JSON.stringify(data) }),
+  getPlannerCatalog: (options = {}) => request('/api/ai/planner/catalog', options),
+  getAISettings: () => request('/api/ai/settings'),
+  updateAISettings: data => request('/api/ai/settings', { method: 'PUT', body: JSON.stringify(data) }),
+  generateItinerary: (data, options = {}) =>
+    request('/api/ai/itinerary', { ...options, method: 'POST', body: JSON.stringify(data) }),
+  generateModelItinerary: (data, options = {}) =>
+    request('/api/ai/itinerary/model', { ...options, method: 'POST', body: JSON.stringify(data) }),
+  enrichItinerary: (id, options = {}) => request(`/api/ai/planner/${id}/narrative`, { ...options, method: 'POST', body: '{}' }),
+  saveItinerary: (id, acceptIncomplete) => request(`/api/ai/planner/${id}/save`, { method: 'POST', body: JSON.stringify({ acceptIncomplete }) }),
   translate: (text, from, to) =>
     request('/api/ai/translate', { method: 'POST', body: JSON.stringify({ text, from, to }) }),
   transcribe: (audio, mimeType) =>
@@ -127,6 +136,8 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ audio, mimeType }),
     }),
+  getPhrasebook: () => request('/api/ai/phrasebook'),
+  speech: (text, language) => request('/api/ai/speech', { method: 'POST', body: JSON.stringify({ text, language }) }),
 
   // Admin
   getAllUsers: () => request('/api/users'),

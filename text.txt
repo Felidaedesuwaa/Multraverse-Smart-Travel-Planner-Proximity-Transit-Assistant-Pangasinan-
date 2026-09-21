@@ -3,6 +3,7 @@ eas build --platform android --profile preview
 
 # frontend (project root)
 npm.cmd run start -- --lan --clear
+npm.cmd run dev:clear
 
 # backend
 cd server
@@ -18,3 +19,20 @@ npx.cmd expo start --android
 
 User: jollyarceo@gmail.com / Jolly123456
 Admin: admin@multraverse.ph / Admin123!
+
+#Github
+git add .
+git commit -m "push" 
+git pull origin master
+git push origin master
+
+# Terminal 1 — MongoDB Express backend
+cd server
+npm run dev
+
+# Terminal 2 — Python AI service
+cd ai-service
+.\venv\Scripts\python.exe main.py
+
+# Terminal 3 — React Native frontend
+npm.cmd run dev:clear

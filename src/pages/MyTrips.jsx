@@ -2,7 +2,9 @@ import MoneyAmount from "../components/MoneyAmount";
 import { useCurrency } from "../hooks/useCurrency";
 import MoneyInput from "../components/MoneyInput";
 import { useAppTheme } from "../theme/useAppTheme";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import ItineraryResult from "../components/ItineraryResult";
 import {
   ActivityIndicator,
   Modal,
@@ -12,6 +14,7 @@ import {
   Text,
   TextInput,
   View,
+  useWindowDimensions,
 } from "react-native";
 import {
   Calendar,
@@ -53,6 +56,7 @@ function TripDetailModal({ trip, onClose, onDelete }) {
     <Modal visible transparent animationType="fade" onRequestClose={onClose}>
       <Pressable style={themeStyle(styles.modalOverlay)} onPress={onClose}>
         <Pressable style={themeStyle(styles.modalBox)} onPress={() => {}}>
+          <ScrollView style={themeStyle(styles.modalScroll)} contentContainerStyle={themeStyle(styles.modalContent)} showsVerticalScrollIndicator>
           {/* Header */}
           <View style={themeStyle(styles.modalHeader)}>
             <View style={themeStyle(styles.modalIconBox)}>
@@ -126,6 +130,8 @@ function TripDetailModal({ trip, onClose, onDelete }) {
             </Text>
           </View>
 
+          {trip.plan?.version === 1 && <ScrollView style={{ maxHeight: 320 }} nestedScrollEnabled><ItineraryResult plan={trip.plan} showMap={false} /></ScrollView>}
+
           {/* Trip info */}
           <View style={themeStyle(styles.modalSection)}>
             <Text style={themeStyle(styles.modalSectionTitle)}>Trip Info</Text>
@@ -156,6 +162,7 @@ function TripDetailModal({ trip, onClose, onDelete }) {
               <Text style={themeStyle(styles.doneBtnText)}>Done</Text>
             </Pressable>
           </View>
+          </ScrollView>
         </Pressable>
       </Pressable>
     </Modal>
@@ -300,7 +307,7 @@ function NewTripModal({ visible, onClose, onCreated }) {
 }
 
 // ── Trip Card ───────────────────────────────────────────
-function TripCard({ trip, onView, onDelete }) {
+function TripCard({ trip, onView, onDelete, compact }) {
   const { themeStyle, themeColor } = useAppTheme();
 
   const Icon = placeIconMap[trip.icon] ?? placeIconMap.landmark;
@@ -311,7 +318,7 @@ function TripCard({ trip, onView, onDelete }) {
   const status = STATUS_STYLE[trip.status] ?? STATUS_STYLE.UPCOMING;
 
   return (
-    <View style={themeStyle(styles.tripCard)}>
+    <View style={themeStyle([styles.tripCard, compact && styles.tripCardCompact])}>
       {/* Top */}
       <View style={themeStyle(styles.tripTop)}>
         <View style={themeStyle(styles.tripIconBox)}>
@@ -382,6 +389,8 @@ function TripCard({ trip, onView, onDelete }) {
 // ── Main Screen ─────────────────────────────────────────
 export default function MyTrips() {
   const { themeStyle, themeColor } = useAppTheme();
+  const { width } = useWindowDimensions();
+  const compact = (width >= 768 ? width - 280 : width) < 680;
 
   const [filter, setFilter] = useState("all");
   const [trips, setTrips] = useState([]);
@@ -390,12 +399,14 @@ export default function MyTrips() {
   const [selectedTrip, setSelectedTrip] = useState(null);
   const [showNewTrip, setShowNewTrip] = useState(false);
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
+    let alive = true;
     api.getTrips()
-      .then(setTrips)
+      .then(data => { if (alive) setTrips(data); })
       .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+      .finally(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
+  }, []));
 
   const handleDelete = async (id) => {
     try {
@@ -526,13 +537,14 @@ export default function MyTrips() {
           )}
         </View>
       ) : (
-        <View style={themeStyle(styles.grid)}>
+        <View style={themeStyle([styles.grid, compact && styles.gridCompact])}>
           {filtered.map((trip) => (
             <TripCard
               key={trip._id ?? trip.id}
               trip={trip}
               onView={setSelectedTrip}
               onDelete={handleDelete}
+              compact={compact}
             />
           ))}
         </View>
@@ -634,12 +646,15 @@ const styles = StyleSheet.create({
   emptyBtnText: { fontSize: 13, fontWeight: "700", color: "#fff" },
 
   // Grid
-  grid: { flexDirection: "row", flexWrap: "wrap", gap: 20 },
+  grid: { flexDirection: "row", flexWrap: "wrap", gap: 16, alignItems: "stretch" },
+  gridCompact: { flexDirection: "column" },
 
   // Trip card
   tripCard: {
-    width: "47%",
-    minWidth: 280,
+    flexGrow: 1,
+    flexBasis: 300,
+    maxWidth: 520,
+    minWidth: 0,
     backgroundColor: "#fff",
     borderRadius: 16,
     padding: 20,
@@ -650,6 +665,7 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 3,
   },
+  tripCardCompact: { width: "100%", flexBasis: "auto", maxWidth: "100%", padding: 16 },
   tripTop: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -730,21 +746,23 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.4)",
     alignItems: "center",
     justifyContent: "center",
-    padding: 24,
+    padding: 16,
   },
   modalBox: {
     width: "100%",
-    maxWidth: 480,
+    maxWidth: 560,
+    maxHeight: "88%",
     backgroundColor: "#fff",
     borderRadius: 20,
-    padding: 28,
-    gap: 16,
+    overflow: "hidden",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.15,
     shadowRadius: 24,
     elevation: 10,
   },
+  modalScroll: { width: "100%" },
+  modalContent: { padding: 24, gap: 16 },
   modalHeader: {
     flexDirection: "row",
     alignItems: "flex-start",

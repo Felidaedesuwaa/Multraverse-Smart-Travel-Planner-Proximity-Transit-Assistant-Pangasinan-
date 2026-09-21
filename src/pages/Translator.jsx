@@ -1,5 +1,4 @@
-import { useAppTheme } from "../theme/useAppTheme";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Platform,
@@ -8,93 +7,141 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  View,
   useWindowDimensions,
+  View,
 } from "react-native";
-import { ArrowLeftRight, Mic, MicOff, Wifi } from "lucide-react-native";
+import {
+  ArrowLeftRight,
+  BookOpen,
+  ChevronDown,
+  Mic,
+  MicOff,
+  RefreshCw,
+  Search,
+  Volume2,
+  X,
+} from "lucide-react-native";
 import { api } from "../lib/api";
 import { colors } from "../theme/colors";
+import AIToolHeader from "../components/AIToolHeader";
 
-const languages = ["Filipino", "Pangasinan", "English"];
+const LANGUAGES = ["Filipino", "Pangasinan", "English"];
 
-const phrases = [
-  { phrase: "Magandang umaga", translation: "Masantos a kabwasan", category: "Greetings" },
-  { phrase: "Kumusta ka?", translation: "Kumusta ka la? / Antoy emano?", category: "Greetings" },
-  { phrase: "Maraming salamat", translation: "Balbaleg ya salamat", category: "Greetings" },
-  { phrase: "Nasaan ang terminal ng bus?", translation: "Iner so istasyon na bus?", category: "Transport" },
-  { phrase: "Magkano ang tiket papunta sa ___?", translation: "Sampigay tiket ed ___?", category: "Transport" },
-  { phrase: "Paano ako makakarating sa ___?", translation: "Panon ak ya makarkar ed ___?", category: "Transport" },
-  { phrase: "Kain na tayo!", translation: "Mangan tila!", category: "Food" },
-  { phrase: "Nasaan ang banyo?", translation: "Iner so banyo / CR? / Kawalaan na patiang?", category: "Food" },
-  { phrase: "Patingnan mo ang menu", translation: "Sarag ton nengnengen ko so minu?", category: "Food" },
-  { phrase: "May bakanteng kwarto kayo?", translation: "Walay silid yo ya malaem?", category: "Accommodation" },
-  { phrase: "Magkano ang isang kwarto?", translation: "Sampigay silid kada sakey to-o?", category: "Accommodation" },
-  { phrase: "Gusto ko nang mag-check out", translation: "Labay ko lay ompaway", category: "Accommodation" },
-  { phrase: "Tulong!", translation: "Tabang!", category: "Emergency" },
-  { phrase: "Kailangan ko ng doktor", translation: "Kaukolan koy doktor", category: "Emergency" },
-  { phrase: "Nawawala ako", translation: "Abalang ak", category: "Emergency" },
-  { phrase: "Magkano ito?", translation: "Sampiga ya? / Sampiga iya?", category: "Shopping" },
-  { phrase: "Pwede bang magpababa ng presyo?", translation: "Kasi pakulangan?", category: "Shopping" },
-  { phrase: "May pasalubong ba kayo?", translation: "Wala ray pasalubong yo dia?", category: "Shopping" },
-];
-
-const phraseCategories = ["All", ...new Set(phrases.map((phrase) => phrase.category))];
-
-const categoryColors = {
-  Greetings: { bg: "#EDF7EE", color: "#22863A" },
-  Transport: { bg: "#EAF1FB", color: "#1A5CB0" },
-  Food: { bg: "#FFF8E1", color: "#C07000" },
-  Accommodation: { bg: "#F3EEFF", color: "#6941C6" },
-  Emergency: { bg: "#FFF0F0", color: "#D32F2F" },
-  Shopping: { bg: "#E8F8F5", color: "#087F5B" },
+const CATEGORY_COLORS = {
+  Greetings: { text: "#22863A", bg: "#EDF7EE" },
+  Transport: { text: "#1A5CB0", bg: "#EAF1FB" },
+  Food: { text: "#C07000", bg: "#FFF8E1" },
+  Accommodation: { text: "#6941C6", bg: "#F5F0FF" },
+  Emergency: { text: "#D32F2F", bg: "#FFF0F0" },
+  Shopping: { text: "#087F5B", bg: "#E8F8F4" },
 };
 
-const offlinePacks = [
-  { lang: "Pangasinan", size: "12 MB", downloaded: true },
-  { lang: "Filipino", size: "8 MB", downloaded: true },
-  { lang: "Ilocano", size: "9 MB", downloaded: false },
-];
+const SOURCE_BADGE = {
+  phrasebook: { label: "✓ Verified", bg: "#EDF7EE", text: "#22863A" },
+  "custom-model": { label: "AI Model", bg: colors.oceanBlueLight, text: colors.oceanBlue },
+  "ai-model": { label: "AI Model", bg: colors.oceanBlueLight, text: colors.oceanBlue },
+  identity: { label: "Same language", bg: "#F4F7FB", text: "#6B8CA8" },
+};
 
+// ── Language Pill ───────────────────────────────────────
+function LanguagePill({ label, value, onPress }) {
+  return (
+    <View style={styles.langGroup}>
+      <Text style={styles.langLabel}>{label}</Text>
+      <Pressable onPress={onPress} style={styles.langPill}>
+        <Text style={styles.langPillText}>{value}</Text>
+        <ChevronDown size={14} color="#6B8CA8" />
+      </Pressable>
+    </View>
+  );
+}
+
+// ── Phrase Card ─────────────────────────────────────────
+function PhraseCard({ phrase, from, to, onPress, compact }) {
+  const catStyle = CATEGORY_COLORS[phrase.category] ?? {
+    text: colors.oceanBlue,
+    bg: colors.oceanBlueLight,
+  };
+  const mainText = phrase[from.toLowerCase()] ?? phrase.filipino ?? "";
+  const subText = phrase[to.toLowerCase()] ?? phrase.english ?? "";
+
+  return (
+    <Pressable
+      onPress={() => onPress(phrase)}
+      style={({ pressed }) => [styles.phraseCard, compact && styles.phraseCardMobile, pressed && { opacity: 0.85 }]}
+    >
+      <View style={styles.phraseCardTop}>
+        <View style={[styles.catBadge, { backgroundColor: catStyle.bg }]}>
+          <Text style={[styles.catBadgeText, { color: catStyle.text }]}>
+            {phrase.category}
+          </Text>
+        </View>
+        <Volume2 size={13} color="#A8BECC" />
+      </View>
+      <Text style={styles.phraseMain} numberOfLines={2}>{mainText}</Text>
+      <Text style={styles.phraseSub} numberOfLines={2}>{subText}</Text>
+      <Text style={styles.phraseTap}>Tap to translate →</Text>
+    </Pressable>
+  );
+}
+
+// ── Main Screen ─────────────────────────────────────────
 export default function Translator() {
   const { width } = useWindowDimensions();
-  const compact = (width >= 768 ? width - 280 : width) < 720;
-  const { themeStyle, themeColor } = useAppTheme();
-
+  const mobile = width < 700;
   const [from, setFrom] = useState("Filipino");
   const [to, setTo] = useState("Pangasinan");
   const [input, setInput] = useState("");
   const [translation, setTranslation] = useState("");
   const [source, setSource] = useState(null);
+  const [phrases, setPhrases] = useState([]);
   const [category, setCategory] = useState("All");
+  const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
+  const [phrasesLoading, setPhrasesLoading] = useState(true);
   const [listening, setListening] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
   const [error, setError] = useState(null);
   const [recents, setRecents] = useState([]);
+
   const recorder = useRef(null);
   const chunks = useRef([]);
 
-  const translate = async (text = input) => {
+  const loadPhrases = async () => {
+    setPhrasesLoading(true);
+    try {
+      setPhrases(await api.getPhrasebook());
+    } catch (e) {
+      setError(e.message || "Could not load phrasebook.");
+    } finally {
+      setPhrasesLoading(false);
+    }
+  };
+
+  useEffect(() => { loadPhrases(); }, []);
+
+  const translate = async (text = input, sourceLang = from) => {
     if (!text.trim()) return;
     setLoading(true);
     setError(null);
     try {
-      const result = await api.translate(text, from, to);
-      setTranslation(result.translation);
-      setSource(result.source || "ai");
-      setRecents((current) => [
-        {
-          phrase: text,
-          translation: result.translation,
-          pair: `${from.slice(0, 3)} → ${to.slice(0, 3)}`,
-        },
-        ...current.slice(0, 3),
+      const r = await api.translate(text.trim(), sourceLang, to);
+      setTranslation(r.translation);
+      setSource(r.source || "custom-model");
+      setRecents((prev) => [
+        { phrase: text.trim(), translation: r.translation, pair: `${sourceLang} → ${to}` },
+        ...prev.filter((x) => x.phrase !== text.trim()).slice(0, 3),
       ]);
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Translation failed.");
+    } catch (e) {
+      setError(e.message || "Translation failed.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const cycleLanguage = (current, setter) => {
+    setter(LANGUAGES[(LANGUAGES.indexOf(current) + 1) % LANGUAGES.length]);
   };
 
   const swap = () => {
@@ -102,361 +149,340 @@ export default function Translator() {
     setTo(from);
     setInput(translation);
     setTranslation(input);
+    setSource(null);
   };
 
-  const cycleLanguage = (current, setter) => {
-    const next = languages[(languages.indexOf(current) + 1) % languages.length];
-    setter(next);
+  const choosePhrase = (phrase) => {
+    const text = phrase[from.toLowerCase()] ?? phrase.filipino ?? "";
+    setInput(text);
+    translate(text, from);
   };
 
   const mic = async () => {
     if (
       Platform.OS !== "web" ||
-      !globalThis.navigator?.mediaDevices ||
+      !navigator?.mediaDevices ||
       !globalThis.MediaRecorder
     ) {
-      setError("Voice input is available in the web version only.");
+      setError("Voice input is available in the web app. Please use a browser to record speech.");
       return;
     }
-
     if (listening) {
       recorder.current?.stop();
       setListening(false);
       return;
     }
-
     try {
-      const stream = await globalThis.navigator.mediaDevices.getUserMedia({ audio: true });
-      const mimeType = globalThis.MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const type = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
         ? "audio/webm;codecs=opus"
         : "audio/webm";
-      const current = new globalThis.MediaRecorder(stream, { mimeType });
-      recorder.current = current;
+      const active = new MediaRecorder(stream, { mimeType: type });
+      recorder.current = active;
       chunks.current = [];
-
-      current.ondataavailable = (event) => {
-        if (event.data.size) chunks.current.push(event.data);
-      };
-
-      current.onstop = async () => {
-        stream.getTracks().forEach((track) => track.stop());
-        const blob = new Blob(chunks.current, { type: mimeType });
-        if (blob.size < 1000) {
-          setError("Recording too short. Please speak clearly and try again.");
-          return;
-        }
+      active.ondataavailable = (e) => { if (e.data.size) chunks.current.push(e.data); };
+      active.onstop = () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(chunks.current, { type });
+        if (blob.size < 1000) { setError("Recording was too short. Please try again."); return; }
         setTranscribing(true);
         const reader = new FileReader();
         reader.onloadend = async () => {
           try {
-            const base64 = String(reader.result).split(",")[1];
-            const result = await api.transcribe(base64, mimeType);
-            const transcribed = result.text || "";
-            setInput(transcribed);
-            await translate(transcribed);
-          } catch (cause) {
-            setError(cause instanceof Error ? cause.message : "Unable to transcribe recording.");
+            const result = await api.transcribe(String(reader.result).split(",")[1], type);
+            setInput(result.text);
+            await translate(result.text);
+          } catch (e) {
+            setError(e.message || "Unable to transcribe recording.");
           } finally {
             setTranscribing(false);
           }
         };
         reader.readAsDataURL(blob);
       };
-
-      current.start();
+      active.start();
       setListening(true);
       setError(null);
     } catch {
-      setError("Microphone access was not granted.");
+      setError("Microphone access was not granted. Check browser permissions.");
     }
   };
 
-  const usePhrase = (phrase) => {
-    setInput(phrase);
-    translate(phrase);
+  const speak = async () => {
+    if (!translation || speaking) return;
+    setSpeaking(true);
+    try {
+      const r = await api.speech(translation, to);
+      if (Platform.OS !== "web") throw new Error("Audio playback is available in the web app.");
+      const audio = new Audio(`data:${r.mime_type || "audio/wav"};base64,${r.audio}`);
+      audio.onended = () => setSpeaking(false);
+      audio.onerror = () => { setSpeaking(false); setError("Audio could not be played."); };
+      await audio.play();
+    } catch (e) {
+      setSpeaking(false);
+      setError(e.message || "Unable to create speech.");
+    }
   };
 
-  const visiblePhrases =
-    category === "All" ? phrases : phrases.filter((p) => p.category === category);
+  const categories = ["All", ...new Set(phrases.map((p) => p.category))];
+  const visible = phrases.filter(
+    (p) =>
+      (category === "All" || p.category === category) &&
+      Object.values(p).some((v) =>
+        String(v).toLowerCase().includes(query.toLowerCase())
+      )
+  );
+
+  const sourceBadge = source ? SOURCE_BADGE[source] ?? SOURCE_BADGE["ai-model"] : null;
+  const phraseCards = <View style={[styles.phraseGrid, mobile && styles.phraseGridMobile]}>{visible.map((phrase) => <PhraseCard key={phrase._id ?? phrase.id} phrase={phrase} from={from} to={to} onPress={choosePhrase} compact={mobile} />)}</View>;
 
   return (
     <ScrollView
-      style={themeStyle(styles.container)}
-      contentContainerStyle={themeStyle([styles.screen, compact && { padding: 16 }])}
+      style={styles.container}
+      contentContainerStyle={[styles.screen, mobile && styles.screenMobile]}
       showsVerticalScrollIndicator={false}
     >
-      {/* Header */}
-      <View style={themeStyle(styles.header)}>
-        <Text style={themeStyle(styles.title)}>Voice Translator</Text>
-        <Text style={themeStyle(styles.subtitle)}>
-          Real-time Filipino ↔ Pangasinan ↔ English · Phrasebook-verified
-        </Text>
-      </View>
+      {/* ── Hero Banner ── */}
+      <AIToolHeader compact={mobile} eyebrow="PANGASINAN LANGUAGE COMPANION" title="Translator & Phrasebook" subtitle="Speak, translate, and listen with verified local phrases and your own AI model." badges={[{ label: "MongoDB-verified phrases" }, { label: "Custom AI model" }, { label: "Voice transcription", color: "#A78BFA" }]} Icon={BookOpen} />
 
-      <View style={themeStyle([styles.columns, compact && { flexDirection: "column", alignItems: "stretch" }])}>
-        {/* Left Column */}
-        <View style={themeStyle(styles.leftCol)}>
+      <View style={[styles.body, mobile && styles.bodyMobile]}>
+        {/* ── Left: Translator ── */}
+        <View style={[styles.leftCol, mobile && styles.leftColMobile]}>
+          <View style={[styles.card, mobile && styles.cardMobile]}>
+            <Text style={styles.cardTitle}>Translate a Phrase</Text>
 
-          {/* Translator Card */}
-          <View style={themeStyle(styles.card)}>
-            {/* Language Selectors */}
-            <View style={themeStyle(styles.langRow)}>
-              <View style={themeStyle(styles.langBox)}>
-                <Text style={themeStyle(styles.langLabel)}>From</Text>
-                <Pressable
-                  onPress={() => cycleLanguage(from, setFrom)}
-                  style={themeStyle(styles.langPill)}
-                >
-                  <Text style={themeStyle(styles.langPillText)}>{from}</Text>
-                </Pressable>
-              </View>
-
-              <Pressable onPress={swap} style={themeStyle(styles.swapBtn)}>
-                <ArrowLeftRight size={16} color={themeColor("#4A6880", "color")} />
+            {/* Language row */}
+            <View style={styles.langRow}>
+              <LanguagePill
+                label="From"
+                value={from}
+                onPress={() => cycleLanguage(from, setFrom)}
+              />
+              <Pressable onPress={swap} style={styles.swapBtn}>
+                <ArrowLeftRight size={16} color={colors.oceanBlue} />
               </Pressable>
-
-              <View style={themeStyle(styles.langBox)}>
-                <Text style={themeStyle(styles.langLabel)}>To</Text>
-                <Pressable
-                  onPress={() => cycleLanguage(to, setTo)}
-                  style={themeStyle(styles.langPill)}
-                >
-                  <Text style={themeStyle(styles.langPillText)}>{to}</Text>
-                </Pressable>
-              </View>
+              <LanguagePill
+                label="To"
+                value={to}
+                onPress={() => cycleLanguage(to, setTo)}
+              />
             </View>
 
-            {/* Input Area */}
-            <View style={themeStyle([styles.inputWrapper, listening && styles.inputWrapperActive])}>
+            {/* Input */}
+            <View style={[styles.inputWrapper, listening && styles.inputWrapperActive]}>
               <TextInput
                 value={input}
                 onChangeText={setInput}
                 multiline
                 placeholder={
                   listening
-                    ? "🎙 Recording... tap mic to stop"
-                    : transcribing
-                    ? "Transcribing your speech..."
-                    : `Type in ${from} and press Translate...`
+                    ? "🎙 Recording — tap the mic to stop..."
+                    : `Type in ${from}...`
                 }
-                placeholderTextColor={themeColor("#A8BECC", "color")}
-                style={themeStyle(styles.textArea)}
+                placeholderTextColor="#A8BECC"
+                style={styles.textArea}
+                onSubmitEditing={() => translate()}
               />
-              {/* Mic Button */}
               <Pressable
                 onPress={mic}
                 disabled={transcribing}
-                style={themeStyle([
+                style={[
                   styles.micBtn,
-                  listening && styles.micBtnListening,
+                  listening && styles.micBtnActive,
                   transcribing && styles.micBtnTranscribing,
-                ])}
+                ]}
               >
                 {transcribing ? (
-                  <ActivityIndicator size="small" color={themeColor("#fff", "color")} />
+                  <ActivityIndicator color="#fff" size="small" />
                 ) : listening ? (
-                  <MicOff size={16} color={themeColor("#fff", "color")} />
+                  <MicOff size={16} color="#fff" />
                 ) : (
-                  <Mic size={16} color={themeColor("#fff", "color")} />
+                  <Mic size={16} color="#fff" />
                 )}
               </Pressable>
             </View>
 
-            {/* Listening indicator */}
+            {/* Status banners */}
             {listening && (
-              <View style={themeStyle(styles.listeningBanner)}>
-                <View style={themeStyle(styles.listeningDot)} />
-                <Text style={themeStyle(styles.listeningText)}>
+              <View style={styles.bannerRecording}>
+                <View style={styles.recordingDot} />
+                <Text style={styles.bannerText}>
                   Recording... tap the mic button to stop
                 </Text>
               </View>
             )}
-
             {transcribing && (
-              <View style={themeStyle(styles.transcribingBanner)}>
-                <ActivityIndicator size="small" color={themeColor(colors.gold, "color")} />
-                <Text style={themeStyle(styles.transcribingText)}>
+              <View style={styles.bannerTranscribing}>
+                <ActivityIndicator size="small" color="#C07000" style={{ marginRight: 8 }} />
+                <Text style={[styles.bannerText, { color: "#C07000" }]}>
                   Transcribing with Groq Whisper...
                 </Text>
               </View>
             )}
 
-            {/* Translate Button */}
+            {/* Translate button */}
             <Pressable
               onPress={() => translate()}
               disabled={loading || !input.trim()}
-              style={themeStyle([
+              style={[
                 styles.translateBtn,
                 (loading || !input.trim()) && styles.translateBtnDisabled,
-              ])}
+              ]}
             >
-              {loading && <ActivityIndicator size="small" color={themeColor("#fff", "color")} style={themeStyle({ marginRight: 8 })} />}
-              <Text style={themeStyle(styles.translateBtnText)}>
+              {loading && (
+                <ActivityIndicator color="#fff" size="small" style={{ marginRight: 8 }} />
+              )}
+              <Text style={styles.translateBtnText}>
                 {loading ? "Translating..." : "Translate"}
               </Text>
             </Pressable>
 
             {/* Error */}
             {error && (
-              <View style={themeStyle(styles.errorBox)}>
-                <Text style={themeStyle(styles.errorText)}>{error}</Text>
+              <View style={styles.errorBox}>
+                <Text style={styles.errorText}>{error}</Text>
+                <Pressable onPress={() => setError(null)}>
+                  <X size={14} color="#B44428" />
+                </Pressable>
               </View>
             )}
 
-            {/* Translation Output */}
-            <View style={themeStyle(styles.outputBox)}>
-              <View style={themeStyle(styles.outputHeader)}>
-                <Text style={themeStyle(styles.outputLabel)}>{to} translation</Text>
-                {source && (
-                  <View
-                    style={themeStyle([
-                      styles.sourceBadge,
-                      source === "phrasebook"
-                        ? styles.sourceBadgeVerified
-                        : styles.sourceBadgeAI,
-                    ])}
-                  >
-                    <Text
-                      style={themeStyle([
-                        styles.sourceBadgeText,
-                        source === "phrasebook"
-                          ? styles.sourceBadgeTextVerified
-                          : styles.sourceBadgeTextAI,
-                      ])}
-                    >
-                      {source === "phrasebook" ? "✓ Verified" : "AI Generated"}
+            {/* Translation output */}
+            <View style={styles.outputBox}>
+              <View style={styles.outputHeader}>
+                <Text style={styles.outputLabel}>{to} translation</Text>
+                {sourceBadge && (
+                  <View style={[styles.sourceBadge, { backgroundColor: sourceBadge.bg }]}>
+                    <Text style={[styles.sourceBadgeText, { color: sourceBadge.text }]}>
+                      {sourceBadge.label}
                     </Text>
                   </View>
                 )}
               </View>
-              <Text style={themeStyle([styles.outputText, !translation && styles.outputPlaceholder])}>
-                {translation || "Translation will appear here..."}
-              </Text>
+              <View style={styles.outputRow}>
+                <Text
+                  style={[
+                    styles.outputText,
+                    !translation && styles.outputPlaceholder,
+                  ]}
+                >
+                  {translation || "Your translation will appear here..."}
+                </Text>
+                {translation && (
+                  <Pressable onPress={speak} style={styles.speakBtn}>
+                    {speaking ? (
+                      <ActivityIndicator size="small" color={colors.oceanBlue} />
+                    ) : (
+                      <Volume2 size={18} color={colors.oceanBlue} />
+                    )}
+                  </Pressable>
+                )}
+              </View>
             </View>
           </View>
 
-          {/* Recent Translations */}
+          {/* Recent translations */}
           {recents.length > 0 && (
-            <View style={themeStyle(styles.card)}>
-              <Text style={themeStyle(styles.cardTitle)}>Recent Translations</Text>
+            <View style={[styles.card, mobile && styles.cardMobile]}>
+              <Text style={styles.cardTitle}>Recent Translations</Text>
               {recents.map((item, i) => (
-                <View
+                <Pressable
                   key={`${item.phrase}-${i}`}
-                  style={themeStyle([
+                  onPress={() => {
+                    setInput(item.phrase);
+                    setTranslation(item.translation);
+                  }}
+                  style={[
                     styles.recentRow,
                     i < recents.length - 1 && styles.recentBorder,
-                  ])}
+                  ]}
                 >
-                  <View style={themeStyle({ flex: 1 })}>
-                    <Text style={themeStyle(styles.recentPhrase)}>{item.phrase}</Text>
-                    <Text style={themeStyle(styles.recentTranslation)}>→ {item.translation}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.recentPhrase}>{item.phrase}</Text>
+                    <Text style={styles.recentTranslation}>
+                      → {item.translation}
+                    </Text>
                   </View>
-                  <View style={themeStyle(styles.pairBadge)}>
-                    <Text style={themeStyle(styles.pairBadgeText)}>{item.pair}</Text>
+                  <View style={styles.pairBadge}>
+                    <Text style={styles.pairBadgeText}>{item.pair}</Text>
                   </View>
-                </View>
+                </Pressable>
               ))}
             </View>
           )}
         </View>
 
-        {/* Right Column */}
-        <View style={themeStyle([styles.rightCol, compact && { width: "100%" }])}>
+        {/* ── Right: Phrasebook ── */}
+        <View style={[styles.rightCol, mobile && styles.rightColMobile]}>
+          <View style={[styles.card, mobile && styles.cardMobile]}>
+            {/* Header */}
+            <View style={styles.phraseHeaderRow}>
+              <View>
+                <Text style={styles.cardTitle}>Phrasebook</Text>
+                <Text style={styles.phraseSub2}>
+                  Live from MongoDB · {phrases.length} phrases
+                </Text>
+              </View>
+              <Pressable onPress={loadPhrases} style={styles.refreshBtn}>
+                <RefreshCw size={14} color={colors.oceanBlue} />
+                <Text style={styles.refreshText}>Refresh</Text>
+              </Pressable>
+            </View>
 
-          {/* Phrasebook */}
-          <View style={themeStyle(styles.card)}>
-            <Text style={themeStyle(styles.cardTitle)}>Phrasebook</Text>
+            {/* Search */}
+            <View style={styles.searchBox}>
+              <Search size={14} color="#6B8CA8" />
+              <TextInput
+                value={query}
+                onChangeText={setQuery}
+                placeholder="Search phrases..."
+                placeholderTextColor="#A8BECC"
+                style={styles.searchInput}
+              />
+              {query.length > 0 && (
+                <Pressable onPress={() => setQuery("")}>
+                  <X size={13} color="#6B8CA8" />
+                </Pressable>
+              )}
+            </View>
 
             {/* Category tabs */}
-            <View style={themeStyle(styles.categoryRow)}>
-              {phraseCategories.map((cat) => (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.catTabs}
+            >
+              {categories.map((cat) => (
                 <Pressable
                   key={cat}
                   onPress={() => setCategory(cat)}
-                  style={themeStyle([
-                    styles.catPill,
-                    category === cat && styles.catPillActive,
-                  ])}
+                  style={[styles.catTab, category === cat && styles.catTabActive]}
                 >
                   <Text
-                    style={themeStyle([
-                      styles.catPillText,
-                      category === cat && styles.catPillTextActive,
-                    ])}
+                    style={[
+                      styles.catTabText,
+                      category === cat && styles.catTabTextActive,
+                    ]}
                   >
                     {cat}
                   </Text>
                 </Pressable>
               ))}
-            </View>
+            </ScrollView>
 
-            {/* Phrases */}
-            {visiblePhrases.map((item, i) => {
-              const c = categoryColors[item.category] || categoryColors.Greetings;
-              return (
-                <Pressable
-                  key={item.phrase}
-                  onPress={() => usePhrase(item.phrase)}
-                  style={themeStyle([
-                    styles.phraseRow,
-                    i < visiblePhrases.length - 1 && styles.phraseBorder,
-                  ])}
-                >
-                  <View style={themeStyle({ flex: 1 })}>
-                    <Text style={themeStyle(styles.phraseText)}>{item.phrase}</Text>
-                    <Text style={themeStyle(styles.phraseTranslation)}>{item.translation}</Text>
-                  </View>
-                  <View style={themeStyle([styles.phraseCatBadge, { backgroundColor: c.bg }])}>
-                    <Text style={themeStyle([styles.phraseCatText, { color: c.color }])}>
-                      {item.category}
-                    </Text>
-                  </View>
-                </Pressable>
-              );
-            })}
-          </View>
-
-          {/* Offline Packs */}
-          <View style={themeStyle(styles.card)}>
-            <View style={themeStyle(styles.offlineHeader)}>
-              <Wifi size={15} color={themeColor("#6B8CA8", "color")} />
-              <Text style={themeStyle([styles.cardTitle, { marginBottom: 0, marginLeft: 8 }])}>
-                Offline packs
-              </Text>
-            </View>
-            <View style={themeStyle({ marginTop: 14 })}>
-              {offlinePacks.map((pack, i) => (
-                <View
-                  key={pack.lang}
-                  style={themeStyle([
-                    styles.packRow,
-                    i < offlinePacks.length - 1 && styles.packBorder,
-                  ])}
-                >
-                  <View style={themeStyle(styles.packLeft)}>
-                    <View
-                      style={themeStyle([
-                        styles.packDot,
-                        {
-                          backgroundColor: pack.downloaded
-                            ? "#22C55E"
-                            : "#D1DCE5",
-                        },
-                      ])}
-                    />
-                    <Text style={themeStyle(styles.packName)}>{pack.lang}</Text>
-                  </View>
-                  <View style={themeStyle(styles.packRight)}>
-                    <Text style={themeStyle(styles.packSize)}>{pack.size}</Text>
-                    {!pack.downloaded && (
-                      <Pressable style={themeStyle(styles.getBtn)}>
-                        <Text style={themeStyle(styles.getBtnText)}>Get</Text>
-                      </Pressable>
-                    )}
-                  </View>
-                </View>
-              ))}
-            </View>
+            {/* Phrase cards */}
+            {phrasesLoading ? (
+              <View style={styles.loadingBox}>
+                <ActivityIndicator color={colors.oceanBlue} />
+                <Text style={styles.loadingText}>Loading phrases from MongoDB...</Text>
+              </View>
+            ) : visible.length === 0 ? (
+              <View style={styles.emptyBox}>
+                <Text style={styles.emptyText}>No phrases match your search.</Text>
+              </View>
+            ) : (
+              mobile ? <ScrollView style={styles.phraseResultsMobile} nestedScrollEnabled showsVerticalScrollIndicator>{phraseCards}</ScrollView> : phraseCards
+            )}
           </View>
         </View>
       </View>
@@ -465,121 +491,158 @@ export default function Translator() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#F7F9FB",
-  },
+  container: { flex: 1, backgroundColor: "#F4F8FA" },
   screen: {
-    flexGrow: 1,
-    padding: 32,
+    padding: 28,
     paddingBottom: 48,
+    maxWidth: 1320,
+    width: "100%",
+    alignSelf: "center",
   },
-  header: {
-    marginBottom: 28,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: "700",
-    color: "#1A2E40",
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: "#6B8CA8",
-  },
-  columns: {
+  screenMobile: { padding: 16, paddingBottom: 28 },
+
+  // Hero
+  hero: {
+    backgroundColor: "#0B3C5D",
+    borderRadius: 20,
+    padding: 28,
     flexDirection: "row",
-    gap: 20,
-    alignItems: "flex-start",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 24,
   },
-  leftCol: {
-    flex: 1,
-    gap: 20,
-  },
-  rightCol: {
-    width: 300,
-    gap: 16,
-  },
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 24,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 10,
-    elevation: 3,
-  },
-  cardTitle: {
-    fontSize: 15,
+  heroContent: { flex: 1, paddingRight: 20 },
+  heroEyebrow: {
+    color: "#7BB8D4",
+    fontSize: 10,
     fontWeight: "700",
-    color: "#1A2E40",
-    marginBottom: 14,
+    letterSpacing: 1.5,
+    marginBottom: 6,
+  },
+  heroTitle: {
+    color: "#fff",
+    fontSize: 28,
+    fontWeight: "800",
+    marginBottom: 8,
+  },
+  heroSubtitle: {
+    color: "#A8CCE0",
+    fontSize: 14,
+    lineHeight: 20,
+    maxWidth: 560,
+    marginBottom: 16,
+  },
+  heroBadgeRow: { flexDirection: "row", gap: 12, flexWrap: "wrap" },
+  heroBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+  },
+  heroBadgeDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "#22C55E",
+  },
+  heroBadgeText: { color: "#C8E1EE", fontSize: 12, fontWeight: "600" },
+  heroIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 16,
+    backgroundColor: "rgba(255,255,255,0.1)",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
   },
 
-  // Language selectors
+  // Layout
+  body: { flexDirection: "row", gap: 20, alignItems: "flex-start" },
+  bodyMobile: { flexDirection: "column", gap: 16 },
+  leftCol: { flex: 1, gap: 20 },
+  leftColMobile: { width: "100%", gap: 16 },
+  rightCol: { width: 380, flexShrink: 0 },
+  rightColMobile: { width: "100%" },
+
+  // Card
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 18,
+    padding: 24,
+    shadowColor: "#173B50",
+    shadowOpacity: 0.07,
+    shadowRadius: 14,
+    elevation: 3,
+    gap: 0,
+  },
+  cardMobile: { padding: 16, borderRadius: 15 },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#183447",
+    marginBottom: 18,
+  },
+
+  // Language selector
   langRow: {
     flexDirection: "row",
     alignItems: "flex-end",
-    gap: 12,
-    marginBottom: 20,
+    gap: 10,
+    marginBottom: 16,
   },
-  langBox: {
-    flex: 1,
-  },
+  langGroup: { flex: 1 },
   langLabel: {
-    fontSize: 12,
+    fontSize: 11,
+    fontWeight: "700",
     color: "#6B8CA8",
     marginBottom: 6,
+    letterSpacing: 0.5,
   },
   langPill: {
-    width: "100%",
-    padding: 11,
-    borderWidth: 1.5,
-    borderColor: "#E2EBF3",
-    borderRadius: 10,
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-  },
-  langPillText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#1A2E40",
-  },
-  swapBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
     borderWidth: 1.5,
-    borderColor: "#E2EBF3",
-    backgroundColor: "#fff",
+    borderColor: "#D9E7EE",
+    borderRadius: 10,
+    padding: 11,
+  },
+  langPillText: { fontSize: 14, fontWeight: "700", color: "#183447" },
+  swapBtn: {
+    width: 40,
+    height: 40,
     alignItems: "center",
     justifyContent: "center",
+    borderRadius: 20,
+    backgroundColor: colors.oceanBlueLight,
     marginBottom: 2,
+    flexShrink: 0,
   },
 
   // Input
   inputWrapper: {
     borderWidth: 1.5,
-    borderColor: "#E2EBF3",
-    borderRadius: 12,
-    marginBottom: 16,
+    borderColor: "#D9E7EE",
+    borderRadius: 13,
+    marginBottom: 12,
     position: "relative",
   },
-  inputWrapperActive: {
-    borderColor: colors.sunsetCoral,
-  },
+  inputWrapperActive: { borderColor: colors.sunsetCoral },
   textArea: {
     minHeight: 120,
-    padding: 16,
-    paddingRight: 52,
+    padding: 15,
+    paddingRight: 56,
     fontSize: 14,
-    color: "#1A2E40",
+    color: "#183447",
     textAlignVertical: "top",
   },
   micBtn: {
     position: "absolute",
-    bottom: 12,
     right: 12,
+    bottom: 12,
     width: 38,
     height: 38,
     borderRadius: 19,
@@ -592,88 +655,71 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  micBtnListening: {
-    backgroundColor: colors.sunsetCoral,
-  },
-  micBtnTranscribing: {
-    backgroundColor: colors.gold,
-  },
+  micBtnActive: { backgroundColor: colors.sunsetCoral },
+  micBtnTranscribing: { backgroundColor: "#C07000" },
 
   // Banners
-  listeningBanner: {
+  bannerRecording: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    backgroundColor: "#FFF1EE",
+    backgroundColor: "#FFF0EC",
     borderRadius: 8,
     padding: 10,
-    marginBottom: 12,
+    marginBottom: 10,
   },
-  listeningDot: {
+  bannerTranscribing: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFF8E1",
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 10,
+  },
+  recordingDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
     backgroundColor: colors.sunsetCoral,
   },
-  listeningText: {
-    fontSize: 13,
+  bannerText: {
+    fontSize: 12,
     fontWeight: "600",
-    color: colors.sunsetCoral,
-  },
-  transcribingBanner: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    backgroundColor: "#FFF8E1",
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 12,
-  },
-  transcribingText: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: colors.gold,
+    color: "#B44428",
   },
 
   // Translate button
   translateBtn: {
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: colors.oceanBlue,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    padding: 13,
-    borderRadius: 10,
-    backgroundColor: colors.oceanBlue,
-    marginBottom: 16,
+    marginBottom: 14,
   },
-  translateBtnDisabled: {
-    backgroundColor: "#CBD5E0",
-  },
-  translateBtnText: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: "#fff",
-  },
+  translateBtnDisabled: { backgroundColor: "#AABDC8" },
+  translateBtnText: { color: "#fff", fontSize: 15, fontWeight: "800" },
 
   // Error
   errorBox: {
-    backgroundColor: "#FFF1EE",
-    borderRadius: 8,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: 12,
+    borderRadius: 10,
+    backgroundColor: "#FFF0EC",
     marginBottom: 12,
   },
-  errorText: {
-    fontSize: 13,
-    color: colors.sunsetCoral,
-  },
+  errorText: { fontSize: 13, color: "#B44428", flex: 1 },
 
   // Output
   outputBox: {
-    borderWidth: 1.5,
-    borderColor: "#E2EBF3",
-    borderRadius: 12,
+    borderRadius: 13,
+    backgroundColor: "#F4FAFC",
     padding: 16,
-    minHeight: 80,
-    backgroundColor: "#FAFCFD",
+    borderWidth: 1,
+    borderColor: "#DCE9F0",
   },
   outputHeader: {
     flexDirection: "row",
@@ -681,182 +727,130 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 10,
   },
-  outputLabel: {
-    fontSize: 12,
-    fontWeight: "500",
-    color: "#6B8CA8",
-  },
+  outputLabel: { fontSize: 11, fontWeight: "700", color: "#537185", letterSpacing: 0.5 },
   sourceBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
   },
-  sourceBadgeVerified: {
-    backgroundColor: colors.palmGreenLight,
-  },
-  sourceBadgeAI: {
+  sourceBadgeText: { fontSize: 11, fontWeight: "700" },
+  outputRow: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
+  outputText: { flex: 1, fontSize: 18, fontWeight: "700", color: "#183447", lineHeight: 26 },
+  outputPlaceholder: { color: "#8DA3B1", fontStyle: "italic", fontWeight: "400", fontSize: 15 },
+  speakBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     backgroundColor: colors.oceanBlueLight,
-  },
-  sourceBadgeText: {
-    fontSize: 10,
-    fontWeight: "700",
-  },
-  sourceBadgeTextVerified: {
-    color: colors.palmGreen,
-  },
-  sourceBadgeTextAI: {
-    color: colors.oceanBlue,
-  },
-  outputText: {
-    fontSize: 15,
-    fontWeight: "500",
-    color: "#1A2E40",
-  },
-  outputPlaceholder: {
-    color: "#A8BECC",
-    fontStyle: "italic",
-    fontWeight: "400",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
   },
 
-  // Recents
+  // Recent
   recentRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 13,
-    gap: 12,
-  },
-  recentBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: "#F0F5FA",
-  },
-  recentPhrase: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#1A2E40",
-    marginBottom: 3,
-  },
-  recentTranslation: {
-    fontSize: 12,
-    color: "#6B8CA8",
-  },
-  pairBadge: {
-    backgroundColor: "#F0F5FA",
-    borderRadius: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-  },
-  pairBadgeText: {
-    fontSize: 11,
-    fontWeight: "600",
-    color: "#4A6880",
-  },
-
-  // Phrasebook
-  categoryRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 6,
-    marginBottom: 16,
-  },
-  catPill: {
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 20,
-    backgroundColor: "#F0F5FA",
-  },
-  catPillActive: {
-    backgroundColor: colors.oceanBlue,
-  },
-  catPillText: {
-    fontSize: 12,
-    fontWeight: "500",
-    color: "#4A6880",
-  },
-  catPillTextActive: {
-    color: "#fff",
-    fontWeight: "700",
-  },
-  phraseRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    gap: 10,
     paddingVertical: 12,
+    gap: 10,
   },
-  phraseBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: "#F0F5FA",
-  },
-  phraseText: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: "#1A2E40",
-    marginBottom: 2,
-  },
-  phraseTranslation: {
-    fontSize: 12,
-    color: "#6B8CA8",
-  },
-  phraseCatBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6,
+  recentBorder: { borderBottomWidth: 1, borderBottomColor: "#EEF3F5" },
+  recentPhrase: { fontSize: 14, fontWeight: "600", color: "#183447", marginBottom: 2 },
+  recentTranslation: { fontSize: 13, color: "#6B8CA8" },
+  pairBadge: {
+    backgroundColor: "#EDF3F6",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
     flexShrink: 0,
   },
-  phraseCatText: {
-    fontSize: 10,
-    fontWeight: "700",
-  },
+  pairBadgeText: { fontSize: 11, fontWeight: "700", color: "#527084" },
 
-  // Offline packs
-  offlineHeader: {
+  // Phrasebook
+  phraseHeaderRow: {
     flexDirection: "row",
-    alignItems: "center",
-  },
-  packRow: {
-    flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 10,
+    alignItems: "flex-start",
+    marginBottom: 16,
   },
-  packBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: "#F0F5FA",
+  phraseSub2: { fontSize: 12, color: "#6B8CA8", marginTop: 3 },
+  refreshBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: colors.oceanBlueLight,
   },
-  packLeft: {
+  refreshText: { fontSize: 12, fontWeight: "700", color: colors.oceanBlue },
+
+  // Search
+  searchBox: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    flex: 1,
-  },
-  packDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  packName: {
-    fontSize: 13,
-    color: "#1A2E40",
-  },
-  packRight: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  packSize: {
-    fontSize: 12,
-    color: "#6B8CA8",
-  },
-  getBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
     borderWidth: 1.5,
-    borderColor: "#E2EBF3",
-    borderRadius: 8,
+    borderColor: "#D9E7EE",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 14,
   },
-  getBtnText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: colors.sunsetCoral,
+  searchInput: { flex: 1, fontSize: 13, color: "#183447" },
+
+  // Category tabs
+  catTabs: { flexDirection: "row", gap: 6, paddingBottom: 16 },
+  catTab: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 20,
+    backgroundColor: "#EDF3F6",
+  },
+  catTabActive: { backgroundColor: colors.oceanBlue },
+  catTabText: { fontSize: 12, fontWeight: "700", color: "#527084" },
+  catTabTextActive: { color: "#fff" },
+
+  // States
+  loadingBox: { alignItems: "center", paddingVertical: 40, gap: 10 },
+  loadingText: { fontSize: 13, color: "#6B8CA8" },
+  emptyBox: { alignItems: "center", paddingVertical: 32 },
+  emptyText: { fontSize: 13, color: "#6B8CA8" },
+
+  // Phrase grid
+  phraseGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  phraseGridMobile: { flexDirection: "column", gap: 8, paddingRight: 4 },
+  phraseResultsMobile: { maxHeight: 330 },
+  phraseCard: {
+    width: "48%",
+    minWidth: 160,
+    flexGrow: 1,
+    borderWidth: 1,
+    borderColor: "#E2ECEF",
+    borderRadius: 14,
+    padding: 14,
+    backgroundColor: "#FCFEFF",
+    gap: 6,
+  },
+  phraseCardMobile: { width: "100%", minWidth: 0, padding: 12 },
+  phraseCardTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  catBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 20,
+  },
+  catBadgeText: { fontSize: 9, fontWeight: "800", letterSpacing: 0.5 },
+  phraseMain: { fontSize: 14, fontWeight: "800", color: "#183447", lineHeight: 20 },
+  phraseSub: { fontSize: 13, color: "#527084", lineHeight: 18 },
+  phraseTap: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: colors.oceanBlue,
+    marginTop: 6,
   },
 });

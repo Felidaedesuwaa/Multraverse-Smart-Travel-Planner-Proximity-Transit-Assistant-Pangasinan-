@@ -2,6 +2,8 @@ import { model, models, Schema } from 'mongoose'
 import { apiSchemaOptions, objectId } from './_helpers'
 
 const tripSchema = new Schema({
+  plannerId: { type: String, unique: true, sparse: true },
+  estimatedCost: { type: Number, min: 0 }, plan: Schema.Types.Mixed,
   userId: { ...objectId(), ref: 'User', index: true },
   title: { type: String, required: true }, location: { type: String, required: true }, date: { type: String, required: true },
   status: { type: String, enum: ['UPCOMING', 'COMPLETED'], default: 'UPCOMING' },

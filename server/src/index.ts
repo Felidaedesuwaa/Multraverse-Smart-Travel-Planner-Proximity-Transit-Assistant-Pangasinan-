@@ -36,7 +36,10 @@ app.use(cors({
 }))
 // Profile photos are resized on-device and capped at 512 KB by the route.
 app.use('/api/users/me', express.json({ limit: '1mb' }))
-app.use(express.json())
+// Voice recordings are posted to the local speech service as base64. The
+// route validates its own tighter payload shape; this limit keeps recordings
+// usable while still bounding request memory.
+app.use(express.json({ limit: '12mb' }))
 
 app.use('/api/auth', authRoutes)
 app.use('/api/trips', tripRoutes)

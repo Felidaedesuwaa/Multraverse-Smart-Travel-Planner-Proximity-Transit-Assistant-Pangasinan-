@@ -1,13 +1,30 @@
-import { useAppTheme } from "../theme/useAppTheme";
-import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
-import { Activity, Zap } from "lucide-react-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Text, View } from "react-native";
+import { Cpu, Languages, RefreshCw } from "lucide-react-native";
 import AdminPage from "../components/AdminPage";
-import Card from "../components/Card";
-import ToggleSwitch from "../components/ToggleSwitch";
-import { aiModules, modelPerformance } from "../data/adminData";
+import { PlannerButton as Button, plannerStyles as s } from "../components/planner/PlannerUI";
+import { useAppTheme } from "../theme/useAppTheme";
+import { api } from "../lib/api";
 import { colors } from "../theme/colors";
+
 export default function AdminAIControls() {
   const { themeStyle, themeColor } = useAppTheme();
- const [modules, setModules] = useState(aiModules); const active = modules.filter((item) => item.enabled).length; return <AdminPage title="AI Controls" subtitle="Configure intelligent travel services"><View style={themeStyle(styles.summary)}><Card style={themeStyle(styles.summaryCard)}><Activity size={19} color={themeColor(colors.palmGreen, "color")} /><View><Text style={themeStyle(styles.value)}>{active} / {modules.length}</Text><Text style={themeStyle(styles.sub)}>AI modules active</Text></View></Card><Card style={themeStyle(styles.summaryCard)}><Zap size={19} color={themeColor(colors.sunsetCoral, "color")} /><View><Text style={themeStyle(styles.value)}>93%</Text><Text style={themeStyle(styles.sub)}>Average model accuracy</Text></View></Card></View><View style={themeStyle(styles.grid)}>{modules.map((module) => { const Icon = module.icon; return <Card key={module.id} style={themeStyle(styles.module)}><View style={themeStyle(styles.moduleHeader)}><View style={themeStyle(styles.icon)}><Icon size={20} color={themeColor(colors.oceanBlue, "color")} /></View><ToggleSwitch checked={module.enabled} onChange={(enabled) => setModules((current) => current.map((item) => item.id === module.id ? { ...item, enabled } : item))} /></View><Text style={themeStyle(styles.name)}>{module.title}</Text><Text style={themeStyle(styles.sub)}>{module.description}</Text><View style={themeStyle(styles.footer)}><Text style={themeStyle(styles.tag)}>{module.tag}</Text><Text style={themeStyle(styles.accuracy)}>{module.accuracy || "—"}</Text></View></Card>; })}</View><Card style={themeStyle(styles.performance)}><Text style={themeStyle(styles.name)}>Model performance — last 7 days</Text><View style={themeStyle(styles.bars)}>{modelPerformance.map((item, index) => <View key={`${item.day}-${index}`} style={themeStyle(styles.barColumn)}><View style={themeStyle([styles.bar, { height: `${item.accuracy}%` }])} /><Text style={themeStyle(styles.sub)}>{item.day}</Text></View>)}</View></Card></AdminPage>; }
-const styles = StyleSheet.create({ summary: { flexDirection: "row", gap: 20, marginBottom: 24 }, summaryCard: { flex: 1, flexDirection: "row", alignItems: "center", gap: 12 }, value: { fontFamily: "Poppins", fontSize: 22, fontWeight: "700", color: colors.textPrimary }, sub: { marginTop: 4, fontFamily: "DMSans", fontSize: 12, color: colors.textMuted }, grid: { flexDirection: "row", flexWrap: "wrap", gap: 20 }, module: { width: "31%", minWidth: 260 }, moduleHeader: { flexDirection: "row", justifyContent: "space-between", marginBottom: 14 }, icon: { width: 40, height: 40, alignItems: "center", justifyContent: "center", borderRadius: 20, backgroundColor: colors.oceanBlueLight }, name: { fontFamily: "Poppins", fontSize: 15, fontWeight: "700", color: colors.textPrimary }, footer: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 16 }, tag: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, backgroundColor: colors.oceanBlueLight, fontFamily: "DMSans", fontSize: 10, color: colors.oceanBlue }, accuracy: { fontFamily: "DMSans", fontSize: 12, fontWeight: "700", color: colors.palmGreen }, performance: { marginTop: 24 }, bars: { height: 130, flexDirection: "row", alignItems: "flex-end", justifyContent: "space-around", marginTop: 16 }, barColumn: { height: "100%", alignItems: "center", justifyContent: "flex-end", gap: 6 }, bar: { width: 22, minHeight: 10, borderRadius: 5, backgroundColor: colors.sunsetCoral } });
+  const [settings, setSettings] = useState(null), [error, setError] = useState(""), [busy, setBusy] = useState(false);
+  const load = () => { setError(""); api.getAISettings().then(setSettings).catch(error => setError(error.message)); };
+  useEffect(load, []);
+  const change = async key => {
+    setBusy(true); setError("");
+    try { setSettings(await api.updateAISettings({ [key]: !settings[key] })); }
+    catch (error) { setError(error.message); } finally { setBusy(false); }
+  };
+  return <AdminPage title="AI Controls" subtitle="Manage your local Pangasinan model">
+    <View style={{ gap: 18 }}>
+      <Text style={themeStyle(s.body)}>These settings are stored on the server and enforced for every request. Database planning and phrasebook matches remain available when AI is off.</Text>
+      {!settings && !error && <ActivityIndicator color={themeColor(colors.oceanBlue)} />}
+      {!!error && <Text accessibilityRole="alert" style={themeStyle({ ...s.body, color: colors.sunsetCoral })}>{error}</Text>}
+      {settings && [{ key: "itineraryNarrative", name: "Itinerary descriptions", icon: Cpu, description: "TinyLlama may select grounded stop text. The backend owns destinations, fares and totals." }, { key: "translation", name: "Local AI translation", icon: Languages, description: "Use the local model when there is no exact phrasebook match." }].map(item => <View key={item.key} style={themeStyle(s.card)}><Text style={themeStyle(s.heading)}>{item.name}</Text><Text style={themeStyle(s.body)}>{item.description}</Text><Button icon={item.icon} disabled={busy} selected={settings[item.key]} onPress={() => change(item.key)}>{settings[item.key] ? "Enabled — turn off" : "Disabled — turn on"}</Button></View>)}
+      <Button icon={RefreshCw} disabled={busy} onPress={load}>Refresh controls</Button>
+      <Text style={themeStyle(s.body)}>Model accuracy has not been measured. Evaluate a held-out dataset before publishing accuracy or performance claims.</Text>
+    </View>
+  </AdminPage>;
+}

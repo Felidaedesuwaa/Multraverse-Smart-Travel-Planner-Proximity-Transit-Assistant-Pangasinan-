@@ -2,7 +2,8 @@ import MoneyAmount from "../components/MoneyAmount";
 import { useCurrency } from "../hooks/useCurrency";
 import MoneyInput from "../components/MoneyInput";
 import { useAppTheme } from "../theme/useAppTheme";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   ActivityIndicator,
   Modal,
@@ -24,11 +25,10 @@ import {
   Zap,
   ChevronDown,
   ChevronUp,
+  Pencil,
 } from "lucide-react-native";
 import { api } from "../lib/api";
 import { colors } from "../theme/colors";
-
-const MONTHLY_BUDGET = 8000;
 
 const EXPENSE_COLORS = [
   "#0B3C5D", "#F16B4E", "#2A7B4C", "#C89B3C",
@@ -41,11 +41,11 @@ const CATEGORIES = [
 ];
 
 // ── Stat Card ───────────────────────────────────────────
-function StatCard({ label, value, sub, icon, iconBg, valueColor }) {
-  const { themeStyle } = useAppTheme();
+function StatCard({ label, value, sub, icon, iconBg, valueColor, onPress }) {
+  const { themeStyle, themeColor } = useAppTheme();
 
   return (
-    <View style={themeStyle(styles.statCard)}>
+    <Pressable onPress={onPress} disabled={!onPress} style={themeStyle(styles.statCard)}>
       <View style={themeStyle([styles.statIconBox, { backgroundColor: iconBg }])}>
         {icon}
       </View>
@@ -54,7 +54,8 @@ function StatCard({ label, value, sub, icon, iconBg, valueColor }) {
         {value}
       </Text>
       {sub && <Text style={themeStyle(styles.statSub)}>{sub}</Text>}
-    </View>
+      {onPress && <View style={themeStyle(styles.editHint)}><Pencil size={12} color={themeColor("#6B8CA8", "color")} /><Text style={themeStyle(styles.editHintText)}>Edit</Text></View>}
+    </Pressable>
   );
 }
 
@@ -106,6 +107,7 @@ function AddExpenseModal({ visible, trips, onClose, onAdded }) {
       const entry = await api.createBudgetEntry({
         label: label.trim(),
         amount: Number(amount),
+        category,
         color,
         tripId: tripId || undefined,
       });
@@ -267,6 +269,20 @@ function AddExpenseModal({ visible, trips, onClose, onAdded }) {
   );
 }
 
+function BudgetSettingsModal({ visible, settings, onClose, onSaved }) {
+  const { themeStyle, themeColor } = useAppTheme();
+  const [monthlyBudget, setMonthlyBudget] = useState("");
+  const [savingsTarget, setSavingsTarget] = useState("");
+  const [saving, setSaving] = useState(false), [error, setError] = useState(null);
+  useEffect(() => { if (visible) { setMonthlyBudget(String(settings.monthlyBudget ?? "")); setSavingsTarget(String(settings.savingsTarget ?? "20")); setError(null); } }, [visible, settings]);
+  const save = async () => {
+    const budget = Number(monthlyBudget), target = Number(savingsTarget);
+    if (!Number.isFinite(budget) || budget < 0 || !Number.isFinite(target) || target < 0 || target > 100) { setError("Enter a valid budget and a savings target from 0 to 100%."); return; }
+    setSaving(true); try { onSaved(await api.updateBudgetSettings({ monthlyBudget: budget, savingsTarget: target })); onClose(); } catch (cause) { setError(cause instanceof Error ? cause.message : "Could not save budget settings."); } finally { setSaving(false); }
+  };
+  return <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}><Pressable style={themeStyle(styles.overlay)} onPress={onClose}><Pressable style={themeStyle(styles.modalBox)} onPress={() => {}}><View style={themeStyle(styles.modalHeader)}><View><Text style={themeStyle(styles.modalTitle)}>Budget settings</Text><Text style={themeStyle(styles.modalSub)}>Set your own monthly limit and savings goal.</Text></View><Pressable onPress={onClose} style={themeStyle(styles.closeBtn)}><X size={18} color={themeColor("#6B8CA8", "color")} /></Pressable></View><View style={themeStyle(styles.formGroup)}><Text style={themeStyle(styles.formLabel)}>Monthly budget</Text><MoneyInput value={monthlyBudget} onChangeText={setMonthlyBudget} keyboardType="numeric" placeholder="0" style={themeStyle(styles.formInput)} /></View><View style={themeStyle(styles.formGroup)}><Text style={themeStyle(styles.formLabel)}>Savings target (%)</Text><TextInput value={savingsTarget} onChangeText={setSavingsTarget} keyboardType="numeric" placeholder="20" style={themeStyle(styles.formInput)} /></View><Text style={themeStyle(styles.settingsNote)}>Amount spent and remaining are calculated from your recorded expenses, so your balance always stays accurate.</Text>{error && <View style={themeStyle(styles.errorBox)}><Text style={themeStyle(styles.errorText)}>{error}</Text></View>}<View style={themeStyle(styles.modalActions)}><Pressable onPress={onClose} style={themeStyle(styles.cancelBtn)}><Text style={themeStyle(styles.cancelText)}>Cancel</Text></Pressable><Pressable onPress={save} disabled={saving} style={themeStyle(styles.addBtn)}>{saving && <ActivityIndicator size="small" color="#fff" style={{ marginRight: 6 }} />}<Text style={themeStyle(styles.addBtnText)}>{saving ? "Saving..." : "Save settings"}</Text></Pressable></View></Pressable></Pressable></Modal>;
+}
+
 // ── Trip Budget Section ─────────────────────────────────
 function TripBudgetRow({ trip, entries }) {
   const { themeStyle, themeColor } = useAppTheme();
@@ -275,11 +291,12 @@ function TripBudgetRow({ trip, entries }) {
   const tripEntries = entries.filter(
     (e) => e.tripId === (trip._id ?? trip.id)
   );
-  const remaining = trip.budget - trip.spent;
+  const actualSpent = tripEntries.reduce((sum, entry) => sum + entry.amount, 0);
+  const remaining = trip.budget - actualSpent;
   const pct = trip.budget > 0
-    ? Math.min(100, (trip.spent / trip.budget) * 100)
+    ? Math.min(100, (actualSpent / trip.budget) * 100)
     : 0;
-  const over = trip.spent > trip.budget;
+  const over = actualSpent > trip.budget;
 
   return (
     <View style={themeStyle(styles.tripSection)}>
@@ -303,6 +320,7 @@ function TripBudgetRow({ trip, entries }) {
         </View>
       </Pressable>
 
+      {trip.plan?.costs && <View style={themeStyle({ paddingHorizontal: 18, paddingBottom: 12 })}><Text style={themeStyle({ fontFamily: "DMSans", color: colors.textMuted })}>Planned known subtotal: <MoneyAmount value={trip.plan.costs.knownTotal} /> ({trip.plan.costs.status}). This is separate from actual expenses.</Text>{Object.entries(trip.plan.costs.categories).map(([category, amount]) => <Text key={category} style={themeStyle({ fontFamily: "DMSans", color: colors.textPrimary })}>{category}: <MoneyAmount value={amount} /></Text>)}</View>}
       {/* Progress */}
       <View style={themeStyle(styles.tripProgress)}>
         <View style={themeStyle(styles.track)}>
@@ -318,7 +336,7 @@ function TripBudgetRow({ trip, entries }) {
         </View>
         <View style={themeStyle(styles.tripProgressLabels)}>
           <Text style={themeStyle(styles.tripProgressSub)}>
-            <MoneyAmount value={trip.spent} suffix=" spent" />
+            <MoneyAmount value={actualSpent} suffix=" spent" />
           </Text>
           <Text style={themeStyle(styles.tripProgressSub)}>
             <MoneyAmount value={trip.budget} suffix=" budget" />
@@ -359,18 +377,24 @@ export default function Budget() {
 
   const [entries, setEntries] = useState([]);
   const [trips, setTrips] = useState([]);
+  const [settings, setSettings] = useState({ monthlyBudget: 8000, savingsTarget: 20 });
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
-  useEffect(() => {
-    Promise.all([api.getBudget(), api.getTrips()])
-      .then(([budget, tripList]) => {
+  useFocusEffect(useCallback(() => {
+    let alive = true;
+    Promise.all([api.getBudget(), api.getTrips(), api.getBudgetSettings()])
+      .then(([budget, tripList, budgetSettings]) => {
+        if (!alive) return;
         setEntries(budget);
         setTrips(tripList);
+        setSettings(budgetSettings || { monthlyBudget: 8000, savingsTarget: 20 });
       })
       .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+      .finally(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
+  }, []));
 
   const handleAdded = (entry) => {
     setEntries((prev) => [entry, ...prev]);
@@ -385,16 +409,15 @@ export default function Budget() {
     }
   };
 
-  const spent = entries.reduce((sum, e) => sum + e.amount, 0);
-  const remaining = MONTHLY_BUDGET - spent;
-  const savingsRate = Math.max(0, Math.round((remaining / MONTHLY_BUDGET) * 100));
+  const monthlyBudget = Number(settings.monthlyBudget) || 0;
+  const spent = entries.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+  const remaining = monthlyBudget - spent;
+  const savingsRate = monthlyBudget > 0 ? Math.max(0, Math.round((remaining / monthlyBudget) * 100)) : 0;
   const maxAmount = Math.max(...entries.map((e) => e.amount), 1);
 
   // Group by category
   const byCategory = CATEGORIES.reduce((acc, cat) => {
-    const catEntries = entries.filter((e) =>
-      e.label.toLowerCase().includes(cat.toLowerCase())
-    );
+    const catEntries = entries.filter((e) => e.category === cat);
     if (catEntries.length > 0) {
       acc[cat] = catEntries.reduce((s, e) => s + e.amount, 0);
     }
@@ -435,10 +458,11 @@ export default function Budget() {
           <View style={themeStyle(styles.statsRow)}>
             <StatCard
               label="Monthly Budget"
-              value={<MoneyAmount value={MONTHLY_BUDGET} />}
-              sub="This month"
+              value={<MoneyAmount value={monthlyBudget} />}
+              sub="Tap to set your limit"
               icon={<Wallet size={18} color={themeColor(colors.oceanBlue, "color")} />}
               iconBg={colors.oceanBlueLight}
+              onPress={() => setShowSettings(true)}
             />
             <StatCard
               label="Amount Spent"
@@ -446,7 +470,7 @@ export default function Budget() {
               sub={`${entries.length} expense${entries.length !== 1 ? "s" : ""}`}
               icon={<TrendingUp size={18} color={themeColor(colors.sunsetCoral, "color")} />}
               iconBg={colors.coralLight}
-              valueColor={spent > MONTHLY_BUDGET ? colors.sunsetCoral : undefined}
+              valueColor={spent > monthlyBudget ? colors.sunsetCoral : undefined}
             />
             <StatCard
               label="Remaining"
@@ -459,7 +483,7 @@ export default function Budget() {
             <StatCard
               label="Savings Rate"
               value={`${savingsRate}%`}
-              sub={savingsRate >= 20 ? "On target " : "Low savings"}
+              sub={`${settings.savingsTarget ?? 20}% target · ${savingsRate >= (settings.savingsTarget ?? 20) ? "On track" : "Below target"}`}
               icon={<Zap size={18} color={themeColor(colors.gold ?? "#C89B3C", "color")} />}
               iconBg={colors.goldLight ?? "#FFF8E1"}
             />
@@ -470,7 +494,7 @@ export default function Budget() {
             <View style={themeStyle(styles.overallHeader)}>
               <Text style={themeStyle(styles.overallTitle)}>Monthly Budget Usage</Text>
               <Text style={themeStyle(styles.overallPct)}>
-                {Math.min(100, Math.round((spent / MONTHLY_BUDGET) * 100))}%
+                {monthlyBudget ? Math.min(100, Math.round((spent / monthlyBudget) * 100)) : 0}%
               </Text>
             </View>
             <View style={themeStyle([styles.track, { height: 10 }])}>
@@ -478,11 +502,11 @@ export default function Budget() {
                 style={themeStyle([
                   styles.fill,
                   {
-                    width: `${Math.min(100, (spent / MONTHLY_BUDGET) * 100)}%`,
+                    width: `${monthlyBudget ? Math.min(100, (spent / monthlyBudget) * 100) : 0}%`,
                     backgroundColor:
-                      spent > MONTHLY_BUDGET
+                      spent > monthlyBudget
                         ? colors.sunsetCoral
-                        : spent / MONTHLY_BUDGET > 0.8
+                        : monthlyBudget && spent / monthlyBudget > 0.8
                         ? "#C89B3C"
                         : colors.palmGreen,
                   },
@@ -494,7 +518,7 @@ export default function Budget() {
                 <MoneyAmount value={spent} suffix=" spent" />
               </Text>
               <Text style={themeStyle(styles.overallSub)}>
-                <MoneyAmount value={MONTHLY_BUDGET} suffix=" total" />
+                <MoneyAmount value={monthlyBudget} suffix=" total" />
               </Text>
             </View>
           </View>
@@ -544,6 +568,7 @@ export default function Budget() {
                         <View style={themeStyle(styles.entryInfo)}>
                           <Text style={themeStyle(styles.entryLabel)}>{entry.label}</Text>
                           <Text style={themeStyle(styles.entrySub)}>
+                            {entry.category || "Others"} · {" "}
                             {spent > 0
                               ? Math.round((entry.amount / spent) * 100)
                               : 0}
@@ -655,6 +680,7 @@ export default function Budget() {
         onClose={() => setShowAdd(false)}
         onAdded={handleAdded}
       />
+      <BudgetSettingsModal visible={showSettings} settings={settings} onClose={() => setShowSettings(false)} onSaved={setSettings} />
     </ScrollView>
   );
 }
@@ -713,6 +739,8 @@ const styles = StyleSheet.create({
   statLabel: { fontSize: 12, color: "#6B8CA8", fontWeight: "500" },
   statValue: { fontSize: 20, fontWeight: "700", color: "#1A2E40" },
   statSub: { fontSize: 11, color: "#6B8CA8" },
+  editHint: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 },
+  editHintText: { fontSize: 11, color: "#6B8CA8", fontWeight: "600" },
 
   // Overall budget bar
   overallCard: {
@@ -935,6 +963,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   modalTitle: { fontSize: 18, fontWeight: "700", color: "#1A2E40" },
+  modalSub: { fontSize: 12, color: "#6B8CA8", marginTop: 3 },
   closeBtn: {
     width: 32,
     height: 32,
@@ -1005,6 +1034,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF1EE",
   },
   errorText: { fontSize: 13, color: colors.sunsetCoral },
+  settingsNote: { fontSize: 12, lineHeight: 18, color: "#4A6880", backgroundColor: "#F0F7FA", borderRadius: 10, padding: 12 },
   modalActions: { flexDirection: "row", gap: 10 },
   cancelBtn: {
     paddingHorizontal: 16,

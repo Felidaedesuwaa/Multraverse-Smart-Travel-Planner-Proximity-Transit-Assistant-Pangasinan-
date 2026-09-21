@@ -1,721 +1,156 @@
-import MoneyAmount from "../components/MoneyAmount";
-import { useCurrency } from "../hooks/useCurrency";
-import MoneyInput from "../components/MoneyInput";
-import { useAppTheme } from "../theme/useAppTheme";
-import { useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-  useWindowDimensions,
-} from "react-native";
-import { BookmarkPlus, Bus, CheckCircle2, Clock, Wallet, Zap } from "lucide-react-native";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ActivityIndicator, Modal, Platform, ScrollView, Share, Text, View } from "react-native";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { BookmarkPlus, Download, RefreshCw, Sparkles, X } from "lucide-react-native";
 import { api } from "../lib/api";
+import { storage } from "../lib/storage";
+import { useAuthStore } from "../store/authStore";
+import { useAppTheme } from "../theme/useAppTheme";
+import { useCurrency } from "../hooks/useCurrency";
 import { colors } from "../theme/colors";
+import ItineraryResult from "../components/ItineraryResult";
+import DestinationPicker from "../components/planner/DestinationPicker";
+import { PlannerButton as Button, PlannerField as Field, plannerStyles as s } from "../components/planner/PlannerUI";
+import AIToolHeader from "../components/AIToolHeader";
 
-const destinations = [
-  "Hundred Islands",
-  "Patar Beach",
-  "Manaoag Shrine",
-  "Lingayen",
-  "Bolinao",
-  "Urdaneta",
-];
-
-const preferences = [
-  "Budget-friendly",
-  "Island hopping",
-  "Cultural sites",
-  "Food stops",
-  "Photography spots",
-  "Accessible routes",
-];
-
-const features = [
-  {
-    icon: Clock,
-    iconBg: colors.oceanBlueLight,
-    iconColor: colors.oceanBlue,
-    title: "Smart Timing",
-    desc: "AI picks optimal departure times to avoid traffic and peak hours",
-  },
-  {
-    icon: Wallet,
-    iconBg: colors.palmGreenLight,
-    iconColor: colors.palmGreen,
-    title: "Budget-Aware",
-    desc: "Each stop is balanced to keep your total spend within budget",
-  },
-  {
-    icon: Bus,
-    iconBg: colors.coralLight,
-    iconColor: colors.sunsetCoral,
-    title: "Transit-Smart",
-    desc: "Routes use real Pangasinan jeepney and bus schedules",
-  },
-];
-
-const destinationIcon = {
-  "Hundred Islands": "waves",
-  "Patar Beach": "waves",
-  "Manaoag Shrine": "church",
-  "Lingayen": "anchor",
-  "Bolinao": "trees",
-  "Urdaneta": "building",
-};
+const preferences = ["Budget-friendly", "Island hopping", "Cultural sites", "Food stops", "Photography spots", "Accessible routes"];
+const transportModes = ["bus", "jeepney", "tricycle", "van", "own-vehicle"];
+// The server replaces this with the user's saved Settings location. Keeping a
+// valid fallback makes planning work during a server restart or with an older
+// server process that still requires an origin in the request.
+const initialForm = () => ({ origin: { areaId: "dagupan" }, destinations: [], dates: { start: new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10) }, startTime: "08:00", days: 1, budget: "3000", travelers: 1, preferences: ["Food stops"], transportModes: ["bus", "jeepney", "tricycle"], pace: "balanced", lodging: { preference: "none", nightlyBudget: "1000", rooms: 1 }, foodPerPersonPerDay: "300", useSavedPlaces: true, returnToOrigin: true, excludedPlaceIds: [] });
+const toggleValue = (values, value) => values.includes(value) ? values.filter(v => v !== value) : [...values, value];
 
 export default function AIItinerary() {
-  const { width } = useWindowDimensions();
-  const compact = (width >= 768 ? width - 280 : width) < 720;
-  const { currency } = useCurrency();
+  const { themeStyle, themeColor } = useAppTheme(), { currency } = useCurrency();
+  const navigation = useNavigation(), route = useRoute(), userId = useAuthStore(state => state.user?.id);
+  const [form, setForm] = useState(initialForm), [catalog, setCatalog] = useState(null);
+  const [showForm, setShowForm] = useState(true), [advanced, setAdvanced] = useState(false), [step, setStep] = useState(1), [mapSelection, setMapSelection] = useState(null);
+  const scroll = useRef(null);
+  const [catalogLoading, setCatalogLoading] = useState(true), [offline, setOffline] = useState(false);
+  const [plan, setPlan] = useState(null), [cachedPlan, setCachedPlan] = useState(null);
+  const [phase, setPhase] = useState(""), [elapsed, setElapsed] = useState(0), [error, setError] = useState("");
+  const [saving, setSaving] = useState(false), [saved, setSaved] = useState(false), [acceptIncomplete, setAcceptIncomplete] = useState(false);
+  const [editing, setEditing] = useState(null), [attempt, setAttempt] = useState(0);
+  const active = useRef(null), epoch = useRef(0), busy = useRef(false);
+  const cacheKey = `planner:v1:${userId}`;
+  const areas = catalog?.areas || [], places = catalog?.places || areas.flatMap(area => area.attractions || []);
+  const destinationPlaces = useMemo(() => form.destinations.flatMap(destination => destination.placeIds.map(id => places.find(place => place.id === id)).filter(Boolean)), [form.destinations, places]);
+  const selectedAreaIds = useMemo(() => [...new Set(destinationPlaces.map(place => place.areaId))], [destinationPlaces]);
+  const featuredPlaces = useMemo(() => places.filter(place => selectedAreaIds.includes(place.areaId) && !destinationPlaces.some(selected => selected.id === place.id)).slice(0, 6), [places, selectedAreaIds, destinationPlaces]);
+  const destinationNames = useMemo(() => destinationPlaces.map(place => [place.municipality, place.location, areas.find(area => area.id === place.areaId)?.name].filter(Boolean).join(" ")).join(" ").toLowerCase(), [destinationPlaces, areas]);
+  const relatedFares = useMemo(() => (catalog?.fares || []).filter(fare => `${fare.from || ""} ${fare.to || ""}`.toLowerCase().split(" ").some(word => word.length > 3 && destinationNames.includes(word))).slice(0, 5), [catalog, destinationNames]);
+  const relatedFoods = useMemo(() => (catalog?.foods || []).filter(food => !food.where || `${food.where}`.toLowerCase().split(" ").some(word => word.length > 3 && destinationNames.includes(word))).slice(0, 5), [catalog, destinationNames]);
+  const set = (key, value) => setForm(current => ({ ...current, [key]: value }));
+  const body = themeStyle(s.body), heading = themeStyle(s.heading);
 
-  const { themeStyle, themeColor } = useAppTheme();
+  useEffect(() => {
+    let alive = true;
+    const controller = new AbortController(), timeout = setTimeout(() => controller.abort(), 12000);
+    setCatalogLoading(true); setError("");
+    api.getPlannerCatalog({ signal: controller.signal }).then(async data => {
+      if (!alive) return;
+      setCatalog(data); setOffline(false);
+      await storage.setItem(`${cacheKey}:catalog`, JSON.stringify(data)).catch(() => {});
+    }).catch(async () => {
+      const cached = await storage.getItem(`${cacheKey}:catalog`).catch(() => null);
+      if (!alive) return;
+      try { if (cached) setCatalog(JSON.parse(cached)); } catch { /* Ignore damaged cache. */ }
+      setOffline(true); setError("Catalog unavailable. Cached plans remain viewable; reconnect to generate or save.");
+    }).finally(() => { clearTimeout(timeout); if (alive) setCatalogLoading(false); });
+    storage.getItem(`${cacheKey}:plan`).then(value => { if (alive && value) { try { setCachedPlan(JSON.parse(value)); } catch { /* Ignore damaged cache. */ } } }).catch(() => {});
+    return () => { alive = false; clearTimeout(timeout); controller.abort(); };
+  }, [cacheKey, attempt]);
+  useEffect(() => () => { epoch.current++; active.current?.abort(); }, []);
+  useEffect(() => {
+    if (!catalog || !route.params?.areaId) return;
+    const areaPlaces = places.filter(place => place.areaId === route.params.areaId);
+    if (!areaPlaces.length) return;
+    const chosen = areaPlaces[0];
+    setForm(current => current.destinations.some(destination => destination.placeIds.includes(chosen.id)) ? current : { ...current, destinations: [...current.destinations, { areaId: chosen.areaId, placeIds: [chosen.id] }] });
+    setMapSelection(route.params.placeName || areas.find(area => area.id === chosen.areaId)?.name || chosen.name);
+    setStep(1); setShowForm(true);
+  }, [catalog, route.params?.areaId]);
+  useEffect(() => { if (!phase) return; setElapsed(0); const timer = setInterval(() => setElapsed(n => n + 1), 1000); return () => clearInterval(timer); }, [phase]);
+  const remember = async result => { setPlan(result); setCachedPlan(result); await storage.setItem(`${cacheKey}:plan`, JSON.stringify(result)).catch(() => {}); };
 
-  const [destination, setDestination] = useState(destinations[0]);
-  const [budget, setBudget] = useState("2000");
-  const [days, setDays] = useState(1);
-  const [prefs, setPrefs] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [itinerary, setItinerary] = useState(null);
-  const [error, setError] = useState(null);
-  const [saveError, setSaveError] = useState(null);
-
-  const toggle = (value) =>
-    setPrefs((current) =>
-      current.includes(value)
-        ? current.filter((item) => item !== value)
-        : [...current, value]
-    );
-
-  const generate = async () => {
-    setLoading(true);
-    setError(null);
-    setItinerary(null);
-    setSaved(false);
-    setSaveError(null);
+  const enrich = async (result, version) => {
+    const controller = new AbortController(); active.current = controller;
+    const timeout = setTimeout(() => controller.abort(), 28000);
+    setPhase("Adding travel tips");
     try {
-      const result = await api.generateItinerary({
-        destination,
-        budget,
-        days,
-        preferences: prefs,
-      });
-      setItinerary(result);
-    } catch (cause) {
-      setError(
-        cause instanceof Error ? cause.message : "Failed to generate itinerary."
-      );
-    } finally {
-      setLoading(false);
-    }
+      const enriched = await api.enrichItinerary(result.id, { signal: controller.signal });
+      if (version === epoch.current) await remember(enriched);
+    } catch { if (version === epoch.current) setError("Local descriptions unavailable. Your database plan is still ready to use."); }
+    finally { clearTimeout(timeout); }
   };
-
-  const saveToTrips = async () => {
-    if (!itinerary) return;
-    setSaving(true);
-    setSaveError(null);
+  const generate = async (input = form) => {
+    if (busy.current) return;
+    if (!input.destinations.some(d => d.placeIds.length) || !Number(input.budget)) { setError("Select a place to visit and enter your trip budget."); return; }
+    const request = { ...input, origin: input.origin?.areaId ? input.origin : { areaId: "dagupan" }, budget: Number(input.budget), foodPerPersonPerDay: Number(input.foodPerPersonPerDay), lodging: { ...input.lodging, nightlyBudget: Number(input.lodging.nightlyBudget) } };
+    const version = ++epoch.current, controller = new AbortController(); active.current = controller; busy.current = true;
+    const timeout = setTimeout(() => controller.abort(), 20000);
+    setPhase("Planning your trip"); setError(""); setSaved(false); setAcceptIncomplete(false);
     try {
-      // Calculate total estimated cost
-      const totalSpent = itinerary.days?.reduce(
-        (all, day) =>
-          all + day.stops.reduce((sum, stop) => sum + (stop.estimatedCost || 0), 0),
-        0
-      ) || 0;
-
-      // Build date string
-      const today = new Date();
-      const tripDate = today.toLocaleDateString("en-PH", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
-
-      // Count total stops
-      const totalStops = itinerary.days?.reduce(
-        (sum, day) => sum + day.stops.length, 0
-      ) || 0;
-
-      // Create the trip
-      await api.createTrip({
-        title: `${destination} Trip`,
-        location: `${destination}, Pangasinan`,
-        date: tripDate,
-        budget: Number(budget),
-        spent: totalSpent,
-        stops: totalStops,
-        icon: destinationIcon[destination] ?? "landmark",
-        status: "UPCOMING",
-      });
-
-      setSaved(true);
-    } catch (cause) {
-      setSaveError(
-        cause instanceof Error ? cause.message : "Failed to save trip."
-      );
-    } finally {
-      setSaving(false);
-    }
+      const result = await api.generateItinerary(request, { signal: controller.signal });
+      clearTimeout(timeout);
+      if (version !== epoch.current) return;
+      await remember(result);
+      setShowForm(false); scroll.current?.scrollTo({ y: 0, animated: true });
+      if (version === epoch.current && result.days.some(day => day.stops.length)) await enrich(result, version);
+    } catch (cause) { if (version === epoch.current) setError(controller.signal.aborted ? "Planning timed out. Check the backend connection and retry. Your previous preview is preserved." : cause.message); }
+    finally { clearTimeout(timeout); if (version === epoch.current) { setPhase(""); busy.current = false; } }
   };
-
-  const grandTotal =
-    itinerary?.days?.reduce(
-      (all, day) =>
-        all + day.stops.reduce((sum, stop) => sum + (stop.estimatedCost || 0), 0),
-      0
-    ) || 0;
-
-  return (
-    <ScrollView
-      style={themeStyle(styles.container)}
-      contentContainerStyle={themeStyle([styles.screen, compact && { padding: 16 }])}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* Header */}
-      <View style={themeStyle(styles.header)}>
-        <Text style={themeStyle(styles.title)}>AI Itinerary Planner</Text>
-        <Text style={themeStyle(styles.subtitle)}>
-          Smart trip planning powered by Groq AI
-        </Text>
-      </View>
-
-      {/* Planner Card */}
-      <View style={themeStyle(styles.card)}>
-        <View style={themeStyle(styles.dashedBorder)} />
-        <Text style={themeStyle(styles.cardHeading)}>Where do you want to go?</Text>
-
-        {/* Destination */}
-        <Text style={themeStyle(styles.label)}>Destination</Text>
-        <View style={themeStyle(styles.destinationGrid)}>
-          {destinations.map((item) => {
-            const active = destination === item;
-            return (
-              <Pressable
-                key={item}
-                onPress={() => setDestination(item)}
-                style={themeStyle([styles.destBtn, active && styles.destBtnActive])}
-              >
-                <Text style={themeStyle([styles.destText, active && styles.destTextActive])}>
-                  {item}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        {/* Budget + Days */}
-        <View style={themeStyle([styles.inputRow, compact && { flexDirection: "column" }])}>
-          <View style={themeStyle(styles.inputGroup)}>
-            <Text style={themeStyle(styles.label)}>Trip Budget ({currency})</Text>
-            <MoneyInput
-              value={budget}
-              onChangeText={setBudget}
-              keyboardType="numeric"
-              style={themeStyle(styles.input)}
-              placeholderTextColor={themeColor(colors.textMuted, "color")}
-            />
-          </View>
-          <View style={themeStyle(styles.inputGroup)}>
-            <Text style={themeStyle(styles.label)}>Number of Days</Text>
-            <View style={themeStyle(styles.dayRow)}>
-              {[1, 2, 3, 4, 5, 6, 7].map((val) => {
-                const active = days === val;
-                return (
-                  <Pressable
-                    key={val}
-                    onPress={() => setDays(val)}
-                    style={themeStyle([styles.dayBtn, active && styles.dayBtnActive])}
-                  >
-                    <Text style={themeStyle([styles.dayBtnText, active && styles.dayBtnTextActive])}>
-                      {val}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </View>
-        </View>
-
-        {/* Preferences */}
-        <Text style={themeStyle(styles.label)}>Travel Preferences</Text>
-        <View style={themeStyle(styles.prefChips)}>
-          {preferences.map((pref) => {
-            const selected = prefs.includes(pref);
-            return (
-              <Pressable
-                key={pref}
-                onPress={() => toggle(pref)}
-                style={themeStyle([styles.chip, selected && styles.chipActive])}
-              >
-                <Text style={themeStyle([styles.chipText, selected && styles.chipTextActive])}>
-                  {pref}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        {/* Generate Button */}
-        <Pressable
-          onPress={generate}
-          disabled={loading}
-          style={themeStyle([styles.generateBtn, loading && styles.generateBtnDisabled])}
-        >
-          {loading ? (
-            <ActivityIndicator color={themeColor("#fff", "color")} size="small" />
-          ) : (
-            <Zap size={18} color={themeColor("#fff", "color")} />
-          )}
-          <Text style={themeStyle(styles.generateBtnText)}>
-            {loading ? "Generating your itinerary..." : "Generate AI Itinerary"}
-          </Text>
-        </Pressable>
-
-        {error && (
-          <View style={themeStyle(styles.errorBox)}>
-            <Text style={themeStyle(styles.errorText)}>{error}</Text>
-          </View>
-        )}
-      </View>
-
-      {/* Generated Itinerary */}
-      {itinerary && (
-        <View style={themeStyle(styles.card)}>
-          <View style={themeStyle(styles.dashedBorder)} />
-
-          {/* Itinerary header + save button */}
-          <View style={themeStyle(styles.itineraryHeader)}>
-            <Text style={themeStyle(styles.cardHeading)}>
-              Your {days}-Day {destination} Itinerary
-            </Text>
-
-            {saved ? (
-              <View style={themeStyle(styles.savedBadge)}>
-                <CheckCircle2 size={14} color={themeColor(colors.palmGreen, "color")} />
-                <Text style={themeStyle(styles.savedBadgeText)}>Saved to My Trips</Text>
-              </View>
-            ) : (
-              <Pressable
-                onPress={saveToTrips}
-                disabled={saving}
-                style={themeStyle(({ pressed }) => [
-                  styles.saveBtn,
-                  saving && styles.saveBtnDisabled,
-                  pressed && { opacity: 0.85 },
-                ])}
-              >
-                {saving ? (
-                  <ActivityIndicator size="small" color={themeColor("#fff", "color")} />
-                ) : (
-                  <BookmarkPlus size={15} color={themeColor("#fff", "color")} />
-                )}
-                <Text style={themeStyle(styles.saveBtnText)}>
-                  {saving ? "Saving..." : "Save to My Trips"}
-                </Text>
-              </Pressable>
-            )}
-          </View>
-
-          {/* Save error */}
-          {saveError && (
-            <View style={themeStyle(styles.errorBox)}>
-              <Text style={themeStyle(styles.errorText)}>{saveError}</Text>
-            </View>
-          )}
-
-          {/* Save success tip */}
-          {saved && (
-            <View style={themeStyle(styles.successBox)}>
-              <CheckCircle2 size={14} color={themeColor(colors.palmGreen, "color")} />
-              <Text style={themeStyle(styles.successText)}>
-                Your trip has been saved! View it in{" "}
-                <Text style={themeStyle(styles.successLink)}>My Trips</Text>. The budget
-                breakdown is also visible in the{" "}
-                <Text style={themeStyle(styles.successLink)}>Budget</Text> page.
-              </Text>
-            </View>
-          )}
-
-          {/* Trip summary bar */}
-          <View style={themeStyle(styles.tripSummaryBar)}>
-            <View style={themeStyle(styles.tripSummaryItem)}>
-              <Text style={themeStyle(styles.tripSummaryLabel)}>Destination</Text>
-              <Text style={themeStyle(styles.tripSummaryValue)}>{destination}</Text>
-            </View>
-            <View style={themeStyle(styles.tripSummaryDivider)} />
-            <View style={themeStyle(styles.tripSummaryItem)}>
-              <Text style={themeStyle(styles.tripSummaryLabel)}>Duration</Text>
-              <Text style={themeStyle(styles.tripSummaryValue)}>{days} day{days > 1 ? "s" : ""}</Text>
-            </View>
-            <View style={themeStyle(styles.tripSummaryDivider)} />
-            <View style={themeStyle(styles.tripSummaryItem)}>
-              <Text style={themeStyle(styles.tripSummaryLabel)}>Budget</Text>
-              <Text style={themeStyle(styles.tripSummaryValue)}><MoneyAmount value={Number(budget)} /></Text>
-            </View>
-            <View style={themeStyle(styles.tripSummaryDivider)} />
-            <View style={themeStyle(styles.tripSummaryItem)}>
-              <Text style={themeStyle(styles.tripSummaryLabel)}>Est. Cost</Text>
-              <Text style={themeStyle([
-                styles.tripSummaryValue,
-                { color: grandTotal > Number(budget) ? colors.sunsetCoral : colors.palmGreen }
-              ])}>
-                <MoneyAmount value={grandTotal} />
-              </Text>
-            </View>
-          </View>
-
-          {/* Days */}
-          {itinerary.days?.map((plan) => {
-            const dayTotal = plan.stops.reduce(
-              (sum, stop) => sum + (stop.estimatedCost || 0),
-              0
-            );
-            return (
-              <View key={plan.day} style={themeStyle(styles.dayBlock)}>
-                <View style={themeStyle(styles.dayHeader)}>
-                  <View style={themeStyle(styles.dayCircle)}>
-                    <Text style={themeStyle(styles.dayCircleText)}>{plan.day}</Text>
-                  </View>
-                  <Text style={themeStyle(styles.dayTitle)}>Day {plan.day}</Text>
-                  <View style={themeStyle(styles.dayTotalPill)}>
-                    <Text style={themeStyle(styles.dayTotalPillText)}>
-                      <MoneyAmount value={dayTotal} />
-                    </Text>
-                  </View>
-                </View>
-
-                {plan.stops.map((stop, i) => (
-                  <View
-                    key={`${stop.time}-${i}`}
-                    style={themeStyle([
-                      styles.stopRow,
-                      i < plan.stops.length - 1 && styles.stopBorder,
-                    ])}
-                  >
-                    <View style={themeStyle(styles.timeBadge)}>
-                      <Text style={themeStyle(styles.timeBadgeText)}>{stop.time}</Text>
-                    </View>
-                    <View style={themeStyle(styles.stopDetails)}>
-                      <Text style={themeStyle(styles.stopPlace)}>{stop.place}</Text>
-                      <Text style={themeStyle(styles.stopActivity)}>{stop.activity}</Text>
-                    </View>
-                    <Text style={themeStyle(styles.stopCost)}>
-                      <MoneyAmount value={stop.estimatedCost} />
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            );
-          })}
-
-          {/* Grand total */}
-          <View style={themeStyle(styles.grandTotalBox)}>
-            <View>
-              <Text style={themeStyle(styles.grandTotalLabel)}>Total Estimated Cost</Text>
-              <Text style={themeStyle(styles.grandTotalSub)}>
-                Budget: <MoneyAmount value={Number(budget)} /> ·{" "}
-                {grandTotal <= Number(budget) ? (
-                  <Text style={themeStyle({ color: colors.palmGreen })}>Within budget ✓</Text>
-                ) : (
-                  <Text style={themeStyle({ color: colors.sunsetCoral })}>Over budget</Text>
-                )}
-              </Text>
-            </View>
-            <Text style={themeStyle(styles.grandTotalCost)}>
-              <MoneyAmount value={grandTotal} />
-            </Text>
-          </View>
-
-          {/* Bottom save button */}
-          {!saved && (
-            <Pressable
-              onPress={saveToTrips}
-              disabled={saving}
-              style={themeStyle([styles.saveBottomBtn, saving && styles.saveBtnDisabled])}
-            >
-              {saving ? (
-                <ActivityIndicator size="small" color={themeColor("#fff", "color")} />
-              ) : (
-                <BookmarkPlus size={16} color={themeColor("#fff", "color")} />
-              )}
-              <Text style={themeStyle(styles.saveBtnText)}>
-                {saving ? "Saving..." : "Save this itinerary to My Trips"}
-              </Text>
-            </Pressable>
-          )}
-        </View>
-      )}
-
-      {/* Feature Cards */}
-      <View style={themeStyle([styles.featureRow, compact && { flexDirection: "column" }])}>
-        {features.map(({ icon: Icon, iconBg, iconColor, title, desc }) => (
-          <View key={title} style={themeStyle(styles.featureCard)}>
-            <View style={themeStyle([styles.featureIconBox, { backgroundColor: iconBg }])}>
-              <Icon size={18} color={themeColor(iconColor, "color")} />
-            </View>
-            <Text style={themeStyle(styles.featureTitle)}>{title}</Text>
-            <Text style={themeStyle(styles.featureDesc)}>{desc}</Text>
-          </View>
-        ))}
-      </View>
-    </ScrollView>
-  );
+  const save = async () => {
+    setSaving(true); setError("");
+    try { await api.saveItinerary(plan.id, acceptIncomplete); setSaved(true); }
+    catch (cause) { setError(cause.message); } finally { setSaving(false); }
+  };
+  const share = async () => {
+    try {
+      const content = JSON.stringify(plan, null, 2);
+      if (Platform.OS === "web") {
+        const href = URL.createObjectURL(new Blob([content], { type: "application/json" }));
+        const anchor = document.createElement("a"); anchor.href = href; anchor.download = `multraverse-${plan.request.dates.start}.json`; anchor.click(); setTimeout(() => URL.revokeObjectURL(href), 1000);
+      } else await Share.share({ title: "Multraverse itinerary", message: content });
+    } catch { setError("Could not share this itinerary. Try again."); }
+  };
+  const applyEdit = replacement => {
+    const original = plan.request;
+    const areaStops = plan.days.flatMap(d => d.stops).filter(stop => stop.areaId === editing.areaId).map(stop => stop.placeId);
+    const edited = { ...original, excludedPlaceIds: [...new Set([...original.excludedPlaceIds.filter(id => id !== replacement), editing.placeId])], destinations: original.destinations.map(d => d.areaId === editing.areaId ? { ...d, placeIds: [...areaStops.filter(id => id !== editing.placeId), ...(replacement ? [replacement] : [])] } : d) };
+    if (!replacement && areaStops.length === 1) edited.destinations = edited.destinations.filter(d => d.areaId !== editing.areaId);
+    if (!edited.destinations.length) { setError("Keep at least one destination. Replace the last stop instead of removing it."); setEditing(null); return; }
+    setForm(edited); setEditing(null); generate(edited);
+  };
+  const guide = destinationPlaces.length ? <View style={themeStyle({ ...s.card, gap: 12, backgroundColor: colors.warmSand })}>
+    <Text style={heading}>{mapSelection ? `${mapSelection} trip guide` : "Before you generate"}</Text>
+    <Text style={body}>Your selected place{destinationPlaces.length > 1 ? "s" : ""}: {destinationPlaces.map(place => place.name).join(", ")}.</Text>
+    {!!featuredPlaces.length && <View style={{ gap: 6 }}><Text style={themeStyle({ ...s.body, fontWeight: "700" })}>Famous places nearby</Text><Text style={body}>{featuredPlaces.map(place => place.name).join(" · ")}</Text></View>}
+    {!!relatedFares.length && <View style={{ gap: 6 }}><Text style={themeStyle({ ...s.body, fontWeight: "700" })}>Known fares</Text>{relatedFares.map(fare => <Text key={fare.id} style={body}>{fare.from} → {fare.to}: {fare.vehicle || "transport"} {fare.price ? `· ₱${fare.price}` : "· check current fare"}</Text>)}</View>}
+    {!!relatedFoods.length && <View style={{ gap: 6 }}><Text style={themeStyle({ ...s.body, fontWeight: "700" })}>Foods to try</Text><Text style={body}>{relatedFoods.map(food => food.name).join(" · ")}</Text></View>}
+    {!featuredPlaces.length && !relatedFares.length && !relatedFoods.length && <Text style={body}>The generator will use the current verified places, transport, and food records for your selections.</Text>}
+  </View> : null;
+  return <ScrollView ref={scroll} contentContainerStyle={themeStyle(s.page)}>
+    <AIToolHeader eyebrow="PANGASINAN TRIP PLANNER" title="AI Itinerary" subtitle="Build a practical trip plan using verified places, transport fares, and local food guides." badges={[{ label: "Verified local data" }, { label: "Budget-aware planning" }, { label: "Custom AI model", color: "#A78BFA" }]} Icon={Sparkles} />
+    {showForm && <View style={themeStyle(s.card)}>
+      <Text style={heading}>Plan step {step} of 3</Text><View style={{ flexDirection: "row", gap: 6 }}>{[1, 2, 3].map(number => <View key={number} style={{ height: 6, flex: 1, borderRadius: 8, backgroundColor: number <= step ? colors.sunsetCoral : colors.border }} />)}</View>
+      {step === 1 && <><Text style={heading}>Choose your places</Text>{catalogLoading ? <ActivityIndicator accessibilityLabel="Loading places" color={themeColor(colors.oceanBlue)} /> : <DestinationPicker places={places} form={form} setForm={setForm} />}<Button selected disabled={!destinationPlaces.length || catalogLoading} onPress={() => setStep(2)}>Next: trip details</Button></>}
+      {step === 2 && <><Text style={heading}>Trip details</Text><View style={s.row}><Field label="Travel date (YYYY-MM-DD)" value={form.dates.start} onChange={start => set("dates", { start })} /><Field label="Travelers" value={form.travelers} numeric onChange={value => set("travelers", Number(value))} /><Field label={`Total trip budget (${currency})`} value={form.budget} money onChange={value => set("budget", value)} /></View><Text style={body}>How many days?</Text><View style={s.row}>{[1, 2, 3, 4, 5, 6, 7].map(n => <Button key={n} selected={form.days === n} onPress={() => set("days", n)}>{n} day{n === 1 ? "" : "s"}</Button>)}</View><View style={s.row}><Button onPress={() => setStep(1)}>Back</Button><Button selected disabled={!Number(form.budget)} onPress={() => setStep(3)}>Next: review trip</Button></View></>}
+      {step === 3 && <><Text style={heading}>Review and personalize</Text>{guide}<Button onPress={() => setAdvanced(value => !value)}>{advanced ? "Hide extra options" : "Adjust time, transport and meal budget"}</Button>{advanced && <View style={{ gap: 14 }}><View style={s.row}><Field label="Start time (HH:mm)" value={form.startTime} onChange={value => set("startTime", value)} /><Field label={`Meals per person per day (${currency})`} value={form.foodPerPersonPerDay} money onChange={value => set("foodPerPersonPerDay", value)} /></View><Text style={body}>Transport</Text><View style={s.row}>{transportModes.map(mode => <Button key={mode} selected={form.transportModes.includes(mode)} onPress={() => set("transportModes", toggleValue(form.transportModes, mode))}>{mode === "own-vehicle" ? "Own vehicle" : mode}</Button>)}</View><Text style={body}>Travel pace</Text><View style={s.row}>{["relaxed", "balanced", "packed"].map(pace => <Button key={pace} selected={form.pace === pace} onPress={() => set("pace", pace)}>{pace}</Button>)}</View><View style={s.row}><Button selected={form.returnToOrigin} onPress={() => set("returnToOrigin", !form.returnToOrigin)}>Include return trip</Button>{preferences.filter(p => p !== "Food stops").map(pref => <Button key={pref} selected={form.preferences.includes(pref)} onPress={() => set("preferences", toggleValue(form.preferences, pref))}>{pref}</Button>)}</View></View>}{form.days > 1 && <View style={{ gap: 10 }}><Text style={body}>Overnight stay</Text><View style={s.row}>{["none", "budget"].map(p => <Button key={p} selected={form.lodging.preference === p} onPress={() => set("lodging", { ...form.lodging, preference: p })}>{p === "none" ? "Already arranged" : "Include lodging allowance"}</Button>)}</View>{form.lodging.preference !== "none" && <View style={s.row}><Field label={`Room budget per night (${currency})`} value={form.lodging.nightlyBudget} money onChange={value => set("lodging", { ...form.lodging, nightlyBudget: value })} /><Field label="Rooms" value={form.lodging.rooms} numeric onChange={value => set("lodging", { ...form.lodging, rooms: Number(value) })} /></View>}</View>}<View style={s.row}><Button onPress={() => setStep(2)}>Back</Button><Button selected icon={RefreshCw} disabled={!!phase || saving || offline || catalogLoading} onPress={() => generate()}>Generate my itinerary</Button></View></>}
+      {plan && <Button onPress={() => setShowForm(false)}>Back to my trip plan</Button>}
+    </View>}
+    {!!phase && <View style={themeStyle(s.card)}><ActivityIndicator color={themeColor(colors.oceanBlue)} /><Text accessibilityLiveRegion="polite" style={body}>{phase} ? {elapsed}s{plan && !showForm ? ". Your trip plan is ready below." : ""}</Text><Button onPress={() => { epoch.current++; active.current?.abort(); busy.current = false; setPhase(""); }}>{plan && !showForm ? "Use this plan now" : "Cancel"}</Button></View>}
+    {!!error && <View style={themeStyle(s.card)}><Text accessibilityRole="alert" style={themeStyle({ ...s.body, color: colors.sunsetCoral })}>{error}</Text>{offline && <Button onPress={() => setAttempt(n => n + 1)}>Retry connection</Button>}</View>}
+    {!plan && cachedPlan && <Button onPress={() => { setPlan(cachedPlan); setForm(cachedPlan.request); setShowForm(false); setSaved(false); setAcceptIncomplete(false); }}>Open my last trip plan</Button>}
+    {!showForm && plan && <View style={themeStyle(s.card)}>
+      <View style={s.row}><Button onPress={() => setShowForm(true)}>Edit trip details</Button><Button icon={Download} onPress={share}>Export / Share</Button></View>
+      <ItineraryResult plan={plan} onEditStop={setEditing} disabled={!!phase || offline || saving} />
+      {plan.mode !== "hybrid" && <Text style={body}>Built from the travel guide. AI tips are optional; your trip plan is ready without them.</Text>}
+      {plan.costs.status === "incomplete" && <Button selected={acceptIncomplete} onPress={() => setAcceptIncomplete(value => !value)}>I?ll confirm the remaining fares before traveling</Button>}
+      <View style={s.row}><Button selected icon={BookmarkPlus} disabled={saved || saving || !!phase || offline || !plan.days.some(d => d.stops.length) || plan.costs.status === "over-budget" || (plan.costs.status === "incomplete" && !acceptIncomplete)} onPress={save}>{saved ? "Saved to My Trips" : saving ? "Saving..." : "Save to My Trips"}</Button><Button onPress={() => navigation.navigate("MyTrips")}>My Trips</Button><Button onPress={() => navigation.navigate("Budget")}>Budget</Button></View>
+      {saved && <Text accessibilityLiveRegion="polite" style={body}>Your trip and stops are saved. Add actual purchases in Budget as you travel.</Text>}
+    </View>}
+    {editing && <Modal transparent animationType="fade" onRequestClose={() => setEditing(null)}><View style={themeStyle({ flex: 1, padding: 24, justifyContent: "center", backgroundColor: colors.oceanBlueDark })}><View style={themeStyle({ ...s.card, maxHeight: "85%" })}><Text style={heading}>Edit {editing.place}</Text><Text style={body}>Replace this stop with an attraction in the same area. Times and costs will be recalculated.</Text><ScrollView contentContainerStyle={{ gap: 8 }}>{areas.find(a => a.id === editing.areaId)?.attractions.filter(p => !plan.days.some(d => d.stops.some(stop => stop.placeId === p.id))).map(p => <Button key={p.id} onPress={() => applyEdit(p.id)}>Replace with {p.name}</Button>)}</ScrollView><View style={s.row}><Button onPress={() => applyEdit(null)}>Remove stop and replan</Button><Button icon={X} onPress={() => setEditing(null)}>Cancel edit</Button></View></View></View></Modal>}
+  </ScrollView>;
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F7F9FB" },
-  screen: { flexGrow: 1, padding: 32, paddingBottom: 48 },
-
-  header: { marginBottom: 28 },
-  title: { fontSize: 26, fontWeight: "700", color: "#1A2E40", marginBottom: 4 },
-  subtitle: { fontSize: 14, color: "#6B8CA8" },
-
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 28,
-    marginBottom: 24,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    elevation: 3,
-  },
-  dashedBorder: {
-    borderTopWidth: 2,
-    borderTopColor: "#D6E4EF",
-    borderStyle: "dashed",
-    marginBottom: 24,
-  },
-  cardHeading: { fontSize: 20, fontWeight: "700", color: "#1A2E40", marginBottom: 20 },
-  label: { fontSize: 13, fontWeight: "500", color: "#6B8CA8", marginBottom: 10 },
-
-  destinationGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 24 },
-  destBtn: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderWidth: 1.5,
-    borderColor: "#E2EBF3",
-    borderRadius: 10,
-    minWidth: 140,
-  },
-  destBtnActive: { backgroundColor: colors.oceanBlue, borderColor: colors.oceanBlue },
-  destText: { fontSize: 14, color: "#1A2E40" },
-  destTextActive: { color: "#fff", fontWeight: "600" },
-
-  inputRow: { flexDirection: "row", gap: 20, marginBottom: 24 },
-  inputGroup: { flex: 1 },
-  input: {
-    padding: 12,
-    borderWidth: 1.5,
-    borderColor: "#E2EBF3",
-    borderRadius: 10,
-    fontSize: 14,
-    color: "#1A2E40",
-    backgroundColor: "#fff",
-  },
-  dayRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
-  dayBtn: {
-    width: 36,
-    height: 40,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1.5,
-    borderColor: "#E2EBF3",
-    borderRadius: 8,
-  },
-  dayBtnActive: { backgroundColor: colors.oceanBlue, borderColor: colors.oceanBlue },
-  dayBtnText: { fontSize: 14, color: "#1A2E40" },
-  dayBtnTextActive: { color: "#fff", fontWeight: "700" },
-
-  prefChips: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 32 },
-  chip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1.5,
-    borderColor: "#D6E4EF",
-    backgroundColor: "#fff",
-  },
-  chipActive: { borderColor: "#1A3A5C", backgroundColor: "#EAF1F8" },
-  chipText: { fontSize: 13, color: "#4A6880" },
-  chipTextActive: { color: "#1A3A5C", fontWeight: "600" },
-
-  generateBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    padding: 16,
-    borderRadius: 12,
-    backgroundColor: colors.sunsetCoral,
-  },
-  generateBtnDisabled: { backgroundColor: "#B0C4D4" },
-  generateBtnText: { fontSize: 15, fontWeight: "700", color: "#fff" },
-
-  errorBox: { marginTop: 16, padding: 12, borderRadius: 10, backgroundColor: colors.coralLight },
-  errorText: { fontSize: 13, color: colors.sunsetCoral },
-
-  // Itinerary header
-  itineraryHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 16,
-    gap: 12,
-  },
-  saveBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 10,
-    backgroundColor: colors.palmGreen,
-    flexShrink: 0,
-  },
-  saveBtnDisabled: { backgroundColor: "#B0C4D4" },
-  saveBtnText: { fontSize: 13, fontWeight: "700", color: "#fff" },
-
-  savedBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 10,
-    backgroundColor: colors.palmGreenLight,
-  },
-  savedBadgeText: { fontSize: 12, fontWeight: "700", color: colors.palmGreen },
-
-  successBox: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 8,
-    padding: 14,
-    borderRadius: 10,
-    backgroundColor: colors.palmGreenLight,
-    marginBottom: 16,
-  },
-  successText: { fontSize: 13, color: "#2A7B4C", flex: 1, lineHeight: 20 },
-  successLink: { fontWeight: "700", color: colors.palmGreen },
-
-  // Trip summary bar
-  tripSummaryBar: {
-    flexDirection: "row",
-    backgroundColor: "#F4F8FC",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
-    gap: 0,
-  },
-  tripSummaryItem: { flex: 1, alignItems: "center" },
-  tripSummaryDivider: {
-    width: 1,
-    backgroundColor: "#E2EBF3",
-    marginVertical: 4,
-  },
-  tripSummaryLabel: { fontSize: 11, color: "#6B8CA8", marginBottom: 4 },
-  tripSummaryValue: { fontSize: 13, fontWeight: "700", color: "#1A2E40" },
-
-  // Days
-  dayBlock: { marginBottom: 28 },
-  dayHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    marginBottom: 16,
-  },
-  dayCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.oceanBlue,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  dayCircleText: { fontSize: 14, fontWeight: "700", color: "#fff" },
-  dayTitle: { fontSize: 16, fontWeight: "700", color: "#1A2E40", flex: 1 },
-  dayTotalPill: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20,
-    backgroundColor: colors.oceanBlueLight,
-  },
-  dayTotalPillText: { fontSize: 12, fontWeight: "700", color: colors.oceanBlue },
-
-  stopRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 16,
-    paddingVertical: 16,
-  },
-  stopBorder: { borderBottomWidth: 1, borderBottomColor: "#F0F5FA" },
-  timeBadge: {
-    backgroundColor: colors.coralLight,
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    minWidth: 70,
-    alignItems: "center",
-  },
-  timeBadgeText: { fontSize: 12, fontWeight: "600", color: colors.sunsetCoral },
-  stopDetails: { flex: 1 },
-  stopPlace: { fontSize: 14, fontWeight: "700", color: "#1A2E40", marginBottom: 4 },
-  stopActivity: { fontSize: 13, color: "#6B8CA8" },
-  stopCost: { fontSize: 13, fontWeight: "700", color: colors.palmGreen },
-
-  grandTotalBox: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-    borderRadius: 12,
-    backgroundColor: colors.oceanBlueLight,
-    marginTop: 8,
-    marginBottom: 16,
-  },
-  grandTotalLabel: { fontSize: 15, fontWeight: "700", color: colors.oceanBlue },
-  grandTotalSub: { fontSize: 12, color: "#4A6880", marginTop: 4 },
-  grandTotalCost: { fontSize: 18, fontWeight: "700", color: colors.sunsetCoral },
-
-  saveBottomBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    padding: 14,
-    borderRadius: 12,
-    backgroundColor: colors.palmGreen,
-  },
-
-  // Feature cards
-  featureRow: { flexDirection: "row", gap: 16 },
-  featureCard: {
-    flex: 1,
-    backgroundColor: "#fff",
-    borderRadius: 14,
-    padding: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  featureIconBox: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 12,
-  },
-  featureTitle: { fontSize: 14, fontWeight: "600", color: "#1A2E40", marginBottom: 6 },
-  featureDesc: { fontSize: 13, color: "#6B8CA8", lineHeight: 20 },
-});

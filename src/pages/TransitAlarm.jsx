@@ -24,6 +24,7 @@ import {
 } from "lucide-react-native";
 import { api } from "../lib/api";
 import { colors } from "../theme/colors";
+import AIToolHeader from "../components/AIToolHeader";
 
 const RADIUS_OPTIONS = [100, 300, 500, 1000, 2000];
 
@@ -82,13 +83,8 @@ export default function TransitAlarm() {
       showsVerticalScrollIndicator={false}
     >
       {/* ── Header ── */}
-      <View style={themeStyle([styles.header, compact && { flexDirection: "column", alignItems: "stretch", gap: 12 }])}>
-        <View>
-          <Text style={themeStyle(styles.title)}>Transit Alarm</Text>
-          <Text style={themeStyle(styles.subtitle)}>
-            Get proximity alerts for active Pangasinan transit routes.
-          </Text>
-        </View>
+      <AIToolHeader eyebrow="PANGASINAN TRANSIT COMPANION" title="Transit Alarm" subtitle="Get proximity alerts for active Pangasinan transit routes." badges={[{ label: "Active route data" }, { label: "Location-aware alerts" }, { label: "Smart notifications", color: "#A78BFA" }]} Icon={Bell} />
+      <View style={themeStyle([styles.header, styles.toolActions, compact && { flexDirection: "column", alignItems: "stretch", gap: 12 }])}>
         <Pressable
           onPress={loadRoutes}
           style={themeStyle(({ pressed }) => [
@@ -411,6 +407,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     marginBottom: 28,
   },
+  toolActions: { justifyContent: "flex-end", marginTop: -10, marginBottom: 18 },
   title: { fontSize: 26, fontWeight: "700", color: "#1A2E40", marginBottom: 4 },
   subtitle: { fontSize: 14, color: "#6B8CA8", maxWidth: 400 },
   refreshBtn: {

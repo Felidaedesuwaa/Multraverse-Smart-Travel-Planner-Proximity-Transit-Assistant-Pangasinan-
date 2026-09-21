@@ -18,27 +18,37 @@ The [Expo photo picker](https://docs.expo.dev/versions/v54.0.0/sdk/imagepicker/)
 
 Run `npm run build --prefix server` then `node server/scripts/check-profile.cjs` to check profile validation.
 
-## Technology
+## Technology Stack
 
 Frontend:
 
-- JavaScript
-- React 19
-- React Native 0.81
-- Expo SDK 54
+- JavaScript with React 19
+- React Native 0.81 and Expo SDK 54
 - React Navigation
-- Zustand
-- Async Storage
+- Zustand for client state
+- Async Storage for local persistence
 
-Backend:
+Backend API:
 
-- Node.js
-- TypeScript
+- Node.js with TypeScript
 - Express 5
 - MongoDB with Mongoose
 - JWT and bcryptjs authentication
+- REST routes with ObjectId-compatible JSON serialization
 - CORS
-- Groq, Anthropic, and Google Generative AI SDKs
+
+AI service:
+
+- Python 3.11/3.12
+- FastAPI with Uvicorn
+- PyTorch and Hugging Face Transformers
+- TinyLlama/TinyLlama-1.1B-Chat-v1.0 base model
+- PEFT LoRA adapter fine-tuned for Pangasinan travel and translation
+- Express communicates with the local service through `AI_SERVICE_URL`
+
+The application uses the custom Python AI service for itinerary generation,
+translation, and general text generation. It does not use Groq, Anthropic, or
+Google Generative AI APIs.
 
 ## Requirements
 
@@ -66,12 +76,14 @@ Create `server/.env` using `server/.env.example` as a template:
 ```env
 MONGODB_URI=mongodb+srv://USERNAME:PASSWORD@CLUSTER/multraverse?retryWrites=true&w=majority
 JWT_SECRET=replace-with-a-long-random-secret
-GROQ_API_KEY=
+AI_SERVICE_URL=http://localhost:8000
 PORT=3001
 CORS_ORIGINS=http://localhost:8081
 ```
 
-`MONGODB_URI` and `JWT_SECRET` are required. `GROQ_API_KEY` is required for Groq-backed AI features. The backend also supports the Anthropic and Google Generative AI integrations when their route configuration and keys are provided.
+`MONGODB_URI`, `JWT_SECRET`, and a reachable `AI_SERVICE_URL` are required for
+the complete application. Start the Python service separately on port 8000
+before using AI features.
 
 ## Running the Backend
 
@@ -164,6 +176,14 @@ Backend scripts from `server/`:
 | `npm run seed`         | Seed the main collections            |
 | `npm run seed:kb`      | Seed the knowledge base              |
 | `npm run seed:phrases` | Seed the phrasebook                  |
+
+AI service from `ai-service/`:
+
+| Command                                     | Description                                     |
+| ------------------------------------------- | ----------------------------------------------- |
+| `.\venv\Scripts\python.exe main.py`         | Start the local FastAPI AI service on port 8000 |
+| `.\venv\Scripts\python.exe train.py`        | Fine-tune the Pangasinan travel LoRA adapter    |
+| `.\venv\Scripts\python.exe prepare_data.py` | Rebuild and validate training data              |
 
 ## Project Structure
 

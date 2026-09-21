@@ -73,6 +73,7 @@ export default function MapPlacePreview({ area, onClose }) {
   }, [area, attempt]);
   const rating = summarizeRatings(places);
   const openSaved = () => { onClose(); navigation.navigate("SavedPlaces"); };
+  const planTrip = () => { onClose(); navigation.navigate("AIItinerary", { areaId: area.id, placeName: area.name, fromMap: true }); };
 
   return (
     <Modal visible transparent animationType="fade" onRequestClose={onClose}>
@@ -93,7 +94,8 @@ export default function MapPlacePreview({ area, onClose }) {
               <Text style={themeStyle(styles.sectionTitle)}>A closer look at {area.name}</Text>
               <Text style={themeStyle(styles.description)}>Explore this {area.kind.toLowerCase()} through local photos and places shared by other travelers. Save your favorites and add your own experience in Saved Places.</Text>
               {!loading && !error && places.length > 0 && <View style={themeStyle(styles.sharedPlaces)}><Text style={themeStyle(styles.sectionTitle)}>Places shared by travelers</Text>{places.slice(0, 5).map((place, i) => <View key={place.id || place._id || i} style={themeStyle(styles.sharedPlace)}><View style={themeStyle({ flex: 1 })}><Text style={themeStyle(styles.placeName)}>{place.name}</Text><Text style={themeStyle(styles.muted)}>{place.category}</Text></View>{place.rating > 0 && <View style={themeStyle(styles.location)}><Star size={14} color={themeColor(colors.gold, "color")} fill={themeColor(colors.gold, "fill")} /><Text style={themeStyle(styles.placeName)}>{Number(place.rating).toFixed(1)}</Text></View>}</View>)}</View>}
-              <Pressable accessibilityRole="button" onPress={openSaved} style={themeStyle(styles.primary)}><Bookmark size={18} color={themeColor(colors.white, "color")} /><Text style={themeStyle(styles.primaryLabel)}>View Saved Places</Text><ArrowUpRight size={18} color={themeColor(colors.white, "color")} /></Pressable>
+              <Pressable accessibilityRole="button" accessibilityLabel={`Choose ${area.name} to explore`} onPress={planTrip} style={themeStyle(styles.primary)}><MapPin size={18} color={themeColor(colors.white, "color")} /><Text style={themeStyle(styles.primaryLabel)}>Choose this place to explore</Text><ArrowUpRight size={18} color={themeColor(colors.white, "color")} /></Pressable>
+              <Pressable accessibilityRole="button" onPress={openSaved} style={themeStyle(styles.secondary)}><Bookmark size={18} color={themeColor(colors.oceanBlue, "color")} /><Text style={themeStyle(styles.secondaryLabel)}>View Saved Places</Text></Pressable>
             </View>
           </ScrollView>
         </View>
@@ -136,4 +138,6 @@ const styles = StyleSheet.create({
   placeName: { fontSize: 14, fontWeight: "600", color: colors.oceanBlue },
   primary: { backgroundColor: colors.sunsetCoral, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, minHeight: 50, borderRadius: 12 },
   primaryLabel: { fontSize: 14, fontWeight: "700", color: colors.white },
+  secondary: { borderWidth: 1, borderColor: colors.border, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, minHeight: 50, borderRadius: 12 },
+  secondaryLabel: { fontSize: 14, fontWeight: "700", color: colors.oceanBlue },
 });
