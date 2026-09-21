@@ -1,3 +1,5 @@
+import { useAppTheme } from "../theme/useAppTheme";
+import { darkPalette } from "../theme/darkPalette";
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import {
@@ -9,6 +11,7 @@ import { useAuthStore } from "../store/authStore";
 import { api } from "../lib/api";
 import BudgetOverview from "./BudgetOverview";
 import SavedTripCard from "./SavedTripCard";
+import ProfileAvatar from "./ProfileAvatar";
 
 const navigationItems = [
   { label: "Dashboard", icon: Home, screen: "Dashboard" },
@@ -26,6 +29,8 @@ const aiItems = [
 ];
 
 export default function UserSidebar({ activeScreen = "Dashboard", onNavigate, compact = false }) {
+  const { themeStyle, themeColor, isDark } = useAppTheme();
+
   const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
   const [entries, setEntries] = useState([]);
@@ -42,13 +47,6 @@ export default function UserSidebar({ activeScreen = "Dashboard", onNavigate, co
   }, [compact]);
 
   const name = user?.name || "User";
-  const initials = name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase();
 
   const handleLogout = async () => {
     await logout();
@@ -66,73 +64,71 @@ export default function UserSidebar({ activeScreen = "Dashboard", onNavigate, co
         accessibilityRole="button"
         accessibilityState={{ selected: active }}
         onPress={() => handleNavigate(screen)}
-        style={({ pressed }) => [
+        style={themeStyle(({ pressed }) => [
           styles.item,
           active && styles.activeItem,
           pressed && !active && styles.pressedItem,
-        ]}
+        ])}
       >
-        <Icon size={18} color={active ? colors.sunsetCoral : colors.white} />
-        <Text style={[styles.itemLabel, active && styles.activeLabel]}>
+        <Icon size={18} color={themeColor(active ? colors.sunsetCoral : colors.white, "color")} />
+        <Text style={themeStyle([styles.itemLabel, active && styles.activeLabel])}>
           {label}
         </Text>
-        {isAi && <Text style={styles.aiBadge}>AI</Text>}
+        {isAi && <Text style={themeStyle(styles.aiBadge)}>AI</Text>}
       </Pressable>
     );
   };
 
   return (
     <ScrollView
-      style={[styles.sidebar, compact && styles.compactSidebar]}
-      contentContainerStyle={styles.content}
+      style={[themeStyle([styles.sidebar, compact && styles.compactSidebar]), isDark && { backgroundColor: darkPalette.inset }]}
+      contentContainerStyle={themeStyle(styles.content)}
       showsVerticalScrollIndicator={false}
     >
       {/* Brand */}
-      <View style={styles.brand}>
-        <View style={styles.brandIcon}>
-          <Compass size={22} color={colors.white} />
+      <View style={themeStyle(styles.brand)}>
+        <View style={themeStyle(styles.brandIcon)}>
+          <Compass size={22} color={themeColor(colors.white, "color")} />
         </View>
         <View>
-          <Text style={styles.brandName}>Multraverse</Text>
-          <Text style={styles.brandSub}>Pangasinan Edition</Text>
+          <Text style={themeStyle(styles.brandName)}>Multraverse</Text>
+          <Text style={themeStyle(styles.brandSub)}>Pangasinan Edition</Text>
         </View>
       </View>
 
       {/* Profile */}
-      <View style={styles.profile}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{initials || "U"}</Text>
+      <View style={themeStyle(styles.profile)}>
+        <ProfileAvatar user={user} size={40} />
+        <View style={themeStyle(styles.profileText)}>
+          <Text style={themeStyle(styles.name)} numberOfLines={1}>{name}</Text>
+          <Text style={themeStyle(styles.location)}>{user?.role === "PRO" ? "Pro" : "Explorer"}{user?.location ? ` · ${user.location}` : ""}</Text>
         </View>
-        <View style={styles.profileText}>
-          <Text style={styles.name} numberOfLines={1}>{name}</Text>
-          <Text style={styles.location}>Explorer · Dagupan City</Text>
-        </View>
-        <Pressable onPress={handleLogout} accessibilityLabel="Log out" style={styles.logoutIcon}>
-          <LogOut size={16} color="#8FB0C2" />
+        <Pressable onPress={handleLogout} accessibilityLabel="Log out" style={themeStyle(styles.logoutIcon)}>
+          <LogOut size={16} color={themeColor("#8FB0C2", "color")} />
         </Pressable>
       </View>
 
       {/* Main Nav */}
-      <View style={styles.navSection}>
+      <View style={themeStyle(styles.navSection)}>
         {navigationItems.map((item) => renderNavItem(item, false))}
       </View>
 
       {/* AI Tools */}
-      <View style={styles.navSection}>
-        <Text style={styles.sectionTitle}>AI TOOLS</Text>
+      <View style={themeStyle(styles.navSection)}>
+        <Text style={themeStyle(styles.sectionTitle)}>AI TOOLS</Text>
         {aiItems.map((item) => renderNavItem(item, true))}
       </View>
 
       {!compact && <>
       {/* Budget Overview */}
       <View>
-        <Text style={styles.sectionTitle}>BUDGET OVERVIEW</Text>
+        <Text style={themeStyle(styles.sectionTitle)}>BUDGET OVERVIEW</Text>
         <BudgetOverview entries={entries} />
       </View>
 
       {/* Saved Trips */}
       <View>
-        <Text style={styles.sectionTitle}>SAVED TRIPS</Text>
+        <Text style={themeStyle(styles.sectionTitle)}>SAVED TRIPS</Text>
         {trips.length > 0 ? (
           trips.slice(0, 3).map((trip) => (
             <SavedTripCard
@@ -148,15 +144,15 @@ export default function UserSidebar({ activeScreen = "Dashboard", onNavigate, co
             />
           ))
         ) : (
-          <Text style={styles.empty}>No saved trips yet</Text>
+          <Text style={themeStyle(styles.empty)}>No saved trips yet</Text>
         )}
       </View>
 
       </>}
       {/* Logout */}
-      <Pressable accessibilityRole="button" onPress={handleLogout} style={styles.logout}>
-        <LogOut size={18} color="#FF9B85" />
-        <Text style={styles.logoutText}>Log Out</Text>
+      <Pressable accessibilityRole="button" onPress={handleLogout} style={themeStyle(styles.logout)}>
+        <LogOut size={18} color={themeColor("#FF9B85", "color")} />
+        <Text style={themeStyle(styles.logoutText)}>Log Out</Text>
       </Pressable>
     </ScrollView>
   );
@@ -205,20 +201,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.05)",
     borderRadius: 14,
     padding: 14,
-  },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.sunsetCoral,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  avatarText: {
-    fontWeight: "700",
-    fontSize: 14,
-    color: colors.white,
   },
   profileText: {
     flex: 1,

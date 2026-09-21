@@ -1,3 +1,4 @@
+import { useAppTheme } from "../theme/useAppTheme";
 import { StyleSheet, Text, View } from "react-native";
 import { colors } from "../theme/colors";
 import Card from "./Card";
@@ -11,19 +12,21 @@ export default function AdminStatCard({
   iconBg,
   dividerColor,
 }) {
+  const { themeStyle, themeColor } = useAppTheme();
+
   return (
-    <Card style={{ flex: 1 }}>
-      <WovenDivider color={dividerColor ?? colors.sunsetCoral} count={20} />
-      <View style={styles.row}>
+    <Card style={themeStyle({ flex: 1 })}>
+      <WovenDivider color={themeColor(dividerColor ?? colors.sunsetCoral, "color")} count={20} />
+      <View style={themeStyle(styles.row)}>
         <View>
-          <Text style={styles.label}>{label.toUpperCase()}</Text>
-          <Text style={styles.value}>{value}</Text>
+          <Text style={themeStyle(styles.label)}>{label.toUpperCase()}</Text>
+          <Text style={themeStyle(styles.value)}>{value}</Text>
         </View>
-        <View style={[styles.icon, { backgroundColor: iconBg }]}>
+        <View style={themeStyle([styles.icon, { backgroundColor: iconBg }])}>
           {icon}
         </View>
       </View>
-      <Text style={styles.delta}>{delta}</Text>
+      <Text style={themeStyle(styles.delta)}>{delta}</Text>
     </Card>
   );
 }

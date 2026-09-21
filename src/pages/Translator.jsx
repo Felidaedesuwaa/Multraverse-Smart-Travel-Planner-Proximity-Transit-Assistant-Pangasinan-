@@ -1,3 +1,4 @@
+import { useAppTheme } from "../theme/useAppTheme";
 import { useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -8,6 +9,7 @@ import {
   Text,
   TextInput,
   View,
+  useWindowDimensions,
 } from "react-native";
 import { ArrowLeftRight, Mic, MicOff, Wifi } from "lucide-react-native";
 import { api } from "../lib/api";
@@ -40,6 +42,10 @@ const offlinePacks = [
 ];
 
 export default function Translator() {
+  const { width } = useWindowDimensions();
+  const compact = (width >= 768 ? width - 280 : width) < 720;
+  const { themeStyle, themeColor } = useAppTheme();
+
   const [from, setFrom] = useState("Filipino");
   const [to, setTo] = useState("Pangasinan");
   const [input, setInput] = useState("");
@@ -161,53 +167,53 @@ export default function Translator() {
 
   return (
     <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.screen}
+      style={themeStyle(styles.container)}
+      contentContainerStyle={themeStyle([styles.screen, compact && { padding: 16 }])}
       showsVerticalScrollIndicator={false}
     >
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Voice Translator</Text>
-        <Text style={styles.subtitle}>
+      <View style={themeStyle(styles.header)}>
+        <Text style={themeStyle(styles.title)}>Voice Translator</Text>
+        <Text style={themeStyle(styles.subtitle)}>
           Real-time Filipino ↔ Pangasinan ↔ English · Phrasebook-verified
         </Text>
       </View>
 
-      <View style={styles.columns}>
+      <View style={themeStyle([styles.columns, compact && { flexDirection: "column", alignItems: "stretch" }])}>
         {/* Left Column */}
-        <View style={styles.leftCol}>
+        <View style={themeStyle(styles.leftCol)}>
 
           {/* Translator Card */}
-          <View style={styles.card}>
+          <View style={themeStyle(styles.card)}>
             {/* Language Selectors */}
-            <View style={styles.langRow}>
-              <View style={styles.langBox}>
-                <Text style={styles.langLabel}>From</Text>
+            <View style={themeStyle(styles.langRow)}>
+              <View style={themeStyle(styles.langBox)}>
+                <Text style={themeStyle(styles.langLabel)}>From</Text>
                 <Pressable
                   onPress={() => cycleLanguage(from, setFrom)}
-                  style={styles.langPill}
+                  style={themeStyle(styles.langPill)}
                 >
-                  <Text style={styles.langPillText}>{from}</Text>
+                  <Text style={themeStyle(styles.langPillText)}>{from}</Text>
                 </Pressable>
               </View>
 
-              <Pressable onPress={swap} style={styles.swapBtn}>
-                <ArrowLeftRight size={16} color="#4A6880" />
+              <Pressable onPress={swap} style={themeStyle(styles.swapBtn)}>
+                <ArrowLeftRight size={16} color={themeColor("#4A6880", "color")} />
               </Pressable>
 
-              <View style={styles.langBox}>
-                <Text style={styles.langLabel}>To</Text>
+              <View style={themeStyle(styles.langBox)}>
+                <Text style={themeStyle(styles.langLabel)}>To</Text>
                 <Pressable
                   onPress={() => cycleLanguage(to, setTo)}
-                  style={styles.langPill}
+                  style={themeStyle(styles.langPill)}
                 >
-                  <Text style={styles.langPillText}>{to}</Text>
+                  <Text style={themeStyle(styles.langPillText)}>{to}</Text>
                 </Pressable>
               </View>
             </View>
 
             {/* Input Area */}
-            <View style={[styles.inputWrapper, listening && styles.inputWrapperActive]}>
+            <View style={themeStyle([styles.inputWrapper, listening && styles.inputWrapperActive])}>
               <TextInput
                 value={input}
                 onChangeText={setInput}
@@ -219,43 +225,43 @@ export default function Translator() {
                     ? "Transcribing your speech..."
                     : `Type in ${from} and press Translate...`
                 }
-                placeholderTextColor="#A8BECC"
-                style={styles.textArea}
+                placeholderTextColor={themeColor("#A8BECC", "color")}
+                style={themeStyle(styles.textArea)}
               />
               {/* Mic Button */}
               <Pressable
                 onPress={mic}
                 disabled={transcribing}
-                style={[
+                style={themeStyle([
                   styles.micBtn,
                   listening && styles.micBtnListening,
                   transcribing && styles.micBtnTranscribing,
-                ]}
+                ])}
               >
                 {transcribing ? (
-                  <ActivityIndicator size="small" color="#fff" />
+                  <ActivityIndicator size="small" color={themeColor("#fff", "color")} />
                 ) : listening ? (
-                  <MicOff size={16} color="#fff" />
+                  <MicOff size={16} color={themeColor("#fff", "color")} />
                 ) : (
-                  <Mic size={16} color="#fff" />
+                  <Mic size={16} color={themeColor("#fff", "color")} />
                 )}
               </Pressable>
             </View>
 
             {/* Listening indicator */}
             {listening && (
-              <View style={styles.listeningBanner}>
-                <View style={styles.listeningDot} />
-                <Text style={styles.listeningText}>
+              <View style={themeStyle(styles.listeningBanner)}>
+                <View style={themeStyle(styles.listeningDot)} />
+                <Text style={themeStyle(styles.listeningText)}>
                   Recording... tap the mic button to stop
                 </Text>
               </View>
             )}
 
             {transcribing && (
-              <View style={styles.transcribingBanner}>
-                <ActivityIndicator size="small" color={colors.gold} />
-                <Text style={styles.transcribingText}>
+              <View style={themeStyle(styles.transcribingBanner)}>
+                <ActivityIndicator size="small" color={themeColor(colors.gold, "color")} />
+                <Text style={themeStyle(styles.transcribingText)}>
                   Transcribing with Groq Whisper...
                 </Text>
               </View>
@@ -265,51 +271,51 @@ export default function Translator() {
             <Pressable
               onPress={() => translate()}
               disabled={loading || !input.trim()}
-              style={[
+              style={themeStyle([
                 styles.translateBtn,
                 (loading || !input.trim()) && styles.translateBtnDisabled,
-              ]}
+              ])}
             >
-              {loading && <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />}
-              <Text style={styles.translateBtnText}>
+              {loading && <ActivityIndicator size="small" color={themeColor("#fff", "color")} style={themeStyle({ marginRight: 8 })} />}
+              <Text style={themeStyle(styles.translateBtnText)}>
                 {loading ? "Translating..." : "Translate"}
               </Text>
             </Pressable>
 
             {/* Error */}
             {error && (
-              <View style={styles.errorBox}>
-                <Text style={styles.errorText}>{error}</Text>
+              <View style={themeStyle(styles.errorBox)}>
+                <Text style={themeStyle(styles.errorText)}>{error}</Text>
               </View>
             )}
 
             {/* Translation Output */}
-            <View style={styles.outputBox}>
-              <View style={styles.outputHeader}>
-                <Text style={styles.outputLabel}>{to} translation</Text>
+            <View style={themeStyle(styles.outputBox)}>
+              <View style={themeStyle(styles.outputHeader)}>
+                <Text style={themeStyle(styles.outputLabel)}>{to} translation</Text>
                 {source && (
                   <View
-                    style={[
+                    style={themeStyle([
                       styles.sourceBadge,
                       source === "phrasebook"
                         ? styles.sourceBadgeVerified
                         : styles.sourceBadgeAI,
-                    ]}
+                    ])}
                   >
                     <Text
-                      style={[
+                      style={themeStyle([
                         styles.sourceBadgeText,
                         source === "phrasebook"
                           ? styles.sourceBadgeTextVerified
                           : styles.sourceBadgeTextAI,
-                      ]}
+                      ])}
                     >
                       {source === "phrasebook" ? "✓ Verified" : "AI Generated"}
                     </Text>
                   </View>
                 )}
               </View>
-              <Text style={[styles.outputText, !translation && styles.outputPlaceholder]}>
+              <Text style={themeStyle([styles.outputText, !translation && styles.outputPlaceholder])}>
                 {translation || "Translation will appear here..."}
               </Text>
             </View>
@@ -317,22 +323,22 @@ export default function Translator() {
 
           {/* Recent Translations */}
           {recents.length > 0 && (
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>Recent Translations</Text>
+            <View style={themeStyle(styles.card)}>
+              <Text style={themeStyle(styles.cardTitle)}>Recent Translations</Text>
               {recents.map((item, i) => (
                 <View
                   key={`${item.phrase}-${i}`}
-                  style={[
+                  style={themeStyle([
                     styles.recentRow,
                     i < recents.length - 1 && styles.recentBorder,
-                  ]}
+                  ])}
                 >
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.recentPhrase}>{item.phrase}</Text>
-                    <Text style={styles.recentTranslation}>→ {item.translation}</Text>
+                  <View style={themeStyle({ flex: 1 })}>
+                    <Text style={themeStyle(styles.recentPhrase)}>{item.phrase}</Text>
+                    <Text style={themeStyle(styles.recentTranslation)}>→ {item.translation}</Text>
                   </View>
-                  <View style={styles.pairBadge}>
-                    <Text style={styles.pairBadgeText}>{item.pair}</Text>
+                  <View style={themeStyle(styles.pairBadge)}>
+                    <Text style={themeStyle(styles.pairBadgeText)}>{item.pair}</Text>
                   </View>
                 </View>
               ))}
@@ -341,28 +347,28 @@ export default function Translator() {
         </View>
 
         {/* Right Column */}
-        <View style={styles.rightCol}>
+        <View style={themeStyle([styles.rightCol, compact && { width: "100%" }])}>
 
           {/* Phrasebook */}
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Phrasebook</Text>
+          <View style={themeStyle(styles.card)}>
+            <Text style={themeStyle(styles.cardTitle)}>Phrasebook</Text>
 
             {/* Category tabs */}
-            <View style={styles.categoryRow}>
+            <View style={themeStyle(styles.categoryRow)}>
               {["All", "Greetings", "Transport", "Food", "Emergency"].map((cat) => (
                 <Pressable
                   key={cat}
                   onPress={() => setCategory(cat)}
-                  style={[
+                  style={themeStyle([
                     styles.catPill,
                     category === cat && styles.catPillActive,
-                  ]}
+                  ])}
                 >
                   <Text
-                    style={[
+                    style={themeStyle([
                       styles.catPillText,
                       category === cat && styles.catPillTextActive,
-                    ]}
+                    ])}
                   >
                     {cat}
                   </Text>
@@ -377,17 +383,17 @@ export default function Translator() {
                 <Pressable
                   key={item.phrase}
                   onPress={() => usePhrase(item.phrase)}
-                  style={[
+                  style={themeStyle([
                     styles.phraseRow,
                     i < visiblePhrases.length - 1 && styles.phraseBorder,
-                  ]}
+                  ])}
                 >
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.phraseText}>{item.phrase}</Text>
-                    <Text style={styles.phraseTranslation}>{item.translation}</Text>
+                  <View style={themeStyle({ flex: 1 })}>
+                    <Text style={themeStyle(styles.phraseText)}>{item.phrase}</Text>
+                    <Text style={themeStyle(styles.phraseTranslation)}>{item.translation}</Text>
                   </View>
-                  <View style={[styles.phraseCatBadge, { backgroundColor: c.bg }]}>
-                    <Text style={[styles.phraseCatText, { color: c.color }]}>
+                  <View style={themeStyle([styles.phraseCatBadge, { backgroundColor: c.bg }])}>
+                    <Text style={themeStyle([styles.phraseCatText, { color: c.color }])}>
                       {item.category}
                     </Text>
                   </View>
@@ -397,40 +403,40 @@ export default function Translator() {
           </View>
 
           {/* Offline Packs */}
-          <View style={styles.card}>
-            <View style={styles.offlineHeader}>
-              <Wifi size={15} color="#6B8CA8" />
-              <Text style={[styles.cardTitle, { marginBottom: 0, marginLeft: 8 }]}>
+          <View style={themeStyle(styles.card)}>
+            <View style={themeStyle(styles.offlineHeader)}>
+              <Wifi size={15} color={themeColor("#6B8CA8", "color")} />
+              <Text style={themeStyle([styles.cardTitle, { marginBottom: 0, marginLeft: 8 }])}>
                 Offline packs
               </Text>
             </View>
-            <View style={{ marginTop: 14 }}>
+            <View style={themeStyle({ marginTop: 14 })}>
               {offlinePacks.map((pack, i) => (
                 <View
                   key={pack.lang}
-                  style={[
+                  style={themeStyle([
                     styles.packRow,
                     i < offlinePacks.length - 1 && styles.packBorder,
-                  ]}
+                  ])}
                 >
-                  <View style={styles.packLeft}>
+                  <View style={themeStyle(styles.packLeft)}>
                     <View
-                      style={[
+                      style={themeStyle([
                         styles.packDot,
                         {
                           backgroundColor: pack.downloaded
                             ? "#22C55E"
                             : "#D1DCE5",
                         },
-                      ]}
+                      ])}
                     />
-                    <Text style={styles.packName}>{pack.lang}</Text>
+                    <Text style={themeStyle(styles.packName)}>{pack.lang}</Text>
                   </View>
-                  <View style={styles.packRight}>
-                    <Text style={styles.packSize}>{pack.size}</Text>
+                  <View style={themeStyle(styles.packRight)}>
+                    <Text style={themeStyle(styles.packSize)}>{pack.size}</Text>
                     {!pack.downloaded && (
-                      <Pressable style={styles.getBtn}>
-                        <Text style={styles.getBtnText}>Get</Text>
+                      <Pressable style={themeStyle(styles.getBtn)}>
+                        <Text style={themeStyle(styles.getBtnText)}>Get</Text>
                       </Pressable>
                     )}
                   </View>

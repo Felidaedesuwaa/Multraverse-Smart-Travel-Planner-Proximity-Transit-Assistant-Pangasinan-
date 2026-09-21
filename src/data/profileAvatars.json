@@ -1,0 +1,18 @@
+[
+  { "id": "travel:01", "name": "Trail Explorer", "icon": "Mountain", "background": "#DCEAD8", "accent": "#AACD9B", "ink": "#285044" },
+  { "id": "travel:02", "name": "Island Sailor", "icon": "Sailboat", "background": "#D5EAF5", "accent": "#A0CFE5", "ink": "#174D6B" },
+  { "id": "travel:03", "name": "Beach Break", "icon": "TreePalm", "background": "#F9E8C4", "accent": "#EDD193", "ink": "#356A50" },
+  { "id": "travel:04", "name": "Happy Camper", "icon": "Tent", "background": "#EDDDBF", "accent": "#DCC296", "ink": "#795235" },
+  { "id": "travel:05", "name": "Sky Voyager", "icon": "Plane", "background": "#DCE5FA", "accent": "#BCCCF2", "ink": "#3B5188" },
+  { "id": "travel:06", "name": "True North", "icon": "Compass", "background": "#F9DCD4", "accent": "#EDB6A7", "ink": "#943F32" },
+  { "id": "travel:07", "name": "Shutterbug", "icon": "Camera", "background": "#E8DDF3", "accent": "#CEB5E5", "ink": "#674484" },
+  { "id": "travel:08", "name": "Backpacker", "icon": "Backpack", "background": "#FBE4CE", "accent": "#EFC49F", "ink": "#8A5033" },
+  { "id": "travel:09", "name": "World Wanderer", "icon": "Globe", "background": "#CFECE5", "accent": "#9ED5C8", "ink": "#24655B" },
+  { "id": "travel:10", "name": "Road Tripper", "icon": "Bus", "background": "#F6EBCB", "accent": "#E3D399", "ink": "#71602C" },
+  { "id": "travel:11", "name": "Rail Rider", "icon": "TrainFront", "background": "#DEE7EC", "accent": "#B6CBD6", "ink": "#365565" },
+  { "id": "travel:12", "name": "Ocean Soul", "icon": "Waves", "background": "#D4E9F2", "accent": "#9BCBDF", "ink": "#20617D" },
+  { "id": "travel:13", "name": "Ready to Roam", "icon": "Luggage", "background": "#F4DDE8", "accent": "#E1AEC5", "ink": "#873F60" },
+  { "id": "travel:14", "name": "Cycle Scout", "icon": "Bike", "background": "#E4EBD3", "accent": "#C0D29B", "ink": "#516534" },
+  { "id": "travel:15", "name": "Sun Chaser", "icon": "Sun", "background": "#FFE8BE", "accent": "#F2CA87", "ink": "#996019" },
+  { "id": "travel:16", "name": "Island Hopper", "icon": "Ship", "background": "#DCDFF2", "accent": "#B7BFE3", "ink": "#414E85" }
+]

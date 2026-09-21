@@ -1,9 +1,12 @@
+import { useAppTheme } from "../theme/useAppTheme";
 import { StyleSheet, View } from "react-native";
 import UserSidebar from "../components/UserSidebar";
 import { colors } from "../theme/colors";
 
 export default function UserLayout({ children }) {
-  return <View style={styles.layout}><UserSidebar /><View style={styles.content}>{children}</View></View>;
+  const { themeStyle } = useAppTheme();
+
+  return <View style={themeStyle(styles.layout)}><UserSidebar /><View style={themeStyle(styles.content)}>{children}</View></View>;
 }
 
 const styles = StyleSheet.create({

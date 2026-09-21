@@ -1,8 +1,11 @@
+import { useAppTheme } from "./theme/useAppTheme";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Modal, Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ActivityIndicator, AppState, Modal, Pressable, StatusBar, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { SafeAreaProvider, SafeAreaView, initialWindowMetrics } from "react-native-safe-area-context";
 import { Menu, X } from "lucide-react-native";
-import { NavigationContainer } from "@react-navigation/native";
+import { DarkTheme, DefaultTheme, NavigationContainer } from "@react-navigation/native";
+import { usePreferencesStore } from "./store/preferencesStore";
+import CurrencyNotice from "./components/CurrencyNotice";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { colors } from "./theme/colors";
 import { useAuthStore } from "./store/authStore";
@@ -73,6 +76,8 @@ const linking = {
 
 // ── User screens with sidebar ───────────────────────────
 function UserScreens() {
+  const { themeStyle, themeColor } = useAppTheme();
+
   const { width } = useWindowDimensions();
   const isWide = width >= 768;
   const [activeScreen, setActiveScreen] = useState("Dashboard");
@@ -89,20 +94,20 @@ function UserScreens() {
   };
 
   return (
-    <View style={styles.layout}>
+    <View style={themeStyle(styles.layout)}>
       {isWide && (
-        <View style={styles.userSidebarContainer}>
+        <View style={themeStyle(styles.userSidebarContainer)}>
           <UserSidebar activeScreen={activeScreen} onNavigate={handleNavigate} />
         </View>
       )}
-      <View style={styles.content}>
+      <View style={themeStyle(styles.content)}>
         <UserStack.Navigator
           screenListeners={({ route }) => ({ focus: () => setActiveScreen(route.name) })}
           screenOptions={{
             headerShown: !isWide,
             headerTitle: "Multraverse",
-            headerTintColor: colors.oceanBlue,
-            headerStyle: { backgroundColor: colors.warmSand },
+            headerTintColor: themeColor(colors.oceanBlue),
+            headerStyle: themeStyle({ backgroundColor: colors.warmSand }),
             headerBackVisible: false,
             headerLeft: () => (
               <Pressable
@@ -110,9 +115,9 @@ function UserScreens() {
                 accessibilityLabel="Open navigation menu"
                 accessibilityState={{ expanded: menuOpen }}
                 onPress={() => setMenuOpen(true)}
-                style={styles.menuButton}
+                style={themeStyle(styles.menuButton)}
               >
-                <Menu size={24} color={colors.oceanBlue} />
+                <Menu size={24} color={themeColor(colors.oceanBlue, "color")} />
               </Pressable>
             ),
           }}
@@ -134,23 +139,23 @@ function UserScreens() {
         animationType="fade"
         onRequestClose={() => setMenuOpen(false)}
       >
-        <View style={styles.drawerOverlay}>
+        <View style={themeStyle(styles.drawerOverlay)}>
           <Pressable
-            style={StyleSheet.absoluteFill}
+            style={themeStyle(StyleSheet.absoluteFill)}
             accessibilityRole="button"
             accessibilityLabel="Close navigation menu"
             onPress={() => setMenuOpen(false)}
           />
-          <SafeAreaView style={[styles.drawer, { width: Math.min(320, width - 32) }]}>
-            <View style={styles.drawerHeader}>
-              <Text style={styles.drawerTitle}>Menu</Text>
+          <SafeAreaView style={themeStyle([styles.drawer, { width: Math.min(320, width - 32) }])}>
+            <View style={themeStyle(styles.drawerHeader)}>
+              <Text style={themeStyle(styles.drawerTitle)}>Menu</Text>
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Close navigation menu"
                 onPress={() => setMenuOpen(false)}
-                style={styles.menuButton}
+                style={themeStyle(styles.menuButton)}
               >
-                <X size={24} color={colors.white} />
+                <X size={24} color={themeColor(colors.white, "color")} />
               </Pressable>
             </View>
             <UserSidebar compact activeScreen={activeScreen} onNavigate={handleNavigate} />
@@ -163,6 +168,8 @@ function UserScreens() {
 
 // ── Admin screens with sidebar ──────────────────────────
 function AdminScreens() {
+  const { themeStyle } = useAppTheme();
+
   const { width } = useWindowDimensions();
   const isWide = width >= 768;
   const [activeScreen, setActiveScreen] = useState("AdminDashboard");
@@ -173,13 +180,13 @@ function AdminScreens() {
   };
 
   return (
-    <View style={styles.layout}>
+    <View style={themeStyle(styles.layout)}>
       {isWide && (
-        <View style={styles.adminSidebarContainer}>
+        <View style={themeStyle(styles.adminSidebarContainer)}>
           <AdminSidebar activeScreen={activeScreen} onNavigate={handleNavigate} />
         </View>
       )}
-      <View style={styles.content}>
+      <View style={themeStyle(styles.content)}>
         <AdminStack.Navigator screenOptions={{ headerShown: false }}>
           <AdminStack.Screen name="AdminDashboard" component={AdminDashboard} />
           <AdminStack.Screen name="AdminRoutes" component={AdminRoutes} />
@@ -195,32 +202,43 @@ function AdminScreens() {
 }
 
 function LoadingScreen() {
+  const { themeStyle, themeColor } = useAppTheme();
+
   return (
-    <View style={styles.loading}>
-      <ActivityIndicator size="large" color={colors.sunsetCoral} />
+    <View style={themeStyle(styles.loading)}>
+      <ActivityIndicator size="large" color={themeColor(colors.sunsetCoral, "color")} />
     </View>
   );
 }
 
 export default function App() {
+  const { isDark, background, surface, text } = useAppTheme();
   const init = useAuthStore((state) => state.init);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const user = useAuthStore((state) => state.user);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    init().finally(() => setReady(true));
+    Promise.all([init(), usePreferencesStore.getState().init()]).finally(() => setReady(true));
+    const listener = AppState.addEventListener("change", state => {
+      if (state === "active" && usePreferencesStore.getState().currency !== "PHP") usePreferencesStore.getState().refreshRates();
+    });
+    return () => listener.remove();
   }, [init]);
 
   if (!ready) return <LoadingScreen />;
 
   return (
+    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
     <NavigationContainer
+      theme={{ ...(isDark ? DarkTheme : DefaultTheme), colors: { ...(isDark ? DarkTheme : DefaultTheme).colors, background, card: surface, text, primary: colors.sunsetCoral } }}
       linking={linking}
       ref={(ref) => {
         navigationRef.current = ref;
       }}
     >
+      <View style={{ flex: 1, backgroundColor: background }}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={background} />
       <RootStack.Navigator screenOptions={{ headerShown: false }}>
         {isAuthenticated ? (
           user?.role === "ADMIN" ? (
@@ -235,7 +253,10 @@ export default function App() {
           </>
         )}
       </RootStack.Navigator>
+      <CurrencyNotice />
+      </View>
     </NavigationContainer>
+    </SafeAreaProvider>
   );
 }
 

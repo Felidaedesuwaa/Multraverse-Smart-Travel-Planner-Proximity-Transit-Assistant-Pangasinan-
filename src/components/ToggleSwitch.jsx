@@ -1,16 +1,22 @@
+import { useAppTheme } from "../theme/useAppTheme";
 import { Pressable, StyleSheet, View } from "react-native";
 import { colors } from "../theme/colors";
 
 export default function ToggleSwitch({
   checked,
   onChange,
+  accessibilityLabel,
 }) {
+  const { themeStyle } = useAppTheme();
+
   return (
     <Pressable
       accessibilityRole="switch"
+      accessibilityLabel={accessibilityLabel}
       accessibilityState={{ checked }}
+      aria-checked={checked}
       onPress={() => onChange(!checked)}
-      style={[styles.track, { backgroundColor: checked ? colors.sunsetCoral : "#D9D9D9" }]}
+      style={themeStyle([styles.track, { backgroundColor: checked ? colors.sunsetCoral : "#D9D9D9" }])}
     >
       <View style={[styles.thumb, { transform: [{ translateX: checked ? 20 : 0 }] }]} />
     </Pressable>

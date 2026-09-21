@@ -1,3 +1,7 @@
+import MoneyAmount from "../components/MoneyAmount";
+import { useCurrency } from "../hooks/useCurrency";
+import MoneyInput from "../components/MoneyInput";
+import { useAppTheme } from "../theme/useAppTheme";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -35,6 +39,8 @@ const STATUS_STYLE = {
 
 // ── Trip Detail Modal ───────────────────────────────────
 function TripDetailModal({ trip, onClose, onDelete }) {
+  const { themeStyle, themeColor } = useAppTheme();
+
   if (!trip) return null;
   const Icon = placeIconMap[trip.icon] ?? placeIconMap.landmark;
   const progress = trip.budget > 0
@@ -45,110 +51,109 @@ function TripDetailModal({ trip, onClose, onDelete }) {
 
   return (
     <Modal visible transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable style={styles.modalOverlay} onPress={onClose}>
-        <Pressable style={styles.modalBox} onPress={() => {}}>
+      <Pressable style={themeStyle(styles.modalOverlay)} onPress={onClose}>
+        <Pressable style={themeStyle(styles.modalBox)} onPress={() => {}}>
           {/* Header */}
-          <View style={styles.modalHeader}>
-            <View style={styles.modalIconBox}>
-              <Icon size={22} color={colors.oceanBlue} />
+          <View style={themeStyle(styles.modalHeader)}>
+            <View style={themeStyle(styles.modalIconBox)}>
+              <Icon size={22} color={themeColor(colors.oceanBlue, "color")} />
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.modalTitle}>{trip.title}</Text>
-              <Text style={styles.modalMeta}>
+            <View style={themeStyle({ flex: 1 })}>
+              <Text style={themeStyle(styles.modalTitle)}>{trip.title}</Text>
+              <Text style={themeStyle(styles.modalMeta)}>
                 {trip.location} · {trip.date}
               </Text>
             </View>
-            <Pressable onPress={onClose} style={styles.closeBtn}>
-              <X size={18} color="#6B8CA8" />
+            <Pressable onPress={onClose} style={themeStyle(styles.closeBtn)}>
+              <X size={18} color={themeColor("#6B8CA8", "color")} />
             </Pressable>
           </View>
 
           {/* Status badge */}
-          <View style={[styles.modalStatusBadge, { backgroundColor: status.bg }]}>
-            <View style={[styles.statusDot, { backgroundColor: status.text }]} />
-            <Text style={[styles.modalStatusText, { color: status.text }]}>
+          <View style={themeStyle([styles.modalStatusBadge, { backgroundColor: status.bg }])}>
+            <View style={themeStyle([styles.statusDot, { backgroundColor: status.text }])} />
+            <Text style={themeStyle([styles.modalStatusText, { color: status.text }])}>
               {trip.status.charAt(0) + trip.status.slice(1).toLowerCase()}
             </Text>
           </View>
 
           {/* Budget breakdown */}
-          <View style={styles.modalSection}>
-            <Text style={styles.modalSectionTitle}>Budget Breakdown</Text>
-            <View style={styles.budgetGrid}>
-              <View style={styles.budgetItem}>
-                <Text style={styles.budgetItemLabel}>Total Budget</Text>
-                <Text style={styles.budgetItemValue}>
-                  ₱{trip.budget.toLocaleString()}
+          <View style={themeStyle(styles.modalSection)}>
+            <Text style={themeStyle(styles.modalSectionTitle)}>Budget Breakdown</Text>
+            <View style={themeStyle(styles.budgetGrid)}>
+              <View style={themeStyle(styles.budgetItem)}>
+                <Text style={themeStyle(styles.budgetItemLabel)}>Total Budget</Text>
+                <Text style={themeStyle(styles.budgetItemValue)}>
+                  <MoneyAmount value={trip.budget} />
                 </Text>
               </View>
-              <View style={styles.budgetDivider} />
-              <View style={styles.budgetItem}>
-                <Text style={styles.budgetItemLabel}>Spent</Text>
-                <Text style={[styles.budgetItemValue, { color: colors.sunsetCoral }]}>
-                  ₱{trip.spent.toLocaleString()}
+              <View style={themeStyle(styles.budgetDivider)} />
+              <View style={themeStyle(styles.budgetItem)}>
+                <Text style={themeStyle(styles.budgetItemLabel)}>Spent</Text>
+                <Text style={themeStyle([styles.budgetItemValue, { color: colors.sunsetCoral }])}>
+                  <MoneyAmount value={trip.spent} />
                 </Text>
               </View>
-              <View style={styles.budgetDivider} />
-              <View style={styles.budgetItem}>
-                <Text style={styles.budgetItemLabel}>Remaining</Text>
+              <View style={themeStyle(styles.budgetDivider)} />
+              <View style={themeStyle(styles.budgetItem)}>
+                <Text style={themeStyle(styles.budgetItemLabel)}>Remaining</Text>
                 <Text
-                  style={[
+                  style={themeStyle([
                     styles.budgetItemValue,
                     { color: remaining >= 0 ? colors.palmGreen : colors.sunsetCoral },
-                  ]}
+                  ])}
                 >
-                  ₱{Math.abs(remaining).toLocaleString()}
-                  {remaining < 0 ? " over" : ""}
+                  <MoneyAmount value={Math.abs(remaining)} suffix={remaining < 0 ? " over" : ""} />
                 </Text>
               </View>
             </View>
 
             {/* Progress bar */}
-            <View style={styles.modalTrack}>
+            <View style={themeStyle(styles.modalTrack)}>
               <View
-                style={[
+                style={themeStyle([
                   styles.modalFill,
                   {
                     width: `${progress}%`,
                     backgroundColor:
                       progress >= 100 ? colors.sunsetCoral : colors.palmGreen,
                   },
-                ]}
+                ])}
               />
             </View>
-            <Text style={styles.progressLabel}>
+            <Text style={themeStyle(styles.progressLabel)}>
               {Math.round(progress)}% of budget used
             </Text>
           </View>
 
           {/* Trip info */}
-          <View style={styles.modalSection}>
-            <Text style={styles.modalSectionTitle}>Trip Info</Text>
-            <View style={styles.infoRow}>
-              <MapPin size={14} color="#6B8CA8" />
-              <Text style={styles.infoText}>{trip.location}</Text>
+          <View style={themeStyle(styles.modalSection)}>
+            <Text style={themeStyle(styles.modalSectionTitle)}>Trip Info</Text>
+            <View style={themeStyle(styles.infoRow)}>
+              <MapPin size={14} color={themeColor("#6B8CA8", "color")} />
+              <Text style={themeStyle(styles.infoText)}>{trip.location}</Text>
             </View>
-            <View style={styles.infoRow}>
-              <Calendar size={14} color="#6B8CA8" />
-              <Text style={styles.infoText}>{trip.date}</Text>
+            <View style={themeStyle(styles.infoRow)}>
+              <Calendar size={14} color={themeColor("#6B8CA8", "color")} />
+              <Text style={themeStyle(styles.infoText)}>{trip.date}</Text>
             </View>
-            <View style={styles.infoRow}>
-              <ChevronRight size={14} color="#6B8CA8" />
-              <Text style={styles.infoText}>{trip.stops} stops planned</Text>
+            <View style={themeStyle(styles.infoRow)}>
+              <ChevronRight size={14} color={themeColor("#6B8CA8", "color")} />
+              <Text style={themeStyle(styles.infoText)}>{trip.stops} stops planned</Text>
             </View>
           </View>
 
           {/* Actions */}
-          <View style={styles.modalActions}>
+          <View style={themeStyle(styles.modalActions)}>
             <Pressable
               onPress={() => onDelete(trip._id ?? trip.id)}
-              style={styles.deleteBtn}
+              style={themeStyle(styles.deleteBtn)}
             >
-              <Trash2 size={15} color={colors.sunsetCoral} />
-              <Text style={styles.deleteBtnText}>Delete Trip</Text>
+              <Trash2 size={15} color={themeColor(colors.sunsetCoral, "color")} />
+              <Text style={themeStyle(styles.deleteBtnText)}>Delete Trip</Text>
             </Pressable>
-            <Pressable onPress={onClose} style={styles.doneBtn}>
-              <Text style={styles.doneBtnText}>Done</Text>
+            <Pressable onPress={onClose} style={themeStyle(styles.doneBtn)}>
+              <Text style={themeStyle(styles.doneBtnText)}>Done</Text>
             </Pressable>
           </View>
         </Pressable>
@@ -159,6 +164,10 @@ function TripDetailModal({ trip, onClose, onDelete }) {
 
 // ── New Trip Modal ──────────────────────────────────────
 function NewTripModal({ visible, onClose, onCreated }) {
+  const { currency } = useCurrency();
+
+  const { themeStyle, themeColor } = useAppTheme();
+
   const [title, setTitle] = useState("");
   const [location, setLocation] = useState("");
   const [date, setDate] = useState("");
@@ -206,80 +215,80 @@ function NewTripModal({ visible, onClose, onCreated }) {
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable style={styles.modalOverlay} onPress={onClose}>
-        <Pressable style={styles.modalBox} onPress={() => {}}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Create New Trip</Text>
-            <Pressable onPress={onClose} style={styles.closeBtn}>
-              <X size={18} color="#6B8CA8" />
+      <Pressable style={themeStyle(styles.modalOverlay)} onPress={onClose}>
+        <Pressable style={themeStyle(styles.modalBox)} onPress={() => {}}>
+          <View style={themeStyle(styles.modalHeader)}>
+            <Text style={themeStyle(styles.modalTitle)}>Create New Trip</Text>
+            <Pressable onPress={onClose} style={themeStyle(styles.closeBtn)}>
+              <X size={18} color={themeColor("#6B8CA8", "color")} />
             </Pressable>
           </View>
 
-          <View style={styles.formGroup}>
-            <Text style={styles.formLabel}>Trip Title *</Text>
+          <View style={themeStyle(styles.formGroup)}>
+            <Text style={themeStyle(styles.formLabel)}>Trip Title *</Text>
             <TextInput
               value={title}
               onChangeText={setTitle}
               placeholder="e.g. Hundred Islands Adventure"
-              placeholderTextColor="#A8BECC"
-              style={styles.formInput}
+              placeholderTextColor={themeColor("#A8BECC", "color")}
+              style={themeStyle(styles.formInput)}
             />
           </View>
 
-          <View style={styles.formGroup}>
-            <Text style={styles.formLabel}>Location *</Text>
+          <View style={themeStyle(styles.formGroup)}>
+            <Text style={themeStyle(styles.formLabel)}>Location *</Text>
             <TextInput
               value={location}
               onChangeText={setLocation}
               placeholder="e.g. Alaminos, Pangasinan"
-              placeholderTextColor="#A8BECC"
-              style={styles.formInput}
+              placeholderTextColor={themeColor("#A8BECC", "color")}
+              style={themeStyle(styles.formInput)}
             />
           </View>
 
-          <View style={styles.formRow}>
-            <View style={[styles.formGroup, { flex: 1 }]}>
-              <Text style={styles.formLabel}>Date</Text>
+          <View style={themeStyle(styles.formRow)}>
+            <View style={themeStyle([styles.formGroup, { flex: 1 }])}>
+              <Text style={themeStyle(styles.formLabel)}>Date</Text>
               <TextInput
                 value={date}
                 onChangeText={setDate}
                 placeholder="e.g. Aug 20–22, 2026"
-                placeholderTextColor="#A8BECC"
-                style={styles.formInput}
+                placeholderTextColor={themeColor("#A8BECC", "color")}
+                style={themeStyle(styles.formInput)}
               />
             </View>
-            <View style={[styles.formGroup, { flex: 1 }]}>
-              <Text style={styles.formLabel}>Budget (₱)</Text>
-              <TextInput
+            <View style={themeStyle([styles.formGroup, { flex: 1 }])}>
+              <Text style={themeStyle(styles.formLabel)}>Budget ({currency})</Text>
+              <MoneyInput
                 value={budget}
                 onChangeText={setBudget}
                 keyboardType="numeric"
                 placeholder="0"
-                placeholderTextColor="#A8BECC"
-                style={styles.formInput}
+                placeholderTextColor={themeColor("#A8BECC", "color")}
+                style={themeStyle(styles.formInput)}
               />
             </View>
           </View>
 
           {error && (
-            <View style={styles.errorBox}>
-              <Text style={styles.errorText}>{error}</Text>
+            <View style={themeStyle(styles.errorBox)}>
+              <Text style={themeStyle(styles.errorText)}>{error}</Text>
             </View>
           )}
 
-          <View style={styles.modalActions}>
-            <Pressable onPress={onClose} style={styles.cancelBtn}>
-              <Text style={styles.cancelBtnText}>Cancel</Text>
+          <View style={themeStyle(styles.modalActions)}>
+            <Pressable onPress={onClose} style={themeStyle(styles.cancelBtn)}>
+              <Text style={themeStyle(styles.cancelBtnText)}>Cancel</Text>
             </Pressable>
             <Pressable
               onPress={handleCreate}
               disabled={saving}
-              style={[styles.doneBtn, saving && { opacity: 0.7 }]}
+              style={themeStyle([styles.doneBtn, saving && { opacity: 0.7 }])}
             >
               {saving && (
-                <ActivityIndicator size="small" color="#fff" style={{ marginRight: 6 }} />
+                <ActivityIndicator size="small" color={themeColor("#fff", "color")} style={themeStyle({ marginRight: 6 })} />
               )}
-              <Text style={styles.doneBtnText}>
+              <Text style={themeStyle(styles.doneBtnText)}>
                 {saving ? "Creating..." : "Create Trip"}
               </Text>
             </Pressable>
@@ -292,6 +301,8 @@ function NewTripModal({ visible, onClose, onCreated }) {
 
 // ── Trip Card ───────────────────────────────────────────
 function TripCard({ trip, onView, onDelete }) {
+  const { themeStyle, themeColor } = useAppTheme();
+
   const Icon = placeIconMap[trip.icon] ?? placeIconMap.landmark;
   const completed = trip.status === "COMPLETED";
   const progress = trip.budget > 0
@@ -300,67 +311,67 @@ function TripCard({ trip, onView, onDelete }) {
   const status = STATUS_STYLE[trip.status] ?? STATUS_STYLE.UPCOMING;
 
   return (
-    <View style={styles.tripCard}>
+    <View style={themeStyle(styles.tripCard)}>
       {/* Top */}
-      <View style={styles.tripTop}>
-        <View style={styles.tripIconBox}>
-          <Icon size={20} color={colors.oceanBlue} />
+      <View style={themeStyle(styles.tripTop)}>
+        <View style={themeStyle(styles.tripIconBox)}>
+          <Icon size={20} color={themeColor(colors.oceanBlue, "color")} />
         </View>
-        <View style={[styles.statusPill, { backgroundColor: status.bg }]}>
-          <Text style={[styles.statusText, { color: status.text }]}>
+        <View style={themeStyle([styles.statusPill, { backgroundColor: status.bg }])}>
+          <Text style={themeStyle([styles.statusText, { color: status.text }])}>
             {trip.status.charAt(0) + trip.status.slice(1).toLowerCase()}
           </Text>
         </View>
       </View>
 
       {/* Title + location */}
-      <Text style={styles.tripTitle} numberOfLines={1}>{trip.title}</Text>
-      <View style={styles.tripMetaRow}>
-        <MapPin size={12} color="#6B8CA8" />
-        <Text style={styles.tripMeta} numberOfLines={1}>
+      <Text style={themeStyle(styles.tripTitle)} numberOfLines={1}>{trip.title}</Text>
+      <View style={themeStyle(styles.tripMetaRow)}>
+        <MapPin size={12} color={themeColor("#6B8CA8", "color")} />
+        <Text style={themeStyle(styles.tripMeta)} numberOfLines={1}>
           {trip.location}
         </Text>
       </View>
-      <View style={styles.tripMetaRow}>
-        <Calendar size={12} color="#6B8CA8" />
-        <Text style={styles.tripMeta}>{trip.date}</Text>
+      <View style={themeStyle(styles.tripMetaRow)}>
+        <Calendar size={12} color={themeColor("#6B8CA8", "color")} />
+        <Text style={themeStyle(styles.tripMeta)}>{trip.date}</Text>
       </View>
 
       {/* Budget progress */}
-      <View style={styles.budgetSection}>
-        <View style={styles.budgetRow}>
-          <Text style={styles.budgetLabel}>Budget progress</Text>
-          <Text style={styles.budgetAmount}>
-            ₱{trip.spent.toLocaleString()} / ₱{trip.budget.toLocaleString()}
+      <View style={themeStyle(styles.budgetSection)}>
+        <View style={themeStyle(styles.budgetRow)}>
+          <Text style={themeStyle(styles.budgetLabel)}>Budget progress</Text>
+          <Text style={themeStyle(styles.budgetAmount)}>
+            <MoneyAmount value={trip.spent} total={trip.budget} />
           </Text>
         </View>
-        <View style={styles.track}>
+        <View style={themeStyle(styles.track)}>
           <View
-            style={[
+            style={themeStyle([
               styles.fill,
               {
                 width: `${progress}%`,
                 backgroundColor: completed ? colors.palmGreen : colors.sunsetCoral,
               },
-            ]}
+            ])}
           />
         </View>
-        <Text style={styles.progressText}>{Math.round(progress)}% used</Text>
+        <Text style={themeStyle(styles.progressText)}>{Math.round(progress)}% used</Text>
       </View>
 
       {/* Footer */}
-      <View style={styles.tripFooter}>
-        <Text style={styles.stopsText}>{trip.stops} stops</Text>
-        <View style={styles.tripActions}>
+      <View style={themeStyle(styles.tripFooter)}>
+        <Text style={themeStyle(styles.stopsText)}>{trip.stops} stops</Text>
+        <View style={themeStyle(styles.tripActions)}>
           <Pressable
             onPress={() => onDelete(trip._id ?? trip.id)}
-            style={styles.deleteIconBtn}
+            style={themeStyle(styles.deleteIconBtn)}
           >
-            <Trash2 size={14} color={colors.sunsetCoral} />
+            <Trash2 size={14} color={themeColor(colors.sunsetCoral, "color")} />
           </Pressable>
-          <Pressable onPress={() => onView(trip)} style={styles.viewBtn}>
-            <Text style={styles.viewBtnText}>View</Text>
-            <ChevronRight size={13} color={colors.oceanBlue} />
+          <Pressable onPress={() => onView(trip)} style={themeStyle(styles.viewBtn)}>
+            <Text style={themeStyle(styles.viewBtnText)}>View</Text>
+            <ChevronRight size={13} color={themeColor(colors.oceanBlue, "color")} />
           </Pressable>
         </View>
       </View>
@@ -370,6 +381,8 @@ function TripCard({ trip, onView, onDelete }) {
 
 // ── Main Screen ─────────────────────────────────────────
 export default function MyTrips() {
+  const { themeStyle, themeColor } = useAppTheme();
+
   const [filter, setFilter] = useState("all");
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -412,67 +425,67 @@ export default function MyTrips() {
 
   return (
     <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.screen}
+      style={themeStyle(styles.container)}
+      contentContainerStyle={themeStyle(styles.screen)}
       showsVerticalScrollIndicator={false}
     >
       {/* Header */}
-      <View style={styles.header}>
+      <View style={themeStyle(styles.header)}>
         <View>
-          <Text style={styles.title}>My Trips</Text>
-          <Text style={styles.headerSub}>
+          <Text style={themeStyle(styles.title)}>My Trips</Text>
+          <Text style={themeStyle(styles.headerSub)}>
             {upcoming} upcoming · {completed} completed
           </Text>
         </View>
         <Pressable
           onPress={() => setShowNewTrip(true)}
-          style={styles.newTripBtn}
+          style={themeStyle(styles.newTripBtn)}
         >
-          <Plus size={16} color="#fff" />
-          <Text style={styles.newTripText}>New Trip</Text>
+          <Plus size={16} color={themeColor("#fff", "color")} />
+          <Text style={themeStyle(styles.newTripText)}>New Trip</Text>
         </Pressable>
       </View>
 
       {/* Search */}
-      <View style={styles.searchBox}>
-        <Search size={15} color="#6B8CA8" />
+      <View style={themeStyle(styles.searchBox)}>
+        <Search size={15} color={themeColor("#6B8CA8", "color")} />
         <TextInput
           value={search}
           onChangeText={setSearch}
           placeholder="Search trips..."
-          placeholderTextColor="#A8BECC"
-          style={styles.searchInput}
+          placeholderTextColor={themeColor("#A8BECC", "color")}
+          style={themeStyle(styles.searchInput)}
         />
         {search.length > 0 && (
           <Pressable onPress={() => setSearch("")}>
-            <X size={15} color="#6B8CA8" />
+            <X size={15} color={themeColor("#6B8CA8", "color")} />
           </Pressable>
         )}
       </View>
 
       {/* Tabs */}
-      <View style={styles.tabs}>
+      <View style={themeStyle(styles.tabs)}>
         {TABS.map(({ key, label }) => (
           <Pressable
             key={key}
             onPress={() => setFilter(key)}
-            style={[styles.tab, filter === key && styles.tabActive]}
+            style={themeStyle([styles.tab, filter === key && styles.tabActive])}
           >
-            <Text style={[styles.tabText, filter === key && styles.tabTextActive]}>
+            <Text style={themeStyle([styles.tabText, filter === key && styles.tabTextActive])}>
               {label}
             </Text>
             {key !== "all" && (
               <View
-                style={[
+                style={themeStyle([
                   styles.tabBadge,
                   filter === key && styles.tabBadgeActive,
-                ]}
+                ])}
               >
                 <Text
-                  style={[
+                  style={themeStyle([
                     styles.tabBadgeText,
                     filter === key && styles.tabBadgeTextActive,
-                  ]}
+                  ])}
                 >
                   {key === "UPCOMING" ? upcoming : completed}
                 </Text>
@@ -484,20 +497,20 @@ export default function MyTrips() {
 
       {/* Content */}
       {loading ? (
-        <View style={styles.centerBox}>
-          <ActivityIndicator color={colors.oceanBlue} size="large" />
-          <Text style={styles.loadingText}>Loading trips...</Text>
+        <View style={themeStyle(styles.centerBox)}>
+          <ActivityIndicator color={themeColor(colors.oceanBlue, "color")} size="large" />
+          <Text style={themeStyle(styles.loadingText)}>Loading trips...</Text>
         </View>
       ) : filtered.length === 0 ? (
-        <View style={styles.emptyBox}>
-          <Text style={styles.emptyTitle}>
+        <View style={themeStyle(styles.emptyBox)}>
+          <Text style={themeStyle(styles.emptyTitle)}>
             {search
               ? "No trips match your search"
               : filter === "all"
               ? "No trips yet"
               : `No ${filter.toLowerCase()} trips`}
           </Text>
-          <Text style={styles.emptyDesc}>
+          <Text style={themeStyle(styles.emptyDesc)}>
             {search
               ? "Try a different search term."
               : "Generate an itinerary with AI or create a trip manually."}
@@ -505,15 +518,15 @@ export default function MyTrips() {
           {!search && (
             <Pressable
               onPress={() => setShowNewTrip(true)}
-              style={styles.emptyBtn}
+              style={themeStyle(styles.emptyBtn)}
             >
-              <Plus size={14} color="#fff" />
-              <Text style={styles.emptyBtnText}>Create your first trip</Text>
+              <Plus size={14} color={themeColor("#fff", "color")} />
+              <Text style={themeStyle(styles.emptyBtnText)}>Create your first trip</Text>
             </Pressable>
           )}
         </View>
       ) : (
-        <View style={styles.grid}>
+        <View style={themeStyle(styles.grid)}>
           {filtered.map((trip) => (
             <TripCard
               key={trip._id ?? trip.id}

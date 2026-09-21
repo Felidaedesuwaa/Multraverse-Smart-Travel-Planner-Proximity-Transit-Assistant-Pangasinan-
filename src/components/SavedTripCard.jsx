@@ -1,3 +1,4 @@
+import { useAppTheme } from "../theme/useAppTheme";
 import { StyleSheet, Text, View } from "react-native";
 import { colors } from "../theme/colors";
 import StatusBadge from "./StatusBadge";
@@ -8,16 +9,18 @@ export default function SavedTripCard({
   date,
   progress,
 }) {
+  const { themeStyle } = useAppTheme();
+
   const barColor = status === "completed" ? colors.palmGreen : colors.sunsetCoral;
   return (
-    <View style={styles.card}>
-      <View style={styles.header}>
-        <Text style={styles.title}>{title}</Text>
+    <View style={themeStyle(styles.card)}>
+      <View style={themeStyle(styles.header)}>
+        <Text style={themeStyle(styles.title)}>{title}</Text>
         <StatusBadge status={status} />
       </View>
-      <Text style={styles.date}>{date}</Text>
-      <View style={styles.track}>
-        <View style={[styles.progress, { width: `${progress}%`, backgroundColor: barColor }]} />
+      <Text style={themeStyle(styles.date)}>{date}</Text>
+      <View style={themeStyle(styles.track)}>
+        <View style={themeStyle([styles.progress, { width: `${progress}%`, backgroundColor: barColor }])} />
       </View>
     </View>
   );

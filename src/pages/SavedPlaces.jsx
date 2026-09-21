@@ -1,3 +1,4 @@
+import { useAppTheme } from "../theme/useAppTheme";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -48,8 +49,10 @@ const PLACE_BG_COLORS = [
 
 // ── Star Rating ─────────────────────────────────────────
 function StarRating({ rating, size = 14, onRate }) {
+  const { themeStyle, themeColor } = useAppTheme();
+
   return (
-    <View style={{ flexDirection: "row", gap: 2 }}>
+    <View style={themeStyle({ flexDirection: "row", gap: 2 })}>
       {[1, 2, 3, 4, 5].map((star) => (
         <Pressable
           key={star}
@@ -58,8 +61,8 @@ function StarRating({ rating, size = 14, onRate }) {
         >
           <Star
             size={size}
-            color={star <= rating ? "#F59E0B" : "#D1DCE5"}
-            fill={star <= rating ? "#F59E0B" : "transparent"}
+            color={themeColor(star <= rating ? "#F59E0B" : "#D1DCE5", "color")}
+            fill={themeColor(star <= rating ? "#F59E0B" : "transparent", "fill")}
           />
         </Pressable>
       ))}
@@ -69,6 +72,8 @@ function StarRating({ rating, size = 14, onRate }) {
 
 // ── Add/Edit Place Modal ────────────────────────────────
 function PlaceFormModal({ visible, place, onClose, onSaved }) {
+  const { themeStyle, themeColor } = useAppTheme();
+
   const isEdit = !!place;
   const [name, setName] = useState(place?.name ?? "");
   const [category, setCategory] = useState(place?.category ?? "Landmark");
@@ -118,49 +123,49 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable style={styles.overlay} onPress={onClose}>
-        <Pressable style={styles.modalBox} onPress={() => {}}>
+      <Pressable style={themeStyle(styles.overlay)} onPress={onClose}>
+        <Pressable style={themeStyle(styles.modalBox)} onPress={() => {}}>
           <ScrollView showsVerticalScrollIndicator={false}>
             {/* Header */}
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
+            <View style={themeStyle(styles.modalHeader)}>
+              <Text style={themeStyle(styles.modalTitle)}>
                 {isEdit ? "Edit Place" : "Add New Place"}
               </Text>
-              <Pressable onPress={onClose} style={styles.closeBtn}>
-                <X size={18} color="#6B8CA8" />
+              <Pressable onPress={onClose} style={themeStyle(styles.closeBtn)}>
+                <X size={18} color={themeColor("#6B8CA8", "color")} />
               </Pressable>
             </View>
 
             {/* Name */}
-            <View style={styles.formGroup}>
-              <Text style={styles.formLabel}>Place Name *</Text>
+            <View style={themeStyle(styles.formGroup)}>
+              <Text style={themeStyle(styles.formLabel)}>Place Name *</Text>
               <TextInput
                 value={name}
                 onChangeText={setName}
                 placeholder="e.g. Hundred Islands National Park"
-                placeholderTextColor="#A8BECC"
-                style={styles.formInput}
+                placeholderTextColor={themeColor("#A8BECC", "color")}
+                style={themeStyle(styles.formInput)}
               />
             </View>
 
             {/* Category */}
-            <View style={styles.formGroup}>
-              <Text style={styles.formLabel}>Category</Text>
-              <View style={styles.chipGrid}>
+            <View style={themeStyle(styles.formGroup)}>
+              <Text style={themeStyle(styles.formLabel)}>Category</Text>
+              <View style={themeStyle(styles.chipGrid)}>
                 {cats.map((cat) => (
                   <Pressable
                     key={cat}
                     onPress={() => setCategory(cat)}
-                    style={[
+                    style={themeStyle([
                       styles.chip,
                       category === cat && styles.chipActive,
-                    ]}
+                    ])}
                   >
                     <Text
-                      style={[
+                      style={themeStyle([
                         styles.chipText,
                         category === cat && styles.chipTextActive,
-                      ]}
+                      ])}
                     >
                       {cat}
                     </Text>
@@ -170,39 +175,39 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
             </View>
 
             {/* Description */}
-            <View style={styles.formGroup}>
-              <Text style={styles.formLabel}>Description</Text>
+            <View style={themeStyle(styles.formGroup)}>
+              <Text style={themeStyle(styles.formLabel)}>Description</Text>
               <TextInput
                 value={description}
                 onChangeText={setDescription}
                 multiline
                 numberOfLines={3}
                 placeholder="What makes this place special?"
-                placeholderTextColor="#A8BECC"
-                style={[styles.formInput, styles.formTextarea]}
+                placeholderTextColor={themeColor("#A8BECC", "color")}
+                style={themeStyle([styles.formInput, styles.formTextarea])}
               />
             </View>
 
             {/* Personal Note */}
-            <View style={styles.formGroup}>
-              <Text style={styles.formLabel}>My Experience / Notes</Text>
+            <View style={themeStyle(styles.formGroup)}>
+              <Text style={themeStyle(styles.formLabel)}>My Experience / Notes</Text>
               <TextInput
                 value={userNote}
                 onChangeText={setUserNote}
                 multiline
                 numberOfLines={3}
                 placeholder="Share your experience here..."
-                placeholderTextColor="#A8BECC"
-                style={[styles.formInput, styles.formTextarea]}
+                placeholderTextColor={themeColor("#A8BECC", "color")}
+                style={themeStyle([styles.formInput, styles.formTextarea])}
               />
             </View>
 
             {/* Rating */}
-            <View style={styles.formGroup}>
-              <Text style={styles.formLabel}>Your Rating</Text>
-              <View style={styles.ratingRow}>
+            <View style={themeStyle(styles.formGroup)}>
+              <Text style={themeStyle(styles.formLabel)}>Your Rating</Text>
+              <View style={themeStyle(styles.ratingRow)}>
                 <StarRating rating={rating} size={28} onRate={setRating} />
-                <Text style={styles.ratingLabel}>
+                <Text style={themeStyle(styles.ratingLabel)}>
                   {rating === 0 ? "Tap to rate" :
                    rating === 1 ? "Poor" :
                    rating === 2 ? "Fair" :
@@ -213,29 +218,29 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
             </View>
 
             {/* Visibility */}
-            <View style={styles.formGroup}>
-              <Text style={styles.formLabel}>Visibility</Text>
-              <View style={styles.visibilityRow}>
+            <View style={themeStyle(styles.formGroup)}>
+              <Text style={themeStyle(styles.formLabel)}>Visibility</Text>
+              <View style={themeStyle(styles.visibilityRow)}>
                 <Pressable
                   onPress={() => setIsPublic(true)}
-                  style={[styles.visBtn, isPublic && styles.visBtnActive]}
+                  style={themeStyle([styles.visBtn, isPublic && styles.visBtnActive])}
                 >
-                  <Globe size={14} color={isPublic ? colors.oceanBlue : "#6B8CA8"} />
-                  <Text style={[styles.visBtnText, isPublic && styles.visBtnTextActive]}>
+                  <Globe size={14} color={themeColor(isPublic ? colors.oceanBlue : "#6B8CA8", "color")} />
+                  <Text style={themeStyle([styles.visBtnText, isPublic && styles.visBtnTextActive])}>
                     Public
                   </Text>
                 </Pressable>
                 <Pressable
                   onPress={() => setIsPublic(false)}
-                  style={[styles.visBtn, !isPublic && styles.visBtnActivePrivate]}
+                  style={themeStyle([styles.visBtn, !isPublic && styles.visBtnActivePrivate])}
                 >
-                  <Lock size={14} color={!isPublic ? colors.sunsetCoral : "#6B8CA8"} />
-                  <Text style={[styles.visBtnText, !isPublic && styles.visBtnTextPrivate]}>
+                  <Lock size={14} color={themeColor(!isPublic ? colors.sunsetCoral : "#6B8CA8", "color")} />
+                  <Text style={themeStyle([styles.visBtnText, !isPublic && styles.visBtnTextPrivate])}>
                     Private
                   </Text>
                 </Pressable>
               </View>
-              <Text style={styles.visHint}>
+              <Text style={themeStyle(styles.visHint)}>
                 {isPublic
                   ? "Other travelers can see your rating and notes."
                   : "Only you can see this place and your notes."}
@@ -243,24 +248,24 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
             </View>
 
             {error && (
-              <View style={styles.errorBox}>
-                <Text style={styles.errorText}>{error}</Text>
+              <View style={themeStyle(styles.errorBox)}>
+                <Text style={themeStyle(styles.errorText)}>{error}</Text>
               </View>
             )}
 
-            <View style={styles.modalActions}>
-              <Pressable onPress={onClose} style={styles.cancelBtn}>
-                <Text style={styles.cancelText}>Cancel</Text>
+            <View style={themeStyle(styles.modalActions)}>
+              <Pressable onPress={onClose} style={themeStyle(styles.cancelBtn)}>
+                <Text style={themeStyle(styles.cancelText)}>Cancel</Text>
               </Pressable>
               <Pressable
                 onPress={handleSave}
                 disabled={saving}
-                style={[styles.saveBtn, saving && { opacity: 0.7 }]}
+                style={themeStyle([styles.saveBtn, saving && { opacity: 0.7 }])}
               >
                 {saving && (
-                  <ActivityIndicator size="small" color="#fff" style={{ marginRight: 6 }} />
+                  <ActivityIndicator size="small" color={themeColor("#fff", "color")} style={themeStyle({ marginRight: 6 })} />
                 )}
-                <Text style={styles.saveBtnText}>
+                <Text style={themeStyle(styles.saveBtnText)}>
                   {saving ? "Saving..." : isEdit ? "Save Changes" : "Add Place"}
                 </Text>
               </Pressable>
@@ -274,6 +279,8 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
 
 // ── Place Detail Modal ──────────────────────────────────
 function PlaceDetailModal({ place, onClose, onEdit, onDelete }) {
+  const { themeStyle, themeColor } = useAppTheme();
+
   if (!place) return null;
   const Icon = placeIconMap[place.icon] ?? placeIconMap.landmark;
   const catStyle = CATEGORY_STYLE[place.category] ?? CATEGORY_STYLE.Landmark;
@@ -283,49 +290,49 @@ function PlaceDetailModal({ place, onClose, onEdit, onDelete }) {
 
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={styles.overlay} onPress={onClose}>
-        <Pressable style={[styles.modalBox, styles.detailBox]} onPress={() => {}}>
+      <Pressable style={themeStyle(styles.overlay)} onPress={onClose}>
+        <Pressable style={themeStyle([styles.modalBox, styles.detailBox])} onPress={() => {}}>
           {/* Artwork header */}
-          <View style={[styles.detailArt, { backgroundColor: bgColor }]}>
-            <View style={styles.detailIconCircle}>
-              <Icon size={32} color={colors.oceanBlue} />
+          <View style={themeStyle([styles.detailArt, { backgroundColor: bgColor }])}>
+            <View style={themeStyle(styles.detailIconCircle)}>
+              <Icon size={32} color={themeColor(colors.oceanBlue, "color")} />
             </View>
-            <Pressable onPress={onClose} style={styles.detailClose}>
-              <X size={18} color="#fff" />
+            <Pressable onPress={onClose} style={themeStyle(styles.detailClose)}>
+              <X size={18} color={themeColor("#fff", "color")} />
             </Pressable>
             {place.isPublic !== false && (
-              <View style={styles.publicTag}>
-                <Globe size={10} color="#fff" />
-                <Text style={styles.publicTagText}>Public</Text>
+              <View style={themeStyle(styles.publicTag)}>
+                <Globe size={10} color={themeColor("#fff", "color")} />
+                <Text style={themeStyle(styles.publicTagText)}>Public</Text>
               </View>
             )}
           </View>
 
           <ScrollView
-            style={{ flex: 1 }}
-            contentContainerStyle={styles.detailContent}
+            style={themeStyle({ flex: 1 })}
+            contentContainerStyle={themeStyle(styles.detailContent)}
             showsVerticalScrollIndicator={false}
           >
             {/* Title row */}
-            <View style={styles.detailTitleRow}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.detailName}>{place.name}</Text>
-                <View style={styles.detailMetaRow}>
-                  <MapPin size={12} color="#6B8CA8" />
-                  <Text style={styles.detailMeta}>{place.category}</Text>
+            <View style={themeStyle(styles.detailTitleRow)}>
+              <View style={themeStyle({ flex: 1 })}>
+                <Text style={themeStyle(styles.detailName)}>{place.name}</Text>
+                <View style={themeStyle(styles.detailMetaRow)}>
+                  <MapPin size={12} color={themeColor("#6B8CA8", "color")} />
+                  <Text style={themeStyle(styles.detailMeta)}>{place.category}</Text>
                 </View>
               </View>
-              <View style={[styles.catBadge, { backgroundColor: catStyle.bg }]}>
-                <Text style={[styles.catBadgeText, { color: catStyle.color }]}>
+              <View style={themeStyle([styles.catBadge, { backgroundColor: catStyle.bg }])}>
+                <Text style={themeStyle([styles.catBadgeText, { color: catStyle.color }])}>
                   {place.category}
                 </Text>
               </View>
             </View>
 
             {/* Rating */}
-            <View style={styles.detailRatingBox}>
+            <View style={themeStyle(styles.detailRatingBox)}>
               <StarRating rating={place.rating ?? 0} size={20} />
-              <Text style={styles.detailRatingText}>
+              <Text style={themeStyle(styles.detailRatingText)}>
                 {place.rating > 0
                   ? `${place.rating}.0 / 5.0`
                   : "Not yet rated"}
@@ -334,63 +341,63 @@ function PlaceDetailModal({ place, onClose, onEdit, onDelete }) {
 
             {/* Description */}
             {place.description ? (
-              <View style={styles.detailSection}>
-                <Text style={styles.detailSectionTitle}>About this place</Text>
-                <Text style={styles.detailSectionText}>{place.description}</Text>
+              <View style={themeStyle(styles.detailSection)}>
+                <Text style={themeStyle(styles.detailSectionTitle)}>About this place</Text>
+                <Text style={themeStyle(styles.detailSectionText)}>{place.description}</Text>
               </View>
             ) : null}
 
             {/* User note */}
             {place.userNote ? (
-              <View style={styles.noteBox}>
-                <Text style={styles.noteTitle}> My Experience</Text>
-                <Text style={styles.noteText}>{place.userNote}</Text>
+              <View style={themeStyle(styles.noteBox)}>
+                <Text style={themeStyle(styles.noteTitle)}> My Experience</Text>
+                <Text style={themeStyle(styles.noteText)}>{place.userNote}</Text>
               </View>
             ) : (
               <Pressable
                 onPress={() => { onClose(); onEdit(place); }}
-                style={styles.addNoteBtn}
+                style={themeStyle(styles.addNoteBtn)}
               >
-                <Camera size={14} color={colors.oceanBlue} />
-                <Text style={styles.addNoteBtnText}>
+                <Camera size={14} color={themeColor(colors.oceanBlue, "color")} />
+                <Text style={themeStyle(styles.addNoteBtnText)}>
                   Add your experience & rating
                 </Text>
               </Pressable>
             )}
 
             {/* Photo placeholder */}
-            <View style={styles.photosSection}>
-              <Text style={styles.detailSectionTitle}>Photos</Text>
-              <View style={styles.photosGrid}>
+            <View style={themeStyle(styles.photosSection)}>
+              <Text style={themeStyle(styles.detailSectionTitle)}>Photos</Text>
+              <View style={themeStyle(styles.photosGrid)}>
                 {[1, 2, 3].map((i) => (
-                  <View key={i} style={[styles.photoSlot, { backgroundColor: bgColor }]}>
-                    <Camera size={20} color="#A8BECC" />
-                    <Text style={styles.photoSlotText}>Add photo</Text>
+                  <View key={i} style={themeStyle([styles.photoSlot, { backgroundColor: bgColor }])}>
+                    <Camera size={20} color={themeColor("#A8BECC", "color")} />
+                    <Text style={themeStyle(styles.photoSlotText)}>Add photo</Text>
                   </View>
                 ))}
               </View>
-              <Text style={styles.photoHint}>
+              <Text style={themeStyle(styles.photoHint)}>
                 Photo uploads coming soon. Stay tuned!
               </Text>
             </View>
 
             {/* Actions */}
-            <View style={styles.detailActions}>
+            <View style={themeStyle(styles.detailActions)}>
               <Pressable
                 onPress={() => { onClose(); onEdit(place); }}
-                style={styles.editDetailBtn}
+                style={themeStyle(styles.editDetailBtn)}
               >
-                <Text style={styles.editDetailBtnText}>Edit Place</Text>
+                <Text style={themeStyle(styles.editDetailBtnText)}>Edit Place</Text>
               </Pressable>
-              <Pressable style={styles.directionsBtn}>
-                <Navigation size={14} color="#fff" />
-                <Text style={styles.directionsBtnText}>Directions</Text>
+              <Pressable style={themeStyle(styles.directionsBtn)}>
+                <Navigation size={14} color={themeColor("#fff", "color")} />
+                <Text style={themeStyle(styles.directionsBtnText)}>Directions</Text>
               </Pressable>
               <Pressable
                 onPress={() => onDelete(place._id ?? place.id)}
-                style={styles.deleteDetailBtn}
+                style={themeStyle(styles.deleteDetailBtn)}
               >
-                <Trash2 size={14} color={colors.sunsetCoral} />
+                <Trash2 size={14} color={themeColor(colors.sunsetCoral, "color")} />
               </Pressable>
             </View>
           </ScrollView>
@@ -402,6 +409,8 @@ function PlaceDetailModal({ place, onClose, onEdit, onDelete }) {
 
 // ── Place Card ──────────────────────────────────────────
 function PlaceCard({ place, onView, onDelete, index }) {
+  const { themeStyle, themeColor } = useAppTheme();
+
   const Icon = placeIconMap[place.icon] ?? placeIconMap.landmark;
   const catStyle = CATEGORY_STYLE[place.category] ?? CATEGORY_STYLE.Landmark;
   const bgColor = PLACE_BG_COLORS[index % PLACE_BG_COLORS.length];
@@ -409,72 +418,72 @@ function PlaceCard({ place, onView, onDelete, index }) {
   return (
     <Pressable
       onPress={() => onView(place)}
-      style={({ pressed }) => [styles.card, pressed && { opacity: 0.92 }]}
+      style={themeStyle(({ pressed }) => [styles.card, pressed && { opacity: 0.92 }])}
     >
       {/* Art header */}
-      <View style={[styles.cardArt, { backgroundColor: bgColor }]}>
-        <View style={styles.cardIconCircle}>
-          <Icon size={28} color={colors.oceanBlue} />
+      <View style={themeStyle([styles.cardArt, { backgroundColor: bgColor }])}>
+        <View style={themeStyle(styles.cardIconCircle)}>
+          <Icon size={28} color={themeColor(colors.oceanBlue, "color")} />
         </View>
 
         {/* Public badge */}
         {place.isPublic !== false && (
-          <View style={styles.cardPublicBadge}>
-            <Globe size={9} color="#fff" />
+          <View style={themeStyle(styles.cardPublicBadge)}>
+            <Globe size={9} color={themeColor("#fff", "color")} />
           </View>
         )}
 
         {/* Category badge */}
-        <View style={[styles.cardCatBadge, { backgroundColor: catStyle.bg }]}>
-          <Text style={[styles.cardCatText, { color: catStyle.color }]}>
+        <View style={themeStyle([styles.cardCatBadge, { backgroundColor: catStyle.bg }])}>
+          <Text style={themeStyle([styles.cardCatText, { color: catStyle.color }])}>
             {place.category}
           </Text>
         </View>
       </View>
 
       {/* Body */}
-      <View style={styles.cardBody}>
-        <Text style={styles.cardName} numberOfLines={1}>{place.name}</Text>
+      <View style={themeStyle(styles.cardBody)}>
+        <Text style={themeStyle(styles.cardName)} numberOfLines={1}>{place.name}</Text>
 
         {/* Rating */}
-        <View style={styles.cardRatingRow}>
+        <View style={themeStyle(styles.cardRatingRow)}>
           <StarRating rating={place.rating ?? 0} size={12} />
-          <Text style={styles.cardRatingText}>
+          <Text style={themeStyle(styles.cardRatingText)}>
             {place.rating > 0 ? `${place.rating}.0` : "No rating"}
           </Text>
         </View>
 
         {/* Description */}
-        <Text style={styles.cardDesc} numberOfLines={2}>
+        <Text style={themeStyle(styles.cardDesc)} numberOfLines={2}>
           {place.description || "No description available."}
         </Text>
 
         {/* User note preview */}
         {place.userNote ? (
-          <View style={styles.notePreview}>
-            <Text style={styles.notePreviewText} numberOfLines={1}>
+          <View style={themeStyle(styles.notePreview)}>
+            <Text style={themeStyle(styles.notePreviewText)} numberOfLines={1}>
               📝 {place.userNote}
             </Text>
           </View>
         ) : null}
 
         {/* Footer */}
-        <View style={styles.cardFooter}>
+        <View style={themeStyle(styles.cardFooter)}>
           <Pressable
             onPress={() => onView(place)}
-            style={styles.viewBtn}
+            style={themeStyle(styles.viewBtn)}
           >
-            <BookmarkCheck size={13} color={colors.oceanBlue} />
-            <Text style={styles.viewBtnText}>View</Text>
+            <BookmarkCheck size={13} color={themeColor(colors.oceanBlue, "color")} />
+            <Text style={themeStyle(styles.viewBtnText)}>View</Text>
           </Pressable>
           <Pressable
             onPress={(e) => {
               e.stopPropagation();
               onDelete(place._id ?? place.id);
             }}
-            style={styles.deleteCardBtn}
+            style={themeStyle(styles.deleteCardBtn)}
           >
-            <Trash2 size={13} color={colors.sunsetCoral} />
+            <Trash2 size={13} color={themeColor(colors.sunsetCoral, "color")} />
           </Pressable>
         </View>
       </View>
@@ -484,6 +493,8 @@ function PlaceCard({ place, onView, onDelete, index }) {
 
 // ── Main Screen ─────────────────────────────────────────
 export default function SavedPlaces() {
+  const { themeStyle, themeColor } = useAppTheme();
+
   const [places, setPlaces] = useState([]);
   const [query, setQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
@@ -535,60 +546,60 @@ export default function SavedPlaces() {
 
   return (
     <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.screen}
+      style={themeStyle(styles.container)}
+      contentContainerStyle={themeStyle(styles.screen)}
       showsVerticalScrollIndicator={false}
     >
       {/* Header */}
-      <View style={styles.header}>
+      <View style={themeStyle(styles.header)}>
         <View>
-          <Text style={styles.title}>Saved Places</Text>
-          <Text style={styles.subtitle}>
+          <Text style={themeStyle(styles.title)}>Saved Places</Text>
+          <Text style={themeStyle(styles.subtitle)}>
             {places.length} saved · {ratedCount} rated · {publicCount} public
           </Text>
         </View>
-        <Pressable onPress={() => setShowAdd(true)} style={styles.addBtn}>
-          <Plus size={15} color="#fff" />
-          <Text style={styles.addBtnText}>Add Place</Text>
+        <Pressable onPress={() => setShowAdd(true)} style={themeStyle(styles.addBtn)}>
+          <Plus size={15} color={themeColor("#fff", "color")} />
+          <Text style={themeStyle(styles.addBtnText)}>Add Place</Text>
         </Pressable>
       </View>
 
       {/* Stats row */}
-      <View style={styles.statsRow}>
-        <View style={styles.statChip}>
-          <Bookmark size={13} color={colors.oceanBlue} />
-          <Text style={styles.statChipText}>{places.length} Saved</Text>
+      <View style={themeStyle(styles.statsRow)}>
+        <View style={themeStyle(styles.statChip)}>
+          <Bookmark size={13} color={themeColor(colors.oceanBlue, "color")} />
+          <Text style={themeStyle(styles.statChipText)}>{places.length} Saved</Text>
         </View>
-        <View style={styles.statChip}>
-          <Star size={13} color="#F59E0B" fill="#F59E0B" />
-          <Text style={styles.statChipText}>{avgRating} Avg Rating</Text>
+        <View style={themeStyle(styles.statChip)}>
+          <Star size={13} color={themeColor("#F59E0B", "color")} fill={themeColor("#F59E0B", "fill")} />
+          <Text style={themeStyle(styles.statChipText)}>{avgRating} Avg Rating</Text>
         </View>
-        <View style={styles.statChip}>
-          <Globe size={13} color={colors.palmGreen} />
-          <Text style={styles.statChipText}>{publicCount} Public</Text>
+        <View style={themeStyle(styles.statChip)}>
+          <Globe size={13} color={themeColor(colors.palmGreen, "color")} />
+          <Text style={themeStyle(styles.statChipText)}>{publicCount} Public</Text>
         </View>
-        <View style={styles.statChip}>
-          <Lock size={13} color={colors.sunsetCoral} />
-          <Text style={styles.statChipText}>
+        <View style={themeStyle(styles.statChip)}>
+          <Lock size={13} color={themeColor(colors.sunsetCoral, "color")} />
+          <Text style={themeStyle(styles.statChipText)}>
             {places.length - publicCount} Private
           </Text>
         </View>
       </View>
 
       {/* Search + Category filter */}
-      <View style={styles.filterRow}>
-        <View style={styles.searchBox}>
-          <Search size={15} color="#6B8CA8" />
+      <View style={themeStyle(styles.filterRow)}>
+        <View style={themeStyle(styles.searchBox)}>
+          <Search size={15} color={themeColor("#6B8CA8", "color")} />
           <TextInput
             value={query}
             onChangeText={setQuery}
             placeholder="Search places..."
-            placeholderTextColor="#A8BECC"
-            style={styles.searchInput}
+            placeholderTextColor={themeColor("#A8BECC", "color")}
+            style={themeStyle(styles.searchInput)}
           />
           {query.length > 0 && (
             <Pressable onPress={() => setQuery("")}>
-              <X size={14} color="#6B8CA8" />
+              <X size={14} color={themeColor("#6B8CA8", "color")} />
             </Pressable>
           )}
         </View>
@@ -598,23 +609,23 @@ export default function SavedPlaces() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        style={styles.categoryScroll}
-        contentContainerStyle={styles.categoryRow}
+        style={themeStyle(styles.categoryScroll)}
+        contentContainerStyle={themeStyle(styles.categoryRow)}
       >
         {CATEGORIES.map((cat) => (
           <Pressable
             key={cat}
             onPress={() => setCategoryFilter(cat)}
-            style={[
+            style={themeStyle([
               styles.catTab,
               categoryFilter === cat && styles.catTabActive,
-            ]}
+            ])}
           >
             <Text
-              style={[
+              style={themeStyle([
                 styles.catTabText,
                 categoryFilter === cat && styles.catTabTextActive,
-              ]}
+              ])}
             >
               {cat}
             </Text>
@@ -624,21 +635,21 @@ export default function SavedPlaces() {
 
       {/* Content */}
       {loading ? (
-        <View style={styles.centerBox}>
-          <ActivityIndicator color={colors.oceanBlue} size="large" />
-          <Text style={styles.loadingText}>Loading your places...</Text>
+        <View style={themeStyle(styles.centerBox)}>
+          <ActivityIndicator color={themeColor(colors.oceanBlue, "color")} size="large" />
+          <Text style={themeStyle(styles.loadingText)}>Loading your places...</Text>
         </View>
       ) : filtered.length === 0 ? (
-        <View style={styles.emptyBox}>
-          <View style={styles.emptyIcon}>
-            <Bookmark size={32} color="#A8BECC" />
+        <View style={themeStyle(styles.emptyBox)}>
+          <View style={themeStyle(styles.emptyIcon)}>
+            <Bookmark size={32} color={themeColor("#A8BECC", "color")} />
           </View>
-          <Text style={styles.emptyTitle}>
+          <Text style={themeStyle(styles.emptyTitle)}>
             {query || categoryFilter !== "All"
               ? "No places match your filters"
               : "No saved places yet"}
           </Text>
-          <Text style={styles.emptyDesc}>
+          <Text style={themeStyle(styles.emptyDesc)}>
             {query || categoryFilter !== "All"
               ? "Try different search terms or categories."
               : "Save places you've visited or plan to visit in Pangasinan."}
@@ -646,15 +657,15 @@ export default function SavedPlaces() {
           {!query && categoryFilter === "All" && (
             <Pressable
               onPress={() => setShowAdd(true)}
-              style={styles.emptyBtn}
+              style={themeStyle(styles.emptyBtn)}
             >
-              <Plus size={14} color="#fff" />
-              <Text style={styles.emptyBtnText}>Save your first place</Text>
+              <Plus size={14} color={themeColor("#fff", "color")} />
+              <Text style={themeStyle(styles.emptyBtnText)}>Save your first place</Text>
             </Pressable>
           )}
         </View>
       ) : (
-        <View style={styles.grid}>
+        <View style={themeStyle(styles.grid)}>
           {filtered.map((place, i) => (
             <PlaceCard
               key={place._id ?? place.id}
@@ -744,9 +755,11 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, fontSize: 14, color: "#1A2E40" },
 
   // Category tabs
-  categoryScroll: { marginBottom: 20 },
-  categoryRow: { flexDirection: "row", gap: 8, paddingVertical: 4 },
+  categoryScroll: { marginBottom: 20, flexGrow: 0, flexShrink: 0 },
+  categoryRow: { flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 4 },
   catTab: {
+    minHeight: 44,
+    justifyContent: "center",
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,

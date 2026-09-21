@@ -1,3 +1,4 @@
+import { useAppTheme } from "../theme/useAppTheme";
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -9,6 +10,8 @@ import { useAuthStore } from "../store/authStore";
 import { validateEmail } from "../utils/validation";
 
 export default function LoginPage() {
+  const { themeStyle } = useAppTheme();
+
   const navigation = useNavigation();
   const { login, isLoading } = useAuthStore();
   const [email, setEmail] = useState("");
@@ -37,11 +40,11 @@ export default function LoginPage() {
       title="Welcome back"
       subtitle="Sign in to continue planning your Pangasinan trip."
       showBack={false}
-      footer={<Text style={styles.footerText}>Don't have an account? <Text style={styles.footerLink} onPress={() => navigation.navigate("Register")}>Sign up</Text></Text>}
+      footer={<Text style={themeStyle(styles.footerText)}>Don't have an account? <Text style={themeStyle(styles.footerLink)} onPress={() => navigation.navigate("Register")}>Sign up</Text></Text>}
     >
       <AuthInput label="Email" placeholder="you@email.com" value={email} onChangeText={setEmail} error={errors.email} keyboardType="email-address" />
       <AuthInput label="Password" placeholder="••••••••" value={password} onChangeText={setPassword} error={errors.password} isPassword />
-      {formError ? <Text style={styles.formError}>{formError}</Text> : null}
+      {formError ? <Text style={themeStyle(styles.formError)}>{formError}</Text> : null}
       <GradientButton label="Sign In" loading={isLoading} onPress={handleSubmit} />
     </AuthLayout>
   );

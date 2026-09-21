@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { api } from '../lib/api'
 import { storage } from '../lib/storage'
 
-export const useAuthStore = create((set) => ({
+export const useAuthStore = create((set, get) => ({
   user: null,
   isAuthenticated: false,
   isLoading: false,
@@ -13,7 +13,30 @@ export const useAuthStore = create((set) => ({
     const user = await storage.getItem('user')
     if (token && user) {
       set({ user: JSON.parse(user), isAuthenticated: true })
+      // Refresh account details without preventing cached/offline startup.
+      get().refreshProfile()
     }
+  },
+
+  refreshProfile: async () => {
+    const previous = get().user
+    if (!previous) return
+    try {
+      const user = await api.getMe()
+      if (!user?.id || get().user !== previous) return
+      set({ user })
+      await storage.setItem('user', JSON.stringify(user))
+    } catch { /* Keep the last saved profile when offline. */ }
+  },
+
+  updateProfile: async changes => {
+    const previous = get().user
+    const user = await api.updateMe(changes)
+    if (!user?.id) throw new Error('Could not save your profile. Please try again.')
+    if (!get().isAuthenticated || get().user?.id !== previous?.id) return
+    set({ user })
+    await storage.setItem('user', JSON.stringify(user))
+    return user
   },
 
   login: async (email, password) => {

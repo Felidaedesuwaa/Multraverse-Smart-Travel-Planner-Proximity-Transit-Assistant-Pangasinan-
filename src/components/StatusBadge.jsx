@@ -1,3 +1,4 @@
+import { useAppTheme } from "../theme/useAppTheme";
 import { StyleSheet, Text, View } from "react-native";
 import { colors } from "../theme/colors";
 
@@ -10,10 +11,12 @@ const statusStyles = {
 };
 
 export default function StatusBadge({ status }) {
+  const { themeStyle } = useAppTheme();
+
   const statusStyle = statusStyles[status] || statusStyles.inactive;
   return (
-    <View style={[styles.badge, { backgroundColor: statusStyle.bg }]}>
-      <Text style={[styles.label, { color: statusStyle.text }]}>{status}</Text>
+    <View style={themeStyle([styles.badge, { backgroundColor: statusStyle.bg }])}>
+      <Text style={themeStyle([styles.label, { color: statusStyle.text }])}>{status}</Text>
     </View>
   );
 }

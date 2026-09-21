@@ -1,0 +1,53 @@
+// A shared blue-slate foundation with muted accents for cards, forms and status.
+export const darkPalette = {
+  background: "#14212B",
+  surface: "#20313D",
+  raised: "#293E4B",
+  inset: "#1B2B36",
+  border: "#3C5260",
+  text: "#E2EBF0",
+  muted: "#ACBDC7",
+  subtle: "#91A7B5",
+  primary: "#365E73",
+  coralButton: "#9E5242",
+  greenButton: "#366452",
+  goldButton: "#77613C",
+  blueTint: "#293F50",
+  greenTint: "#293F38",
+  coralTint: "#453733",
+  goldTint: "#443E30",
+  purpleTint: "#39364B",
+  blue: "#A7C8DE",
+  green: "#A6CFB9",
+  coral: "#EDB09F",
+  gold: "#E4CA98",
+  purple: "#C9B8E2",
+};
+
+const lookup = groups => Object.fromEntries(groups.flatMap(([value, keys]) => keys.map(key => [key, value])));
+export const darkSurfaces = lookup([
+  [darkPalette.background, ["FDFBF7", "F7F9FB"]],
+  [darkPalette.surface, ["FFFFFF"]],
+  [darkPalette.inset, ["F8FAFC", "FAFCFD", "FAFCFF"]],
+  [darkPalette.raised, ["F4F7FB", "F4F8FC", "F0F5FA", "F0F4F8", "EEF2F7", "F5F6F2", "EFEAE0", "E2EBF3", "E7E1D6", "D1DCE5", "CBD5E0", "B0C4D4"]],
+  [darkPalette.blueTint, ["DDEAF2", "EAF1FB", "EAF1F8", "F0F8FF", "EDF4F6"]],
+  [darkPalette.greenTint, ["E3F1E8", "CFE3B8", "EDF7EE", "E8F5F0"]],
+  [darkPalette.coralTint, ["FCE0D8", "FFF1EE", "FFF0F0", "FEF3F2", "FFF0E8"]],
+  [darkPalette.goldTint, ["FBEBD2", "FFF8E1", "FFFBF0", "FFF8EB"]],
+  [darkPalette.purpleTint, ["F3EEF8"]],
+  [darkPalette.primary, ["0B3C5D", "082C44", "1A5CB0", "3B82F6"]],
+  [darkPalette.coralButton, ["F16B4E", "F46B4E", "EF4444", "D32F2F"]],
+  [darkPalette.greenButton, ["2A7B4C", "22863A", "22C55E", "10B981"]],
+  [darkPalette.goldButton, ["E8A33D", "F59E0B", "C89B3C", "C07000"]],
+  ["#65527F", ["7B5EA7"]],
+]);
+export const darkForegrounds = lookup([
+  [darkPalette.text, ["0B3C5D", "082C44", "1E2A2F", "1A2E40"]],
+  [darkPalette.muted, ["6B7876", "6B8CA8", "5A7A8C", "4A6880"]],
+  [darkPalette.subtle, ["A8BECC", "8CA0AE", "D1DCE5", "CBD4DA"]],
+  [darkPalette.blue, ["1A5CB0", "3B82F6"]],
+  [darkPalette.green, ["2A7B4C", "22863A", "22C55E", "10B981"]],
+  [darkPalette.coral, ["F16B4E", "F46B4E", "EF4444", "D32F2F", "BA3928"]],
+  [darkPalette.gold, ["E8A33D", "F59E0B", "C89B3C", "C07000", "92400E"]],
+  [darkPalette.purple, ["7B5EA7"]],
+]);

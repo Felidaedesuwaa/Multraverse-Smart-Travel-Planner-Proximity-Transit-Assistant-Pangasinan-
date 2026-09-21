@@ -1,3 +1,4 @@
+import { useAppTheme } from "../theme/useAppTheme";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -6,6 +7,7 @@ import {
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
 } from "react-native";
 import {
   Bell,
@@ -38,6 +40,10 @@ const routeTypeStyle = {
 };
 
 export default function TransitAlarm() {
+  const { width } = useWindowDimensions();
+  const compact = (width >= 768 ? width - 280 : width) < 720;
+  const { themeStyle, themeColor } = useAppTheme();
+
   const [routes, setRoutes] = useState([]);
   const [selectedRoute, setSelectedRoute] = useState(null);
   const [radius, setRadius] = useState(500);
@@ -71,43 +77,44 @@ export default function TransitAlarm() {
 
   return (
     <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.screen}
+      style={themeStyle(styles.container)}
+      contentContainerStyle={themeStyle([styles.screen, compact && { padding: 16 }])}
       showsVerticalScrollIndicator={false}
     >
       {/* ── Header ── */}
-      <View style={styles.header}>
+      <View style={themeStyle([styles.header, compact && { flexDirection: "column", alignItems: "stretch", gap: 12 }])}>
         <View>
-          <Text style={styles.title}>Transit Alarm</Text>
-          <Text style={styles.subtitle}>
+          <Text style={themeStyle(styles.title)}>Transit Alarm</Text>
+          <Text style={themeStyle(styles.subtitle)}>
             Get proximity alerts for active Pangasinan transit routes.
           </Text>
         </View>
         <Pressable
           onPress={loadRoutes}
-          style={({ pressed }) => [
+          style={themeStyle(({ pressed }) => [
             styles.refreshBtn,
+            compact && { alignSelf: "flex-start" },
             pressed && { opacity: 0.8 },
-          ]}
+          ])}
         >
-          <RefreshCw size={15} color={colors.oceanBlue} />
-          <Text style={styles.refreshText}>Refresh</Text>
+          <RefreshCw size={15} color={themeColor(colors.oceanBlue, "color")} />
+          <Text style={themeStyle(styles.refreshText)}>Refresh</Text>
         </Pressable>
       </View>
 
-      <View style={styles.columns}>
+      <View style={themeStyle([styles.columns, compact && { flexDirection: "column", alignItems: "stretch" }])}>
         {/* ── Left: Route List ── */}
-        <View style={styles.leftCol}>
+        <View style={themeStyle(styles.leftCol)}>
 
           {/* Info card */}
-          <View style={styles.infoCard}>
-            <View style={styles.infoCardInner}>
-              <View style={styles.infoIconBox}>
-                <Bell size={20} color={colors.oceanBlue} />
+          <View style={themeStyle(styles.infoCard)}>
+            <View style={themeStyle(styles.infoCardInner)}>
+              <View style={themeStyle(styles.infoIconBox)}>
+                <Bell size={20} color={themeColor(colors.oceanBlue, "color")} />
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.infoCardTitle}>How it works</Text>
-                <Text style={styles.infoCardDesc}>
+              <View style={themeStyle({ flex: 1 })}>
+                <Text style={themeStyle(styles.infoCardTitle)}>How it works</Text>
+                <Text style={themeStyle(styles.infoCardDesc)}>
                   Select a route below, set your alert radius, choose your
                   notification mode, then enable the alarm. You'll be notified
                   when your stop is approaching.
@@ -117,32 +124,32 @@ export default function TransitAlarm() {
           </View>
 
           {/* Routes header */}
-          <View style={styles.sectionLabelRow}>
-            <Text style={styles.sectionLabel}>Active Routes</Text>
+          <View style={themeStyle(styles.sectionLabelRow)}>
+            <Text style={themeStyle(styles.sectionLabel)}>Active Routes</Text>
             {!loading && (
-              <Text style={styles.sectionCount}>{routes.length} available</Text>
+              <Text style={themeStyle(styles.sectionCount)}>{routes.length} available</Text>
             )}
           </View>
 
           {/* Loading */}
           {loading && (
-            <View style={styles.loadingBox}>
-              <ActivityIndicator color={colors.oceanBlue} size="small" />
-              <Text style={styles.loadingText}>Loading routes...</Text>
+            <View style={themeStyle(styles.loadingBox)}>
+              <ActivityIndicator color={themeColor(colors.oceanBlue, "color")} size="small" />
+              <Text style={themeStyle(styles.loadingText)}>Loading routes...</Text>
             </View>
           )}
 
           {/* Error */}
           {error && (
-            <View style={styles.errorBox}>
-              <Text style={styles.errorText}>{error}</Text>
+            <View style={themeStyle(styles.errorBox)}>
+              <Text style={themeStyle(styles.errorText)}>{error}</Text>
             </View>
           )}
 
           {/* Empty */}
           {!loading && !error && routes.length === 0 && (
-            <View style={styles.emptyBox}>
-              <Text style={styles.emptyText}>No active routes available.</Text>
+            <View style={themeStyle(styles.emptyBox)}>
+              <Text style={themeStyle(styles.emptyText)}>No active routes available.</Text>
             </View>
           )}
 
@@ -158,43 +165,43 @@ export default function TransitAlarm() {
             return (
               <View
                 key={route._id ?? route.id}
-                style={[styles.routeCard, selected && styles.routeCardSelected]}
+                style={themeStyle([styles.routeCard, selected && styles.routeCardSelected])}
               >
                 {/* Top row */}
-                <View style={styles.routeTop}>
+                <View style={themeStyle(styles.routeTop)}>
                   <View
-                    style={[
+                    style={themeStyle([
                       styles.routeIconBox,
                       { backgroundColor: typeStyle.bg },
-                    ]}
+                    ])}
                   >
-                    <Icon size={20} color={typeStyle.color} />
+                    <Icon size={20} color={themeColor(typeStyle.color, "color")} />
                   </View>
-                  <View style={styles.routeInfo}>
-                    <Text style={styles.routeName}>{route.name}</Text>
-                    <Text style={styles.routeMeta}>
+                  <View style={themeStyle(styles.routeInfo)}>
+                    <Text style={themeStyle(styles.routeName)}>{route.name}</Text>
+                    <Text style={themeStyle(styles.routeMeta)}>
                       {route.type} · {route.stops} stops · every{" "}
                       {route.frequency}
                     </Text>
                   </View>
                   {selected && (
-                    <CheckCircle2 size={20} color={colors.sunsetCoral} />
+                    <CheckCircle2 size={20} color={themeColor(colors.sunsetCoral, "color")} />
                   )}
                 </View>
 
                 {/* Stats row */}
-                <View style={styles.routeStats}>
-                  <View style={styles.statChip}>
-                    <Clock size={11} color="#6B8CA8" />
-                    <Text style={styles.statText}>{route.frequency}</Text>
+                <View style={themeStyle(styles.routeStats)}>
+                  <View style={themeStyle(styles.statChip)}>
+                    <Clock size={11} color={themeColor("#6B8CA8", "color")} />
+                    <Text style={themeStyle(styles.statText)}>{route.frequency}</Text>
                   </View>
-                  <View style={styles.statChip}>
-                    <MapPin size={11} color="#6B8CA8" />
-                    <Text style={styles.statText}>{route.stops} stops</Text>
+                  <View style={themeStyle(styles.statChip)}>
+                    <MapPin size={11} color={themeColor("#6B8CA8", "color")} />
+                    <Text style={themeStyle(styles.statText)}>{route.stops} stops</Text>
                   </View>
-                  <View style={styles.statChip}>
-                    <Users size={11} color="#6B8CA8" />
-                    <Text style={styles.statText}>
+                  <View style={themeStyle(styles.statChip)}>
+                    <Users size={11} color={themeColor("#6B8CA8", "color")} />
+                    <Text style={themeStyle(styles.statText)}>
                       {route.passengers?.toLocaleString?.()} / wk
                     </Text>
                   </View>
@@ -206,17 +213,17 @@ export default function TransitAlarm() {
                     setSelectedRoute(route);
                     setAlarmOn(false);
                   }}
-                  style={({ pressed }) => [
+                  style={themeStyle(({ pressed }) => [
                     styles.selectBtn,
                     selected && styles.selectBtnActive,
                     pressed && { opacity: 0.85 },
-                  ]}
+                  ])}
                 >
                   <Text
-                    style={[
+                    style={themeStyle([
                       styles.selectBtnText,
                       selected && styles.selectBtnTextActive,
-                    ]}
+                    ])}
                   >
                     {selected ? "✓ Selected for alarm" : "Select this route"}
                   </Text>
@@ -227,54 +234,54 @@ export default function TransitAlarm() {
         </View>
 
         {/* ── Right: Alarm Config ── */}
-        <View style={styles.rightCol}>
+        <View style={themeStyle([styles.rightCol, compact && { width: "100%" }])}>
 
           {/* Selected route summary */}
-          <View style={styles.alarmCard}>
-            <Text style={styles.alarmCardTitle}>Alarm Configuration</Text>
+          <View style={themeStyle(styles.alarmCard)}>
+            <Text style={themeStyle(styles.alarmCardTitle)}>Alarm Configuration</Text>
 
             <View
-              style={[
+              style={themeStyle([
                 styles.selectedRouteBadge,
                 !selectedRoute && styles.selectedRouteBadgeEmpty,
-              ]}
+              ])}
             >
               {selectedRoute ? (
                 <>
-                  <View style={styles.selectedRouteDot} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.selectedRouteName}>
+                  <View style={themeStyle(styles.selectedRouteDot)} />
+                  <View style={themeStyle({ flex: 1 })}>
+                    <Text style={themeStyle(styles.selectedRouteName)}>
                       {selectedRoute.name}
                     </Text>
-                    <Text style={styles.selectedRouteMeta}>
+                    <Text style={themeStyle(styles.selectedRouteMeta)}>
                       {selectedRoute.stops} stops · {selectedRoute.frequency}
                     </Text>
                   </View>
                 </>
               ) : (
-                <Text style={styles.noRouteText}>
+                <Text style={themeStyle(styles.noRouteText)}>
                   Select a route from the list
                 </Text>
               )}
             </View>
 
             {/* Alert radius */}
-            <Text style={styles.configLabel}>Alert Radius</Text>
-            <View style={styles.radiusRow}>
+            <Text style={themeStyle(styles.configLabel)}>Alert Radius</Text>
+            <View style={themeStyle(styles.radiusRow)}>
               {RADIUS_OPTIONS.map((val) => (
                 <Pressable
                   key={val}
                   onPress={() => setRadius(val)}
-                  style={[
+                  style={themeStyle([
                     styles.radiusChip,
                     radius === val && styles.radiusChipActive,
-                  ]}
+                  ])}
                 >
                   <Text
-                    style={[
+                    style={themeStyle([
                       styles.radiusText,
                       radius === val && styles.radiusTextActive,
-                    ]}
+                    ])}
                   >
                     {val >= 1000 ? `${val / 1000}km` : `${val}m`}
                   </Text>
@@ -283,25 +290,25 @@ export default function TransitAlarm() {
             </View>
 
             {/* Alert mode */}
-            <Text style={styles.configLabel}>Notification Mode</Text>
-            <View style={styles.modeRow}>
+            <Text style={themeStyle(styles.configLabel)}>Notification Mode</Text>
+            <View style={themeStyle(styles.modeRow)}>
               {MODES.map(({ key, label, Icon }) => {
                 const active = mode === key;
                 return (
                   <Pressable
                     key={key}
                     onPress={() => setMode(key)}
-                    style={[styles.modeBtn, active && styles.modeBtnActive]}
+                    style={themeStyle([styles.modeBtn, active && styles.modeBtnActive])}
                   >
                     <Icon
                       size={16}
-                      color={active ? colors.sunsetCoral : "#6B8CA8"}
+                      color={themeColor(active ? colors.sunsetCoral : "#6B8CA8", "color")}
                     />
                     <Text
-                      style={[
+                      style={themeStyle([
                         styles.modeBtnText,
                         active && styles.modeBtnTextActive,
-                      ]}
+                      ])}
                     >
                       {label}
                     </Text>
@@ -312,41 +319,41 @@ export default function TransitAlarm() {
 
             {/* Summary */}
             {selectedRoute && (
-              <View style={styles.summaryBox}>
-                <Text style={styles.summaryTitle}>Alarm Summary</Text>
-                <View style={styles.summaryRow}>
-                  <Text style={styles.summaryKey}>Route</Text>
-                  <Text style={styles.summaryVal} numberOfLines={1}>
+              <View style={themeStyle(styles.summaryBox)}>
+                <Text style={themeStyle(styles.summaryTitle)}>Alarm Summary</Text>
+                <View style={themeStyle(styles.summaryRow)}>
+                  <Text style={themeStyle(styles.summaryKey)}>Route</Text>
+                  <Text style={themeStyle(styles.summaryVal)} numberOfLines={1}>
                     {selectedRoute.name}
                   </Text>
                 </View>
-                <View style={styles.summaryRow}>
-                  <Text style={styles.summaryKey}>Radius</Text>
-                  <Text style={styles.summaryVal}>{radius} meters</Text>
+                <View style={themeStyle(styles.summaryRow)}>
+                  <Text style={themeStyle(styles.summaryKey)}>Radius</Text>
+                  <Text style={themeStyle(styles.summaryVal)}>{radius} meters</Text>
                 </View>
-                <View style={styles.summaryRow}>
-                  <Text style={styles.summaryKey}>Mode</Text>
-                  <Text style={styles.summaryVal}>
+                <View style={themeStyle(styles.summaryRow)}>
+                  <Text style={themeStyle(styles.summaryKey)}>Mode</Text>
+                  <Text style={themeStyle(styles.summaryVal)}>
                     {MODES.find((m) => m.key === mode)?.label}
                   </Text>
                 </View>
-                <View style={[styles.summaryRow, { borderBottomWidth: 0 }]}>
-                  <Text style={styles.summaryKey}>Status</Text>
+                <View style={themeStyle([styles.summaryRow, { borderBottomWidth: 0 }])}>
+                  <Text style={themeStyle(styles.summaryKey)}>Status</Text>
                   <View
-                    style={[
+                    style={themeStyle([
                       styles.statusBadge,
                       alarmOn
                         ? styles.statusBadgeOn
                         : styles.statusBadgeOff,
-                    ]}
+                    ])}
                   >
                     <Text
-                      style={[
+                      style={themeStyle([
                         styles.statusBadgeText,
                         alarmOn
                           ? styles.statusBadgeTextOn
                           : styles.statusBadgeTextOff,
-                      ]}
+                      ])}
                     >
                       {alarmOn ? "Active" : "Inactive"}
                     </Text>
@@ -359,31 +366,31 @@ export default function TransitAlarm() {
             <Pressable
               onPress={() => setAlarmOn((v) => !v)}
               disabled={!selectedRoute}
-              style={({ pressed }) => [
+              style={themeStyle(({ pressed }) => [
                 styles.enableBtn,
                 alarmOn && styles.enableBtnOn,
                 !selectedRoute && styles.enableBtnDisabled,
                 pressed && { opacity: 0.85 },
-              ]}
+              ])}
             >
-              <Bell size={16} color="#fff" />
-              <Text style={styles.enableBtnText}>
+              <Bell size={16} color={themeColor("#fff", "color")} />
+              <Text style={themeStyle(styles.enableBtnText)}>
                 {alarmOn ? "Disable Alarm" : "Enable Alarm"}
               </Text>
             </Pressable>
           </View>
 
           {/* Tips card */}
-          <View style={styles.tipsCard}>
-            <Text style={styles.tipsTitle}>Tips</Text>
+          <View style={themeStyle(styles.tipsCard)}>
+            <Text style={themeStyle(styles.tipsTitle)}>Tips</Text>
             {[
               "Keep the app open for proximity alerts to work.",
               "Set a 300m radius for city stops, 1km for provincial routes.",
               "Push notifications require notification permissions.",
             ].map((tip, i) => (
-              <View key={i} style={styles.tipRow}>
-                <View style={styles.tipDot} />
-                <Text style={styles.tipText}>{tip}</Text>
+              <View key={i} style={themeStyle(styles.tipRow)}>
+                <View style={themeStyle(styles.tipDot)} />
+                <Text style={themeStyle(styles.tipText)}>{tip}</Text>
               </View>
             ))}
           </View>

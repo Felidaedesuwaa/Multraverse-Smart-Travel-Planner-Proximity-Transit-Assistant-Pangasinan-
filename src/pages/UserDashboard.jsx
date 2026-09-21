@@ -1,9 +1,32 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { Filter, Navigation } from "lucide-react-native";
+import { useAppTheme } from "../theme/useAppTheme";
+import { ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { Compass } from "lucide-react-native";
 import { colors } from "../theme/colors";
 import PangasinanMap from "../components/PangasinanMap";
 
 export default function UserDashboard() {
-  return <ScrollView contentContainerStyle={styles.screen}><View style={styles.header}><View><Text style={styles.title}>Pangasinan Interactive Map</Text><Text style={styles.badge}>Offline-ready</Text></View><View style={styles.actions}><Pressable style={styles.outlineButton}><Filter size={15} color={colors.textPrimary} /><Text style={styles.outlineLabel}>Filter</Text></Pressable><Pressable style={styles.primaryButton}><Navigation size={15} color={colors.white} /><Text style={styles.primaryLabel}>Navigate</Text></Pressable></View></View><PangasinanMap /></ScrollView>;
+  const { themeStyle, themeColor } = useAppTheme();
+
+  const { width } = useWindowDimensions();
+  const compact = width < 768;
+  return (
+    <ScrollView contentContainerStyle={themeStyle([styles.screen, compact && { padding: 16 }])} nestedScrollEnabled>
+      <View style={themeStyle(styles.header)}>
+        <View style={themeStyle(styles.eyebrowRow)}><Compass size={16} color={themeColor(colors.sunsetCoral, "color")} /><Text style={themeStyle(styles.eyebrow)}>YOUR NEXT ADVENTURE</Text></View>
+        <Text style={themeStyle([styles.title, compact && { fontSize: 27 }])}>Discover Pangasinan</Text>
+        <Text style={themeStyle(styles.subtitle)}>One province. A world of places to explore.</Text>
+      </View>
+      <PangasinanMap />
+      <Text style={themeStyle(styles.note)}>Explore the map and photo previews offline. Connect to see the latest traveler ratings.</Text>
+    </ScrollView>
+  );
 }
-const styles = StyleSheet.create({ screen: { flexGrow: 1, padding: 28, backgroundColor: colors.warmSand }, header: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginBottom: 20 }, title: { fontFamily: "Poppins", fontSize: 24, fontWeight: "700", color: colors.oceanBlue }, badge: { alignSelf: "flex-start", marginTop: 6, fontFamily: "DMSans", fontSize: 12, fontWeight: "600", color: colors.palmGreen, backgroundColor: colors.palmGreenLight, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 999 }, actions: { flexDirection: "row", gap: 10 }, outlineButton: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 16, paddingVertical: 9, borderRadius: 10, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.white }, outlineLabel: { fontFamily: "DMSans", fontSize: 13, fontWeight: "600", color: colors.textPrimary }, primaryButton: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 16, paddingVertical: 9, borderRadius: 10, backgroundColor: colors.oceanBlue }, primaryLabel: { fontFamily: "DMSans", fontSize: 13, fontWeight: "600", color: colors.white } });
+const styles = StyleSheet.create({
+  screen: { flexGrow: 1, padding: 28, backgroundColor: colors.warmSand },
+  header: { gap: 10, marginBottom: 24 },
+  eyebrowRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  eyebrow: { color: colors.sunsetCoral, fontWeight: "700", fontSize: 11, letterSpacing: 1.5 },
+  title: { fontSize: 34, fontWeight: "700", color: colors.oceanBlue },
+  subtitle: { fontSize: 14, lineHeight: 22, color: colors.textMuted },
+  note: { marginTop: 14, fontSize: 11, lineHeight: 18, color: colors.textMuted },
+});

@@ -2,6 +2,22 @@
 
 Multraverse is a cross-platform travel companion for Android, iOS, and the web. It includes trip planning, budgets, saved places, transit routes, geofences, phrasebook and translation tools, AI itinerary generation, and admin screens.
 
+## Display preferences
+
+Open **Settings → App Preferences** to switch Dark Mode or search the currency dropdown. Both preferences persist on the current device/browser and apply throughout the app.
+
+Budgets, expenses, and itinerary costs are stored in PHP. Their displays show the selected currency first, with the original PHP amount underneath in parentheses. Selecting PHP shows a single amount. Amount fields accept the selected currency and convert back to PHP when saved. The dropdown includes 166 currencies supported by [ExchangeRate-API](https://www.exchangerate-api.com/docs/free), using its public PHP-based endpoint without an API key. Successful rates are cached for 24 hours. Offline, the last available rates are used; without a matching cached rate, amounts remain explicitly labeled PHP. Converted amounts are estimates, with the rate date and provider shown in the footer.
+
+Run `node scripts/check-preferences.cjs` to check currency precision, PHP conversions, unavailable-rate handling, and theme color behavior.
+
+## Profile settings
+
+**Settings → Edit Profile** saves your name and location to your account. **Change Photo** opens a photo preview: choose an image, then save or cancel. You can also remove your current photo. Saved names and photos update in Settings and the mobile/desktop sidebar, and are restored on sign-in. The sign-in email is displayed as read-only.
+
+The [Expo photo picker](https://docs.expo.dev/versions/v54.0.0/sdk/imagepicker/) and image manipulator support Android, iOS, and web. Photos are cropped to a square, resized to 512 × 512 JPEG, and stored with the user in MongoDB (maximum 512 KB). No separate image-hosting service is required. Rebuild installed native binaries after adding these dependencies; Expo Go can use the updated JavaScript bundle.
+
+Run `npm run build --prefix server` then `node server/scripts/check-profile.cjs` to check profile validation.
+
 ## Technology
 
 Frontend:
@@ -183,3 +199,13 @@ multraverse-web/
 ## API Routes
 
 The backend provides route groups for authentication, users, trips, budgets, places, transit routes, geofences, AI, and knowledge data. The health check is available at `GET /api/health`.
+
+## Profile settings (web and mobile)
+
+Edit Profile suggests locations after three characters. Pangasinan towns are bundled for offline suggestions; the authenticated `GET /api/locations/search?q=...` endpoint adds worldwide Photon/OpenStreetMap matches. Users can also keep a manually entered location. Search is debounced, obsolete requests are cancelled, and the backend caches results for 24 hours with bounded traffic and a five-second provider timeout.
+
+The default [Photon public demo](https://github.com/komoot/photon#demo-server) needs no API key and allows reasonable usage without an availability guarantee. Set `PHOTON_URL` in `server/.env` to a dedicated Photon `/api/` endpoint for higher traffic. Search text goes to this provider; the user's name, email, and photo do not. OpenStreetMap attribution appears with suggestions.
+
+Change Photo offers 16 bundled travel avatars and a local image upload. Both use a preview and explicit Save Changes; Cancel discards changes. Avatar IDs (`travel:01` through `travel:16`) or resized JPEGs persist in the existing profile `photo` field. Existing photo uploads require no migration.
+
+Profile API checks: `npm run build --prefix server`, then `node server/scripts/check-profile.cjs` and `node server/scripts/check-locations.cjs`.

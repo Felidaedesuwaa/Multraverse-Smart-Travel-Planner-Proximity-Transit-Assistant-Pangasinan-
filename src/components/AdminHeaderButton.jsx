@@ -1,3 +1,4 @@
+import { useAppTheme } from "../theme/useAppTheme";
 import { Pressable, StyleSheet, Text } from "react-native";
 import { colors } from "../theme/colors";
 
@@ -9,13 +10,15 @@ export default function AdminHeaderButton({
   onClick,
   onPress,
 }) {
+  const { themeStyle } = useAppTheme();
+
   return (
     <Pressable
       onPress={onPress || onClick}
-      style={[styles.button, filled ? { backgroundColor: fillColor || colors.sunsetCoral } : styles.outline]}
+      style={themeStyle([styles.button, filled ? { backgroundColor: fillColor || colors.sunsetCoral } : styles.outline])}
     >
       {icon}
-      <Text style={[styles.label, { color: filled ? colors.white : colors.textPrimary }]}>{label}</Text>
+      <Text style={themeStyle([styles.label, { color: filled ? colors.white : colors.textPrimary }])}>{label}</Text>
     </Pressable>
   );
 }

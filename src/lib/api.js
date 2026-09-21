@@ -59,6 +59,17 @@ async function request(path, options = {}) {
   return data;
 }
 
+async function profileRequest(method, data) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 20000);
+  try {
+    return await request('/api/users/me', { method, signal: controller.signal, ...(data ? { body: JSON.stringify(data) } : {}) });
+  } catch (error) {
+    if (controller.signal.aborted) throw new Error('Request timed out. Check your connection and try again.');
+    throw error;
+  } finally { clearTimeout(timeout); }
+}
+
 export const api = {
   // Auth
   login: (email, password) =>
@@ -68,9 +79,9 @@ export const api = {
     request('/api/auth/register', { method: 'POST', body: JSON.stringify({ name, email, password }) }),
 
   // User
-  getMe: () => request('/api/users/me'),
-  updateMe: (data) =>
-    request('/api/users/me', { method: 'PUT', body: JSON.stringify(data) }),
+  getMe: () => profileRequest('GET'),
+  updateMe: (data) => profileRequest('PUT', data),
+  searchLocations: (query, signal) => request(`/api/locations/search?q=${encodeURIComponent(query)}`, { signal }),
 
   // Trips
   getTrips: () => request('/api/trips'),
@@ -96,7 +107,7 @@ export const api = {
     request(`/api/places/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteSavedPlace: (id) =>
     request(`/api/places/${id}`, { method: 'DELETE' }),
-  getPublicPlaces: () => request('/api/places/public'),
+  getPublicPlaces: (options = {}) => request('/api/places/public', options),
 
   // Transit Routes
   getTransitRoutes: () => request('/api/transit-routes'),

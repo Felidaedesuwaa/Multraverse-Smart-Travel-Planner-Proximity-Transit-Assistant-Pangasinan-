@@ -1,3 +1,7 @@
+import MoneyAmount from "../components/MoneyAmount";
+import { useCurrency } from "../hooks/useCurrency";
+import MoneyInput from "../components/MoneyInput";
+import { useAppTheme } from "../theme/useAppTheme";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -8,6 +12,7 @@ import {
   Text,
   TextInput,
   View,
+  useWindowDimensions,
 } from "react-native";
 import { BookmarkPlus, Bus, CheckCircle2, Clock, Wallet, Zap } from "lucide-react-native";
 import { api } from "../lib/api";
@@ -65,6 +70,12 @@ const destinationIcon = {
 };
 
 export default function AIItinerary() {
+  const { width } = useWindowDimensions();
+  const compact = (width >= 768 ? width - 280 : width) < 720;
+  const { currency } = useCurrency();
+
+  const { themeStyle, themeColor } = useAppTheme();
+
   const [destination, setDestination] = useState(destinations[0]);
   const [budget, setBudget] = useState("2000");
   const [days, setDays] = useState(1);
@@ -162,35 +173,35 @@ export default function AIItinerary() {
 
   return (
     <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.screen}
+      style={themeStyle(styles.container)}
+      contentContainerStyle={themeStyle([styles.screen, compact && { padding: 16 }])}
       showsVerticalScrollIndicator={false}
     >
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>AI Itinerary Planner</Text>
-        <Text style={styles.subtitle}>
+      <View style={themeStyle(styles.header)}>
+        <Text style={themeStyle(styles.title)}>AI Itinerary Planner</Text>
+        <Text style={themeStyle(styles.subtitle)}>
           Smart trip planning powered by Groq AI
         </Text>
       </View>
 
       {/* Planner Card */}
-      <View style={styles.card}>
-        <View style={styles.dashedBorder} />
-        <Text style={styles.cardHeading}>Where do you want to go?</Text>
+      <View style={themeStyle(styles.card)}>
+        <View style={themeStyle(styles.dashedBorder)} />
+        <Text style={themeStyle(styles.cardHeading)}>Where do you want to go?</Text>
 
         {/* Destination */}
-        <Text style={styles.label}>Destination</Text>
-        <View style={styles.destinationGrid}>
+        <Text style={themeStyle(styles.label)}>Destination</Text>
+        <View style={themeStyle(styles.destinationGrid)}>
           {destinations.map((item) => {
             const active = destination === item;
             return (
               <Pressable
                 key={item}
                 onPress={() => setDestination(item)}
-                style={[styles.destBtn, active && styles.destBtnActive]}
+                style={themeStyle([styles.destBtn, active && styles.destBtnActive])}
               >
-                <Text style={[styles.destText, active && styles.destTextActive]}>
+                <Text style={themeStyle([styles.destText, active && styles.destTextActive])}>
                   {item}
                 </Text>
               </Pressable>
@@ -199,29 +210,29 @@ export default function AIItinerary() {
         </View>
 
         {/* Budget + Days */}
-        <View style={styles.inputRow}>
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Trip Budget (₱)</Text>
-            <TextInput
+        <View style={themeStyle([styles.inputRow, compact && { flexDirection: "column" }])}>
+          <View style={themeStyle(styles.inputGroup)}>
+            <Text style={themeStyle(styles.label)}>Trip Budget ({currency})</Text>
+            <MoneyInput
               value={budget}
               onChangeText={setBudget}
               keyboardType="numeric"
-              style={styles.input}
-              placeholderTextColor={colors.textMuted}
+              style={themeStyle(styles.input)}
+              placeholderTextColor={themeColor(colors.textMuted, "color")}
             />
           </View>
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Number of Days</Text>
-            <View style={styles.dayRow}>
+          <View style={themeStyle(styles.inputGroup)}>
+            <Text style={themeStyle(styles.label)}>Number of Days</Text>
+            <View style={themeStyle(styles.dayRow)}>
               {[1, 2, 3, 4, 5, 6, 7].map((val) => {
                 const active = days === val;
                 return (
                   <Pressable
                     key={val}
                     onPress={() => setDays(val)}
-                    style={[styles.dayBtn, active && styles.dayBtnActive]}
+                    style={themeStyle([styles.dayBtn, active && styles.dayBtnActive])}
                   >
-                    <Text style={[styles.dayBtnText, active && styles.dayBtnTextActive]}>
+                    <Text style={themeStyle([styles.dayBtnText, active && styles.dayBtnTextActive])}>
                       {val}
                     </Text>
                   </Pressable>
@@ -232,17 +243,17 @@ export default function AIItinerary() {
         </View>
 
         {/* Preferences */}
-        <Text style={styles.label}>Travel Preferences</Text>
-        <View style={styles.prefChips}>
+        <Text style={themeStyle(styles.label)}>Travel Preferences</Text>
+        <View style={themeStyle(styles.prefChips)}>
           {preferences.map((pref) => {
             const selected = prefs.includes(pref);
             return (
               <Pressable
                 key={pref}
                 onPress={() => toggle(pref)}
-                style={[styles.chip, selected && styles.chipActive]}
+                style={themeStyle([styles.chip, selected && styles.chipActive])}
               >
-                <Text style={[styles.chipText, selected && styles.chipTextActive]}>
+                <Text style={themeStyle([styles.chipText, selected && styles.chipTextActive])}>
                   {pref}
                 </Text>
               </Pressable>
@@ -254,57 +265,57 @@ export default function AIItinerary() {
         <Pressable
           onPress={generate}
           disabled={loading}
-          style={[styles.generateBtn, loading && styles.generateBtnDisabled]}
+          style={themeStyle([styles.generateBtn, loading && styles.generateBtnDisabled])}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" size="small" />
+            <ActivityIndicator color={themeColor("#fff", "color")} size="small" />
           ) : (
-            <Zap size={18} color="#fff" />
+            <Zap size={18} color={themeColor("#fff", "color")} />
           )}
-          <Text style={styles.generateBtnText}>
+          <Text style={themeStyle(styles.generateBtnText)}>
             {loading ? "Generating your itinerary..." : "Generate AI Itinerary"}
           </Text>
         </Pressable>
 
         {error && (
-          <View style={styles.errorBox}>
-            <Text style={styles.errorText}>{error}</Text>
+          <View style={themeStyle(styles.errorBox)}>
+            <Text style={themeStyle(styles.errorText)}>{error}</Text>
           </View>
         )}
       </View>
 
       {/* Generated Itinerary */}
       {itinerary && (
-        <View style={styles.card}>
-          <View style={styles.dashedBorder} />
+        <View style={themeStyle(styles.card)}>
+          <View style={themeStyle(styles.dashedBorder)} />
 
           {/* Itinerary header + save button */}
-          <View style={styles.itineraryHeader}>
-            <Text style={styles.cardHeading}>
+          <View style={themeStyle(styles.itineraryHeader)}>
+            <Text style={themeStyle(styles.cardHeading)}>
               Your {days}-Day {destination} Itinerary
             </Text>
 
             {saved ? (
-              <View style={styles.savedBadge}>
-                <CheckCircle2 size={14} color={colors.palmGreen} />
-                <Text style={styles.savedBadgeText}>Saved to My Trips</Text>
+              <View style={themeStyle(styles.savedBadge)}>
+                <CheckCircle2 size={14} color={themeColor(colors.palmGreen, "color")} />
+                <Text style={themeStyle(styles.savedBadgeText)}>Saved to My Trips</Text>
               </View>
             ) : (
               <Pressable
                 onPress={saveToTrips}
                 disabled={saving}
-                style={({ pressed }) => [
+                style={themeStyle(({ pressed }) => [
                   styles.saveBtn,
                   saving && styles.saveBtnDisabled,
                   pressed && { opacity: 0.85 },
-                ]}
+                ])}
               >
                 {saving ? (
-                  <ActivityIndicator size="small" color="#fff" />
+                  <ActivityIndicator size="small" color={themeColor("#fff", "color")} />
                 ) : (
-                  <BookmarkPlus size={15} color="#fff" />
+                  <BookmarkPlus size={15} color={themeColor("#fff", "color")} />
                 )}
-                <Text style={styles.saveBtnText}>
+                <Text style={themeStyle(styles.saveBtnText)}>
                   {saving ? "Saving..." : "Save to My Trips"}
                 </Text>
               </Pressable>
@@ -313,48 +324,48 @@ export default function AIItinerary() {
 
           {/* Save error */}
           {saveError && (
-            <View style={styles.errorBox}>
-              <Text style={styles.errorText}>{saveError}</Text>
+            <View style={themeStyle(styles.errorBox)}>
+              <Text style={themeStyle(styles.errorText)}>{saveError}</Text>
             </View>
           )}
 
           {/* Save success tip */}
           {saved && (
-            <View style={styles.successBox}>
-              <CheckCircle2 size={14} color={colors.palmGreen} />
-              <Text style={styles.successText}>
+            <View style={themeStyle(styles.successBox)}>
+              <CheckCircle2 size={14} color={themeColor(colors.palmGreen, "color")} />
+              <Text style={themeStyle(styles.successText)}>
                 Your trip has been saved! View it in{" "}
-                <Text style={styles.successLink}>My Trips</Text>. The budget
+                <Text style={themeStyle(styles.successLink)}>My Trips</Text>. The budget
                 breakdown is also visible in the{" "}
-                <Text style={styles.successLink}>Budget</Text> page.
+                <Text style={themeStyle(styles.successLink)}>Budget</Text> page.
               </Text>
             </View>
           )}
 
           {/* Trip summary bar */}
-          <View style={styles.tripSummaryBar}>
-            <View style={styles.tripSummaryItem}>
-              <Text style={styles.tripSummaryLabel}>Destination</Text>
-              <Text style={styles.tripSummaryValue}>{destination}</Text>
+          <View style={themeStyle(styles.tripSummaryBar)}>
+            <View style={themeStyle(styles.tripSummaryItem)}>
+              <Text style={themeStyle(styles.tripSummaryLabel)}>Destination</Text>
+              <Text style={themeStyle(styles.tripSummaryValue)}>{destination}</Text>
             </View>
-            <View style={styles.tripSummaryDivider} />
-            <View style={styles.tripSummaryItem}>
-              <Text style={styles.tripSummaryLabel}>Duration</Text>
-              <Text style={styles.tripSummaryValue}>{days} day{days > 1 ? "s" : ""}</Text>
+            <View style={themeStyle(styles.tripSummaryDivider)} />
+            <View style={themeStyle(styles.tripSummaryItem)}>
+              <Text style={themeStyle(styles.tripSummaryLabel)}>Duration</Text>
+              <Text style={themeStyle(styles.tripSummaryValue)}>{days} day{days > 1 ? "s" : ""}</Text>
             </View>
-            <View style={styles.tripSummaryDivider} />
-            <View style={styles.tripSummaryItem}>
-              <Text style={styles.tripSummaryLabel}>Budget</Text>
-              <Text style={styles.tripSummaryValue}>₱{Number(budget).toLocaleString()}</Text>
+            <View style={themeStyle(styles.tripSummaryDivider)} />
+            <View style={themeStyle(styles.tripSummaryItem)}>
+              <Text style={themeStyle(styles.tripSummaryLabel)}>Budget</Text>
+              <Text style={themeStyle(styles.tripSummaryValue)}><MoneyAmount value={Number(budget)} /></Text>
             </View>
-            <View style={styles.tripSummaryDivider} />
-            <View style={styles.tripSummaryItem}>
-              <Text style={styles.tripSummaryLabel}>Est. Cost</Text>
-              <Text style={[
+            <View style={themeStyle(styles.tripSummaryDivider)} />
+            <View style={themeStyle(styles.tripSummaryItem)}>
+              <Text style={themeStyle(styles.tripSummaryLabel)}>Est. Cost</Text>
+              <Text style={themeStyle([
                 styles.tripSummaryValue,
                 { color: grandTotal > Number(budget) ? colors.sunsetCoral : colors.palmGreen }
-              ]}>
-                ₱{grandTotal.toLocaleString()}
+              ])}>
+                <MoneyAmount value={grandTotal} />
               </Text>
             </View>
           </View>
@@ -366,15 +377,15 @@ export default function AIItinerary() {
               0
             );
             return (
-              <View key={plan.day} style={styles.dayBlock}>
-                <View style={styles.dayHeader}>
-                  <View style={styles.dayCircle}>
-                    <Text style={styles.dayCircleText}>{plan.day}</Text>
+              <View key={plan.day} style={themeStyle(styles.dayBlock)}>
+                <View style={themeStyle(styles.dayHeader)}>
+                  <View style={themeStyle(styles.dayCircle)}>
+                    <Text style={themeStyle(styles.dayCircleText)}>{plan.day}</Text>
                   </View>
-                  <Text style={styles.dayTitle}>Day {plan.day}</Text>
-                  <View style={styles.dayTotalPill}>
-                    <Text style={styles.dayTotalPillText}>
-                      ₱{dayTotal.toLocaleString()}
+                  <Text style={themeStyle(styles.dayTitle)}>Day {plan.day}</Text>
+                  <View style={themeStyle(styles.dayTotalPill)}>
+                    <Text style={themeStyle(styles.dayTotalPillText)}>
+                      <MoneyAmount value={dayTotal} />
                     </Text>
                   </View>
                 </View>
@@ -382,20 +393,20 @@ export default function AIItinerary() {
                 {plan.stops.map((stop, i) => (
                   <View
                     key={`${stop.time}-${i}`}
-                    style={[
+                    style={themeStyle([
                       styles.stopRow,
                       i < plan.stops.length - 1 && styles.stopBorder,
-                    ]}
+                    ])}
                   >
-                    <View style={styles.timeBadge}>
-                      <Text style={styles.timeBadgeText}>{stop.time}</Text>
+                    <View style={themeStyle(styles.timeBadge)}>
+                      <Text style={themeStyle(styles.timeBadgeText)}>{stop.time}</Text>
                     </View>
-                    <View style={styles.stopDetails}>
-                      <Text style={styles.stopPlace}>{stop.place}</Text>
-                      <Text style={styles.stopActivity}>{stop.activity}</Text>
+                    <View style={themeStyle(styles.stopDetails)}>
+                      <Text style={themeStyle(styles.stopPlace)}>{stop.place}</Text>
+                      <Text style={themeStyle(styles.stopActivity)}>{stop.activity}</Text>
                     </View>
-                    <Text style={styles.stopCost}>
-                      ₱{stop.estimatedCost?.toLocaleString() ?? "—"}
+                    <Text style={themeStyle(styles.stopCost)}>
+                      <MoneyAmount value={stop.estimatedCost} />
                     </Text>
                   </View>
                 ))}
@@ -404,20 +415,20 @@ export default function AIItinerary() {
           })}
 
           {/* Grand total */}
-          <View style={styles.grandTotalBox}>
+          <View style={themeStyle(styles.grandTotalBox)}>
             <View>
-              <Text style={styles.grandTotalLabel}>Total Estimated Cost</Text>
-              <Text style={styles.grandTotalSub}>
-                Budget: ₱{Number(budget).toLocaleString()} ·{" "}
+              <Text style={themeStyle(styles.grandTotalLabel)}>Total Estimated Cost</Text>
+              <Text style={themeStyle(styles.grandTotalSub)}>
+                Budget: <MoneyAmount value={Number(budget)} /> ·{" "}
                 {grandTotal <= Number(budget) ? (
-                  <Text style={{ color: colors.palmGreen }}>Within budget ✓</Text>
+                  <Text style={themeStyle({ color: colors.palmGreen })}>Within budget ✓</Text>
                 ) : (
-                  <Text style={{ color: colors.sunsetCoral }}>Over budget</Text>
+                  <Text style={themeStyle({ color: colors.sunsetCoral })}>Over budget</Text>
                 )}
               </Text>
             </View>
-            <Text style={styles.grandTotalCost}>
-              ₱{grandTotal.toLocaleString()}
+            <Text style={themeStyle(styles.grandTotalCost)}>
+              <MoneyAmount value={grandTotal} />
             </Text>
           </View>
 
@@ -426,14 +437,14 @@ export default function AIItinerary() {
             <Pressable
               onPress={saveToTrips}
               disabled={saving}
-              style={[styles.saveBottomBtn, saving && styles.saveBtnDisabled]}
+              style={themeStyle([styles.saveBottomBtn, saving && styles.saveBtnDisabled])}
             >
               {saving ? (
-                <ActivityIndicator size="small" color="#fff" />
+                <ActivityIndicator size="small" color={themeColor("#fff", "color")} />
               ) : (
-                <BookmarkPlus size={16} color="#fff" />
+                <BookmarkPlus size={16} color={themeColor("#fff", "color")} />
               )}
-              <Text style={styles.saveBtnText}>
+              <Text style={themeStyle(styles.saveBtnText)}>
                 {saving ? "Saving..." : "Save this itinerary to My Trips"}
               </Text>
             </Pressable>
@@ -442,14 +453,14 @@ export default function AIItinerary() {
       )}
 
       {/* Feature Cards */}
-      <View style={styles.featureRow}>
+      <View style={themeStyle([styles.featureRow, compact && { flexDirection: "column" }])}>
         {features.map(({ icon: Icon, iconBg, iconColor, title, desc }) => (
-          <View key={title} style={styles.featureCard}>
-            <View style={[styles.featureIconBox, { backgroundColor: iconBg }]}>
-              <Icon size={18} color={iconColor} />
+          <View key={title} style={themeStyle(styles.featureCard)}>
+            <View style={themeStyle([styles.featureIconBox, { backgroundColor: iconBg }])}>
+              <Icon size={18} color={themeColor(iconColor, "color")} />
             </View>
-            <Text style={styles.featureTitle}>{title}</Text>
-            <Text style={styles.featureDesc}>{desc}</Text>
+            <Text style={themeStyle(styles.featureTitle)}>{title}</Text>
+            <Text style={themeStyle(styles.featureDesc)}>{desc}</Text>
           </View>
         ))}
       </View>
