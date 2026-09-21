@@ -16,21 +16,35 @@ import { colors } from "../theme/colors";
 const languages = ["Filipino", "Pangasinan", "English"];
 
 const phrases = [
-  { phrase: "Magandang umaga", translation: "Maong ya bigla", category: "Greetings" },
-  { phrase: "Nasaan ang terminal?", translation: "Iner so terminal?", category: "Transport" },
-  { phrase: "Magkano ang pamasahe?", translation: "Magkano so pamasahe?", category: "Transport" },
-  { phrase: "Tulong!", translation: "Abigan mo ak!", category: "Emergency" },
-  { phrase: "Nasaan ang ospital?", translation: "Iner so ospital?", category: "Emergency" },
-  { phrase: "Masarap", translation: "Masamit", category: "Food" },
-  { phrase: "Gutom na ako", translation: "Narasan ak la", category: "Food" },
-  { phrase: "Kumain na tayo", translation: "Mangan tayo la", category: "Food" },
+  { phrase: "Magandang umaga", translation: "Masantos a kabwasan", category: "Greetings" },
+  { phrase: "Kumusta ka?", translation: "Kumusta ka la? / Antoy emano?", category: "Greetings" },
+  { phrase: "Maraming salamat", translation: "Balbaleg ya salamat", category: "Greetings" },
+  { phrase: "Nasaan ang terminal ng bus?", translation: "Iner so istasyon na bus?", category: "Transport" },
+  { phrase: "Magkano ang tiket papunta sa ___?", translation: "Sampigay tiket ed ___?", category: "Transport" },
+  { phrase: "Paano ako makakarating sa ___?", translation: "Panon ak ya makarkar ed ___?", category: "Transport" },
+  { phrase: "Kain na tayo!", translation: "Mangan tila!", category: "Food" },
+  { phrase: "Nasaan ang banyo?", translation: "Iner so banyo / CR? / Kawalaan na patiang?", category: "Food" },
+  { phrase: "Patingnan mo ang menu", translation: "Sarag ton nengnengen ko so minu?", category: "Food" },
+  { phrase: "May bakanteng kwarto kayo?", translation: "Walay silid yo ya malaem?", category: "Accommodation" },
+  { phrase: "Magkano ang isang kwarto?", translation: "Sampigay silid kada sakey to-o?", category: "Accommodation" },
+  { phrase: "Gusto ko nang mag-check out", translation: "Labay ko lay ompaway", category: "Accommodation" },
+  { phrase: "Tulong!", translation: "Tabang!", category: "Emergency" },
+  { phrase: "Kailangan ko ng doktor", translation: "Kaukolan koy doktor", category: "Emergency" },
+  { phrase: "Nawawala ako", translation: "Abalang ak", category: "Emergency" },
+  { phrase: "Magkano ito?", translation: "Sampiga ya? / Sampiga iya?", category: "Shopping" },
+  { phrase: "Pwede bang magpababa ng presyo?", translation: "Kasi pakulangan?", category: "Shopping" },
+  { phrase: "May pasalubong ba kayo?", translation: "Wala ray pasalubong yo dia?", category: "Shopping" },
 ];
+
+const phraseCategories = ["All", ...new Set(phrases.map((phrase) => phrase.category))];
 
 const categoryColors = {
   Greetings: { bg: "#EDF7EE", color: "#22863A" },
   Transport: { bg: "#EAF1FB", color: "#1A5CB0" },
   Food: { bg: "#FFF8E1", color: "#C07000" },
+  Accommodation: { bg: "#F3EEFF", color: "#6941C6" },
   Emergency: { bg: "#FFF0F0", color: "#D32F2F" },
+  Shopping: { bg: "#E8F8F5", color: "#087F5B" },
 };
 
 const offlinePacks = [
@@ -349,7 +363,7 @@ export default function Translator() {
 
             {/* Category tabs */}
             <View style={styles.categoryRow}>
-              {["All", "Greetings", "Transport", "Food", "Emergency"].map((cat) => (
+              {phraseCategories.map((cat) => (
                 <Pressable
                   key={cat}
                   onPress={() => setCategory(cat)}
@@ -372,7 +386,7 @@ export default function Translator() {
 
             {/* Phrases */}
             {visiblePhrases.map((item, i) => {
-              const c = categoryColors[item.category];
+              const c = categoryColors[item.category] || categoryColors.Greetings;
               return (
                 <Pressable
                   key={item.phrase}

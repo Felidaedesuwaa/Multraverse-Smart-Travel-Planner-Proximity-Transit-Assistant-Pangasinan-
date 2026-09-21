@@ -36,7 +36,7 @@ from transformers import (
 
 BASE_MODEL = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
 OUTPUT_DIR = ROOT / "model" / "pangasinan-travel-model"
-DATA_FILE = ROOT / "data" / "pangasinan_itinerary.jsonl"
+DATA_FILE = ROOT / "data" / "combined_training_data.jsonl"
 PROVENANCE_FILE = ROOT / "data" / "provenance.json"
 MAX_LENGTH = 512
 
