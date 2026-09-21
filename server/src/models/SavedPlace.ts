@@ -1,6 +1,7 @@
 import { model, models, Schema } from 'mongoose'
 import { apiSchemaOptions, objectId } from './_helpers'
 const savedPlaceSchema = new Schema({
+  placeId: { type: Schema.Types.ObjectId, ref: 'Place' },
   userId: { ...objectId(), ref: 'User', index: true }, name: { type: String, required: true }, category: { type: String, required: true },
   description: { type: String, default: '' }, icon: { type: String, default: 'landmark' },
   rating: { type: Number, default: 0, min: 0, max: 5 }, reviewCount: { type: Number, default: 0 },

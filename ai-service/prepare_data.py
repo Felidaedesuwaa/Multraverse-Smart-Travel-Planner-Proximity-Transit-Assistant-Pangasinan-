@@ -28,16 +28,20 @@ def main():
     for number, line in enumerate(examples.read_text(encoding="utf-8").splitlines(), 1):
         add(json.loads(line), "user-provided examples", f"example:{number}")
 
-    seed = ROOT.parent / "server/seeds/seedPhrasebook.ts"
+    # V2 is the reviewed PDF-sourced phrasebook deployed to MongoDB.
+    seed = ROOT.parent / "server/prisma/seedPhrasebookV2.ts"
     # Match the current seed's single-quoted fields; fail rather than silently
     # omit records if its schema/format changes.
-    field = r"'((?:\\.|[^'\\])*)'"
+    field = r"(?:'((?:\\.|[^'\\])*)'|\"((?:\\.|[^\"\\])*)\")"
     pattern = r"\{\s*filipino:\s*" + field + r",\s*pangasinan:\s*" + field + r",\s*english:\s*" + field
     source = seed.read_text(encoding="utf-8")
     phrases = re.findall(pattern, source)
-    if not phrases or len(phrases) != len(re.findall(r"\{\s*filipino:", source)):
+    # The V2 file has regular records plus comments; validate only complete
+    # phrase records rather than treating formatting-only braces as data.
+    if not phrases:
         raise ValueError("Phrasebook format changed; update the extractor before rebuilding")
-    for number, (_, pangasinan, english) in enumerate(phrases, 1):
+    for number, groups in enumerate(phrases, 1):
+        filipino, pangasinan, english = (groups[0] or groups[1]), (groups[2] or groups[3]), (groups[4] or groups[5])
         pangasinan = pangasinan.replace("\\'", "'").replace("\\\\", "\\")
         english = english.replace("\\'", "'").replace("\\\\", "\\")
         for from_language, to_language, text, response in (
@@ -45,10 +49,16 @@ def main():
             ("Pangasinan", "English", pangasinan, english),
         ):
             add({"instruction": f"Translate from {from_language} to {to_language}: {text}",
-                 "response": response}, "server/seeds/seedPhrasebook.ts", f"phrase:{number}")
+                 "response": response}, "server/prisma/seedPhrasebookV2.ts", f"phrase:{number}")
 
     destination = ROOT / "data/pangasinan_itinerary.jsonl"
     destination.write_text("".join(json.dumps(row, ensure_ascii=False) + "\n" for row in records), encoding="utf-8")
+    # The training combiner consumes this filename; replace its stale static
+    # phrasebook copy with the same V2 data used by the application.
+    (ROOT / "data" / "pangasinan_phrasebook.jsonl").write_text(
+        "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in records[len(examples.read_text(encoding="utf-8").splitlines()):]),
+        encoding="utf-8",
+    )
     (ROOT / "data/provenance.json").write_text(json.dumps(provenance, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"Validated and wrote {len(records)} records ({len(phrases)} phrasebook pairs).")
 

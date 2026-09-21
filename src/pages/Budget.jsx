@@ -105,6 +105,7 @@ function AddExpenseModal({ visible, trips, onClose, onAdded }) {
     try {
       const entry = await api.createBudgetEntry({
         label: label.trim(),
+        category,
         amount: Number(amount),
         color,
         tripId: tripId || undefined,

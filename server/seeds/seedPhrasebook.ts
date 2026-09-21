@@ -10,7 +10,7 @@ async function main() {
   await connectDatabase()
   console.log('🌱 Seeding phrasebook...')
 
-  if (await Phrasebook.countDocuments() === 0) await Phrasebook.insertMany([
+  const phrases = [
       // Greetings
       { filipino: 'Magandang umaga', pangasinan: 'Maong ya bigla', english: 'Good morning', category: 'Greetings' },
       { filipino: 'Magandang hapon', pangasinan: 'Maong ya ngarem', english: 'Good afternoon', category: 'Greetings' },
@@ -65,7 +65,14 @@ async function main() {
       { filipino: 'Mayroon bang bakanteng kwarto?', pangasinan: 'Wala so bakante ya kuarto?', english: 'Is there a vacant room?', category: 'Accommodation' },
       { filipino: 'Magkano ang isang gabi?', pangasinan: 'Magkano so sakey ya labi?', english: 'How much for one night?', category: 'Accommodation' },
       { filipino: 'Gusto ko ng check-in', pangasinan: 'Labay ko so check-in', english: 'I want to check in', category: 'Accommodation' },
-    ])
+    ]
+
+  // Upsert rather than only inserting into an empty collection. This makes the
+  // database correction-friendly: run `npm run seed:phrases` after changing a
+  // verified translation and the Translator immediately serves the new value.
+  await Phrasebook.bulkWrite(phrases.map((phrase) => ({
+    updateOne: { filter: { filipino: phrase.filipino }, update: { $set: phrase }, upsert: true },
+  })))
 
   console.log('✅ Phrasebook seeded with', 44, 'phrases')
   console.log('🎉 Done!')

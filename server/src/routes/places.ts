@@ -1,5 +1,5 @@
 import { Router, Response } from 'express'
-import { SavedPlace } from '../models'
+import { Place, SavedPlace } from '../models'
 import { authenticate, AuthRequest } from '../middleware/auth'
 
 const router = Router()
@@ -18,7 +18,8 @@ router.get('/', async (req: AuthRequest, res: Response) => {
 
 router.post('/', async (req: AuthRequest, res: Response) => {
   const { name, category, description, icon } = req.body
-  const place = await SavedPlace.create({ userId: req.userId!, name, category, description, icon })
+  const matches = typeof name === 'string' ? await Place.find({ name }).select('_id').limit(2) : []
+  const place = await SavedPlace.create({ userId: req.userId!, name, category, description, icon, ...(matches.length === 1 ? { placeId: matches[0]._id } : {}) })
   res.status(201).json(place)
 })
 

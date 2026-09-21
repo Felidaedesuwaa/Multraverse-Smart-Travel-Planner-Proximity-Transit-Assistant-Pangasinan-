@@ -1,10 +1,10 @@
-# Multraverse local AI — setup and starter data
+# Multraverse local AI service
 
-Phases 1–2 are implemented here: an isolated Python environment and a reproducible
-98-record instruction/response dataset. Training and FastAPI serving entry points
-are implemented, but no model has been trained or downloaded. Express integration
-is still pending, and the existing application still uses Groq. A text model will
-not replace Whisper transcription.
+This service provides the project's custom local AI model. Express forwards AI
+requests to its FastAPI endpoints through `AI_SERVICE_URL`; no hosted AI provider
+API key is required. It loads verified phrases, places, fares, and local foods
+from MongoDB Atlas at startup. It also supports local Whisper transcription and
+offline WAV text-to-speech when their optional dependencies are installed.
 
 ## Windows setup
 
@@ -26,6 +26,10 @@ Copy-Item .env.example .env
 .\venv\Scripts\python.exe prepare_data.py
 .\venv\Scripts\python.exe -m pip check
 ```
+
+Set `MONGODB_URI` in `ai-service/.env` to the same valid Atlas connection used
+by `server/.env`. The FastAPI startup log reports the number of cached phrases,
+places, routes, and foods; restart the service after changing data in Compass.
 
 Directly invoking the virtual environment's interpreter avoids PowerShell activation
 policy problems. `.env`, virtual environments, caches, and model weights are ignored
@@ -55,7 +59,7 @@ This dataset is mostly translations, not 98 independent itinerary examples. Expa
 with reviewed itineraries and different budgets/durations before expecting useful
 itinerary generation. More rows alone do not establish model quality.
 
-## Before training and integration
+## Training and model integration
 
 1. Choose a small pretrained model and check its license, language performance,
    hardware requirements, and compatibility with these pinned libraries. Fine-tuning
@@ -66,13 +70,12 @@ itinerary generation. More rows alone do not establish model quality.
    splitting lines would overestimate performance.
 3. Match training examples to the serving prompt and output format. The current
    Express itinerary endpoint requires JSON `{days: [{day, stops: [{time, place,
-   activity, estimatedCost}]}]}`, whereas these supplied examples use prose.
+activity, estimatedCost}]}]}`, whereas these supplied examples use prose.
 4. Keep changing travel facts in the existing database and provide them as model
    context. Train on how to use those facts rather than relying on memorized prices.
-5. Train and evaluate on held-out reviewed examples before using the FastAPI service.
-   Replace the Express text-model calls only after confirming the local service's
-   responses match the frontend contract. Audio transcription needs its own local
-   speech model if all Groq usage is to be removed.
+5. Train and evaluate on held-out reviewed examples before relying on generated
+   itineraries in production. Express already forwards text-model requests to this
+   FastAPI service through `AI_SERVICE_URL`.
 
 ## Phase 3: LoRA fine-tuning
 
@@ -98,14 +101,12 @@ For an explicitly experimental run on the current unreviewed starter dataset:
 ```
 
 The first training run downloads the TinyLlama base model into the project cache.
-The output is a LoRA adapter plus tokenizer, so a later FastAPI serving phase must
-load it together with the same TinyLlama base model. This phase does not alter the
-existing Groq integration.
+The output is a LoRA adapter plus tokenizer, which the FastAPI service loads with
+the same TinyLlama base model.
 
 ## Phase 4: FastAPI service
 
-`main.py` provides `/health`, `/itinerary`, `/translate`, and `/generate` on port
-8000. It starts before an adapter exists; `/health` reports `model_unavailable` and
+`main.py` provides `/health`, `/itinerary`, `/translate`, `/transcribe`, `/speech`, and `/generate` on port 8000. It starts before an adapter exists; `/health` reports `model_unavailable` and
 generation endpoints return HTTP 503 until Phase 3 produces
 `model/pangasinan-travel-model/adapter_config.json`.
 
@@ -115,5 +116,5 @@ cd ai-service
 ```
 
 Once an adapter exists, the first generation request loads TinyLlama and the LoRA
-adapter into CPU memory. Keep this service separate from Express until its generated
-itinerary JSON has been evaluated against the frontend contract.
+adapter into CPU memory. Keep this service running alongside Express; the Express
+AI routes proxy `/itinerary` and `/translate` requests to it.

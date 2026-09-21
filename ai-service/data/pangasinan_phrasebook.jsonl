@@ -1,124 +1,190 @@
-{"instruction": "Translate to Pangasinan: Good morning", "response": "Masantos a kabwasan"}
-{"instruction": "Translate to Pangasinan: Good afternoon", "response": "Masantos ya ngarem"}
-{"instruction": "Translate to Pangasinan: Good evening", "response": "Masantos a labi"}
-{"instruction": "Translate to Pangasinan: Good day", "response": "Masantos ya agew"}
-{"instruction": "Translate to Pangasinan: How are you?", "response": "Kumusta ka la? / Antoy emano?"}
-{"instruction": "Translate to Pangasinan: I am fine, thank you", "response": "Maong ak met, salamat"}
-{"instruction": "Translate to Pangasinan: Thank you", "response": "Salamat"}
-{"instruction": "Translate to Pangasinan: Thank you very much", "response": "Balbaleg ya salamat / Salamat ya baleg"}
-{"instruction": "Translate to Pangasinan: You're welcome", "response": "Angapoy wala"}
-{"instruction": "Translate to Pangasinan: Yes", "response": "On"}
-{"instruction": "Translate to Pangasinan: No", "response": "Andi"}
-{"instruction": "Translate to Pangasinan: Goodbye", "response": "Onpatanir / Sige la / Siyan la"}
-{"instruction": "Translate to Pangasinan: Please", "response": "Panangasi"}
-{"instruction": "Translate to Pangasinan: Excuse me", "response": "Magano pa"}
-{"instruction": "Translate to Pangasinan: I'm sorry", "response": "Pirdona"}
-{"instruction": "Translate to Pangasinan: Hello", "response": "Hilo"}
-{"instruction": "Translate to Pangasinan: Nice to meet you", "response": "Maong a nakabat taka"}
-{"instruction": "Translate to Pangasinan: What is your name?", "response": "Antoy ngaran mo?"}
-{"instruction": "Translate to Pangasinan: My name is ___", "response": "Say ngaran ko ___"}
-{"instruction": "Translate to Pangasinan: I am from ___", "response": "Taga ___ ak"}
-{"instruction": "Translate to Pangasinan: I don't understand", "response": "Agko natalusan"}
-{"instruction": "Translate to Pangasinan: Do you speak English?", "response": "Makapansalita kay Inglis?"}
-{"instruction": "Translate to Pangasinan: Help!", "response": "Tabang!"}
-{"instruction": "What is good morning in Pangasinan?", "response": "Good morning in Pangasinan is Masantos a kabwasan (mah-sahn-TAWSS ah kahb-wah-SAHN)"}
-{"instruction": "What is thank you in Pangasinan?", "response": "Thank you in Pangasinan is Salamat (sah-LAH-maht). For extra emphasis say Balbaleg ya salamat meaning thank you very much."}
-{"instruction": "How do you say hello in Pangasinan?", "response": "Hello in Pangasinan is Hilo (hee-LAW)"}
-{"instruction": "How do you say goodbye in Pangasinan?", "response": "Goodbye in Pangasinan is Onpatanir (formal) or Sige la / Siyan la (informal)"}
-{"instruction": "Translate to Pangasinan: Where is the bus station?", "response": "Iner so istasyon na bus?"}
-{"instruction": "Translate to Pangasinan: Where is the train station?", "response": "Iner so istasyon na trin?"}
-{"instruction": "Translate to Pangasinan: How much is a ticket to ___?", "response": "Sampigay tikit ed ___?"}
-{"instruction": "Translate to Pangasinan: Where does this bus go?", "response": "Iner so laen to iyan bus?"}
-{"instruction": "Translate to Pangasinan: Does this bus stop in ___?", "response": "Saya'n bus ontunda ed ___?"}
-{"instruction": "Translate to Pangasinan: When does the bus leave?", "response": "Kapigan so bus onpikal?"}
-{"instruction": "Translate to Pangasinan: When will the bus arrive?", "response": "Kapigan so isabi bus?"}
-{"instruction": "Translate to Pangasinan: Taxi!", "response": "Taksi!"}
-{"instruction": "Translate to Pangasinan: Take me to ___, please", "response": "Iyakar no ak pa'd ___ kasim pa"}
-{"instruction": "Translate to Pangasinan: How much does it cost to get to ___?", "response": "Pigay bili to ___?"}
-{"instruction": "Translate to Pangasinan: Turn left", "response": "Kawigi ka"}
-{"instruction": "Translate to Pangasinan: Turn right", "response": "Kanan ka"}
-{"instruction": "Translate to Pangasinan: Straight ahead", "response": "Diritso labat"}
-{"instruction": "Translate to Pangasinan: Where is the beach?", "response": "Iner so gapa / baybay?"}
-{"instruction": "Translate to Pangasinan: Is it far from here?", "response": "Arawi kasi dia?"}
-{"instruction": "Translate to Pangasinan: I want to go to Hundred Islands", "response": "Labay koy onlad Hundred Islands"}
-{"instruction": "Translate to Pangasinan: Can we take a picture?", "response": "Araypari nilitrato?"}
-{"instruction": "Translate to Pangasinan: What town is this?", "response": "Anto yan baley?"}
-{"instruction": "Translate to Pangasinan: I want to rent a car", "response": "Labay koy manrenta na kotsi"}
-{"instruction": "How do you ask for directions in Pangasinan?", "response": "To ask for directions: How do I get to ___? = Panon ak ya makarkar ed ___? Turn left = Kawigi ka. Turn right = Kanan ka. Straight ahead = Diritso labat. North = amianen, South = abalaten, East = letakan, West = sagur."}
-{"instruction": "Translate to Pangasinan: Let's eat!", "response": "Mangan tila!"}
-{"instruction": "Translate to Pangasinan: This food is delicious!", "response": "Masamit yan kakanen! / Mananam sikato"}
-{"instruction": "Translate to Pangasinan: How much is the bill?", "response": "Pigay lapat to amin? / Say chit pa"}
-{"instruction": "Translate to Pangasinan: Where is the restroom?", "response": "Iner so banyo / CR? / Kawalaan na patiang?"}
-{"instruction": "Translate to Pangasinan: I want ___", "response": "Labay ko'y ___"}
-{"instruction": "Translate to Pangasinan: I am a vegetarian", "response": "Pising labat so kakanen ko"}
-{"instruction": "Translate to Pangasinan: I don't eat pork", "response": "Aga'k mamangan na baboy"}
-{"instruction": "Translate to Pangasinan: I don't eat beef", "response": "Aga'k mamangan na baka"}
-{"instruction": "Translate to Pangasinan: A table for two please", "response": "Lamisaan para'd dwara'n to-o pa"}
-{"instruction": "Translate to Pangasinan: Can I see the menu?", "response": "Sarag ton nengnengen ko so minu?"}
-{"instruction": "Translate to Pangasinan: Is there a local specialty?", "response": "Walay ispicial yo ed sayan pasen?"}
-{"instruction": "Translate to Pangasinan: I'm finished eating", "response": "Asumpal ak la"}
-{"instruction": "Translate to Pangasinan: The check please", "response": "Say chit pa"}
-{"instruction": "Translate to Pangasinan: Waiter!", "response": "Magano pa waiter"}
-{"instruction": "Translate to Pangasinan: Cheers!", "response": "Maninom tila!"}
-{"instruction": "How do you order food in Pangasinan?", "response": "To order food: Can I see the menu = Sarag ton nengnengen ko so minu? I want ___ = Labay ko'y ___. This is delicious = Mananam sikato. The check please = Say chit pa. Let's eat = Mangan tila!"}
-{"instruction": "Translate to Pangasinan: Do you have any rooms available?", "response": "Walay silid yo ya malaem?"}
-{"instruction": "Translate to Pangasinan: How much is a room?", "response": "Sampigay silid kada sakey to-o?"}
-{"instruction": "Translate to Pangasinan: OK I'll take it", "response": "Sigi, alaen ko"}
-{"instruction": "Translate to Pangasinan: I will stay for ___ nights", "response": "Manayam ak na ___ labi"}
-{"instruction": "Translate to Pangasinan: Please clean my room", "response": "Palimgas mo pa imay silid ko"}
-{"instruction": "Translate to Pangasinan: Can you wake me at ___?", "response": "Liing mo ak pa na ___?"}
-{"instruction": "Translate to Pangasinan: I want to check out", "response": "Labay ko lay ompaway"}
-{"instruction": "Translate to Pangasinan: Do you have anything cheaper?", "response": "Walay mas mamura ni?"}
-{"instruction": "Translate to Pangasinan: Do you have anything bigger?", "response": "Walay mas baleg ni?"}
-{"instruction": "Translate to Pangasinan: Is breakfast included?", "response": "Kaiba lay almusal?"}
-{"instruction": "How do you ask about accommodation in Pangasinan?", "response": "Key accommodation phrases: Do you have rooms = Walay silid yo ya malaem? How much per night = Sampigay silid kada sakey to-o? I'll take it = Sigi alaen ko. I want to check out = Labay ko lay ompaway. Please clean my room = Palimgas mo pa imay silid ko."}
-{"instruction": "Translate to Pangasinan: Help!", "response": "Tabang!"}
-{"instruction": "Translate to Pangasinan: I need a doctor", "response": "Kaukolan koy doktor"}
-{"instruction": "Translate to Pangasinan: I am sick", "response": "Walay sasakiten ko"}
-{"instruction": "Translate to Pangasinan: I am injured", "response": "Adisgo ak"}
-{"instruction": "Translate to Pangasinan: I am lost", "response": "Abalang ak"}
-{"instruction": "Translate to Pangasinan: I lost my bag", "response": "Abalang koy bag ko"}
-{"instruction": "Translate to Pangasinan: I lost my wallet", "response": "Abalang koy pitaka'k"}
-{"instruction": "Translate to Pangasinan: Call the police!", "response": "Mantawag ak na pulis / Pulis!"}
-{"instruction": "Translate to Pangasinan: Stop! Thief!", "response": "Tonda! Matakew!"}
-{"instruction": "Translate to Pangasinan: It's an emergency", "response": "Tampolan ya nakaukolan"}
-{"instruction": "Translate to Pangasinan: I need your help", "response": "Kaukolan koy tulong mo"}
-{"instruction": "Translate to Pangasinan: Can I use your phone?", "response": "Sarag kon usaren so telepono'm?"}
-{"instruction": "Translate to Pangasinan: Leave me alone", "response": "Taynan mo ak"}
-{"instruction": "Translate to Pangasinan: Don't touch me!", "response": "Ag no ak didiwetin!"}
-{"instruction": "What are emergency phrases in Pangasinan?", "response": "Emergency phrases: Help = Tabang! Police = Pulis! Stop Thief = Tonda! Matakew! I need a doctor = Kaukolan koy doktor. I am sick = Walay sasakiten ko. I am lost = Abalang ak. It's an emergency = Tampolan ya nakaukolan. I need help = Kaukolan koy tulong mo."}
-{"instruction": "Translate to Pangasinan: How much is this?", "response": "Sampiga ya? / Sampiga iya?"}
-{"instruction": "Translate to Pangasinan: Can I get a discount?", "response": "Kasi pakulangan?"}
-{"instruction": "Translate to Pangasinan: It's too expensive", "response": "Anvelat so bili / Mablin maong"}
-{"instruction": "Translate to Pangasinan: I will buy this", "response": "Saliven ko ya / Sigi alaen ko"}
-{"instruction": "Translate to Pangasinan: Do you have souvenirs?", "response": "Wala ray pasalubong yo dia?"}
-{"instruction": "Translate to Pangasinan: I don't want it", "response": "Agko labay"}
-{"instruction": "Translate to Pangasinan: I can't afford it", "response": "Agko nasarag so bili"}
-{"instruction": "Translate to Pangasinan: Do you accept credit cards?", "response": "manaawat kayo'y credit card?"}
-{"instruction": "Translate to Pangasinan: Where is the ATM?", "response": "Iner so automatik teler a makina (ATM)?"}
-{"instruction": "Translate to Pangasinan: Where can I exchange money?", "response": "Iner so napansalatan ko iyay kuarta?"}
-{"instruction": "How do you bargain in Pangasinan markets?", "response": "Shopping phrases: How much = Sampiga ya? Too expensive = Mablin maong. Can I get a discount = Kasi pakulangan? I'll take it = Sigi alaen ko. I don't want it = Agko labay. Do you have souvenirs = Wala ray pasalubong yo dia?"}
-{"instruction": "What are the numbers in Pangasinan?", "response": "Pangasinan numbers: 1=sakey, 2=duwa, 3=talo, 4=apat, 5=lima, 6=anem, 7=pito, 8=walo, 9=siam, 10=samplo, 20=duwamplo, 30=talomplo, 100=sakey a lasos, 1000=sanlibo"}
-{"instruction": "What are the days of the week in Pangasinan?", "response": "Days in Pangasinan: Sunday=Dominggo, Monday=Lunes, Tuesday=Martes, Wednesday=Mierkules, Thursday=Huwebes, Friday=Biernes, Saturday=Sabado. Today=saya'n agew, Tomorrow=nabwas, Yesterday=imbeneg na agew"}
-{"instruction": "What are the colors in Pangasinan?", "response": "Colors in Pangasinan: Black=andeket, White=amputi, Red=ambalanga, Blue=inanagan, Yellow=duyaw, Green=pasiseng, Orange=kahel, Purple=ube, Brown=tsokolate"}
-{"instruction": "What are time words in Pangasinan?", "response": "Time in Pangasinan: Now=natan, Later=naani, Before=amtis, Morning=kabwasan, Afternoon=ngarem, Evening/Night=labi, Today=saya'n agew, Tomorrow=nabwas, Yesterday=imbeneg na agew"}
-{"instruction": "What are common signs in Pangasinan?", "response": "Common signs: Open=ilukas, Closed=akasara, Entrance=luoban, Exit=pawayan, Push=itulak, Pull=goyor, Toilet=patiang, Men=lalaki, Women=bibii, Forbidden=sebel"}
-{"instruction": "Translate Filipino to Pangasinan: Magandang umaga", "response": "Masantos a kabwasan"}
-{"instruction": "Translate Filipino to Pangasinan: Magandang hapon", "response": "Masantos ya ngarem"}
-{"instruction": "Translate Filipino to Pangasinan: Magandang gabi", "response": "Masantos a labi"}
-{"instruction": "Translate Filipino to Pangasinan: Salamat", "response": "Salamat (same word in both languages)"}
-{"instruction": "Translate Filipino to Pangasinan: Nasaan ang banyo?", "response": "Iner so banyo? / Kawalaan na patiang?"}
-{"instruction": "Translate Filipino to Pangasinan: Magkano ito?", "response": "Sampiga ya?"}
-{"instruction": "Translate Filipino to Pangasinan: Tulong!", "response": "Tabang!"}
-{"instruction": "Translate Filipino to Pangasinan: Kumain na tayo", "response": "Mangan tila!"}
-{"instruction": "Translate Filipino to Pangasinan: Hindi ko maintindihan", "response": "Agko natalusan"}
-{"instruction": "Translate Pangasinan to English: Masantos a kabwasan", "response": "Good morning"}
-{"instruction": "Translate Pangasinan to English: Salamat", "response": "Thank you"}
-{"instruction": "Translate Pangasinan to English: Tabang", "response": "Help!"}
-{"instruction": "Translate Pangasinan to English: Iner so banyo?", "response": "Where is the bathroom/restroom?"}
-{"instruction": "Translate Pangasinan to English: Sampiga ya?", "response": "How much is this?"}
-{"instruction": "Translate Pangasinan to English: Mangan tila", "response": "Let's eat!"}
-{"instruction": "Translate Pangasinan to English: Abalang ak", "response": "I am lost"}
-{"instruction": "Translate Pangasinan to English: Onpatanir", "response": "Goodbye"}
-{"instruction": "Translate Pangasinan to English: Antoy ngaran mo?", "response": "What is your name?"}
-{"instruction": "Translate Pangasinan to English: Kaukolan koy doktor", "response": "I need a doctor"}
+{"instruction": "Translate from English to Pangasinan: Good morning", "response": "Masantos a kabwasan"}
+{"instruction": "Translate from Pangasinan to English: Masantos a kabwasan", "response": "Good morning"}
+{"instruction": "Translate from English to Pangasinan: Good noon", "response": "Masantos ya ngetmavan"}
+{"instruction": "Translate from Pangasinan to English: Masantos ya ngetmavan", "response": "Good noon"}
+{"instruction": "Translate from English to Pangasinan: Good afternoon", "response": "Masantos ya ngarem"}
+{"instruction": "Translate from Pangasinan to English: Masantos ya ngarem", "response": "Good afternoon"}
+{"instruction": "Translate from English to Pangasinan: Good evening", "response": "Masantos a labi"}
+{"instruction": "Translate from Pangasinan to English: Masantos a labi", "response": "Good evening"}
+{"instruction": "Translate from English to Pangasinan: Good day", "response": "Masantos ya agew"}
+{"instruction": "Translate from Pangasinan to English: Masantos ya agew", "response": "Good day"}
+{"instruction": "Translate from English to Pangasinan: How are you?", "response": "Kumusta ka la? / Antoy emano?"}
+{"instruction": "Translate from Pangasinan to English: Kumusta ka la? / Antoy emano?", "response": "How are you?"}
+{"instruction": "Translate from English to Pangasinan: I am fine, thank you", "response": "Maong ak met, salamat"}
+{"instruction": "Translate from Pangasinan to English: Maong ak met, salamat", "response": "I am fine, thank you"}
+{"instruction": "Translate from English to Pangasinan: Thank you", "response": "Salamat"}
+{"instruction": "Translate from Pangasinan to English: Salamat", "response": "Thank you"}
+{"instruction": "Translate from English to Pangasinan: Thank you very much", "response": "Balbaleg ya salamat"}
+{"instruction": "Translate from Pangasinan to English: Balbaleg ya salamat", "response": "Thank you very much"}
+{"instruction": "Translate from English to Pangasinan: You are welcome", "response": "Angapoy wala"}
+{"instruction": "Translate from Pangasinan to English: Angapoy wala", "response": "You are welcome"}
+{"instruction": "Translate from English to Pangasinan: Yes", "response": "On"}
+{"instruction": "Translate from Pangasinan to English: On", "response": "Yes"}
+{"instruction": "Translate from English to Pangasinan: No", "response": "Andi"}
+{"instruction": "Translate from Pangasinan to English: Andi", "response": "No"}
+{"instruction": "Translate from English to Pangasinan: Goodbye", "response": "Onpatanir / Sige la"}
+{"instruction": "Translate from Pangasinan to English: Onpatanir / Sige la", "response": "Goodbye"}
+{"instruction": "Translate from English to Pangasinan: Please", "response": "Panangasi"}
+{"instruction": "Translate from Pangasinan to English: Panangasi", "response": "Please"}
+{"instruction": "Translate from English to Pangasinan: Excuse me", "response": "Magano pa"}
+{"instruction": "Translate from Pangasinan to English: Magano pa", "response": "Excuse me"}
+{"instruction": "Translate from English to Pangasinan: I am sorry", "response": "Pirdona"}
+{"instruction": "Translate from Pangasinan to English: Pirdona", "response": "I am sorry"}
+{"instruction": "Translate from English to Pangasinan: Hello", "response": "Hilo"}
+{"instruction": "Translate from Pangasinan to English: Hilo", "response": "Hello"}
+{"instruction": "Translate from English to Pangasinan: Nice to meet you", "response": "Maong a nakabat taka"}
+{"instruction": "Translate from Pangasinan to English: Maong a nakabat taka", "response": "Nice to meet you"}
+{"instruction": "Translate from English to Pangasinan: What is your name?", "response": "Antoy ngaran mo?"}
+{"instruction": "Translate from Pangasinan to English: Antoy ngaran mo?", "response": "What is your name?"}
+{"instruction": "Translate from English to Pangasinan: My name is ___", "response": "Say ngaran ko ___"}
+{"instruction": "Translate from Pangasinan to English: Say ngaran ko ___", "response": "My name is ___"}
+{"instruction": "Translate from English to Pangasinan: I do not understand", "response": "Agko natalusan"}
+{"instruction": "Translate from Pangasinan to English: Agko natalusan", "response": "I do not understand"}
+{"instruction": "Translate from English to Pangasinan: Do you speak English?", "response": "Makapansalita kay Inglis?"}
+{"instruction": "Translate from Pangasinan to English: Makapansalita kay Inglis?", "response": "Do you speak English?"}
+{"instruction": "Translate from English to Pangasinan: Where is the bus station?", "response": "Iner so istasyon na bus?"}
+{"instruction": "Translate from Pangasinan to English: Iner so istasyon na bus?", "response": "Where is the bus station?"}
+{"instruction": "Translate from English to Pangasinan: Where is the train station?", "response": "Iner so istasyon na trin?"}
+{"instruction": "Translate from Pangasinan to English: Iner so istasyon na trin?", "response": "Where is the train station?"}
+{"instruction": "Translate from English to Pangasinan: How much is a ticket to ___?", "response": "Sampigay tiket ed ___?"}
+{"instruction": "Translate from Pangasinan to English: Sampigay tiket ed ___?", "response": "How much is a ticket to ___?"}
+{"instruction": "Translate from English to Pangasinan: Where does this bus go?", "response": "Iner so laen to iyan bus?"}
+{"instruction": "Translate from Pangasinan to English: Iner so laen to iyan bus?", "response": "Where does this bus go?"}
+{"instruction": "Translate from English to Pangasinan: Does this bus stop in ___?", "response": "Saya'n bus ontunda ed ___?"}
+{"instruction": "Translate from Pangasinan to English: Saya'n bus ontunda ed ___?", "response": "Does this bus stop in ___?"}
+{"instruction": "Translate from English to Pangasinan: When does the bus leave?", "response": "Kapigan so bus onpikal?"}
+{"instruction": "Translate from Pangasinan to English: Kapigan so bus onpikal?", "response": "When does the bus leave?"}
+{"instruction": "Translate from English to Pangasinan: When will the bus arrive in ___?", "response": "Kapigan so isabi bus ___?"}
+{"instruction": "Translate from Pangasinan to English: Kapigan so isabi bus ___?", "response": "When will the bus arrive in ___?"}
+{"instruction": "Translate from English to Pangasinan: Taxi!", "response": "Taksi!"}
+{"instruction": "Translate from Pangasinan to English: Taksi!", "response": "Taxi!"}
+{"instruction": "Translate from English to Pangasinan: Take me to ___, please", "response": "Iyakar no ak pa'd ___ kasim pa"}
+{"instruction": "Translate from Pangasinan to English: Iyakar no ak pa'd ___ kasim pa", "response": "Take me to ___, please"}
+{"instruction": "Translate from English to Pangasinan: How much to get to ___?", "response": "Pigay bili to ___?"}
+{"instruction": "Translate from Pangasinan to English: Pigay bili to ___?", "response": "How much to get to ___?"}
+{"instruction": "Translate from English to Pangasinan: Turn left", "response": "Kawigi ka"}
+{"instruction": "Translate from Pangasinan to English: Kawigi ka", "response": "Turn left"}
+{"instruction": "Translate from English to Pangasinan: Turn right", "response": "Kanan ka"}
+{"instruction": "Translate from Pangasinan to English: Kanan ka", "response": "Turn right"}
+{"instruction": "Translate from English to Pangasinan: Straight ahead", "response": "Diritso labat"}
+{"instruction": "Translate from Pangasinan to English: Diritso labat", "response": "Straight ahead"}
+{"instruction": "Translate from English to Pangasinan: Where is the beach?", "response": "Iner so gapa / baybay?"}
+{"instruction": "Translate from Pangasinan to English: Iner so gapa / baybay?", "response": "Where is the beach?"}
+{"instruction": "Translate from English to Pangasinan: Is it far from here?", "response": "Arawi kasi dia?"}
+{"instruction": "Translate from Pangasinan to English: Arawi kasi dia?", "response": "Is it far from here?"}
+{"instruction": "Translate from English to Pangasinan: I want to go to Hundred Islands", "response": "Labay koy onlad Hundred Islands"}
+{"instruction": "Translate from Pangasinan to English: Labay koy onlad Hundred Islands", "response": "I want to go to Hundred Islands"}
+{"instruction": "Translate from English to Pangasinan: I want to rent a car", "response": "Labay koy manrenta na kotsi"}
+{"instruction": "Translate from Pangasinan to English: Labay koy manrenta na kotsi", "response": "I want to rent a car"}
+{"instruction": "Translate from English to Pangasinan: How do I get to ___?", "response": "Panon ak ya makarkar ed ___?"}
+{"instruction": "Translate from Pangasinan to English: Panon ak ya makarkar ed ___?", "response": "How do I get to ___?"}
+{"instruction": "Translate from English to Pangasinan: Let's eat!", "response": "Mangan tila!"}
+{"instruction": "Translate from Pangasinan to English: Mangan tila!", "response": "Let's eat!"}
+{"instruction": "Translate from English to Pangasinan: This food is delicious!", "response": "Masamit yan kakanen! / Mananam sikato"}
+{"instruction": "Translate from Pangasinan to English: Masamit yan kakanen! / Mananam sikato", "response": "This food is delicious!"}
+{"instruction": "Translate from English to Pangasinan: How much is the total bill?", "response": "Pigay lapat to amin?"}
+{"instruction": "Translate from Pangasinan to English: Pigay lapat to amin?", "response": "How much is the total bill?"}
+{"instruction": "Translate from English to Pangasinan: Where is the restroom?", "response": "Iner so banyo / CR? / Kawalaan na patiang?"}
+{"instruction": "Translate from Pangasinan to English: Iner so banyo / CR? / Kawalaan na patiang?", "response": "Where is the restroom?"}
+{"instruction": "Translate from English to Pangasinan: I want ___", "response": "Labay ko'y ___"}
+{"instruction": "Translate from Pangasinan to English: Labay ko'y ___", "response": "I want ___"}
+{"instruction": "Translate from English to Pangasinan: I am a vegetarian", "response": "Pising labat so kakanen ko"}
+{"instruction": "Translate from Pangasinan to English: Pising labat so kakanen ko", "response": "I am a vegetarian"}
+{"instruction": "Translate from English to Pangasinan: I do not eat pork", "response": "Aga'k mamangan na baboy"}
+{"instruction": "Translate from Pangasinan to English: Aga'k mamangan na baboy", "response": "I do not eat pork"}
+{"instruction": "Translate from English to Pangasinan: I do not eat beef", "response": "Aga'k mamangan na baka"}
+{"instruction": "Translate from Pangasinan to English: Aga'k mamangan na baka", "response": "I do not eat beef"}
+{"instruction": "Translate from English to Pangasinan: A table for two please", "response": "Lamisaan para'd dwara'n to-o pa"}
+{"instruction": "Translate from Pangasinan to English: Lamisaan para'd dwara'n to-o pa", "response": "A table for two please"}
+{"instruction": "Translate from English to Pangasinan: Can I see the menu?", "response": "Sarag ton nengnengen ko so minu?"}
+{"instruction": "Translate from Pangasinan to English: Sarag ton nengnengen ko so minu?", "response": "Can I see the menu?"}
+{"instruction": "Translate from English to Pangasinan: Is there a local specialty?", "response": "Walay ispicial yo ed sayan pasen?"}
+{"instruction": "Translate from Pangasinan to English: Walay ispicial yo ed sayan pasen?", "response": "Is there a local specialty?"}
+{"instruction": "Translate from English to Pangasinan: I am finished eating", "response": "Asumpal ak la"}
+{"instruction": "Translate from Pangasinan to English: Asumpal ak la", "response": "I am finished eating"}
+{"instruction": "Translate from English to Pangasinan: The check please", "response": "Say chit pa"}
+{"instruction": "Translate from Pangasinan to English: Say chit pa", "response": "The check please"}
+{"instruction": "Translate from English to Pangasinan: Waiter!", "response": "Magano pa waiter"}
+{"instruction": "Translate from Pangasinan to English: Magano pa waiter", "response": "Waiter!"}
+{"instruction": "Translate from English to Pangasinan: Cheers!", "response": "Maninom tila!"}
+{"instruction": "Translate from Pangasinan to English: Maninom tila!", "response": "Cheers!"}
+{"instruction": "Translate from English to Pangasinan: Breakfast", "response": "Almusal"}
+{"instruction": "Translate from Pangasinan to English: Almusal", "response": "Breakfast"}
+{"instruction": "Translate from English to Pangasinan: Lunch", "response": "Ugto"}
+{"instruction": "Translate from Pangasinan to English: Ugto", "response": "Lunch"}
+{"instruction": "Translate from English to Pangasinan: Dinner/Supper", "response": "Pandem"}
+{"instruction": "Translate from Pangasinan to English: Pandem", "response": "Dinner/Supper"}
+{"instruction": "Translate from English to Pangasinan: Snack/Tea time", "response": "Meryenda"}
+{"instruction": "Translate from Pangasinan to English: Meryenda", "response": "Snack/Tea time"}
+{"instruction": "Translate from English to Pangasinan: Do you have any rooms available?", "response": "Walay silid yo ya malaem?"}
+{"instruction": "Translate from Pangasinan to English: Walay silid yo ya malaem?", "response": "Do you have any rooms available?"}
+{"instruction": "Translate from English to Pangasinan: How much is a room for one person?", "response": "Sampigay silid kada sakey to-o?"}
+{"instruction": "Translate from Pangasinan to English: Sampigay silid kada sakey to-o?", "response": "How much is a room for one person?"}
+{"instruction": "Translate from English to Pangasinan: OK I will take it", "response": "Sigi, alaen ko"}
+{"instruction": "Translate from Pangasinan to English: Sigi, alaen ko", "response": "OK I will take it"}
+{"instruction": "Translate from English to Pangasinan: I will stay for ___ nights", "response": "Manayam ak na ___ labi"}
+{"instruction": "Translate from Pangasinan to English: Manayam ak na ___ labi", "response": "I will stay for ___ nights"}
+{"instruction": "Translate from English to Pangasinan: Please clean my room", "response": "Palimgas mo pa imay silid ko"}
+{"instruction": "Translate from Pangasinan to English: Palimgas mo pa imay silid ko", "response": "Please clean my room"}
+{"instruction": "Translate from English to Pangasinan: Can you wake me at ___?", "response": "Liing mo ak pa na ___?"}
+{"instruction": "Translate from Pangasinan to English: Liing mo ak pa na ___?", "response": "Can you wake me at ___?"}
+{"instruction": "Translate from English to Pangasinan: I want to check out", "response": "Labay ko lay ompaway"}
+{"instruction": "Translate from Pangasinan to English: Labay ko lay ompaway", "response": "I want to check out"}
+{"instruction": "Translate from English to Pangasinan: Do you have anything cheaper?", "response": "Walay mas mamura ni?"}
+{"instruction": "Translate from Pangasinan to English: Walay mas mamura ni?", "response": "Do you have anything cheaper?"}
+{"instruction": "Translate from English to Pangasinan: Do you have anything bigger?", "response": "Walay mas baleg ni?"}
+{"instruction": "Translate from Pangasinan to English: Walay mas baleg ni?", "response": "Do you have anything bigger?"}
+{"instruction": "Translate from English to Pangasinan: Is breakfast included?", "response": "Kaiba lay almusal?"}
+{"instruction": "Translate from Pangasinan to English: Kaiba lay almusal?", "response": "Is breakfast included?"}
+{"instruction": "Translate from English to Pangasinan: What time is breakfast?", "response": "Anton oras so almusal?"}
+{"instruction": "Translate from Pangasinan to English: Anton oras so almusal?", "response": "What time is breakfast?"}
+{"instruction": "Translate from English to Pangasinan: May I see the room first?", "response": "Sarag ton nanengneng ni so silid?"}
+{"instruction": "Translate from Pangasinan to English: Sarag ton nanengneng ni so silid?", "response": "May I see the room first?"}
+{"instruction": "Translate from English to Pangasinan: Help!", "response": "Tabang!"}
+{"instruction": "Translate from Pangasinan to English: Tabang!", "response": "Help!"}
+{"instruction": "Translate from English to Pangasinan: I need a doctor", "response": "Kaukolan koy doktor"}
+{"instruction": "Translate from Pangasinan to English: Kaukolan koy doktor", "response": "I need a doctor"}
+{"instruction": "Translate from English to Pangasinan: I am sick", "response": "Walay sasakiten ko"}
+{"instruction": "Translate from Pangasinan to English: Walay sasakiten ko", "response": "I am sick"}
+{"instruction": "Translate from English to Pangasinan: I am injured", "response": "Adisgo ak"}
+{"instruction": "Translate from Pangasinan to English: Adisgo ak", "response": "I am injured"}
+{"instruction": "Translate from English to Pangasinan: I am lost", "response": "Abalang ak"}
+{"instruction": "Translate from Pangasinan to English: Abalang ak", "response": "I am lost"}
+{"instruction": "Translate from English to Pangasinan: I lost my bag", "response": "Abalang koy bag ko"}
+{"instruction": "Translate from Pangasinan to English: Abalang koy bag ko", "response": "I lost my bag"}
+{"instruction": "Translate from English to Pangasinan: I lost my wallet", "response": "Abalang koy pitaka'k"}
+{"instruction": "Translate from Pangasinan to English: Abalang koy pitaka'k", "response": "I lost my wallet"}
+{"instruction": "Translate from English to Pangasinan: Call the police!", "response": "Mantawag ak na pulis! / Pulis!"}
+{"instruction": "Translate from Pangasinan to English: Mantawag ak na pulis! / Pulis!", "response": "Call the police!"}
+{"instruction": "Translate from English to Pangasinan: Stop! Thief!", "response": "Tonda! Matakew!"}
+{"instruction": "Translate from Pangasinan to English: Tonda! Matakew!", "response": "Stop! Thief!"}
+{"instruction": "Translate from English to Pangasinan: It is an emergency", "response": "Tampolan ya nakaukolan"}
+{"instruction": "Translate from Pangasinan to English: Tampolan ya nakaukolan", "response": "It is an emergency"}
+{"instruction": "Translate from English to Pangasinan: I need your help", "response": "Kaukolan koy tulong mo"}
+{"instruction": "Translate from Pangasinan to English: Kaukolan koy tulong mo", "response": "I need your help"}
+{"instruction": "Translate from English to Pangasinan: Can I use your phone?", "response": "Sarag kon usaren so telepono'm?"}
+{"instruction": "Translate from Pangasinan to English: Sarag kon usaren so telepono'm?", "response": "Can I use your phone?"}
+{"instruction": "Translate from English to Pangasinan: Do not touch me!", "response": "Ag no ak didiwetin!"}
+{"instruction": "Translate from Pangasinan to English: Ag no ak didiwetin!", "response": "Do not touch me!"}
+{"instruction": "Translate from English to Pangasinan: Leave me alone", "response": "Taynan mo ak"}
+{"instruction": "Translate from Pangasinan to English: Taynan mo ak", "response": "Leave me alone"}
+{"instruction": "Translate from English to Pangasinan: How much is this?", "response": "Sampiga ya? / Sampiga iya?"}
+{"instruction": "Translate from Pangasinan to English: Sampiga ya? / Sampiga iya?", "response": "How much is this?"}
+{"instruction": "Translate from English to Pangasinan: That is too expensive", "response": "Anvelat so bili / Mablin maong"}
+{"instruction": "Translate from Pangasinan to English: Anvelat so bili / Mablin maong", "response": "That is too expensive"}
+{"instruction": "Translate from English to Pangasinan: Can I get a discount?", "response": "Kasi pakulangan?"}
+{"instruction": "Translate from Pangasinan to English: Kasi pakulangan?", "response": "Can I get a discount?"}
+{"instruction": "Translate from English to Pangasinan: I will buy this", "response": "Saliven ko ya / Sigi alaen ko"}
+{"instruction": "Translate from Pangasinan to English: Saliven ko ya / Sigi alaen ko", "response": "I will buy this"}
+{"instruction": "Translate from English to Pangasinan: Do you have souvenirs?", "response": "Wala ray pasalubong yo dia?"}
+{"instruction": "Translate from Pangasinan to English: Wala ray pasalubong yo dia?", "response": "Do you have souvenirs?"}
+{"instruction": "Translate from English to Pangasinan: I do not want it", "response": "Agko labay"}
+{"instruction": "Translate from Pangasinan to English: Agko labay", "response": "I do not want it"}
+{"instruction": "Translate from English to Pangasinan: I cannot afford it", "response": "Agko nasarag so bili"}
+{"instruction": "Translate from Pangasinan to English: Agko nasarag so bili", "response": "I cannot afford it"}
+{"instruction": "Translate from English to Pangasinan: Do you accept credit cards?", "response": "manaawat kayo'y credit card?"}
+{"instruction": "Translate from Pangasinan to English: manaawat kayo'y credit card?", "response": "Do you accept credit cards?"}
+{"instruction": "Translate from English to Pangasinan: Where is the ATM?", "response": "Iner so automatik teler a makina (ATM)?"}
+{"instruction": "Translate from Pangasinan to English: Iner so automatik teler a makina (ATM)?", "response": "Where is the ATM?"}
+{"instruction": "Translate from English to Pangasinan: Where can I exchange money?", "response": "Iner so napansalatan ko iyay kuarta?"}
+{"instruction": "Translate from Pangasinan to English: Iner so napansalatan ko iyay kuarta?", "response": "Where can I exchange money?"}
