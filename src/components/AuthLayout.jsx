@@ -1,3 +1,4 @@
+import { useAppTheme } from "../theme/useAppTheme";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
@@ -6,20 +7,22 @@ import Svg, { Path } from "react-native-svg";
 import { colors } from "../theme/colors";
 
 export default function AuthLayout({ title, subtitle, children, footer, showBack = true }) {
+  const { themeStyle, themeColor } = useAppTheme();
+
   const navigation = useNavigation();
 
   return (
-    <View style={styles.screen}>
-      <Svg style={styles.wave} viewBox="0 0 500 150" preserveAspectRatio="none"><Path d="M0,80 C120,120 380,20 500,80 L500,150 L0,150 Z" fill="rgba(255,255,255,0.06)" /></Svg>
-      <View style={styles.content}>
-        {showBack && navigation.canGoBack() ? <Pressable accessibilityRole="button" onPress={() => navigation.goBack()} style={styles.back}><ChevronLeft size={22} color={colors.white} /></Pressable> : null}
-        <View style={styles.heading}>
-          <LinearGradient colors={[colors.sunsetCoral, "#F2A63E"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.logo}><Compass size={34} color={colors.white} /></LinearGradient>
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.subtitle}>{subtitle}</Text>
+    <View style={themeStyle(styles.screen)}>
+      <Svg style={themeStyle(styles.wave)} viewBox="0 0 500 150" preserveAspectRatio="none"><Path d="M0,80 C120,120 380,20 500,80 L500,150 L0,150 Z" fill={themeColor("rgba(255,255,255,0.06)", "fill")} /></Svg>
+      <View style={themeStyle(styles.content)}>
+        {showBack && navigation.canGoBack() ? <Pressable accessibilityRole="button" onPress={() => navigation.goBack()} style={themeStyle(styles.back)}><ChevronLeft size={22} color={themeColor(colors.white, "color")} /></Pressable> : null}
+        <View style={themeStyle(styles.heading)}>
+          <LinearGradient colors={([colors.sunsetCoral, "#F2A63E"]).map(value => themeColor(value, "backgroundColor"))} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={themeStyle(styles.logo)}><Compass size={34} color={themeColor(colors.white, "color")} /></LinearGradient>
+          <Text style={themeStyle(styles.title)}>{title}</Text>
+          <Text style={themeStyle(styles.subtitle)}>{subtitle}</Text>
         </View>
         {children}
-        <View style={styles.footer}>{footer}</View>
+        <View style={themeStyle(styles.footer)}>{footer}</View>
       </View>
     </View>
   );

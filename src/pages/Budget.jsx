@@ -1,3 +1,7 @@
+import MoneyAmount from "../components/MoneyAmount";
+import { useCurrency } from "../hooks/useCurrency";
+import MoneyInput from "../components/MoneyInput";
+import { useAppTheme } from "../theme/useAppTheme";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -8,6 +12,7 @@ import {
   Text,
   TextInput,
   View,
+  useWindowDimensions,
 } from "react-native";
 import {
   PiggyBank,
@@ -37,31 +42,35 @@ const CATEGORIES = [
 
 // ── Stat Card ───────────────────────────────────────────
 function StatCard({ label, value, sub, icon, iconBg, valueColor }) {
+  const { themeStyle } = useAppTheme();
+
   return (
-    <View style={styles.statCard}>
-      <View style={[styles.statIconBox, { backgroundColor: iconBg }]}>
+    <View style={themeStyle(styles.statCard)}>
+      <View style={themeStyle([styles.statIconBox, { backgroundColor: iconBg }])}>
         {icon}
       </View>
-      <Text style={styles.statLabel}>{label}</Text>
-      <Text style={[styles.statValue, valueColor && { color: valueColor }]}>
+      <Text style={themeStyle(styles.statLabel)}>{label}</Text>
+      <Text style={themeStyle([styles.statValue, valueColor && { color: valueColor }])}>
         {value}
       </Text>
-      {sub && <Text style={styles.statSub}>{sub}</Text>}
+      {sub && <Text style={themeStyle(styles.statSub)}>{sub}</Text>}
     </View>
   );
 }
 
 // ── Progress Bar ────────────────────────────────────────
 function ProgressBar({ label, amount, total, color, rightLabel }) {
+  const { themeStyle, themeColor } = useAppTheme();
+
   const pct = total > 0 ? Math.min(100, (amount / total) * 100) : 0;
   return (
-    <View style={styles.barItem}>
-      <View style={styles.barHeader}>
-        <Text style={styles.barLabel} numberOfLines={1}>{label}</Text>
-        <Text style={styles.barAmount}>{rightLabel ?? `₱${amount.toLocaleString()}`}</Text>
+    <View style={themeStyle(styles.barItem)}>
+      <View style={themeStyle(styles.barHeader)}>
+        <Text style={themeStyle(styles.barLabel)} numberOfLines={1}>{label}</Text>
+        <Text style={themeStyle(styles.barAmount)}>{rightLabel ?? <MoneyAmount value={amount} />}</Text>
       </View>
-      <View style={styles.track}>
-        <View style={[styles.fill, { width: `${pct}%`, backgroundColor: color }]} />
+      <View style={themeStyle(styles.track)}>
+        <View style={[themeStyle(styles.fill), { width: `${pct}%`, backgroundColor: themeColor(color) }]} />
       </View>
     </View>
   );
@@ -69,6 +78,10 @@ function ProgressBar({ label, amount, total, color, rightLabel }) {
 
 // ── Add Expense Modal ───────────────────────────────────
 function AddExpenseModal({ visible, trips, onClose, onAdded }) {
+  const { currency } = useCurrency();
+
+  const { themeStyle, themeColor } = useAppTheme();
+
   const [label, setLabel] = useState("");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("Transport");
@@ -108,59 +121,59 @@ function AddExpenseModal({ visible, trips, onClose, onAdded }) {
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable style={styles.overlay} onPress={onClose}>
-        <Pressable style={styles.modalBox} onPress={() => {}}>
+      <Pressable style={themeStyle(styles.overlay)} onPress={onClose}>
+        <Pressable style={themeStyle(styles.modalBox)} onPress={() => {}}>
           {/* Header */}
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Add Expense</Text>
-            <Pressable onPress={onClose} style={styles.closeBtn}>
-              <X size={18} color="#6B8CA8" />
+          <View style={themeStyle(styles.modalHeader)}>
+            <Text style={themeStyle(styles.modalTitle)}>Add Expense</Text>
+            <Pressable onPress={onClose} style={themeStyle(styles.closeBtn)}>
+              <X size={18} color={themeColor("#6B8CA8", "color")} />
             </Pressable>
           </View>
 
           {/* Label */}
-          <View style={styles.formGroup}>
-            <Text style={styles.formLabel}>Expense Label *</Text>
+          <View style={themeStyle(styles.formGroup)}>
+            <Text style={themeStyle(styles.formLabel)}>Expense Label *</Text>
             <TextInput
               value={label}
               onChangeText={setLabel}
               placeholder="e.g. Boat rental, Lunch at Lucap"
-              placeholderTextColor="#A8BECC"
-              style={styles.formInput}
+              placeholderTextColor={themeColor("#A8BECC", "color")}
+              style={themeStyle(styles.formInput)}
             />
           </View>
 
           {/* Amount */}
-          <View style={styles.formGroup}>
-            <Text style={styles.formLabel}>Amount (₱) *</Text>
-            <TextInput
+          <View style={themeStyle(styles.formGroup)}>
+            <Text style={themeStyle(styles.formLabel)}>Amount ({currency}) *</Text>
+            <MoneyInput
               value={amount}
               onChangeText={setAmount}
               keyboardType="numeric"
               placeholder="0"
-              placeholderTextColor="#A8BECC"
-              style={styles.formInput}
+              placeholderTextColor={themeColor("#A8BECC", "color")}
+              style={themeStyle(styles.formInput)}
             />
           </View>
 
           {/* Category */}
-          <View style={styles.formGroup}>
-            <Text style={styles.formLabel}>Category</Text>
-            <View style={styles.categoryGrid}>
+          <View style={themeStyle(styles.formGroup)}>
+            <Text style={themeStyle(styles.formLabel)}>Category</Text>
+            <View style={themeStyle(styles.categoryGrid)}>
               {CATEGORIES.map((cat) => (
                 <Pressable
                   key={cat}
                   onPress={() => setCategory(cat)}
-                  style={[
+                  style={themeStyle([
                     styles.categoryChip,
                     category === cat && styles.categoryChipActive,
-                  ]}
+                  ])}
                 >
                   <Text
-                    style={[
+                    style={themeStyle([
                       styles.categoryChipText,
                       category === cat && styles.categoryChipTextActive,
-                    ]}
+                    ])}
                   >
                     {cat}
                   </Text>
@@ -171,14 +184,14 @@ function AddExpenseModal({ visible, trips, onClose, onAdded }) {
 
           {/* Link to trip */}
           {trips.length > 0 && (
-            <View style={styles.formGroup}>
-              <Text style={styles.formLabel}>Link to Trip (optional)</Text>
-              <View style={styles.tripChips}>
+            <View style={themeStyle(styles.formGroup)}>
+              <Text style={themeStyle(styles.formLabel)}>Link to Trip (optional)</Text>
+              <View style={themeStyle(styles.tripChips)}>
                 <Pressable
                   onPress={() => setTripId(null)}
-                  style={[styles.tripChip, !tripId && styles.tripChipActive]}
+                  style={themeStyle([styles.tripChip, !tripId && styles.tripChipActive])}
                 >
-                  <Text style={[styles.tripChipText, !tripId && styles.tripChipTextActive]}>
+                  <Text style={themeStyle([styles.tripChipText, !tripId && styles.tripChipTextActive])}>
                     None
                   </Text>
                 </Pressable>
@@ -186,16 +199,16 @@ function AddExpenseModal({ visible, trips, onClose, onAdded }) {
                   <Pressable
                     key={t._id ?? t.id}
                     onPress={() => setTripId(t._id ?? t.id)}
-                    style={[
+                    style={themeStyle([
                       styles.tripChip,
                       tripId === (t._id ?? t.id) && styles.tripChipActive,
-                    ]}
+                    ])}
                   >
                     <Text
-                      style={[
+                      style={themeStyle([
                         styles.tripChipText,
                         tripId === (t._id ?? t.id) && styles.tripChipTextActive,
-                      ]}
+                      ])}
                       numberOfLines={1}
                     >
                       {t.title}
@@ -207,43 +220,43 @@ function AddExpenseModal({ visible, trips, onClose, onAdded }) {
           )}
 
           {/* Color picker */}
-          <View style={styles.formGroup}>
-            <Text style={styles.formLabel}>Color Tag</Text>
-            <View style={styles.colorRow}>
+          <View style={themeStyle(styles.formGroup)}>
+            <Text style={themeStyle(styles.formLabel)}>Color Tag</Text>
+            <View style={themeStyle(styles.colorRow)}>
               {EXPENSE_COLORS.map((c) => (
                 <Pressable
                   key={c}
                   onPress={() => setColor(c)}
-                  style={[
+                  style={themeStyle([
                     styles.colorDot,
                     { backgroundColor: c },
                     color === c && styles.colorDotActive,
-                  ]}
+                  ])}
                 />
               ))}
             </View>
           </View>
 
           {error && (
-            <View style={styles.errorBox}>
-              <Text style={styles.errorText}>{error}</Text>
+            <View style={themeStyle(styles.errorBox)}>
+              <Text style={themeStyle(styles.errorText)}>{error}</Text>
             </View>
           )}
 
           {/* Actions */}
-          <View style={styles.modalActions}>
-            <Pressable onPress={onClose} style={styles.cancelBtn}>
-              <Text style={styles.cancelText}>Cancel</Text>
+          <View style={themeStyle(styles.modalActions)}>
+            <Pressable onPress={onClose} style={themeStyle(styles.cancelBtn)}>
+              <Text style={themeStyle(styles.cancelText)}>Cancel</Text>
             </Pressable>
             <Pressable
               onPress={handleAdd}
               disabled={saving}
-              style={[styles.addBtn, saving && { opacity: 0.7 }]}
+              style={themeStyle([styles.addBtn, saving && { opacity: 0.7 }])}
             >
               {saving && (
-                <ActivityIndicator size="small" color="#fff" style={{ marginRight: 6 }} />
+                <ActivityIndicator size="small" color={themeColor("#fff", "color")} style={themeStyle({ marginRight: 6 })} />
               )}
-              <Text style={styles.addBtnText}>
+              <Text style={themeStyle(styles.addBtnText)}>
                 {saving ? "Adding..." : "Add Expense"}
               </Text>
             </Pressable>
@@ -256,6 +269,8 @@ function AddExpenseModal({ visible, trips, onClose, onAdded }) {
 
 // ── Trip Budget Section ─────────────────────────────────
 function TripBudgetRow({ trip, entries }) {
+  const { themeStyle, themeColor } = useAppTheme();
+
   const [expanded, setExpanded] = useState(false);
   const tripEntries = entries.filter(
     (e) => e.tripId === (trip._id ?? trip.id)
@@ -267,68 +282,68 @@ function TripBudgetRow({ trip, entries }) {
   const over = trip.spent > trip.budget;
 
   return (
-    <View style={styles.tripSection}>
+    <View style={themeStyle(styles.tripSection)}>
       <Pressable
         onPress={() => setExpanded((v) => !v)}
-        style={styles.tripSectionHeader}
+        style={themeStyle(styles.tripSectionHeader)}
       >
-        <View style={styles.tripSectionLeft}>
-          <Text style={styles.tripSectionName}>{trip.title}</Text>
-          <Text style={styles.tripSectionMeta}>
+        <View style={themeStyle(styles.tripSectionLeft)}>
+          <Text style={themeStyle(styles.tripSectionName)}>{trip.title}</Text>
+          <Text style={themeStyle(styles.tripSectionMeta)}>
             {trip.location} · {trip.status.toLowerCase()}
           </Text>
         </View>
-        <View style={styles.tripSectionRight}>
-          <Text style={[styles.tripRemaining, over && { color: colors.sunsetCoral }]}>
-            {over ? "₱" + Math.abs(remaining).toLocaleString() + " over" : "₱" + remaining.toLocaleString() + " left"}
+        <View style={themeStyle(styles.tripSectionRight)}>
+          <Text style={themeStyle([styles.tripRemaining, over && { color: colors.sunsetCoral }])}>
+            <MoneyAmount value={Math.abs(remaining)} suffix={over ? " over" : " left"} />
           </Text>
           {expanded
-            ? <ChevronUp size={16} color="#6B8CA8" />
-            : <ChevronDown size={16} color="#6B8CA8" />}
+            ? <ChevronUp size={16} color={themeColor("#6B8CA8", "color")} />
+            : <ChevronDown size={16} color={themeColor("#6B8CA8", "color")} />}
         </View>
       </Pressable>
 
       {/* Progress */}
-      <View style={styles.tripProgress}>
-        <View style={styles.track}>
+      <View style={themeStyle(styles.tripProgress)}>
+        <View style={themeStyle(styles.track)}>
           <View
-            style={[
+            style={themeStyle([
               styles.fill,
               {
                 width: `${pct}%`,
                 backgroundColor: over ? colors.sunsetCoral : colors.oceanBlue,
               },
-            ]}
+            ])}
           />
         </View>
-        <View style={styles.tripProgressLabels}>
-          <Text style={styles.tripProgressSub}>
-            ₱{trip.spent.toLocaleString()} spent
+        <View style={themeStyle(styles.tripProgressLabels)}>
+          <Text style={themeStyle(styles.tripProgressSub)}>
+            <MoneyAmount value={trip.spent} suffix=" spent" />
           </Text>
-          <Text style={styles.tripProgressSub}>
-            ₱{trip.budget.toLocaleString()} budget
+          <Text style={themeStyle(styles.tripProgressSub)}>
+            <MoneyAmount value={trip.budget} suffix=" budget" />
           </Text>
         </View>
       </View>
 
       {/* Expanded entries */}
       {expanded && tripEntries.length > 0 && (
-        <View style={styles.tripEntries}>
+        <View style={themeStyle(styles.tripEntries)}>
           {tripEntries.map((entry) => (
-            <View key={entry._id ?? entry.id} style={styles.tripEntry}>
+            <View key={entry._id ?? entry.id} style={themeStyle(styles.tripEntry)}>
               <View
-                style={[styles.entryDot, { backgroundColor: entry.color }]}
+                style={themeStyle([styles.entryDot, { backgroundColor: entry.color }])}
               />
-              <Text style={styles.tripEntryLabel}>{entry.label}</Text>
-              <Text style={styles.tripEntryAmount}>
-                ₱{entry.amount.toLocaleString()}
+              <Text style={themeStyle(styles.tripEntryLabel)}>{entry.label}</Text>
+              <Text style={themeStyle(styles.tripEntryAmount)}>
+                <MoneyAmount value={entry.amount} />
               </Text>
             </View>
           ))}
         </View>
       )}
       {expanded && tripEntries.length === 0 && (
-        <Text style={styles.noEntriesText}>
+        <Text style={themeStyle(styles.noEntriesText)}>
           No expenses linked to this trip.
         </Text>
       )}
@@ -338,6 +353,10 @@ function TripBudgetRow({ trip, entries }) {
 
 // ── Main Screen ─────────────────────────────────────────
 export default function Budget() {
+  const { width } = useWindowDimensions();
+  const contentWidth = width >= 768 ? width - 280 : width;
+  const { themeStyle, themeColor } = useAppTheme();
+
   const [entries, setEntries] = useState([]);
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -384,56 +403,56 @@ export default function Budget() {
 
   return (
     <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.screen}
+      style={themeStyle(styles.container)}
+      contentContainerStyle={themeStyle(styles.screen)}
       showsVerticalScrollIndicator={false}
     >
       {/* Header */}
-      <View style={styles.header}>
+      <View style={themeStyle([styles.header, contentWidth < 520 && { flexDirection: "column", gap: 16 }])}>
         <View>
-          <Text style={styles.title}>Budget Tracker</Text>
-          <Text style={styles.subtitle}>
+          <Text style={themeStyle(styles.title)}>Budget Tracker</Text>
+          <Text style={themeStyle(styles.subtitle)}>
             {new Date().toLocaleString("en-PH", { month: "long", year: "numeric" })} · Pangasinan travels
           </Text>
         </View>
         <Pressable
           onPress={() => setShowAdd(true)}
-          style={styles.addExpenseBtn}
+          style={themeStyle(styles.addExpenseBtn)}
         >
-          <Plus size={15} color="#fff" />
-          <Text style={styles.addExpenseBtnText}>Add Expense</Text>
+          <Plus size={15} color={themeColor("#fff", "color")} />
+          <Text style={themeStyle(styles.addExpenseBtnText)}>Add Expense</Text>
         </Pressable>
       </View>
 
       {loading ? (
-        <View style={styles.loadingBox}>
-          <ActivityIndicator color={colors.oceanBlue} size="large" />
-          <Text style={styles.loadingText}>Loading budget...</Text>
+        <View style={themeStyle(styles.loadingBox)}>
+          <ActivityIndicator color={themeColor(colors.oceanBlue, "color")} size="large" />
+          <Text style={themeStyle(styles.loadingText)}>Loading budget...</Text>
         </View>
       ) : (
         <>
           {/* Stats */}
-          <View style={styles.statsRow}>
+          <View style={themeStyle(styles.statsRow)}>
             <StatCard
               label="Monthly Budget"
-              value={`₱${MONTHLY_BUDGET.toLocaleString()}`}
+              value={<MoneyAmount value={MONTHLY_BUDGET} />}
               sub="This month"
-              icon={<Wallet size={18} color={colors.oceanBlue} />}
+              icon={<Wallet size={18} color={themeColor(colors.oceanBlue, "color")} />}
               iconBg={colors.oceanBlueLight}
             />
             <StatCard
               label="Amount Spent"
-              value={`₱${spent.toLocaleString()}`}
+              value={<MoneyAmount value={spent} />}
               sub={`${entries.length} expense${entries.length !== 1 ? "s" : ""}`}
-              icon={<TrendingUp size={18} color={colors.sunsetCoral} />}
+              icon={<TrendingUp size={18} color={themeColor(colors.sunsetCoral, "color")} />}
               iconBg={colors.coralLight}
               valueColor={spent > MONTHLY_BUDGET ? colors.sunsetCoral : undefined}
             />
             <StatCard
               label="Remaining"
-              value={`₱${Math.abs(remaining).toLocaleString()}`}
+              value={<MoneyAmount value={Math.abs(remaining)} />}
               sub={remaining < 0 ? "Over budget" : "Available"}
-              icon={<PiggyBank size={18} color={colors.palmGreen} />}
+              icon={<PiggyBank size={18} color={themeColor(colors.palmGreen, "color")} />}
               iconBg={colors.palmGreenLight}
               valueColor={remaining < 0 ? colors.sunsetCoral : colors.palmGreen}
             />
@@ -441,22 +460,22 @@ export default function Budget() {
               label="Savings Rate"
               value={`${savingsRate}%`}
               sub={savingsRate >= 20 ? "On target " : "Low savings"}
-              icon={<Zap size={18} color={colors.gold ?? "#C89B3C"} />}
+              icon={<Zap size={18} color={themeColor(colors.gold ?? "#C89B3C", "color")} />}
               iconBg={colors.goldLight ?? "#FFF8E1"}
             />
           </View>
 
           {/* Overall budget bar */}
-          <View style={styles.overallCard}>
-            <View style={styles.overallHeader}>
-              <Text style={styles.overallTitle}>Monthly Budget Usage</Text>
-              <Text style={styles.overallPct}>
+          <View style={themeStyle(styles.overallCard)}>
+            <View style={themeStyle(styles.overallHeader)}>
+              <Text style={themeStyle(styles.overallTitle)}>Monthly Budget Usage</Text>
+              <Text style={themeStyle(styles.overallPct)}>
                 {Math.min(100, Math.round((spent / MONTHLY_BUDGET) * 100))}%
               </Text>
             </View>
-            <View style={[styles.track, { height: 10 }]}>
+            <View style={themeStyle([styles.track, { height: 10 }])}>
               <View
-                style={[
+                style={themeStyle([
                   styles.fill,
                   {
                     width: `${Math.min(100, (spent / MONTHLY_BUDGET) * 100)}%`,
@@ -467,43 +486,43 @@ export default function Budget() {
                         ? "#C89B3C"
                         : colors.palmGreen,
                   },
-                ]}
+                ])}
               />
             </View>
-            <View style={styles.overallLabels}>
-              <Text style={styles.overallSub}>
-                ₱{spent.toLocaleString()} spent
+            <View style={themeStyle(styles.overallLabels)}>
+              <Text style={themeStyle(styles.overallSub)}>
+                <MoneyAmount value={spent} suffix=" spent" />
               </Text>
-              <Text style={styles.overallSub}>
-                ₱{MONTHLY_BUDGET.toLocaleString()} total
+              <Text style={themeStyle(styles.overallSub)}>
+                <MoneyAmount value={MONTHLY_BUDGET} suffix=" total" />
               </Text>
             </View>
           </View>
 
           {/* Main columns */}
-          <View style={styles.columns}>
+          <View style={themeStyle([styles.columns, contentWidth < 800 && { flexDirection: "column" }])}>
             {/* Expense list */}
-            <View style={styles.leftCol}>
-              <View style={styles.sectionCard}>
-                <View style={styles.sectionHeader}>
-                  <Text style={styles.sectionTitle}>All Expenses</Text>
-                  <Text style={styles.sectionCount}>
+            <View style={themeStyle(styles.leftCol)}>
+              <View style={themeStyle(styles.sectionCard)}>
+                <View style={themeStyle(styles.sectionHeader)}>
+                  <Text style={themeStyle(styles.sectionTitle)}>All Expenses</Text>
+                  <Text style={themeStyle(styles.sectionCount)}>
                     {entries.length} entries
                   </Text>
                 </View>
 
                 {entries.length === 0 ? (
-                  <View style={styles.emptyBox}>
-                    <Text style={styles.emptyTitle}>No expenses yet</Text>
-                    <Text style={styles.emptyDesc}>
+                  <View style={themeStyle(styles.emptyBox)}>
+                    <Text style={themeStyle(styles.emptyTitle)}>No expenses yet</Text>
+                    <Text style={themeStyle(styles.emptyDesc)}>
                       Tap "Add Expense" to start tracking your spending.
                     </Text>
                     <Pressable
                       onPress={() => setShowAdd(true)}
-                      style={styles.emptyBtn}
+                      style={themeStyle(styles.emptyBtn)}
                     >
-                      <Plus size={13} color="#fff" />
-                      <Text style={styles.emptyBtnText}>Add First Expense</Text>
+                      <Plus size={13} color={themeColor("#fff", "color")} />
+                      <Text style={themeStyle(styles.emptyBtnText)}>Add First Expense</Text>
                     </Pressable>
                   </View>
                 ) : (
@@ -511,43 +530,43 @@ export default function Budget() {
                     {entries.map((entry, i) => (
                       <View
                         key={entry._id ?? entry.id}
-                        style={[
+                        style={themeStyle([
                           styles.entryRow,
                           i < entries.length - 1 && styles.entryBorder,
-                        ]}
+                        ])}
                       >
                         <View
-                          style={[
+                          style={themeStyle([
                             styles.entryColorBar,
                             { backgroundColor: entry.color },
-                          ]}
+                          ])}
                         />
-                        <View style={styles.entryInfo}>
-                          <Text style={styles.entryLabel}>{entry.label}</Text>
-                          <Text style={styles.entrySub}>
+                        <View style={themeStyle(styles.entryInfo)}>
+                          <Text style={themeStyle(styles.entryLabel)}>{entry.label}</Text>
+                          <Text style={themeStyle(styles.entrySub)}>
                             {spent > 0
                               ? Math.round((entry.amount / spent) * 100)
                               : 0}
                             % of total spending
                           </Text>
                         </View>
-                        <Text style={styles.entryAmount}>
-                          ₱{entry.amount.toLocaleString()}
+                        <Text style={themeStyle(styles.entryAmount)}>
+                          <MoneyAmount value={entry.amount} />
                         </Text>
                         <Pressable
                           onPress={() => handleDelete(entry._id ?? entry.id)}
-                          style={styles.deleteEntryBtn}
+                          style={themeStyle(styles.deleteEntryBtn)}
                         >
-                          <Trash2 size={13} color={colors.sunsetCoral} />
+                          <Trash2 size={13} color={themeColor(colors.sunsetCoral, "color")} />
                         </Pressable>
                       </View>
                     ))}
 
                     {/* Total */}
-                    <View style={styles.totalRow}>
-                      <Text style={styles.totalLabel}>Total Spent</Text>
-                      <Text style={styles.totalAmount}>
-                        ₱{spent.toLocaleString()}
+                    <View style={themeStyle(styles.totalRow)}>
+                      <Text style={themeStyle(styles.totalLabel)}>Total Spent</Text>
+                      <Text style={themeStyle(styles.totalAmount)}>
+                        <MoneyAmount value={spent} />
                       </Text>
                     </View>
                   </>
@@ -556,12 +575,12 @@ export default function Budget() {
             </View>
 
             {/* Breakdown chart */}
-            <View style={styles.rightCol}>
-              <View style={styles.sectionCard}>
-                <Text style={styles.sectionTitle}>Expense Breakdown</Text>
-                <View style={{ marginTop: 16, gap: 14 }}>
+            <View style={themeStyle(styles.rightCol)}>
+              <View style={themeStyle(styles.sectionCard)}>
+                <Text style={themeStyle(styles.sectionTitle)}>Expense Breakdown</Text>
+                <View style={themeStyle({ marginTop: 16, gap: 14 })}>
                   {entries.length === 0 ? (
-                    <Text style={styles.emptyDesc}>No expenses to show.</Text>
+                    <Text style={themeStyle(styles.emptyDesc)}>No expenses to show.</Text>
                   ) : (
                     entries.map((entry) => (
                       <ProgressBar
@@ -570,16 +589,16 @@ export default function Budget() {
                         amount={entry.amount}
                         total={maxAmount}
                         color={entry.color}
-                        rightLabel={`${spent > 0 ? Math.round((entry.amount / spent) * 100) : 0}% · ₱${entry.amount.toLocaleString()}`}
+                        rightLabel={<MoneyAmount value={entry.amount} prefix={`${spent > 0 ? Math.round((entry.amount / spent) * 100) : 0}% · `} />}
                       />
                     ))
                   )}
                 </View>
                 {entries.length > 0 && (
-                  <View style={styles.breakdownTotal}>
-                    <Text style={styles.totalLabel}>Total</Text>
-                    <Text style={styles.totalAmount}>
-                      ₱{spent.toLocaleString()}
+                  <View style={themeStyle(styles.breakdownTotal)}>
+                    <Text style={themeStyle(styles.totalLabel)}>Total</Text>
+                    <Text style={themeStyle(styles.totalAmount)}>
+                      <MoneyAmount value={spent} />
                     </Text>
                   </View>
                 )}
@@ -589,18 +608,18 @@ export default function Budget() {
 
           {/* Per-trip budget */}
           {trips.length > 0 && (
-            <View style={styles.sectionCard}>
-              <Text style={styles.sectionTitle}>Per-Trip Budget</Text>
-              <Text style={styles.sectionDesc}>
+            <View style={themeStyle(styles.sectionCard)}>
+              <Text style={themeStyle(styles.sectionTitle)}>Per-Trip Budget</Text>
+              <Text style={themeStyle(styles.sectionDesc)}>
                 Tap a trip to see linked expenses. Save an AI Itinerary to automatically populate trip costs.
               </Text>
-              <View style={{ marginTop: 16, gap: 0 }}>
+              <View style={themeStyle({ marginTop: 16, gap: 0 })}>
                 {trips.map((trip, i) => (
                   <View
                     key={trip._id ?? trip.id}
-                    style={[
+                    style={themeStyle([
                       i < trips.length - 1 && styles.tripSectionBorder,
-                    ]}
+                    ])}
                   >
                     <TripBudgetRow trip={trip} entries={entries} />
                   </View>
@@ -610,18 +629,18 @@ export default function Budget() {
           )}
 
           {/* Tips */}
-          <View style={styles.tipsCard}>
-            <Text style={styles.tipsTitle}>💡 Budget Tips</Text>
-            <View style={styles.tipsList}>
+          <View style={themeStyle(styles.tipsCard)}>
+            <Text style={themeStyle(styles.tipsTitle)}>💡 Budget Tips</Text>
+            <View style={themeStyle(styles.tipsList)}>
               {[
                 "Use the AI Itinerary planner to estimate costs before your trip.",
                 "Link expenses to trips to track spending per destination.",
                 "Aim to keep transport under 30% of your total budget.",
                 "Book accommodation early for lower rates in Pangasinan.",
               ].map((tip, i) => (
-                <View key={i} style={styles.tipRow}>
-                  <View style={styles.tipDot} />
-                  <Text style={styles.tipText}>{tip}</Text>
+                <View key={i} style={themeStyle(styles.tipRow)}>
+                  <View style={themeStyle(styles.tipDot)} />
+                  <Text style={themeStyle(styles.tipText)}>{tip}</Text>
                 </View>
               ))}
             </View>
@@ -668,9 +687,11 @@ const styles = StyleSheet.create({
   loadingText: { fontSize: 14, color: "#6B8CA8" },
 
   // Stats
-  statsRow: { flexDirection: "row", gap: 16, marginBottom: 20 },
+  statsRow: { flexDirection: "row", flexWrap: "wrap", gap: 16, marginBottom: 20 },
   statCard: {
     flex: 1,
+    flexBasis: 160,
+    minWidth: 160,
     backgroundColor: "#fff",
     borderRadius: 14,
     padding: 18,
@@ -715,6 +736,8 @@ const styles = StyleSheet.create({
   overallPct: { fontSize: 14, fontWeight: "700", color: colors.oceanBlue },
   overallLabels: {
     flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
     justifyContent: "space-between",
   },
   overallSub: { fontSize: 12, color: "#6B8CA8" },
@@ -842,6 +865,8 @@ const styles = StyleSheet.create({
   tripProgress: { gap: 6 },
   tripProgressLabels: {
     flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
     justifyContent: "space-between",
   },
   tripProgressSub: { fontSize: 11, color: "#6B8CA8" },

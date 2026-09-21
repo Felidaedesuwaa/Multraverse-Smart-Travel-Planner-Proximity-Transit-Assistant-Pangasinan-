@@ -25,7 +25,7 @@ router.post('/register', async (req: Request, res: Response) => {
 
     res.status(201).json({
       token,
-      user: { id: user._id.toString(), name: user.name, email: user.email, role: user.role },
+      user: { id: user._id.toString(), name: user.name, email: user.email, role: user.role, location: user.location, photo: user.photo },
     })
   } catch (err) {
     res.status(500).json({ error: 'Server error' })
@@ -52,7 +52,7 @@ router.post('/login', async (req: Request, res: Response) => {
 
     res.json({
       token,
-      user: { id: user._id.toString(), name: user.name, email: user.email, role: user.role },
+      user: { id: user._id.toString(), name: user.name, email: user.email, role: user.role, location: user.location, photo: user.photo },
     })
   } catch (err) {
     res.status(500).json({ error: 'Server error' })

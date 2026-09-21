@@ -1,3 +1,4 @@
+import { useAppTheme } from "../theme/useAppTheme";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import {
   BarChart3, Circle, Compass, LayoutGrid,
@@ -18,6 +19,8 @@ const items = [
 ];
 
 export default function AdminSidebar({ activeScreen = "AdminDashboard", onNavigate }) {
+  const { themeStyle, themeColor } = useAppTheme();
+
   const navigation = useNavigation();
   const logout = useAuthStore((state) => state.logout);
 
@@ -27,38 +30,38 @@ export default function AdminSidebar({ activeScreen = "AdminDashboard", onNaviga
   };
 
   return (
-    <View style={styles.sidebar}>
-      <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollContent}>
+    <View style={themeStyle(styles.sidebar)}>
+      <ScrollView showsVerticalScrollIndicator={false} style={themeStyle(styles.scrollContent)}>
         {/* Brand */}
-        <View style={styles.brand}>
-          <View style={styles.brandIcon}>
-            <Compass size={20} color={colors.white} />
+        <View style={themeStyle(styles.brand)}>
+          <View style={themeStyle(styles.brandIcon)}>
+            <Compass size={20} color={themeColor(colors.white, "color")} />
           </View>
           <View>
-            <Text style={styles.brandName}>Multraverse</Text>
-            <Text style={styles.brandSub}>Admin Console</Text>
+            <Text style={themeStyle(styles.brandName)}>Multraverse</Text>
+            <Text style={themeStyle(styles.brandSub)}>Admin Console</Text>
           </View>
         </View>
 
         {/* Nav Items */}
-        <View style={styles.navSection}>
+        <View style={themeStyle(styles.navSection)}>
           {items.map(({ label, icon: Icon, screen }) => {
             const active = activeScreen === screen;
             return (
               <Pressable
                 key={screen}
                 onPress={() => onNavigate?.(screen)}
-                style={({ pressed }) => [
+                style={themeStyle(({ pressed }) => [
                   styles.item,
                   active && styles.activeItem,
                   pressed && !active && styles.pressedItem,
-                ]}
+                ])}
               >
                 <Icon
                   size={18}
-                  color={active ? colors.sunsetCoral : colors.white}
+                  color={themeColor(active ? colors.sunsetCoral : colors.white, "color")}
                 />
-                <Text style={[styles.label, active && styles.activeLabel]}>
+                <Text style={themeStyle([styles.label, active && styles.activeLabel])}>
                   {label}
                 </Text>
               </Pressable>
@@ -68,16 +71,16 @@ export default function AdminSidebar({ activeScreen = "AdminDashboard", onNaviga
       </ScrollView>
 
       {/* System Status */}
-      <View style={styles.status}>
-        <Circle size={9} fill={colors.palmGreen} color={colors.palmGreen} />
+      <View style={themeStyle(styles.status)}>
+        <Circle size={9} fill={themeColor(colors.palmGreen, "fill")} color={themeColor(colors.palmGreen, "color")} />
         <View>
-          <Text style={styles.statusTitle}>System Status</Text>
-          <Text style={styles.statusText}>All systems operational</Text>
+          <Text style={themeStyle(styles.statusTitle)}>System Status</Text>
+          <Text style={themeStyle(styles.statusText)}>All systems operational</Text>
         </View>
       </View>
-      <Pressable onPress={handleLogout} accessibilityLabel="Log out" style={styles.logout}>
-        <LogOut size={18} color="#FF9B85" />
-        <Text style={styles.logoutText}>Log out</Text>
+      <Pressable onPress={handleLogout} accessibilityLabel="Log out" style={themeStyle(styles.logout)}>
+        <LogOut size={18} color={themeColor("#FF9B85", "color")} />
+        <Text style={themeStyle(styles.logoutText)}>Log out</Text>
       </Pressable>
     </View>
   );

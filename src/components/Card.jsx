@@ -1,9 +1,12 @@
+import { useAppTheme } from "../theme/useAppTheme";
 import { StyleSheet, View } from "react-native";
 import { colors } from "../theme/colors";
 
 export default function Card({ children, style }) {
+  const { themeStyle } = useAppTheme();
+
   return (
-    <View style={[styles.card, style]}>{children}</View>
+    <View style={themeStyle([styles.card, style])}>{children}</View>
   );
 }
 

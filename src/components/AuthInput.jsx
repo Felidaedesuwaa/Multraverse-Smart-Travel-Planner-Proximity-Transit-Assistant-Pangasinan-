@@ -1,33 +1,36 @@
+import { useAppTheme } from "../theme/useAppTheme";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { Eye, EyeOff } from "lucide-react-native";
 import { colors } from "../theme/colors";
 
 export default function AuthInput({ label, error, isPassword, value, onChangeText, onChange, placeholder, ...props }) {
+  const { themeStyle, themeColor } = useAppTheme();
+
   const [hidden, setHidden] = useState(isPassword);
 
   return (
-    <View style={styles.wrapper}>
-      <Text style={styles.label}>{label}</Text>
-      <View style={[styles.inputRow, { borderColor: error ? colors.sunsetCoral : "rgba(255,255,255,0.15)" }]}>
+    <View style={themeStyle(styles.wrapper)}>
+      <Text style={themeStyle(styles.label)}>{label}</Text>
+      <View style={themeStyle([styles.inputRow, { borderColor: error ? colors.sunsetCoral : "rgba(255,255,255,0.15)" }])}>
         <TextInput
           value={value}
           onChangeText={onChangeText || onChange}
           placeholder={placeholder}
-          placeholderTextColor="#8FB0C2"
+          placeholderTextColor={themeColor("#8FB0C2", "color")}
           secureTextEntry={isPassword && hidden}
           autoCapitalize="none"
           autoCorrect={false}
-          style={styles.input}
+          style={themeStyle(styles.input)}
           {...props}
         />
         {isPassword && (
-          <Pressable accessibilityRole="button" accessibilityLabel={hidden ? "Show password" : "Hide password"} onPress={() => setHidden(!hidden)} style={styles.toggle}>
-            {hidden ? <EyeOff size={18} color="#8FB0C2" /> : <Eye size={18} color="#8FB0C2" />}
+          <Pressable accessibilityRole="button" accessibilityLabel={hidden ? "Show password" : "Hide password"} onPress={() => setHidden(!hidden)} style={themeStyle(styles.toggle)}>
+            {hidden ? <EyeOff size={18} color={themeColor("#8FB0C2", "color")} /> : <Eye size={18} color={themeColor("#8FB0C2", "color")} />}
           </Pressable>
         )}
       </View>
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? <Text style={themeStyle(styles.error)}>{error}</Text> : null}
     </View>
   );
 }

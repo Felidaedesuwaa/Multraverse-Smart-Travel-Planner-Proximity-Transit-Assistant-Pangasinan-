@@ -1,3 +1,4 @@
+import { useAppTheme } from "../theme/useAppTheme";
 import { useState } from "react";
 import { StyleSheet, Text } from "react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -9,6 +10,8 @@ import { useAuthStore } from "../store/authStore";
 import { validateConfirmPassword, validateEmail, validateName, validatePassword } from "../utils/validation";
 
 export default function RegisterPage() {
+  const { themeStyle } = useAppTheme();
+
   const navigation = useNavigation();
   const { register, isLoading } = useAuthStore();
   const [name, setName] = useState("");
@@ -36,13 +39,13 @@ export default function RegisterPage() {
     <AuthLayout
       title="Create your account"
       subtitle="Start planning your Pangasinan adventure."
-      footer={<Text style={styles.footerText}>Already have an account? <Text style={styles.footerLink} onPress={() => navigation.navigate("Login")}>Sign in</Text></Text>}
+      footer={<Text style={themeStyle(styles.footerText)}>Already have an account? <Text style={themeStyle(styles.footerLink)} onPress={() => navigation.navigate("Login")}>Sign in</Text></Text>}
     >
       <AuthInput label="Full name" placeholder="Juan dela Cruz" value={name} onChangeText={setName} error={errors.name} autoCapitalize="words" />
       <AuthInput label="Email" placeholder="you@email.com" value={email} onChangeText={setEmail} error={errors.email} keyboardType="email-address" />
       <AuthInput label="Password" placeholder="At least 8 characters" value={password} onChangeText={setPassword} error={errors.password} isPassword />
       <AuthInput label="Confirm password" placeholder="Re-enter your password" value={confirm} onChangeText={setConfirm} error={errors.confirm} isPassword />
-      {formError ? <Text style={styles.formError}>{formError}</Text> : null}
+      {formError ? <Text style={themeStyle(styles.formError)}>{formError}</Text> : null}
       <GradientButton label="Create Account" loading={isLoading} onPress={handleSubmit} />
     </AuthLayout>
   );
