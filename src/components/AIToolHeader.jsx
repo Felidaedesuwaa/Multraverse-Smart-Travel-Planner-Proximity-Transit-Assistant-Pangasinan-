@@ -1,16 +1,18 @@
+import { useAppTheme } from "../theme/useAppTheme";
 import { StyleSheet, Text, View } from "react-native";
 import { colors } from "../theme/colors";
 
 /** A shared, compact hero used by every AI tool. */
 export default function AIToolHeader({ eyebrow = "MULTRAVERSE AI TOOLS", title, subtitle, badges = [], Icon, compact = false }) {
-  return <View style={[styles.hero, compact && styles.heroCompact]}>
-    <View style={styles.content}>
-      <Text style={styles.eyebrow}>{eyebrow}</Text>
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.subtitle}>{subtitle}</Text>
-      {!!badges.length && <View style={styles.badges}>{badges.map((badge, index) => <View key={badge.label} style={styles.badge}><View style={[styles.dot, { backgroundColor: badge.color || (index ? "#F59E0B" : "#22C55E") }]} /><Text style={styles.badgeText}>{badge.label}</Text></View>)}</View>}
+  const { themeStyle, themeColor } = useAppTheme();
+  return <View style={themeStyle([styles.hero, compact && styles.heroCompact])}>
+    <View style={themeStyle(styles.content)}>
+      <Text style={themeStyle(styles.eyebrow)}>{eyebrow}</Text>
+      <Text style={themeStyle(styles.title)}>{title}</Text>
+      <Text style={themeStyle(styles.subtitle)}>{subtitle}</Text>
+      {!!badges.length && <View style={themeStyle(styles.badges)}>{badges.map((badge, index) => <View key={badge.label} style={themeStyle(styles.badge)}><View style={themeStyle([styles.dot, { backgroundColor: badge.color || (index ? "#F59E0B" : "#22C55E") }])} /><Text style={themeStyle(styles.badgeText)}>{badge.label}</Text></View>)}</View>}
     </View>
-    {Icon && <View style={[styles.icon, compact && styles.iconCompact]}><Icon size={compact ? 24 : 30} color={colors.white} /></View>}
+    {Icon && <View style={themeStyle([styles.icon, compact && styles.iconCompact])}><Icon size={compact ? 24 : 30} color={themeColor(colors.white)} /></View>}
   </View>;
 }
 

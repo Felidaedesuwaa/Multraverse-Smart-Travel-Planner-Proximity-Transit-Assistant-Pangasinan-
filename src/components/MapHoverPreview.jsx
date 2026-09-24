@@ -7,7 +7,7 @@ import photosByArea from "../data/pangasinanPhotos.json";
 import { photoAssets } from "../data/pangasinanPhotoAssets";
 import { placesForArea, summarizeRatings } from "../utils/mapPlaces";
 
-export default function MapHoverPreview({ area, places, loading, error, retry, onExplore, onDismiss }) {
+export default function MapHoverPreview({ area, places, loading, error, retry, onExplore, onChoose, onDismiss }) {
   const { themeStyle, themeColor } = useAppTheme();
   const [photoFailed, setPhotoFailed] = useState(false);
   const photos = photosByArea[area.id] || [];
@@ -39,6 +39,7 @@ export default function MapHoverPreview({ area, places, loading, error, retry, o
     <Pressable accessibilityRole="button" accessibilityLabel={`Explore ${area.name} details`} onPress={onExplore} style={themeStyle(styles.explore)}>
       <Text style={styles.exploreText}>Explore {area.name}</Text><View style={styles.photoCount}><Camera size={13} color={colors.white} /><Text style={styles.photoCountText}>{photos.length}</Text></View><ArrowUpRight size={16} color={colors.white} />
     </Pressable>
+    <Pressable accessibilityRole="button" accessibilityLabel={`Choose ${area.name} to explore`} onPress={onChoose} style={themeStyle(styles.choose)}><Text style={themeStyle(styles.chooseText)}>Choose this place to explore</Text></Pressable>
   </View>;
 }
 
@@ -58,6 +59,8 @@ const styles = StyleSheet.create({
   credit: { fontSize: 9, lineHeight: 14, color: colors.textMuted, textDecorationLine: "underline" },
   explore: { backgroundColor: colors.oceanBlue, minHeight: 44, borderRadius: 9, flexDirection: "row", alignItems: "center", paddingHorizontal: 12, gap: 8 },
   exploreText: { color: colors.white, fontSize: 12, fontWeight: "600", flex: 1 },
+  choose: { minHeight: 40, justifyContent: "center", alignItems: "center", borderRadius: 9, borderWidth: 1, borderColor: colors.sunsetCoral },
+  chooseText: { color: colors.sunsetCoral, fontSize: 12, fontWeight: "700" },
   photoCount: { flexDirection: "row", gap: 4, alignItems: "center" },
   photoCountText: { fontSize: 11, color: colors.white },
   retry: { alignSelf: "flex-start", minHeight: 32, justifyContent: "center" },

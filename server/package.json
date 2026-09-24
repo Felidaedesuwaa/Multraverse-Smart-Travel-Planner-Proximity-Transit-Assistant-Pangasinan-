@@ -12,6 +12,9 @@
     "seed:phrases": "ts-node seeds/seedPhrasebook.ts",
     "seed:planner": "ts-node seeds/seedPlanner.ts",
     "test:planner": "npm run build && node scripts/check-planner.cjs && node scripts/check-planner-api.cjs",
+    "test:registration": "npm run build && node scripts/check-registration.cjs",
+    "test:auth": "npm run build && node scripts/check-registration-api.cjs --isolated-database",
+    "check:email": "npm run build && node scripts/check-email.cjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -25,7 +28,8 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
-    "mongoose": "^9.9.5"
+    "mongoose": "^9.9.5",
+    "nodemailer": "^10.0.10"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -33,6 +37,7 @@
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.2.0",
+    "@types/nodemailer": "^8.0.2",
     "nodemon": "^3.1.14",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3"

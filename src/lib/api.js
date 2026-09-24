@@ -55,7 +55,12 @@ async function request(path, options = {}) {
   })
 
   const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "Request failed");
+  if (!res.ok) {
+    const error = new Error(data.error || "Request failed");
+    error.fieldErrors = data.fieldErrors;
+    error.status = res.status;
+    throw error;
+  }
   return data;
 }
 
@@ -75,12 +80,17 @@ export const api = {
   login: (email, password) =>
     request('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }),
 
-  register: (name, email, password) =>
-    request('/api/auth/register', { method: 'POST', body: JSON.stringify({ name, email, password }) }),
+  register: (fields) =>
+    request('/api/auth/register', { method: 'POST', body: JSON.stringify(fields) }),
+  verifyRegistration: (challengeId, code) =>
+    request('/api/auth/register/verify', { method: 'POST', body: JSON.stringify({ challengeId, code }) }),
+  resendRegistration: (challengeId) =>
+    request('/api/auth/register/resend', { method: 'POST', body: JSON.stringify({ challengeId }) }),
 
   // User
   getMe: () => profileRequest('GET'),
   updateMe: (data) => profileRequest('PUT', data),
+  deleteMe: (password) => profileRequest('DELETE', { password, confirmation: true }),
   searchLocations: (query, signal) => request(`/api/locations/search?q=${encodeURIComponent(query)}`, { signal }),
 
   // Trips
@@ -124,8 +134,7 @@ export const api = {
   getAISettings: () => request('/api/ai/settings'),
   updateAISettings: data => request('/api/ai/settings', { method: 'PUT', body: JSON.stringify(data) }),
   generateItinerary: (data, options = {}) =>
-    // The current screen sends a destination; structured planner requests send destinations.
-    request(typeof data.destination === 'string' ? '/api/ai/itinerary/model' : '/api/ai/itinerary', { ...options, method: 'POST', body: JSON.stringify(data) }),
+    request('/api/ai/itinerary', { ...options, method: 'POST', body: JSON.stringify(data) }),
   generateModelItinerary: (data, options = {}) =>
     request('/api/ai/itinerary/model', { ...options, method: 'POST', body: JSON.stringify(data) }),
   enrichItinerary: (id, options = {}) => request(`/api/ai/planner/${id}/narrative`, { ...options, method: 'POST', body: '{}' }),

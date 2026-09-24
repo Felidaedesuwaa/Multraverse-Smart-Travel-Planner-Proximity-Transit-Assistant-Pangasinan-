@@ -1,5 +1,6 @@
+import { FeedbackPressable } from "./WorkspaceMotion";
 import { useAppTheme } from "../theme/useAppTheme";
-import { ActivityIndicator, Pressable, StyleSheet, Text } from "react-native";
+import { ActivityIndicator, StyleSheet, Text } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { colors } from "../theme/colors";
 
@@ -8,7 +9,7 @@ export default function GradientButton({ label, loading, disabled, onPress, onCl
 
   const isDisabled = disabled || loading;
   return (
-    <Pressable disabled={isDisabled} onPress={onPress || onClick} style={themeStyle([styles.pressable, style])}>
+    <FeedbackPressable accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ disabled: !!isDisabled, busy: !!loading }} disabled={isDisabled} onPress={onPress || onClick} style={themeStyle([styles.pressable, style])}>
       <LinearGradient
         colors={(isDisabled ? ["#B8B8B8", "#9E9E9E"] : [colors.sunsetCoral, "#F2A63E"]).map(value => themeColor(value, "backgroundColor"))}
         start={{ x: 0, y: 0 }}
@@ -17,7 +18,7 @@ export default function GradientButton({ label, loading, disabled, onPress, onCl
       >
         {loading ? <ActivityIndicator color={themeColor(colors.white, "color")} /> : <Text style={themeStyle(styles.label)}>{label}</Text>}
       </LinearGradient>
-    </Pressable>
+    </FeedbackPressable>
   );
 }
 

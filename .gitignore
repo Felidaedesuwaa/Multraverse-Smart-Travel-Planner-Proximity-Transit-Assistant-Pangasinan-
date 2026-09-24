@@ -13,6 +13,13 @@ dist
 dist-ssr
 *.local
 
+# Local credentials and personal development notes stay on this device.
+.env
+.env.*
+!.env.example
+/text.txt
+/test.txt
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

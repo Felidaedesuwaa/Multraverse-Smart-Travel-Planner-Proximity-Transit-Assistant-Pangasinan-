@@ -42,7 +42,7 @@ Backend:
 
 ## Requirements
 
-- Node.js 18 or newer
+- Node.js 20.19.4 or newer
 - MongoDB Atlas or a local MongoDB server
 - Expo Go for physical-device testing, or Android Studio/Xcode for native emulators
 
@@ -197,6 +197,38 @@ multraverse-web/
 ```
 
 ## API Routes
+
+Registration uses `firstName`, optional `middleName`, `surname`, `email`, and `password`. The server constructs the existing `User.name` full-name field (for example, `Juan` + `Reyes` + `dela Cruz` becomes `Juan R. dela Cruz`). Names accept letters, spaces, apostrophes and hyphens, up to 35 characters per input. Existing accounts and profile displays need no migration.
+
+New passwords must contain 8–72 ASCII characters, at least one uppercase letter and one digit. The only allowed symbols are `_`, `-`, and `@`; whitespace is rejected. The 72-character limit prevents bcrypt truncation. These registration rules do not change existing passwords or login validation.
+
+New email addresses are normalized, checked for syntax, and rejected for reserved example/test domains. Registration checks DNS MX records and rejects missing/null MX records; transient DNS failures return a retryable error. If the system DNS resolver refuses or cannot complete a query, the server retries through Cloudflare DNS (`1.1.1.1`), sending only the email domain, with a five-second limit per attempt. Mailbox ownership is then verified with an emailed six-digit code before a login-capable account is created.
+
+Run `npm run test:registration --prefix server` for frontend/server validation parity and DNS checks.
+
+### Signup email delivery
+
+Configure these **server-only** values in `server/.env`, then restart the backend:
+
+```dotenv
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=465
+SMTP_USER=your-sender@gmail.com
+SMTP_PASS=your-email-provider-app-password
+MAIL_FROM="Multraverse <your-sender@gmail.com>"
+```
+
+Use your provider's SMTP credentials and an authorized sender address. For Gmail, use an app password with two-step verification enabled on the sender account. Other SMTP providers can use their own host and credentials. Port 465 uses TLS; port 587 requires STARTTLS. See [Nodemailer SMTP configuration](https://nodemailer.com/smtp) and [Google app passwords](https://support.google.com/accounts/answer/185833). Never put SMTP credentials in the frontend `.env` or any `EXPO_PUBLIC_*` variable. Run `npm run check:email --prefix server` to verify the SMTP connection and authentication without sending an email.
+
+Signup is two steps on web, Android and iOS: submit the registration details, then enter the emailed code. Codes expire after 10 minutes, permit five attempts, and can be resent after 60 seconds. Resending replaces the previous code. Database-backed email/IP limits restrict abuse; configure a trusted reverse proxy correctly if deploying behind one (do not blindly trust forwarded client IP headers). Unverified signups expire automatically; passwords are bcrypt hashes and codes are HMAC hashes, never returned to the app or logged. Existing accounts can still sign in without repeating signup verification. Without SMTP configuration, new signup returns a clear service-unavailable error instead of bypassing verification.
+
+### Delete an account
+
+**Settings → Privacy & Data → Delete** opens a confirmation dialog requiring the current password. Successful deletion permanently removes the User record (including password hash, email and profile photo), trips and stops, saved places, budget entries/settings, itinerary drafts, and any pending signup for that email. Existing tokens stop working because authenticated API requests check that the account still exists. The current device clears its stored token, profile, and account-specific itinerary cache and returns to the landing page. Shared destination and transit catalogs and other accounts are preserved.
+
+Verification completion and account deletion use MongoDB transactions, requiring MongoDB Atlas or a replica set (including a single-node replica set for local development). A failed transaction leaves the account and its data intact.
+
+Run `npm run test:auth --prefix server` for integration checks against a **separate randomly named temporary database** on `AUTH_TEST_MONGODB_URI` (or `MONGODB_URI` if omitted). The test needs permission to create and drop collections in that temporary database, mocks all email delivery, and removes its test collections afterward. It checks expiry, attempt/resend limits, simultaneous verification, transaction rollback, deletion ownership, credential removal and token rejection. Existing application accounts are never modified.
 
 The backend provides route groups for authentication, users, trips, budgets, places, transit routes, geofences, AI, and knowledge data. The health check is available at `GET /api/health`.
 

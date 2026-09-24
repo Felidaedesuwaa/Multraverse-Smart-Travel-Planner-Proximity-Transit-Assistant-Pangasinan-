@@ -1,3 +1,4 @@
+import { FeedbackPressable } from "../components/WorkspaceMotion";
 import { useAppTheme } from "../theme/useAppTheme";
 import { useEffect, useState } from "react";
 import {
@@ -54,7 +55,7 @@ function StarRating({ rating, size = 14, onRate }) {
   return (
     <View style={themeStyle({ flexDirection: "row", gap: 2 })}>
       {[1, 2, 3, 4, 5].map((star) => (
-        <Pressable
+        <FeedbackPressable
           key={star}
           onPress={() => onRate && onRate(star)}
           disabled={!onRate}
@@ -64,7 +65,7 @@ function StarRating({ rating, size = 14, onRate }) {
             color={themeColor(star <= rating ? "#F59E0B" : "#D1DCE5", "color")}
             fill={themeColor(star <= rating ? "#F59E0B" : "transparent", "fill")}
           />
-        </Pressable>
+        </FeedbackPressable>
       ))}
     </View>
   );
@@ -131,9 +132,9 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
               <Text style={themeStyle(styles.modalTitle)}>
                 {isEdit ? "Edit Place" : "Add New Place"}
               </Text>
-              <Pressable onPress={onClose} style={themeStyle(styles.closeBtn)}>
+              <FeedbackPressable onPress={onClose} style={themeStyle(styles.closeBtn)}>
                 <X size={18} color={themeColor("#6B8CA8", "color")} />
-              </Pressable>
+              </FeedbackPressable>
             </View>
 
             {/* Name */}
@@ -153,7 +154,7 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
               <Text style={themeStyle(styles.formLabel)}>Category</Text>
               <View style={themeStyle(styles.chipGrid)}>
                 {cats.map((cat) => (
-                  <Pressable
+                  <FeedbackPressable
                     key={cat}
                     onPress={() => setCategory(cat)}
                     style={themeStyle([
@@ -169,7 +170,7 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
                     >
                       {cat}
                     </Text>
-                  </Pressable>
+                  </FeedbackPressable>
                 ))}
               </View>
             </View>
@@ -221,7 +222,7 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
             <View style={themeStyle(styles.formGroup)}>
               <Text style={themeStyle(styles.formLabel)}>Visibility</Text>
               <View style={themeStyle(styles.visibilityRow)}>
-                <Pressable
+                <FeedbackPressable
                   onPress={() => setIsPublic(true)}
                   style={themeStyle([styles.visBtn, isPublic && styles.visBtnActive])}
                 >
@@ -229,8 +230,8 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
                   <Text style={themeStyle([styles.visBtnText, isPublic && styles.visBtnTextActive])}>
                     Public
                   </Text>
-                </Pressable>
-                <Pressable
+                </FeedbackPressable>
+                <FeedbackPressable
                   onPress={() => setIsPublic(false)}
                   style={themeStyle([styles.visBtn, !isPublic && styles.visBtnActivePrivate])}
                 >
@@ -238,7 +239,7 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
                   <Text style={themeStyle([styles.visBtnText, !isPublic && styles.visBtnTextPrivate])}>
                     Private
                   </Text>
-                </Pressable>
+                </FeedbackPressable>
               </View>
               <Text style={themeStyle(styles.visHint)}>
                 {isPublic
@@ -254,10 +255,10 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
             )}
 
             <View style={themeStyle(styles.modalActions)}>
-              <Pressable onPress={onClose} style={themeStyle(styles.cancelBtn)}>
+              <FeedbackPressable onPress={onClose} style={themeStyle(styles.cancelBtn)}>
                 <Text style={themeStyle(styles.cancelText)}>Cancel</Text>
-              </Pressable>
-              <Pressable
+              </FeedbackPressable>
+              <FeedbackPressable
                 onPress={handleSave}
                 disabled={saving}
                 style={themeStyle([styles.saveBtn, saving && { opacity: 0.7 }])}
@@ -268,7 +269,7 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
                 <Text style={themeStyle(styles.saveBtnText)}>
                   {saving ? "Saving..." : isEdit ? "Save Changes" : "Add Place"}
                 </Text>
-              </Pressable>
+              </FeedbackPressable>
             </View>
           </ScrollView>
         </Pressable>
@@ -297,9 +298,9 @@ function PlaceDetailModal({ place, onClose, onEdit, onDelete }) {
             <View style={themeStyle(styles.detailIconCircle)}>
               <Icon size={32} color={themeColor(colors.oceanBlue, "color")} />
             </View>
-            <Pressable onPress={onClose} style={themeStyle(styles.detailClose)}>
+            <FeedbackPressable onPress={onClose} style={themeStyle(styles.detailClose)}>
               <X size={18} color={themeColor("#fff", "color")} />
-            </Pressable>
+            </FeedbackPressable>
             {place.isPublic !== false && (
               <View style={themeStyle(styles.publicTag)}>
                 <Globe size={10} color={themeColor("#fff", "color")} />
@@ -354,7 +355,7 @@ function PlaceDetailModal({ place, onClose, onEdit, onDelete }) {
                 <Text style={themeStyle(styles.noteText)}>{place.userNote}</Text>
               </View>
             ) : (
-              <Pressable
+              <FeedbackPressable
                 onPress={() => { onClose(); onEdit(place); }}
                 style={themeStyle(styles.addNoteBtn)}
               >
@@ -362,7 +363,7 @@ function PlaceDetailModal({ place, onClose, onEdit, onDelete }) {
                 <Text style={themeStyle(styles.addNoteBtnText)}>
                   Add your experience & rating
                 </Text>
-              </Pressable>
+              </FeedbackPressable>
             )}
 
             {/* Photo placeholder */}
@@ -383,22 +384,22 @@ function PlaceDetailModal({ place, onClose, onEdit, onDelete }) {
 
             {/* Actions */}
             <View style={themeStyle(styles.detailActions)}>
-              <Pressable
+              <FeedbackPressable
                 onPress={() => { onClose(); onEdit(place); }}
                 style={themeStyle(styles.editDetailBtn)}
               >
                 <Text style={themeStyle(styles.editDetailBtnText)}>Edit Place</Text>
-              </Pressable>
+              </FeedbackPressable>
               <Pressable style={themeStyle(styles.directionsBtn)}>
                 <Navigation size={14} color={themeColor("#fff", "color")} />
                 <Text style={themeStyle(styles.directionsBtnText)}>Directions</Text>
               </Pressable>
-              <Pressable
+              <FeedbackPressable
                 onPress={() => onDelete(place._id ?? place.id)}
                 style={themeStyle(styles.deleteDetailBtn)}
               >
                 <Trash2 size={14} color={themeColor(colors.sunsetCoral, "color")} />
-              </Pressable>
+              </FeedbackPressable>
             </View>
           </ScrollView>
         </Pressable>
@@ -416,7 +417,7 @@ function PlaceCard({ place, onView, onDelete, index }) {
   const bgColor = PLACE_BG_COLORS[index % PLACE_BG_COLORS.length];
 
   return (
-    <Pressable
+    <FeedbackPressable
       onPress={() => onView(place)}
       style={themeStyle(({ pressed }) => [styles.card, pressed && { opacity: 0.92 }])}
     >
@@ -469,14 +470,14 @@ function PlaceCard({ place, onView, onDelete, index }) {
 
         {/* Footer */}
         <View style={themeStyle(styles.cardFooter)}>
-          <Pressable
+          <FeedbackPressable
             onPress={() => onView(place)}
             style={themeStyle(styles.viewBtn)}
           >
             <BookmarkCheck size={13} color={themeColor(colors.oceanBlue, "color")} />
             <Text style={themeStyle(styles.viewBtnText)}>View</Text>
-          </Pressable>
-          <Pressable
+          </FeedbackPressable>
+          <FeedbackPressable
             onPress={(e) => {
               e.stopPropagation();
               onDelete(place._id ?? place.id);
@@ -484,10 +485,10 @@ function PlaceCard({ place, onView, onDelete, index }) {
             style={themeStyle(styles.deleteCardBtn)}
           >
             <Trash2 size={13} color={themeColor(colors.sunsetCoral, "color")} />
-          </Pressable>
+          </FeedbackPressable>
         </View>
       </View>
-    </Pressable>
+    </FeedbackPressable>
   );
 }
 
@@ -558,10 +559,10 @@ export default function SavedPlaces() {
             {places.length} saved · {ratedCount} rated · {publicCount} public
           </Text>
         </View>
-        <Pressable onPress={() => setShowAdd(true)} style={themeStyle(styles.addBtn)}>
+        <FeedbackPressable onPress={() => setShowAdd(true)} style={themeStyle(styles.addBtn)}>
           <Plus size={15} color={themeColor("#fff", "color")} />
           <Text style={themeStyle(styles.addBtnText)}>Add Place</Text>
-        </Pressable>
+        </FeedbackPressable>
       </View>
 
       {/* Stats row */}
@@ -598,9 +599,9 @@ export default function SavedPlaces() {
             style={themeStyle(styles.searchInput)}
           />
           {query.length > 0 && (
-            <Pressable onPress={() => setQuery("")}>
+            <FeedbackPressable onPress={() => setQuery("")}>
               <X size={14} color={themeColor("#6B8CA8", "color")} />
-            </Pressable>
+            </FeedbackPressable>
           )}
         </View>
       </View>
@@ -613,7 +614,7 @@ export default function SavedPlaces() {
         contentContainerStyle={themeStyle(styles.categoryRow)}
       >
         {CATEGORIES.map((cat) => (
-          <Pressable
+          <FeedbackPressable
             key={cat}
             onPress={() => setCategoryFilter(cat)}
             style={themeStyle([
@@ -629,7 +630,7 @@ export default function SavedPlaces() {
             >
               {cat}
             </Text>
-          </Pressable>
+          </FeedbackPressable>
         ))}
       </ScrollView>
 
@@ -655,13 +656,13 @@ export default function SavedPlaces() {
               : "Save places you've visited or plan to visit in Pangasinan."}
           </Text>
           {!query && categoryFilter === "All" && (
-            <Pressable
+            <FeedbackPressable
               onPress={() => setShowAdd(true)}
               style={themeStyle(styles.emptyBtn)}
             >
               <Plus size={14} color={themeColor("#fff", "color")} />
               <Text style={themeStyle(styles.emptyBtnText)}>Save your first place</Text>
-            </Pressable>
+            </FeedbackPressable>
           )}
         </View>
       ) : (

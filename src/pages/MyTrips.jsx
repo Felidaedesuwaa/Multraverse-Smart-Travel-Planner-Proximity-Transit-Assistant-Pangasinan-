@@ -1,8 +1,11 @@
+import { FeedbackPressable } from "../components/WorkspaceMotion";
 import MoneyAmount from "../components/MoneyAmount";
 import { useCurrency } from "../hooks/useCurrency";
 import MoneyInput from "../components/MoneyInput";
 import { useAppTheme } from "../theme/useAppTheme";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import ItineraryResult from "../components/ItineraryResult";
 import {
   ActivityIndicator,
   Modal,
@@ -12,6 +15,7 @@ import {
   Text,
   TextInput,
   View,
+  useWindowDimensions,
 } from "react-native";
 import {
   Calendar,
@@ -53,6 +57,7 @@ function TripDetailModal({ trip, onClose, onDelete }) {
     <Modal visible transparent animationType="fade" onRequestClose={onClose}>
       <Pressable style={themeStyle(styles.modalOverlay)} onPress={onClose}>
         <Pressable style={themeStyle(styles.modalBox)} onPress={() => {}}>
+          <ScrollView style={themeStyle(styles.modalScroll)} contentContainerStyle={themeStyle(styles.modalContent)} showsVerticalScrollIndicator>
           {/* Header */}
           <View style={themeStyle(styles.modalHeader)}>
             <View style={themeStyle(styles.modalIconBox)}>
@@ -64,9 +69,9 @@ function TripDetailModal({ trip, onClose, onDelete }) {
                 {trip.location} · {trip.date}
               </Text>
             </View>
-            <Pressable onPress={onClose} style={themeStyle(styles.closeBtn)}>
+            <FeedbackPressable onPress={onClose} style={themeStyle(styles.closeBtn)}>
               <X size={18} color={themeColor("#6B8CA8", "color")} />
-            </Pressable>
+            </FeedbackPressable>
           </View>
 
           {/* Status badge */}
@@ -126,6 +131,8 @@ function TripDetailModal({ trip, onClose, onDelete }) {
             </Text>
           </View>
 
+          {trip.plan?.version === 1 && <ScrollView style={{ maxHeight: 320 }} nestedScrollEnabled><ItineraryResult plan={trip.plan} showMap={false} /></ScrollView>}
+
           {/* Trip info */}
           <View style={themeStyle(styles.modalSection)}>
             <Text style={themeStyle(styles.modalSectionTitle)}>Trip Info</Text>
@@ -145,17 +152,18 @@ function TripDetailModal({ trip, onClose, onDelete }) {
 
           {/* Actions */}
           <View style={themeStyle(styles.modalActions)}>
-            <Pressable
+            <FeedbackPressable
               onPress={() => onDelete(trip._id ?? trip.id)}
               style={themeStyle(styles.deleteBtn)}
             >
               <Trash2 size={15} color={themeColor(colors.sunsetCoral, "color")} />
               <Text style={themeStyle(styles.deleteBtnText)}>Delete Trip</Text>
-            </Pressable>
-            <Pressable onPress={onClose} style={themeStyle(styles.doneBtn)}>
+            </FeedbackPressable>
+            <FeedbackPressable onPress={onClose} style={themeStyle(styles.doneBtn)}>
               <Text style={themeStyle(styles.doneBtnText)}>Done</Text>
-            </Pressable>
+            </FeedbackPressable>
           </View>
+          </ScrollView>
         </Pressable>
       </Pressable>
     </Modal>
@@ -219,9 +227,9 @@ function NewTripModal({ visible, onClose, onCreated }) {
         <Pressable style={themeStyle(styles.modalBox)} onPress={() => {}}>
           <View style={themeStyle(styles.modalHeader)}>
             <Text style={themeStyle(styles.modalTitle)}>Create New Trip</Text>
-            <Pressable onPress={onClose} style={themeStyle(styles.closeBtn)}>
+            <FeedbackPressable onPress={onClose} style={themeStyle(styles.closeBtn)}>
               <X size={18} color={themeColor("#6B8CA8", "color")} />
-            </Pressable>
+            </FeedbackPressable>
           </View>
 
           <View style={themeStyle(styles.formGroup)}>
@@ -277,10 +285,10 @@ function NewTripModal({ visible, onClose, onCreated }) {
           )}
 
           <View style={themeStyle(styles.modalActions)}>
-            <Pressable onPress={onClose} style={themeStyle(styles.cancelBtn)}>
+            <FeedbackPressable onPress={onClose} style={themeStyle(styles.cancelBtn)}>
               <Text style={themeStyle(styles.cancelBtnText)}>Cancel</Text>
-            </Pressable>
-            <Pressable
+            </FeedbackPressable>
+            <FeedbackPressable
               onPress={handleCreate}
               disabled={saving}
               style={themeStyle([styles.doneBtn, saving && { opacity: 0.7 }])}
@@ -291,7 +299,7 @@ function NewTripModal({ visible, onClose, onCreated }) {
               <Text style={themeStyle(styles.doneBtnText)}>
                 {saving ? "Creating..." : "Create Trip"}
               </Text>
-            </Pressable>
+            </FeedbackPressable>
           </View>
         </Pressable>
       </Pressable>
@@ -300,7 +308,7 @@ function NewTripModal({ visible, onClose, onCreated }) {
 }
 
 // ── Trip Card ───────────────────────────────────────────
-function TripCard({ trip, onView, onDelete }) {
+function TripCard({ trip, onView, onDelete, compact }) {
   const { themeStyle, themeColor } = useAppTheme();
 
   const Icon = placeIconMap[trip.icon] ?? placeIconMap.landmark;
@@ -311,7 +319,7 @@ function TripCard({ trip, onView, onDelete }) {
   const status = STATUS_STYLE[trip.status] ?? STATUS_STYLE.UPCOMING;
 
   return (
-    <View style={themeStyle(styles.tripCard)}>
+    <View style={themeStyle([styles.tripCard, compact && styles.tripCardCompact])}>
       {/* Top */}
       <View style={themeStyle(styles.tripTop)}>
         <View style={themeStyle(styles.tripIconBox)}>
@@ -363,16 +371,16 @@ function TripCard({ trip, onView, onDelete }) {
       <View style={themeStyle(styles.tripFooter)}>
         <Text style={themeStyle(styles.stopsText)}>{trip.stops} stops</Text>
         <View style={themeStyle(styles.tripActions)}>
-          <Pressable
+          <FeedbackPressable
             onPress={() => onDelete(trip._id ?? trip.id)}
             style={themeStyle(styles.deleteIconBtn)}
           >
             <Trash2 size={14} color={themeColor(colors.sunsetCoral, "color")} />
-          </Pressable>
-          <Pressable onPress={() => onView(trip)} style={themeStyle(styles.viewBtn)}>
+          </FeedbackPressable>
+          <FeedbackPressable onPress={() => onView(trip)} style={themeStyle(styles.viewBtn)}>
             <Text style={themeStyle(styles.viewBtnText)}>View</Text>
             <ChevronRight size={13} color={themeColor(colors.oceanBlue, "color")} />
-          </Pressable>
+          </FeedbackPressable>
         </View>
       </View>
     </View>
@@ -382,6 +390,8 @@ function TripCard({ trip, onView, onDelete }) {
 // ── Main Screen ─────────────────────────────────────────
 export default function MyTrips() {
   const { themeStyle, themeColor } = useAppTheme();
+  const { width } = useWindowDimensions();
+  const compact = (width >= 768 ? width - 280 : width) < 680;
 
   const [filter, setFilter] = useState("all");
   const [trips, setTrips] = useState([]);
@@ -390,12 +400,14 @@ export default function MyTrips() {
   const [selectedTrip, setSelectedTrip] = useState(null);
   const [showNewTrip, setShowNewTrip] = useState(false);
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
+    let alive = true;
     api.getTrips()
-      .then(setTrips)
+      .then(data => { if (alive) setTrips(data); })
       .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+      .finally(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
+  }, []));
 
   const handleDelete = async (id) => {
     try {
@@ -437,13 +449,13 @@ export default function MyTrips() {
             {upcoming} upcoming · {completed} completed
           </Text>
         </View>
-        <Pressable
+        <FeedbackPressable
           onPress={() => setShowNewTrip(true)}
           style={themeStyle(styles.newTripBtn)}
         >
           <Plus size={16} color={themeColor("#fff", "color")} />
           <Text style={themeStyle(styles.newTripText)}>New Trip</Text>
-        </Pressable>
+        </FeedbackPressable>
       </View>
 
       {/* Search */}
@@ -457,16 +469,16 @@ export default function MyTrips() {
           style={themeStyle(styles.searchInput)}
         />
         {search.length > 0 && (
-          <Pressable onPress={() => setSearch("")}>
+          <FeedbackPressable onPress={() => setSearch("")}>
             <X size={15} color={themeColor("#6B8CA8", "color")} />
-          </Pressable>
+          </FeedbackPressable>
         )}
       </View>
 
       {/* Tabs */}
       <View style={themeStyle(styles.tabs)}>
         {TABS.map(({ key, label }) => (
-          <Pressable
+          <FeedbackPressable
             key={key}
             onPress={() => setFilter(key)}
             style={themeStyle([styles.tab, filter === key && styles.tabActive])}
@@ -491,7 +503,7 @@ export default function MyTrips() {
                 </Text>
               </View>
             )}
-          </Pressable>
+          </FeedbackPressable>
         ))}
       </View>
 
@@ -516,23 +528,24 @@ export default function MyTrips() {
               : "Generate an itinerary with AI or create a trip manually."}
           </Text>
           {!search && (
-            <Pressable
+            <FeedbackPressable
               onPress={() => setShowNewTrip(true)}
               style={themeStyle(styles.emptyBtn)}
             >
               <Plus size={14} color={themeColor("#fff", "color")} />
               <Text style={themeStyle(styles.emptyBtnText)}>Create your first trip</Text>
-            </Pressable>
+            </FeedbackPressable>
           )}
         </View>
       ) : (
-        <View style={themeStyle(styles.grid)}>
+        <View style={themeStyle([styles.grid, compact && styles.gridCompact])}>
           {filtered.map((trip) => (
             <TripCard
               key={trip._id ?? trip.id}
               trip={trip}
               onView={setSelectedTrip}
               onDelete={handleDelete}
+              compact={compact}
             />
           ))}
         </View>
@@ -634,12 +647,15 @@ const styles = StyleSheet.create({
   emptyBtnText: { fontSize: 13, fontWeight: "700", color: "#fff" },
 
   // Grid
-  grid: { flexDirection: "row", flexWrap: "wrap", gap: 20 },
+  grid: { flexDirection: "row", flexWrap: "wrap", gap: 16, alignItems: "stretch" },
+  gridCompact: { flexDirection: "column" },
 
   // Trip card
   tripCard: {
-    width: "47%",
-    minWidth: 280,
+    flexGrow: 1,
+    flexBasis: 300,
+    maxWidth: 520,
+    minWidth: 0,
     backgroundColor: "#fff",
     borderRadius: 16,
     padding: 20,
@@ -650,6 +666,7 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 3,
   },
+  tripCardCompact: { width: "100%", flexBasis: "auto", maxWidth: "100%", padding: 16 },
   tripTop: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -730,21 +747,23 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.4)",
     alignItems: "center",
     justifyContent: "center",
-    padding: 24,
+    padding: 16,
   },
   modalBox: {
     width: "100%",
-    maxWidth: 480,
+    maxWidth: 560,
+    maxHeight: "88%",
     backgroundColor: "#fff",
     borderRadius: 20,
-    padding: 28,
-    gap: 16,
+    overflow: "hidden",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.15,
     shadowRadius: 24,
     elevation: 10,
   },
+  modalScroll: { width: "100%" },
+  modalContent: { padding: 24, gap: 16 },
   modalHeader: {
     flexDirection: "row",
     alignItems: "flex-start",

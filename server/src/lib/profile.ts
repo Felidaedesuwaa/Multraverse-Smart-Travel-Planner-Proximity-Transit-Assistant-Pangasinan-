@@ -1,18 +1,26 @@
-export const PROFILE_FIELDS = 'name email role location photo createdAt'
+import { registrationNameDetails } from './registration'
+
+export const PROFILE_FIELDS = 'name firstName middleName surname email role location photo createdAt'
 export const MAX_PHOTO_BYTES = 512 * 1024
 
-export function profileUpdate(body: unknown): { name?: string; location?: string; photo?: string | null } {
+type ProfileUpdate = { name?: string; firstName?: string | null; middleName?: string | null; surname?: string | null; location?: string; photo?: string | null }
+
+export function profileUpdate(body: unknown): ProfileUpdate {
   if (!body || typeof body !== 'object' || Array.isArray(body)) throw new Error('Invalid profile details')
   const input = body as Record<string, unknown>
-  if (Object.keys(input).some(key => !['name', 'location', 'photo'].includes(key))) {
-    throw new Error('Only name, location, and photo can be updated here')
+  if (Object.keys(input).some(key => !['name', 'firstName', 'middleName', 'surname', 'location', 'photo'].includes(key))) {
+    throw new Error('Only name fields, location, and photo can be updated here')
   }
-  const update: { name?: string; location?: string; photo?: string | null } = {}
-  if ('name' in input) {
+  const update: ProfileUpdate = {}
+  if (['firstName', 'middleName', 'surname'].some(key => key in input)) {
+    Object.assign(update, registrationNameDetails(input))
+  } else if ('name' in input) {
     if (typeof input.name !== 'string' || !input.name.trim() || input.name.trim().length > 80) {
       throw new Error('Name must contain 1 to 80 characters')
     }
     update.name = input.name.trim()
+    // Older clients only send a full name. Clear stale structured fields.
+    update.firstName = null; update.middleName = null; update.surname = null
   }
   if ('location' in input) {
     if (typeof input.location !== 'string' || input.location.trim().length > 120) {

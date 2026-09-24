@@ -1,8 +1,8 @@
+import { FeedbackPressable } from "../components/WorkspaceMotion";
 import { useAppTheme } from "../theme/useAppTheme";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -24,6 +24,7 @@ import {
 } from "lucide-react-native";
 import { api } from "../lib/api";
 import { colors } from "../theme/colors";
+import AIToolHeader from "../components/AIToolHeader";
 
 const RADIUS_OPTIONS = [100, 300, 500, 1000, 2000];
 
@@ -82,14 +83,9 @@ export default function TransitAlarm() {
       showsVerticalScrollIndicator={false}
     >
       {/* ── Header ── */}
-      <View style={themeStyle([styles.header, compact && { flexDirection: "column", alignItems: "stretch", gap: 12 }])}>
-        <View>
-          <Text style={themeStyle(styles.title)}>Transit Alarm</Text>
-          <Text style={themeStyle(styles.subtitle)}>
-            Get proximity alerts for active Pangasinan transit routes.
-          </Text>
-        </View>
-        <Pressable
+      <AIToolHeader eyebrow="PANGASINAN TRANSIT COMPANION" title="Transit Alarm" subtitle="Get proximity alerts for active Pangasinan transit routes." badges={[{ label: "Active route data" }, { label: "Location-aware alerts" }, { label: "Smart notifications", color: "#A78BFA" }]} Icon={Bell} />
+      <View style={themeStyle([styles.header, styles.toolActions, compact && { flexDirection: "column", alignItems: "stretch", gap: 12 }])}>
+        <FeedbackPressable
           onPress={loadRoutes}
           style={themeStyle(({ pressed }) => [
             styles.refreshBtn,
@@ -99,7 +95,7 @@ export default function TransitAlarm() {
         >
           <RefreshCw size={15} color={themeColor(colors.oceanBlue, "color")} />
           <Text style={themeStyle(styles.refreshText)}>Refresh</Text>
-        </Pressable>
+        </FeedbackPressable>
       </View>
 
       <View style={themeStyle([styles.columns, compact && { flexDirection: "column", alignItems: "stretch" }])}>
@@ -208,7 +204,7 @@ export default function TransitAlarm() {
                 </View>
 
                 {/* Select button */}
-                <Pressable
+                <FeedbackPressable
                   onPress={() => {
                     setSelectedRoute(route);
                     setAlarmOn(false);
@@ -227,7 +223,7 @@ export default function TransitAlarm() {
                   >
                     {selected ? "✓ Selected for alarm" : "Select this route"}
                   </Text>
-                </Pressable>
+                </FeedbackPressable>
               </View>
             );
           })}
@@ -269,7 +265,7 @@ export default function TransitAlarm() {
             <Text style={themeStyle(styles.configLabel)}>Alert Radius</Text>
             <View style={themeStyle(styles.radiusRow)}>
               {RADIUS_OPTIONS.map((val) => (
-                <Pressable
+                <FeedbackPressable
                   key={val}
                   onPress={() => setRadius(val)}
                   style={themeStyle([
@@ -285,7 +281,7 @@ export default function TransitAlarm() {
                   >
                     {val >= 1000 ? `${val / 1000}km` : `${val}m`}
                   </Text>
-                </Pressable>
+                </FeedbackPressable>
               ))}
             </View>
 
@@ -295,7 +291,7 @@ export default function TransitAlarm() {
               {MODES.map(({ key, label, Icon }) => {
                 const active = mode === key;
                 return (
-                  <Pressable
+                  <FeedbackPressable
                     key={key}
                     onPress={() => setMode(key)}
                     style={themeStyle([styles.modeBtn, active && styles.modeBtnActive])}
@@ -312,7 +308,7 @@ export default function TransitAlarm() {
                     >
                       {label}
                     </Text>
-                  </Pressable>
+                  </FeedbackPressable>
                 );
               })}
             </View>
@@ -363,7 +359,7 @@ export default function TransitAlarm() {
             )}
 
             {/* Enable/disable button */}
-            <Pressable
+            <FeedbackPressable
               onPress={() => setAlarmOn((v) => !v)}
               disabled={!selectedRoute}
               style={themeStyle(({ pressed }) => [
@@ -377,7 +373,7 @@ export default function TransitAlarm() {
               <Text style={themeStyle(styles.enableBtnText)}>
                 {alarmOn ? "Disable Alarm" : "Enable Alarm"}
               </Text>
-            </Pressable>
+            </FeedbackPressable>
           </View>
 
           {/* Tips card */}
@@ -411,6 +407,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     marginBottom: 28,
   },
+  toolActions: { justifyContent: "flex-end", marginTop: -10, marginBottom: 18 },
   title: { fontSize: 26, fontWeight: "700", color: "#1A2E40", marginBottom: 4 },
   subtitle: { fontSize: 14, color: "#6B8CA8", maxWidth: 400 },
   refreshBtn: {

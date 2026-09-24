@@ -11,7 +11,10 @@ export default function DestinationPicker({ places, form, setForm }) {
   const selected = form.destinations.flatMap(destination => destination.placeIds);
   const matches = useMemo(() => {
     const term = query.trim().toLowerCase();
-    if (!term) return places.filter(place => place.saved).slice(0, 8);
+    if (!term) {
+      // Keep saved favorites first, but also give new users places to choose.
+      return [...places.filter(place => place.saved), ...places.filter(place => !place.saved)].slice(0, 6);
+    }
     return places.filter(place => [place.name, place.location, place.municipality, place.category].filter(Boolean).join(" ").toLowerCase().includes(term)).slice(0, 18);
   }, [places, query]);
   const toggle = (place) => setForm(current => {
@@ -21,9 +24,10 @@ export default function DestinationPicker({ places, form, setForm }) {
     return { ...current, destinations: destinations.filter(destination => destination.placeIds.length), excludedPlaceIds: current.excludedPlaceIds.filter(id => id !== place.id) };
   });
   return <View style={{ gap: 12 }}>
-    <Text style={themeStyle(s.body)}>Search for the attraction you want to include. You can choose more than one.</Text>
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 9 }}><Search size={18} color={themeColor(colors.textMuted)} /><TextInput accessibilityLabel="Search Pangasinan attractions" placeholder="Search a place in Pangasinan" value={query} onChangeText={setQuery} style={themeStyle({ ...s.input, flex: 1 })} placeholderTextColor={themeColor(colors.textMuted)} /></View>
-    {!query.trim() && !matches.length && <Text style={themeStyle({ ...s.body, color: colors.textMuted })}>Start typing to find a verified attraction.</Text>}
+    <Text style={themeStyle(s.body)}>Choose a suggested place or search for an attraction. You can choose more than one.</Text>
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 9 }}><Search size={18} color={themeColor(colors.textMuted)} /><TextInput accessibilityLabel="Search Pangasinan attractions" placeholder="e.g. Bolo Beach or Hundred Islands" value={query} onChangeText={setQuery} style={themeStyle({ ...s.input, flex: 1 })} placeholderTextColor={themeColor(colors.textMuted)} /></View>
+    <Text accessibilityRole="header" style={themeStyle({ ...s.body, fontWeight: "700" })}>{query.trim() ? "Search Results" : "Suggested Places"}</Text>
+    {!query.trim() && !matches.length && <Text style={themeStyle({ ...s.body, color: colors.textMuted })}>No places are available yet. Please try again later.</Text>}
     {!!matches.length && <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>{matches.map(place => <Button key={place.id} icon={selected.includes(place.id) ? Check : undefined} selected={selected.includes(place.id)} onPress={() => toggle(place)}>{place.name}{place.municipality ? ` · ${place.municipality}` : ""}</Button>)}</View>}
     {!!query.trim() && !matches.length && <Text style={themeStyle(s.body)}>No verified attraction matches that search yet. Try a nearby landmark or municipality name.</Text>}
     {!!selected.length && <View style={{ gap: 8, paddingTop: 4 }}><Text style={themeStyle(s.body)}>{selected.length} place{selected.length === 1 ? "" : "s"} selected</Text><View style={s.row}>{form.destinations.flatMap(destination => destination.placeIds.map(id => { const place = places.find(item => item.id === id); return <Button key={id} icon={X} onPress={() => place && toggle(place)}>{place?.name || "Selected place"}</Button> }))}</View></View>}

@@ -1,7 +1,14 @@
 const assert = require('node:assert/strict');
 const { profileUpdate, MAX_PHOTO_BYTES } = require('../dist/lib/profile');
 
-assert.deepEqual(profileUpdate({ name: '  Test Traveler  ', location: '  Alaminos  ' }), { name: 'Test Traveler', location: 'Alaminos' });
+assert.deepEqual(profileUpdate({ name: '  Test Traveler  ', location: '  Alaminos  ' }), { name: 'Test Traveler', firstName: null, middleName: null, surname: null, location: 'Alaminos' });
+const structured = profileUpdate({ firstName: ' Juan Miguel ', middleName: ' Reyes ', surname: ' dela  Cruz ', location: 'Alaminos', name: 'Ignored supplied name' });
+assert.deepEqual(structured, { firstName: 'Juan Miguel', middleName: 'R', surname: 'dela Cruz', name: 'Juan Miguel R. dela Cruz', location: 'Alaminos' });
+assert.equal(profileUpdate({ firstName: 'Juan', middleName: '', surname: 'Santos' }).name, 'Juan Santos');
+assert.deepEqual(profileUpdate(structured), structured, 'Stored initials survive another save');
+for (const body of [{ firstName: 'Juan' }, { firstName: '', surname: 'Santos' }, { firstName: 'Juan1', surname: 'Santos' }, { firstName: 'Juan', surname: 'Santos', middleName: '@' }, { firstName: 'Juan', surname: 'a'.repeat(36) }]) {
+  assert.throws(() => profileUpdate(body), error => !!error.fieldErrors);
+}
 assert.deepEqual(profileUpdate({ photo: null }), { photo: null });
 assert.deepEqual(profileUpdate({ location: '' }), { location: '' });
 const avatars = require('../../src/data/profileAvatars.json');

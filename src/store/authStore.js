@@ -7,6 +7,7 @@ export const useAuthStore = create((set, get) => ({
   isAuthenticated: false,
   isLoading: false,
   error: null,
+  fieldErrors: {},
 
   init: async () => {
     const token = await storage.getItem('token')
@@ -26,7 +27,10 @@ export const useAuthStore = create((set, get) => ({
       if (!user?.id || get().user !== previous) return
       set({ user })
       await storage.setItem('user', JSON.stringify(user))
-    } catch { /* Keep the last saved profile when offline. */ }
+    } catch (error) {
+      if (error.status === 401 && get().user === previous) await get().logout()
+      // Keep the last saved profile when offline.
+    }
   },
 
   updateProfile: async changes => {
@@ -53,23 +57,52 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
-  register: async (name, email, password) => {
-    set({ isLoading: true, error: null })
+  register: async fields => {
+    set({ isLoading: true, error: null, fieldErrors: {} })
     try {
-      const data = await api.register(name, email, password)
+      const data = await api.register(fields)
+      set({ isLoading: false })
+      return data
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : 'Registration failed', fieldErrors: error.fieldErrors || {}, isLoading: false })
+      return false
+    }
+  },
+
+  verifyRegistration: async (challengeId, code) => {
+    set({ isLoading: true, error: null, fieldErrors: {} })
+    try {
+      const data = await api.verifyRegistration(challengeId, code)
       await storage.setItem('token', data.token)
       await storage.setItem('user', JSON.stringify(data.user))
       set({ user: data.user, isAuthenticated: true, isLoading: false })
       return true
     } catch (error) {
-      set({ error: error instanceof Error ? error.message : 'Registration failed', isLoading: false })
+      set({ error: error instanceof Error ? error.message : 'Verification failed', fieldErrors: error.fieldErrors || {}, isLoading: false })
       return false
     }
   },
 
+  deleteAccount: async password => {
+    const userId = get().user?.id
+    await api.deleteMe(password)
+    // Purge this device's credentials and account-specific offline plans.
+    try {
+      await get().logout()
+    } finally {
+      set({ user: null, isAuthenticated: false, error: null, fieldErrors: {} })
+      await Promise.all([
+        storage.removeItem(`planner:v1:${userId}:plan`),
+        storage.removeItem(`planner:v1:${userId}:catalog`),
+      ])
+    }
+  },
+
   logout: async () => {
-    await storage.removeItem('token')
-    await storage.removeItem('user')
-    set({ user: null, isAuthenticated: false })
+    try {
+      await Promise.all([storage.removeItem('token'), storage.removeItem('user')])
+    } finally {
+      set({ user: null, isAuthenticated: false, isLoading: false, error: null, fieldErrors: {} })
+    }
   },
 }))

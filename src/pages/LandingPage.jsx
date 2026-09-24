@@ -1,757 +1,115 @@
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-  useWindowDimensions,
-} from "react-native";
-import {
-  BellRing,
-  Compass,
-  MapPin,
-  Route,
-  ShieldCheck,
-  Sparkles,
-  Star,
-  Wallet,
-  Zap,
-} from "lucide-react-native";
-import { LinearGradient } from "expo-linear-gradient";
+import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
-import { colors } from "../theme/colors";
+import { ArrowRight, BellRing, Compass, MapPin, Route, Sun, Umbrella, Wallet, Waves } from "lucide-react-native";
+import SummerScene from "../components/SummerScene";
+import { SummerBrand, TravelButton, useSummerColors } from "../components/SummerUI";
 
-const FEATURES = [
-  {
-    Icon: Route,
-    iconBg: "#EAF1FB",
-    iconColor: "#1A5CB0",
-    title: "Plan with confidence",
-    text: "Build Pangasinan itineraries from verified places, routes, fares, and food guides — all in one place.",
-  },
-  {
-    Icon: Wallet,
-    iconBg: "#EDF7EE",
-    iconColor: "#22863A",
-    title: "Stay on budget",
-    text: "Track trip spending and make practical choices before you even leave home.",
-  },
-  {
-    Icon: BellRing,
-    iconBg: "#FFF1EE",
-    iconColor: "#F16B4E",
-    title: "Travel smarter",
-    text: "Save favorites, get proximity alerts, and translate local phrases on the go.",
-  },
-];
-
-const STATS = [
-  { value: "124+", label: "Islands" },
-  { value: "48", label: "Municipalities" },
-  { value: "100%", label: "Verified data" },
-  { value: "Free", label: "Free to download" },
-];
-
-const TESTIMONIALS = [
-  {
-    text: "Finally an app that actually knows Pangasinan routes and fares. No more guessing at the terminal.",
-    name: "Maria Santos",
-    role: "Budget traveler from Manila",
-    rating: 5,
-  },
-  {
-    text: "The AI itinerary planner saved us hours of research. It knew exactly which jeepney to take.",
-    name: "Carlo Reyes",
-    role: "Solo backpacker",
-    rating: 5,
-  },
-  {
-    text: "The Pangasinan phrasebook alone is worth it. Locals were so happy I tried to speak their language.",
-    name: "Ana dela Cruz",
-    role: "First-time Pangasinan visitor",
-    rating: 5,
-  },
+const features = [
+  { Icon: Route, number: "01", title: "Find your kind of adventure", text: "Explore places across Pangasinan and bring your favorites together in an AI itinerary.", note: "A plan that feels like you", color: "#DCECE2" },
+  { Icon: Wallet, number: "02", title: "Pack a plan. Keep your budget.", text: "Keep trip costs and expenses in one place, with your preferred currency alongside pesos.", note: "More memories, less guesswork", color: "#F9E3C2" },
+  { Icon: BellRing, number: "03", title: "Enjoy the journey, too", text: "Get ready for the road with transit alerts, saved places, and useful local phrases.", note: "Your travel companion", color: "#F7DDD2" },
 ];
 
 export default function LandingPage() {
   const navigation = useNavigation();
   const { width } = useWindowDimensions();
-  const compact = width < 768;
-
-  return (
-    <ScrollView
-      contentContainerStyle={styles.page}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* ── Navbar ── */}
-      <View style={styles.navbar}>
-        <View style={styles.navInner}>
-          {/* Brand */}
-          <View style={styles.brand}>
-            <LinearGradient
-              colors={[colors.sunsetCoral, "#F2A63E"]}
-              style={styles.logo}
-            >
-              <Compass size={22} color="#fff" />
-            </LinearGradient>
-            <View>
-              <Text style={styles.brandName}>Multraverse</Text>
-              <Text style={styles.brandSub}>Pangasinan Edition</Text>
-            </View>
-          </View>
-
-          {/* Nav actions */}
-          <View style={styles.navActions}>
-            <Pressable
-              onPress={() => navigation.navigate("Login")}
-              style={styles.navLogin}
-            >
-              <Text style={styles.navLoginText}>Log in</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => navigation.navigate("Register")}
-              style={styles.navSignup}
-            >
-              <Text style={styles.navSignupText}>Sign up free</Text>
-            </Pressable>
+  const compact = width < 900;
+  const palette = useSummerColors();
+  const signUp = () => navigation.navigate("Register");
+  const login = () => navigation.navigate("Login");
+  return <SafeAreaView style={{ flex: 1, backgroundColor: palette.background }} edges={["top", "left", "right"]}>
+    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1 }}>
+      <View style={[styles.nav, { borderBottomColor: palette.line }]}><View style={styles.navInner}>
+        <SummerBrand />
+        <View style={styles.actions}>
+          <Pressable accessibilityRole="button" onPress={login} style={({ pressed, hovered }) => [styles.navLogin, (pressed || hovered) && { backgroundColor: palette.tint }]}><Text style={[styles.link, { color: palette.ink }]}>Log in</Text><ArrowRight size={16} color={palette.ink} /></Pressable>
+          {width >= 520 && <TravelButton label="Sign up free" onPress={signUp} arrow={false} />}
+        </View>
+      </View></View>
+      <View style={[styles.hero, compact && styles.heroCompact]}>
+        <View style={[styles.heroCopy, compact && styles.fullWidth]}>
+          <View style={[styles.eyebrow, { backgroundColor: palette.tint }]}><Sun size={16} color={palette.accent} /><Text style={[styles.eyebrowText, { color: palette.ink }]}>A LITTLE SUN. A NEW ADVENTURE.</Text></View>
+          <Text accessibilityRole="header" style={[styles.heroTitle, { color: palette.ink }, compact && styles.heroTitleCompact]}>Find your next{"\n"}<Text style={{ color: palette.accent }}>Pangasinan</Text>{"\n"}escape.</Text>
+          <Text style={[styles.heroText, { color: palette.muted }]}>From island days to unhurried coastal stops, make room for the good stuff. Your places, your budget, your next great trip.</Text>
+          <View style={styles.ctas}><TravelButton label="Plan my getaway" onPress={signUp} /><TravelButton label="Sign in" onPress={login} secondary arrow={false} /></View>
+          <View style={styles.heroNote}><Compass size={18} color={palette.muted} /><Text style={[styles.small, { color: palette.muted }]}>Made for exploring Pangasinan, at your pace.</Text></View>
+        </View>
+        <View style={[styles.postcard, compact && styles.fullWidth]}>
+          <View style={[styles.postcardFrame, { backgroundColor: palette.surface, borderColor: palette.line }]}>
+            <SummerScene />
+            <View style={styles.postcardFooter}><View style={{ flex: 1 }}><Text style={[styles.postcardKicker, { color: palette.muted }]}>YOUR NEXT CHAPTER</Text><Text style={[styles.postcardTitle, { color: palette.ink }]}>Meet you by the coast.</Text></View><View style={[styles.stamp, { borderColor: palette.line }]}><Umbrella size={25} color={palette.accent} /></View></View>
           </View>
         </View>
       </View>
-
-      {/* ── Hero ── */}
-      <View style={styles.hero}>
-        <View style={[styles.heroInner, compact && styles.heroInnerCompact]}>
-          {/* Eyebrow */}
-          <View style={styles.eyebrowRow}>
-            <Sparkles size={13} color={colors.sunsetCoral} />
-            <Text style={styles.eyebrow}>AI-POWERED PANGASINAN TRAVEL</Text>
-          </View>
-
-          {/* Headline */}
-          <Text style={[styles.heroTitle, compact && styles.heroTitleCompact]}>
-            Discover Pangasinan,{"\n"}one well-planned{"\n"}trip at a time.
-          </Text>
-
-          <Text style={[styles.heroSub, compact && styles.heroSubCompact]}>
-            Multraverse brings scattered local travel information into one
-            secure place — so independent and budget travelers can explore
-            with clarity, not guesswork.
-          </Text>
-
-          {/* CTAs */}
-          <View style={[styles.ctaRow, compact && styles.ctaRowCompact]}>
-            <Pressable
-              onPress={() => navigation.navigate("Register")}
-              style={({ pressed }) => [
-                styles.ctaPrimary,
-                pressed && { opacity: 0.9 },
-              ]}
-            >
-              <LinearGradient
-                colors={[colors.sunsetCoral, "#F2A63E"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.ctaPrimaryGradient}
-              >
-                <Text style={styles.ctaPrimaryText}>Create a free account</Text>
-              </LinearGradient>
-            </Pressable>
-            <Pressable
-              onPress={() => navigation.navigate("Login")}
-              style={({ pressed }) => [
-                styles.ctaSecondary,
-                pressed && { opacity: 0.8 },
-              ]}
-            >
-              <Text style={styles.ctaSecondaryText}>Sign in →</Text>
-            </Pressable>
-          </View>
-
-          {/* Trust badge */}
-          <View style={styles.trustRow}>
-            <ShieldCheck size={14} color="#8FD4B0" />
-            <Text style={styles.trustText}>
-              Built for travelers · Verified local information · Free forever
-            </Text>
-          </View>
-        </View>
-
-        {/* Stats bar */}
-        <View style={[styles.statsBar, compact && styles.statsBarCompact]}>
-          {STATS.map((stat, i) => (
-            <View key={stat.label} style={styles.statItem}>
-              <Text style={styles.statValue}>{stat.value}</Text>
-              <Text style={styles.statLabel}>{stat.label}</Text>
-              {i < STATS.length - 1 && (
-                <View style={styles.statDivider} />
-              )}
-            </View>
-          ))}
-        </View>
+      <View style={[styles.ribbon, { backgroundColor: palette.tint }]}>
+        {[{ Icon: Waves, label: "Island days" }, { Icon: Sun, label: "Sun-kissed shores" }, { Icon: MapPin, label: "Local discoveries" }].map(({ Icon, label }) => <View key={label} style={styles.ribbonItem}><Icon size={20} strokeWidth={1.5} color={palette.ink} /><Text style={[styles.ribbonText, { color: palette.ink }]}>{label}</Text></View>)}
       </View>
-
-      {/* ── Features ── */}
       <View style={[styles.section, compact && styles.sectionCompact]}>
-        <Text style={styles.sectionEyebrow}>ONE APP, LESS GUESSWORK</Text>
-        <Text style={[styles.sectionTitle, compact && styles.sectionTitleCompact]}>
-          Everything you need before{"\n"}and during your trip.
-        </Text>
-        <Text style={styles.sectionSub}>
-          Tourism details should not be buried in social posts, brochures, or
-          word of mouth. Start with a plan you can understand and adjust.
-        </Text>
-
-        <View style={[styles.featureGrid, compact && styles.featureGridCompact]}>
-          {FEATURES.map(({ Icon, iconBg, iconColor, title, text }) => (
-            <View key={title} style={styles.featureCard}>
-              <View style={[styles.featureIconBox, { backgroundColor: iconBg }]}>
-                <Icon size={22} color={iconColor} />
-              </View>
-              <Text style={styles.featureTitle}>{title}</Text>
-              <Text style={styles.featureText}>{text}</Text>
-            </View>
-          ))}
+        <View style={[styles.sectionHeading, compact && { alignItems: "flex-start" }]}><Text style={[styles.kicker, { color: palette.accent }]}>GOOD TRIPS START HERE</Text><Text accessibilityRole="header" style={[styles.sectionTitle, { color: palette.ink }]}>Less juggling. More journey.</Text><Text style={[styles.sectionSubtitle, { color: palette.muted }]}>A few thoughtful tools, so you can focus on being there.</Text></View>
+        <View style={[styles.featureGrid, compact && { flexDirection: "column" }]}>
+          {features.map(({ Icon, number, title, text, note, color }) => <View key={number} style={[styles.featureCard, compact && { flexGrow: 0, flexBasis: "auto" }, { backgroundColor: palette.surface, borderColor: palette.line }]}>
+            <View style={styles.featureTop}><View style={[styles.featureIcon, { backgroundColor: color }]}><Icon size={25} color="#285960" strokeWidth={1.5} /></View><Text style={[styles.featureNumber, { color: palette.muted }]}>{number}</Text></View>
+            <Text style={[styles.featureTitle, { color: palette.ink }]}>{title}</Text><Text style={[styles.featureText, { color: palette.muted }]}>{text}</Text><View style={[styles.featureBottom, { borderTopColor: palette.line }]}><Text style={[styles.small, { color: palette.accent }]}>{note}</Text></View>
+          </View>)}
         </View>
       </View>
-
-      {/* ── AI Highlight ── */}
-      <View style={[styles.aiSection, compact && styles.aiSectionCompact]}>
-        <View style={styles.aiInner}>
-          <View style={styles.aiBadge}>
-            <Zap size={12} color="#fff" />
-            <Text style={styles.aiBadgeText}>Powered by your own AI model</Text>
-          </View>
-          <Text style={[styles.aiTitle, compact && styles.aiTitleCompact]}>
-            Smart travel planning,{"\n"}built for Pangasinan.
-          </Text>
-          <Text style={styles.aiSub}>
-            Our custom-trained AI model understands local routes, verified
-            fares, and real Pangasinan destinations — not generic travel advice.
-          </Text>
-          <View style={[styles.aiCards, compact && styles.aiCardsCompact]}>
-            {[
-              { icon: "", title: "AI Itinerary", text: "Day-by-day plans using real local data" },
-              { icon: "", title: "Pangasinan Translator", text: "Voice + phrasebook with PDF-verified phrases" },
-              { icon: "", title: "Transit Alarm", text: "Proximity alerts from live route database" },
-            ].map((item) => (
-              <View key={item.title} style={styles.aiCard}>
-                <Text style={styles.aiCardEmoji}>{item.icon}</Text>
-                <Text style={styles.aiCardTitle}>{item.title}</Text>
-                <Text style={styles.aiCardText}>{item.text}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
+      <View style={[styles.invitation, compact && styles.invitationCompact]}>
+        <View style={styles.invitationIcon}><Umbrella size={40} color="#F4B183" strokeWidth={1.3} /><Waves size={48} color="#98C6BC" strokeWidth={1.3} /></View>
+        <View style={styles.invitationCopy}><Text accessibilityRole="header" style={styles.invitationTitle}>Your next adventure is calling.</Text><Text style={styles.invitationText}>Bring a little curiosity. We’ll help with the planning.</Text></View>
+        <TravelButton label="Let’s explore" onPress={signUp} />
       </View>
-
-      {/* ── Testimonials ── */}
-      <View style={[styles.section, compact && styles.sectionCompact]}>
-        <Text style={styles.sectionEyebrow}>TRAVELER STORIES</Text>
-        <Text style={[styles.sectionTitle, compact && styles.sectionTitleCompact]}>
-          Trusted by Pangasinan explorers.
-        </Text>
-        <View style={[styles.testimonialGrid, compact && styles.testimonialGridCompact]}>
-          {TESTIMONIALS.map((t) => (
-            <View key={t.name} style={styles.testimonialCard}>
-              <View style={styles.stars}>
-                {Array.from({ length: t.rating }).map((_, i) => (
-                  <Star key={i} size={13} color="#F59E0B" fill="#F59E0B" />
-                ))}
-              </View>
-              <Text style={styles.testimonialText}>"{t.text}"</Text>
-              <View style={styles.testimonialAuthor}>
-                <View style={styles.testimonialAvatar}>
-                  <Text style={styles.testimonialAvatarText}>
-                    {t.name.charAt(0)}
-                  </Text>
-                </View>
-                <View>
-                  <Text style={styles.testimonialName}>{t.name}</Text>
-                  <Text style={styles.testimonialRole}>{t.role}</Text>
-                </View>
-              </View>
-            </View>
-          ))}
-        </View>
-      </View>
-
-      {/* ── Final CTA ── */}
-      <View style={[styles.finalCta, compact && styles.finalCtaCompact]}>
-        <View style={styles.finalCtaInner}>
-          <MapPin size={32} color={colors.sunsetCoral} style={{ marginBottom: 16 }} />
-          <Text style={[styles.finalCtaTitle, compact && styles.finalCtaTitleCompact]}>
-            Ready for your next{"\n"}Pangasinan story?
-          </Text>
-          <Text style={styles.finalCtaSub}>
-            Create an account to plan routes, manage your travel budget,
-            save places, and get AI-powered itineraries — completely free.
-          </Text>
-          <View style={[styles.ctaRow, compact && styles.ctaRowCompact, { marginTop: 28 }]}>
-            <Pressable
-              onPress={() => navigation.navigate("Register")}
-              style={({ pressed }) => [pressed && { opacity: 0.9 }]}
-            >
-              <LinearGradient
-                colors={[colors.sunsetCoral, "#F2A63E"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.ctaPrimaryGradient}
-              >
-                <Text style={styles.ctaPrimaryText}>Get started — it's free</Text>
-              </LinearGradient>
-            </Pressable>
-            <Pressable
-              onPress={() => navigation.navigate("Login")}
-              style={styles.finalCtaLogin}
-            >
-              <Text style={styles.finalCtaLoginText}>Already have an account? Log in</Text>
-            </Pressable>
-          </View>
-        </View>
-      </View>
-
-      {/* ── Footer ── */}
-      <View style={styles.footer}>
-        <View style={styles.footerBrand}>
-          <LinearGradient
-            colors={[colors.sunsetCoral, "#F2A63E"]}
-            style={styles.footerLogo}
-          >
-            <Compass size={16} color="#fff" />
-          </LinearGradient>
-          <Text style={styles.footerBrandName}>Multraverse</Text>
-        </View>
-        <Text style={styles.footerText}>
-          © 2026 Multraverse · Pangasinan Edition · Built for travelers
-        </Text>
-      </View>
+      <View style={[styles.footer, { borderTopColor: palette.line }]}><SummerBrand /><Text style={[styles.small, { color: palette.muted, textAlign: "center" }]}>Made for the journey. Inspired by Pangasinan.</Text><Text style={[styles.small, { color: palette.muted }]}>© {new Date().getFullYear()} Multraverse</Text></View>
     </ScrollView>
-  );
+  </SafeAreaView>;
 }
 
 const styles = StyleSheet.create({
-  page: { flexGrow: 1, backgroundColor: "#F4F8FA" },
-
-  // ── Navbar ──────────────────────────────────────────────
-  navbar: {
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#E8EFF6",
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-  },
-  navInner: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    maxWidth: 1180,
-    alignSelf: "center",
-    width: "100%",
-  },
-  brand: { flexDirection: "row", alignItems: "center", gap: 10 },
-  logo: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  brandName: { fontSize: 17, fontWeight: "700", color: "#183447" },
-  brandSub: { fontSize: 11, color: "#6B8CA8", marginTop: 1 },
-  navActions: { flexDirection: "row", alignItems: "center", gap: 10 },
-  navLogin: {
-    paddingHorizontal: 16,
-    paddingVertical: 9,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: "#D9E7EE",
-  },
-  navLoginText: { fontSize: 14, fontWeight: "700", color: "#183447" },
-  navSignup: {
-    paddingHorizontal: 16,
-    paddingVertical: 9,
-    borderRadius: 10,
-    backgroundColor: colors.oceanBlue,
-  },
-  navSignupText: { fontSize: 14, fontWeight: "700", color: "#fff" },
-
-  // ── Hero ────────────────────────────────────────────────
-  hero: {
-    backgroundColor: colors.oceanBlue,
-    paddingBottom: 0,
-    overflow: "hidden",
-  },
-  heroInner: {
-    maxWidth: 820,
-    alignSelf: "center",
-    width: "100%",
-    paddingHorizontal: 32,
-    paddingTop: 72,
-    paddingBottom: 56,
-    alignItems: "center",
-  },
-  heroInnerCompact: {
-    paddingHorizontal: 24,
-    paddingTop: 48,
-    paddingBottom: 40,
-  },
-  eyebrowRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginBottom: 18,
-  },
-  eyebrow: {
-    color: colors.sunsetCoral,
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 1.5,
-  },
-  heroTitle: {
-    color: "#fff",
-    fontSize: 52,
-    fontWeight: "800",
-    lineHeight: 62,
-    textAlign: "center",
-    marginBottom: 20,
-  },
-  heroTitleCompact: {
-    fontSize: 34,
-    lineHeight: 42,
-  },
-  heroSub: {
-    color: "#A8CCE0",
-    fontSize: 17,
-    lineHeight: 26,
-    textAlign: "center",
-    maxWidth: 640,
-    marginBottom: 32,
-  },
-  heroSubCompact: {
-    fontSize: 15,
-    lineHeight: 23,
-  },
-  ctaRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-    flexWrap: "wrap",
-    justifyContent: "center",
-  },
-  ctaRowCompact: { flexDirection: "column", gap: 10 },
-  ctaPrimary: { borderRadius: 12, overflow: "hidden" },
-  ctaPrimaryGradient: {
-    paddingHorizontal: 28,
-    paddingVertical: 15,
-    borderRadius: 12,
-  },
-  ctaPrimaryText: { color: "#fff", fontSize: 15, fontWeight: "800" },
-  ctaSecondary: {
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-  },
-  ctaSecondaryText: {
-    color: "#D8EDF5",
-    fontSize: 15,
-    fontWeight: "700",
-  },
-  trustRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 7,
-    marginTop: 24,
-  },
-  trustText: { color: "#7BB8D4", fontSize: 12 },
-
-  // Stats bar
-  statsBar: {
-    flexDirection: "row",
-    backgroundColor: "rgba(255,255,255,0.06)",
-    borderTopWidth: 1,
-    borderTopColor: "rgba(255,255,255,0.1)",
-    paddingVertical: 20,
-    paddingHorizontal: 32,
-    justifyContent: "center",
-    gap: 0,
-  },
-  statsBarCompact: {
-    paddingHorizontal: 20,
-    flexWrap: "wrap",
-    gap: 16,
-  },
-  statItem: {
-    flex: 1,
-    alignItems: "center",
-    position: "relative",
-    minWidth: 80,
-  },
-  statValue: {
-    color: "#fff",
-    fontSize: 26,
-    fontWeight: "800",
-    marginBottom: 4,
-  },
-  statLabel: { color: "#7BB8D4", fontSize: 12, fontWeight: "600" },
-  statDivider: {
-    position: "absolute",
-    right: 0,
-    top: "15%",
-    height: "70%",
-    width: 1,
-    backgroundColor: "rgba(255,255,255,0.12)",
-  },
-
-  // ── Sections ────────────────────────────────────────────
-  section: {
-    maxWidth: 1080,
-    alignSelf: "center",
-    width: "100%",
-    paddingHorizontal: 32,
-    paddingVertical: 64,
-    alignItems: "center",
-  },
-  sectionCompact: {
-    paddingHorizontal: 24,
-    paddingVertical: 48,
-  },
-  sectionEyebrow: {
-    color: colors.sunsetCoral,
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 1.5,
-    marginBottom: 12,
-    textAlign: "center",
-  },
-  sectionTitle: {
-    color: "#183447",
-    fontSize: 34,
-    fontWeight: "800",
-    textAlign: "center",
-    lineHeight: 42,
-    marginBottom: 14,
-  },
-  sectionTitleCompact: { fontSize: 26, lineHeight: 34 },
-  sectionSub: {
-    color: "#527084",
-    fontSize: 15,
-    lineHeight: 24,
-    textAlign: "center",
-    maxWidth: 680,
-    marginBottom: 40,
-  },
-
-  // Feature grid
-  featureGrid: {
-    flexDirection: "row",
-    gap: 18,
-    width: "100%",
-  },
-  featureGridCompact: { flexDirection: "column" },
-  featureCard: {
-    flex: 1,
-    backgroundColor: "#fff",
-    borderRadius: 20,
-    padding: 24,
-    borderWidth: 1,
-    borderColor: "#E2ECEF",
-    shadowColor: "#173B50",
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 2,
-  },
-  featureIconBox: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 16,
-  },
-  featureTitle: {
-    color: "#183447",
-    fontSize: 17,
-    fontWeight: "700",
-    marginBottom: 8,
-  },
-  featureText: {
-    color: "#527084",
-    fontSize: 14,
-    lineHeight: 21,
-  },
-
-  // ── AI Section ──────────────────────────────────────────
-  aiSection: {
-    backgroundColor: "#0B3C5D",
-    paddingVertical: 64,
-    paddingHorizontal: 32,
-  },
-  aiSectionCompact: {
-    paddingVertical: 48,
-    paddingHorizontal: 24,
-  },
-  aiInner: {
-    maxWidth: 1080,
-    alignSelf: "center",
-    width: "100%",
-    alignItems: "center",
-  },
-  aiBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: colors.sunsetCoral,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    marginBottom: 20,
-  },
-  aiBadgeText: { color: "#fff", fontSize: 11, fontWeight: "700" },
-  aiTitle: {
-    color: "#fff",
-    fontSize: 34,
-    fontWeight: "800",
-    textAlign: "center",
-    lineHeight: 44,
-    marginBottom: 14,
-  },
-  aiTitleCompact: { fontSize: 26, lineHeight: 34 },
-  aiSub: {
-    color: "#A8CCE0",
-    fontSize: 15,
-    lineHeight: 24,
-    textAlign: "center",
-    maxWidth: 640,
-    marginBottom: 36,
-  },
-  aiCards: { flexDirection: "row", gap: 16, width: "100%" },
-  aiCardsCompact: { flexDirection: "column" },
-  aiCard: {
-    flex: 1,
-    backgroundColor: "rgba(255,255,255,0.07)",
-    borderRadius: 16,
-    padding: 22,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
-  },
-  aiCardEmoji: { fontSize: 28, marginBottom: 12 },
-  aiCardTitle: {
-    color: "#fff",
-    fontSize: 15,
-    fontWeight: "700",
-    marginBottom: 6,
-  },
-  aiCardText: { color: "#7BB8D4", fontSize: 13, lineHeight: 19 },
-
-  // ── Testimonials ────────────────────────────────────────
-  testimonialGrid: {
-    flexDirection: "row",
-    gap: 18,
-    width: "100%",
-  },
-  testimonialGridCompact: { flexDirection: "column" },
-  testimonialCard: {
-    flex: 1,
-    backgroundColor: "#fff",
-    borderRadius: 18,
-    padding: 22,
-    borderWidth: 1,
-    borderColor: "#E2ECEF",
-    shadowColor: "#173B50",
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
-  },
-  stars: { flexDirection: "row", gap: 3, marginBottom: 14 },
-  testimonialText: {
-    color: "#183447",
-    fontSize: 14,
-    lineHeight: 22,
-    fontStyle: "italic",
-    marginBottom: 18,
-    flex: 1,
-  },
-  testimonialAuthor: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  testimonialAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.oceanBlue,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  testimonialAvatarText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "700",
-  },
-  testimonialName: {
-    color: "#183447",
-    fontSize: 13,
-    fontWeight: "700",
-  },
-  testimonialRole: { color: "#6B8CA8", fontSize: 12 },
-
-  // ── Final CTA ───────────────────────────────────────────
-  finalCta: {
-    backgroundColor: "#fff",
-    borderTopWidth: 1,
-    borderTopColor: "#E8EFF6",
-    paddingVertical: 72,
-    paddingHorizontal: 32,
-  },
-  finalCtaCompact: {
-    paddingVertical: 48,
-    paddingHorizontal: 24,
-  },
-  finalCtaInner: {
-    maxWidth: 640,
-    alignSelf: "center",
-    alignItems: "center",
-    width: "100%",
-  },
-  finalCtaTitle: {
-    color: "#183447",
-    fontSize: 38,
-    fontWeight: "800",
-    textAlign: "center",
-    lineHeight: 48,
-    marginBottom: 14,
-  },
-  finalCtaTitleCompact: { fontSize: 28, lineHeight: 36 },
-  finalCtaSub: {
-    color: "#527084",
-    fontSize: 15,
-    lineHeight: 24,
-    textAlign: "center",
-    maxWidth: 520,
-  },
-  finalCtaLogin: { paddingVertical: 15, paddingHorizontal: 16 },
-  finalCtaLoginText: {
-    color: "#527084",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-
-  // ── Footer ──────────────────────────────────────────────
-  footer: {
-    backgroundColor: "#183447",
-    paddingVertical: 28,
-    paddingHorizontal: 32,
-    alignItems: "center",
-    gap: 12,
-  },
-  footerBrand: { flexDirection: "row", alignItems: "center", gap: 8 },
-  footerLogo: {
-    width: 30,
-    height: 30,
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  footerBrandName: { color: "#fff", fontSize: 14, fontWeight: "700" },
-  footerText: { color: "#527084", fontSize: 12, textAlign: "center" },
+  nav: { borderBottomWidth: 1, paddingHorizontal: 24 },
+  navInner: { width: "100%", maxWidth: 1200, alignSelf: "center", minHeight: 92, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
+  actions: { flexDirection: "row", alignItems: "center", gap: 18 },
+  navLogin: { minHeight: 44, paddingHorizontal: 10, borderRadius: 12, flexDirection: "row", alignItems: "center", gap: 8 },
+  link: { fontFamily: "Poppins", fontSize: 13 },
+  hero: { width: "100%", maxWidth: 1248, alignSelf: "center", paddingHorizontal: 24, paddingTop: 62, paddingBottom: 64, flexDirection: "row", alignItems: "center", gap: 54 },
+  heroCompact: { flexDirection: "column", paddingTop: 34, paddingBottom: 36, gap: 32 },
+  heroCopy: { flexGrow: 1, flexBasis: 0, minWidth: 0 },
+  fullWidth: { width: "100%", maxWidth: 620, flexGrow: 0, flexBasis: "auto" },
+  eyebrow: { alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: 7, borderRadius: 30, paddingHorizontal: 12, paddingVertical: 8 },
+  eyebrowText: { fontFamily: "DMSans", fontSize: 10, fontWeight: "700", letterSpacing: 1.1, flexShrink: 1 },
+  heroTitle: { fontFamily: "Poppins", fontSize: 57, lineHeight: 68, letterSpacing: -2.3, marginTop: 22, marginBottom: 18 },
+  heroTitleCompact: { fontSize: 39, lineHeight: 47, letterSpacing: -1.5, marginTop: 18 },
+  heroText: { fontFamily: "DMSans", fontSize: 16, lineHeight: 27, maxWidth: 440 },
+  ctas: { flexDirection: "row", flexWrap: "wrap", gap: 12, marginTop: 26 },
+  heroNote: { flexDirection: "row", gap: 8, alignItems: "center", marginTop: 23 },
+  small: { fontFamily: "DMSans", fontSize: 12, lineHeight: 19, flexShrink: 1 },
+  postcard: { flexGrow: 1, flexBasis: 0, minWidth: 0 },
+  postcardFrame: { padding: 12, borderRadius: 36, borderWidth: 1, shadowColor: "#25484B", shadowOpacity: 0.09, shadowRadius: 25, shadowOffset: { width: 0, height: 14 }, elevation: 4 },
+  postcardFooter: { flexDirection: "row", alignItems: "center", gap: 8, padding: 15 },
+  postcardKicker: { fontFamily: "DMSans", fontSize: 9, letterSpacing: 1.8, marginBottom: 5 },
+  postcardTitle: { fontFamily: "Poppins", fontSize: 17 },
+  stamp: { padding: 10, borderWidth: 1, borderStyle: "dashed", borderRadius: 9, transform: [{ rotate: "8deg" }] },
+  ribbon: { flexDirection: "row", justifyContent: "center", alignItems: "center", flexWrap: "wrap", gap: 24, paddingHorizontal: 24, paddingVertical: 22 },
+  ribbonItem: { flexDirection: "row", alignItems: "center", gap: 9 },
+  ribbonText: { fontFamily: "DMSans", fontSize: 13 },
+  section: { width: "100%", maxWidth: 1248, alignSelf: "center", paddingHorizontal: 24, paddingVertical: 70 },
+  sectionCompact: { paddingVertical: 44 },
+  sectionHeading: { alignItems: "center", marginBottom: 30, gap: 10 },
+  kicker: { fontFamily: "DMSans", fontSize: 10, letterSpacing: 1.8, fontWeight: "700" },
+  sectionTitle: { fontFamily: "Poppins", fontSize: 28, lineHeight: 38, letterSpacing: -0.7 },
+  sectionSubtitle: { fontFamily: "DMSans", fontSize: 14, lineHeight: 23 },
+  featureGrid: { flexDirection: "row", gap: 18 },
+  featureCard: { flexGrow: 1, flexBasis: 0, padding: 26, borderRadius: 22, borderWidth: 1 },
+  featureTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 23 },
+  featureIcon: { width: 55, height: 55, alignItems: "center", justifyContent: "center", borderRadius: 17 },
+  featureNumber: { fontFamily: "DMSans", fontSize: 12 },
+  featureTitle: { fontFamily: "Poppins", fontSize: 18, lineHeight: 27, marginBottom: 10 },
+  featureText: { fontFamily: "DMSans", fontSize: 14, lineHeight: 23, flexGrow: 1 },
+  featureBottom: { borderTopWidth: 1, paddingTop: 17, marginTop: 24 },
+  invitation: { maxWidth: 1200, width: "92%", alignSelf: "center", marginBottom: 64, padding: 36, borderRadius: 26, backgroundColor: "#174E5A", flexDirection: "row", alignItems: "center", gap: 30 },
+  invitationCompact: { flexDirection: "column", alignItems: "flex-start", padding: 26, gap: 20, marginBottom: 38 },
+  invitationIcon: { alignItems: "center" },
+  invitationCopy: { flexGrow: 1, flexShrink: 1 },
+  invitationTitle: { fontFamily: "Poppins", fontSize: 23, lineHeight: 33, color: "#FFF7E8" },
+  invitationText: { fontFamily: "DMSans", fontSize: 14, lineHeight: 23, color: "#BDD5D2", marginTop: 6 },
+  footer: { padding: 30, borderTopWidth: 1, gap: 18, flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center" },
 });

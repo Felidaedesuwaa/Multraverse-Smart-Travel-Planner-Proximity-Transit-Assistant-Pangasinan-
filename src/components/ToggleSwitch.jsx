@@ -1,5 +1,6 @@
+import { FeedbackPressable } from "./WorkspaceMotion";
 import { useAppTheme } from "../theme/useAppTheme";
-import { Pressable, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { colors } from "../theme/colors";
 
 export default function ToggleSwitch({
@@ -10,7 +11,7 @@ export default function ToggleSwitch({
   const { themeStyle } = useAppTheme();
 
   return (
-    <Pressable
+    <FeedbackPressable
       accessibilityRole="switch"
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ checked }}
@@ -19,7 +20,7 @@ export default function ToggleSwitch({
       style={themeStyle([styles.track, { backgroundColor: checked ? colors.sunsetCoral : "#D9D9D9" }])}
     >
       <View style={[styles.thumb, { transform: [{ translateX: checked ? 20 : 0 }] }]} />
-    </Pressable>
+    </FeedbackPressable>
   );
 }
 

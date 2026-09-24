@@ -1,5 +1,6 @@
+import { FeedbackPressable } from "./WorkspaceMotion";
 import { useAppTheme } from "../theme/useAppTheme";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import {
   BarChart3, Circle, Compass, LayoutGrid,
   LogOut, Radio, Route, Settings, Users, Zap,
@@ -19,7 +20,7 @@ const items = [
 ];
 
 export default function AdminSidebar({ activeScreen = "AdminDashboard", onNavigate }) {
-  const { themeStyle, themeColor } = useAppTheme();
+  const { themeStyle, themeColor, palette } = useAppTheme();
 
   const navigation = useNavigation();
   const logout = useAuthStore((state) => state.logout);
@@ -30,11 +31,11 @@ export default function AdminSidebar({ activeScreen = "AdminDashboard", onNaviga
   };
 
   return (
-    <View style={themeStyle(styles.sidebar)}>
+    <View style={themeStyle([styles.sidebar, { backgroundColor: palette.dark ? palette.deep : palette.primary }])}>
       <ScrollView showsVerticalScrollIndicator={false} style={themeStyle(styles.scrollContent)}>
         {/* Brand */}
         <View style={themeStyle(styles.brand)}>
-          <View style={themeStyle(styles.brandIcon)}>
+          <View style={themeStyle([styles.brandIcon, { backgroundColor: palette.brand }])}>
             <Compass size={20} color={themeColor(colors.white, "color")} />
           </View>
           <View>
@@ -48,23 +49,25 @@ export default function AdminSidebar({ activeScreen = "AdminDashboard", onNaviga
           {items.map(({ label, icon: Icon, screen }) => {
             const active = activeScreen === screen;
             return (
-              <Pressable
+              <FeedbackPressable
                 key={screen}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
                 onPress={() => onNavigate?.(screen)}
-                style={themeStyle(({ pressed }) => [
+                style={themeStyle(({ pressed, hovered }) => [
                   styles.item,
                   active && styles.activeItem,
-                  pressed && !active && styles.pressedItem,
+                  (pressed || hovered) && !active && styles.pressedItem,
                 ])}
               >
                 <Icon
                   size={18}
-                  color={themeColor(active ? colors.sunsetCoral : colors.white, "color")}
+                  color={active ? palette.button : palette.onPrimary}
                 />
-                <Text style={themeStyle([styles.label, active && styles.activeLabel])}>
+                <Text style={themeStyle([styles.label, active && styles.activeLabel, active && { color: palette.button }])}>
                   {label}
                 </Text>
-              </Pressable>
+              </FeedbackPressable>
             );
           })}
         </View>
@@ -78,10 +81,10 @@ export default function AdminSidebar({ activeScreen = "AdminDashboard", onNaviga
           <Text style={themeStyle(styles.statusText)}>All systems operational</Text>
         </View>
       </View>
-      <Pressable onPress={handleLogout} accessibilityLabel="Log out" style={themeStyle(styles.logout)}>
+      <FeedbackPressable onPress={handleLogout} accessibilityLabel="Log out" style={themeStyle(styles.logout)}>
         <LogOut size={18} color={themeColor("#FF9B85", "color")} />
         <Text style={themeStyle(styles.logoutText)}>Log out</Text>
-      </Pressable>
+      </FeedbackPressable>
     </View>
   );
 }

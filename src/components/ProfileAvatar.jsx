@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { Image, StyleSheet, Text, View } from "react-native";
 import { colors } from "../theme/colors";
 import TravelAvatar, { getTravelAvatar } from "./TravelAvatar";
+import { useAppTheme } from "../theme/useAppTheme";
 
 export default function ProfileAvatar({ user, size = 44 }) {
+  const { palette } = useAppTheme();
   const [failed, setFailed] = useState(false);
   useEffect(() => setFailed(false), [user?.photo]);
   const name = user?.name || "Traveler";
@@ -11,10 +13,10 @@ export default function ProfileAvatar({ user, size = 44 }) {
   const shape = { width: size, height: size, borderRadius: size / 2 };
   const preset = getTravelAvatar(user?.photo);
   if (preset) return <TravelAvatar avatar={preset} size={size} label={`${name}'s profile photo: ${preset.name}`} />;
-  return <View style={[styles.avatar, shape]}>
+  return <View style={[styles.avatar, shape, { backgroundColor: palette.button }]}>
     {user?.photo && !failed
       ? <Image accessibilityLabel={`${name}'s profile photo`} source={{ uri: user.photo }} style={shape} resizeMode="cover" onError={() => setFailed(true)} />
-      : <Text style={[styles.initials, { fontSize: Math.round(size * 0.36) }]}>{initials || "T"}</Text>}
+      : <Text style={[styles.initials, { fontSize: Math.round(size * 0.36), color: palette.onButton }]}>{initials || "T"}</Text>}
   </View>;
 }
 

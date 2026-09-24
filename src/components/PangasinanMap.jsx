@@ -2,18 +2,20 @@ import { useAppTheme } from "../theme/useAppTheme";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AccessibilityInfo, Animated, Linking, PanResponder, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Compass, MapPin, Maximize2, Minus, Plus, Search } from "lucide-react-native";
-import Svg, { G, Path, Text as SvgText } from "react-native-svg";
+import Svg, { Circle, G, Path, Polyline, Text as SvgText } from "react-native-svg";
 import geometry from "../data/pangasinanMap.json";
 import { colors } from "../theme/colors";
 import MapPlacePreview from "./MapPlacePreview";
 import MapHoverPreview from "./MapHoverPreview";
 import { useMapPlaces } from "../hooks/useMapPlaces";
+import { useNavigation } from "@react-navigation/native";
 
 const featured = ["alaminos", "bolinao", "lingayen", "dagupan", "manaoag", "san-carlos", "urdaneta"];
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
-export default function PangasinanMap() {
+export default function PangasinanMap({ mode = "explore", selectedIds = [], onToggle, routeStops = [] }) {
   const { themeStyle, themeColor, mapColors } = useAppTheme();
+  const navigation = useNavigation();
 
   const [selected, setSelected] = useState(null);
   const [hovered, setHovered] = useState(null);
@@ -30,12 +32,14 @@ export default function PangasinanMap() {
   viewport.current = { zoom, pan, size };
   const startPan = useRef(pan);
   const dragging = useRef(false);
-  const active = hovered || selected || preview;
+  const selecting = mode === "select";
+  const active = selecting ? hovered : hovered || selected || preview;
+  const routePoints = routeStops.map((stop, index) => { const area = geometry.areas.find(a => a.id === stop.areaId); return area ? { ...stop, point: [area.center[0] + (index % 3) * 7, area.center[1] + Math.floor(index / 3) * 3], index } : null; }).filter(Boolean);
   const floatingPreview = size.width >= 700;
   const dismissPreview = () => { setPreview(null); setHovered(null); };
   const hover = area => {
     setHovered(area);
-    if (Platform.OS === "web" && !dragging.current) { setPreview(area); setPreviewRequested(true); }
+    if (!selecting && Platform.OS === "web" && !dragging.current) { setPreview(area); setPreviewRequested(true); }
   };
   const matches = useMemo(() => geometry.areas.filter(area => area.name.toLowerCase().includes(query.trim().toLowerCase())), [query]);
 
@@ -75,11 +79,11 @@ export default function PangasinanMap() {
     setZoom(next);
     setPan(current => ({ x: clamp(current.x, -geometry.width * (1 - 1 / next) / 2, geometry.width * (1 - 1 / next) / 2), y: clamp(current.y, -geometry.height * (1 - 1 / next) / 2, geometry.height * (1 - 1 / next) / 2) }));
   };
-  const select = area => { if (!dragging.current) { dismissPreview(); setSelected(area); } };
+  const select = area => { if (!dragging.current) { dismissPreview(); if (selecting) onToggle?.(area.id); else setSelected(area); } };
   const vx = (geometry.width - geometry.width / zoom) / 2 + pan.x;
   const vy = (geometry.height - geometry.height / zoom) / 2 + pan.y;
   const previewCard = Platform.OS === "web" && preview && !selected ? <Animated.View testID="map-preview-dock" style={[floatingPreview ? styles.previewDock : styles.previewBelow, { opacity: pop }]}>
-    <MapHoverPreview key={preview.id} area={preview} {...previewPlaces} onExplore={() => select(preview)} onDismiss={dismissPreview} />
+    <MapHoverPreview key={preview.id} area={preview} {...previewPlaces} onExplore={() => select(preview)} onChoose={() => navigation.navigate("AIItinerary", { areaId: preview.id, placeName: preview.name, fromMap: true })} onDismiss={dismissPreview} />
   </Animated.View> : null;
 
   return (
@@ -96,13 +100,15 @@ export default function PangasinanMap() {
           <Svg width="100%" height="100%" viewBox={`${vx} ${vy} ${geometry.width / zoom} ${geometry.height / zoom}`} preserveAspectRatio="xMidYMid meet">
             <SvgText x="400" y="140" textAnchor="middle" fill={mapColors.gulf} fontSize="18" fontStyle="italic">Lingayen Gulf</SvgText>
             {geometry.areas.map((area, i) => (
-              <Path key={area.id} testID={`map-area-${area.id}`} d={area.d} fill={query && !matches.includes(area) ? mapColors.muted : mapColors.regions[i % 4]}
+              <Path key={area.id} testID={`map-area-${area.id}`} d={area.d} fill={selectedIds.includes(area.id) ? mapColors.active : query && !matches.includes(area) ? mapColors.muted : mapColors.regions[i % 4]}
                 fillRule="evenodd" stroke={mapColors.border} strokeWidth={1.2 / zoom} strokeLinejoin="round" onPress={() => select(area)}
                 {...(Platform.OS === "web" ? { onMouseEnter: () => hover(area), onMouseLeave: () => setHovered(null), style: { cursor: "pointer" } } : {})} />
             ))}
+            {routePoints.length > 1 && <Polyline points={routePoints.map(s => s.point.join(",")).join(" ")} fill="none" stroke={mapColors.route} strokeWidth={3 / zoom} strokeDasharray="6 4" pointerEvents="none" />}
+            {routePoints.map(stop => <G key={`${stop.placeId}-${stop.index}`} pointerEvents="none"><Circle cx={stop.point[0]} cy={stop.point[1]} r={10 / zoom} fill={mapColors.route} /><SvgText x={stop.point[0]} y={stop.point[1] + 4 / zoom} fontSize={11 / zoom} textAnchor="middle" fill={mapColors.routeText}>{stop.index + 1}</SvgText></G>)}
             {active && <G pointerEvents="none">
               <Path d={active.d} fill={themeColor("#173F50", "fill")} opacity={0.18} transform="translate(0 5)" />
-              <Path d={active.d} fill={colors.sunsetCoral} stroke={mapColors.activeBorder} strokeWidth={2 / zoom} fillRule="evenodd" transform="translate(0 -3)" />
+              <Path d={active.d} fill={mapColors.active} stroke={mapColors.activeBorder} strokeWidth={2 / zoom} fillRule="evenodd" transform="translate(0 -3)" />
             </G>}
             {geometry.areas.filter(area => featured.includes(area.id) || zoom >= 2.5).map(area => (
               <SvgText key={area.id} x={area.center[0]} y={area.center[1]} textAnchor="middle" fontFamily={Platform.OS === "web" ? "sans-serif" : undefined} fontSize={zoom >= 2.5 ? 10 : 12} fontWeight="600" fill={active?.id === area.id ? mapColors.activeLabel : query && !matches.includes(area) ? mapColors.mutedLabel : mapColors.label} pointerEvents="none">{area.name}</SvgText>
@@ -117,13 +123,14 @@ export default function PangasinanMap() {
           <Pressable accessibilityRole="button" accessibilityLabel="Reset map view" style={themeStyle(styles.control)} onPress={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}><Maximize2 size={18} color={themeColor(colors.oceanBlue, "color")} /></Pressable>
         </View>
         {floatingPreview && previewCard}
-        <View pointerEvents="none" style={themeStyle(styles.mapHint)}><Text style={themeStyle(styles.caption)}>{zoom > 1 ? "Drag to move · tap an area to explore" : Platform.OS === "web" ? "Hover to discover · click to explore" : "Tap an area to explore · + to zoom"}</Text></View>
+        <View pointerEvents="none" style={themeStyle(styles.mapHint)}><Text style={themeStyle(styles.caption)}>{selecting ? "Select areas on the map or in the accessible list below" : zoom > 1 ? "Drag to move · tap an area to explore" : Platform.OS === "web" ? "Hover to discover · click to explore" : "Tap an area to explore · + to zoom"}</Text></View>
       </View>
+      {routeStops.length > 0 && <Text style={themeStyle({ padding: 14, color: colors.textMuted, fontFamily: "DMSans" })}>Schematic stop order at area centers; markers are not attraction coordinates and lines are not road directions.</Text>}
       {!floatingPreview && previewCard}
       <View style={themeStyle(styles.directory)}>
         <View style={themeStyle(styles.directoryHeading)}><Text style={themeStyle(styles.sectionTitle)}>{query ? `${matches.length} matching areas` : "Explore by area"}</Text><Text style={themeStyle(styles.caption)}>Cities & municipalities</Text></View>
         <ScrollView style={themeStyle(styles.areaList)} nestedScrollEnabled contentContainerStyle={themeStyle(styles.chips)}>
-          {matches.map(area => <Pressable key={area.id} accessibilityRole="button" accessibilityLabel={`Explore ${area.name}`} onPress={() => select(area)} onHoverIn={() => hover(area)} onHoverOut={() => setHovered(null)} onFocus={() => hover(area)} onBlur={() => setHovered(null)} style={themeStyle(({ pressed }) => [styles.chip, (pressed || active?.id === area.id) && styles.activeChip])}><Text style={themeStyle([styles.chipLabel, active?.id === area.id && styles.activeChipLabel])}>{area.name}</Text></Pressable>)}
+          {matches.map(area => <Pressable key={area.id} accessibilityRole="button" accessibilityLabel={`${selecting ? "Select" : "Explore"} ${area.name}`} accessibilityState={{ selected: selectedIds.includes(area.id) }} onPress={() => select(area)} onHoverIn={() => hover(area)} onHoverOut={() => setHovered(null)} onFocus={() => hover(area)} onBlur={() => setHovered(null)} style={themeStyle(({ pressed }) => [styles.chip, (pressed || active?.id === area.id || selectedIds.includes(area.id)) && styles.activeChip])}><Text style={themeStyle([styles.chipLabel, (active?.id === area.id || selectedIds.includes(area.id)) && styles.activeChipLabel])}>{area.name}</Text></Pressable>)}
           {!matches.length && <Text style={themeStyle(styles.caption)}>No matching area. Try another name.</Text>}
         </ScrollView>
       </View>

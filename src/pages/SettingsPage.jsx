@@ -1,3 +1,4 @@
+import { FeedbackPressable } from "../components/WorkspaceMotion";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 import Card from "../components/Card";
@@ -5,6 +6,7 @@ import ToggleSwitch from "../components/ToggleSwitch";
 import CurrencyPicker from "../components/CurrencyPicker";
 import ProfileAvatar from "../components/ProfileAvatar";
 import ProfileEditor from "../components/ProfileEditor";
+import DeleteAccountDialog from "../components/DeleteAccountDialog";
 import { useAuthStore } from "../store/authStore";
 import { usePreferencesStore } from "../store/preferencesStore";
 import { useAppTheme } from "../theme/useAppTheme";
@@ -25,7 +27,7 @@ function Row({ label, description, control, last, danger, stacked }) {
 }
 function CycleButton({ value, values, onChange }) {
   const { themeStyle } = useAppTheme();
-  return <Pressable accessibilityRole="button" accessibilityLabel={`Language: ${value}`} onPress={() => onChange(values[(values.indexOf(value) + 1) % values.length])} style={themeStyle(styles.choice)}><Text style={themeStyle(styles.choiceText)}>{value}</Text></Pressable>;
+  return <FeedbackPressable accessibilityRole="button" accessibilityLabel={`Language: ${value}`} onPress={() => onChange(values[(values.indexOf(value) + 1) % values.length])} style={themeStyle(styles.choice)}><Text style={themeStyle(styles.choiceText)}>{value}</Text></FeedbackPressable>;
 }
 
 export default function SettingsPage() {
@@ -35,6 +37,7 @@ export default function SettingsPage() {
   const compact = contentWidth < 600;
   const user = useAuthStore(state => state.user);
   const [editor, setEditor] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const [profileMessage, setProfileMessage] = useState(null);
   useEffect(() => { useAuthStore.getState().refreshProfile(); }, []);
   const dark = usePreferencesStore(state => state.darkMode);
@@ -66,8 +69,8 @@ export default function SettingsPage() {
         </View>
       </View>
       <View style={styles.profileActions}>
-        <Pressable accessibilityRole="button" onPress={() => { setProfileMessage(null); setEditor("details"); }} style={themeStyle(styles.edit)}><Text style={styles.editText}>Edit Profile</Text></Pressable>
-        <Pressable accessibilityRole="button" onPress={() => { setProfileMessage(null); setEditor("photo"); }} style={themeStyle(styles.photo)}><Text style={themeStyle(styles.photoText)}>Change Photo</Text></Pressable>
+        <FeedbackPressable accessibilityRole="button" onPress={() => { setProfileMessage(null); setEditor("details"); }} style={themeStyle(styles.edit)}><Text style={themeStyle(styles.editText)}>Edit Profile</Text></FeedbackPressable>
+        <FeedbackPressable accessibilityRole="button" onPress={() => { setProfileMessage(null); setEditor("photo"); }} style={themeStyle(styles.photo)}><Text style={themeStyle(styles.photoText)}>Change Photo</Text></FeedbackPressable>
       </View>
     </Card>
     {profileMessage && <Text accessibilityLiveRegion="polite" style={themeStyle(styles.success)}>{profileMessage}</Text>}
@@ -80,17 +83,18 @@ export default function SettingsPage() {
       <Row label="Dark Mode" description="Use a darker appearance" control={<ToggleSwitch accessibilityLabel="Dark Mode" checked={dark} onChange={setDark} />} />
       <Row label="Language" description="App display language" control={<CycleButton value={language} values={["English", "Filipino", "Pangasinan"]} onChange={setLanguage} />} />
       <Row label="Currency" description="Your preferred display currency" control={<CurrencyPicker buttonStyle={styles.choice} />} />
-      {selectedCurrency !== "PHP" && (ratesLoading || ratesError) && <View style={styles.rateStatus}>{ratesLoading ? <ActivityIndicator color={themeColor(colors.oceanBlue)} /> : null}{ratesError && <><Text style={themeStyle(styles.rowDescription)}>{ratesError}</Text><Pressable accessibilityRole="button" accessibilityLabel="Retry exchange rates" onPress={() => refreshRates(true)} style={styles.retry}><Text style={themeStyle(styles.choiceText)}>Retry exchange rates</Text></Pressable></>}</View>}
+      {selectedCurrency !== "PHP" && (ratesLoading || ratesError) && <View style={styles.rateStatus}>{ratesLoading ? <ActivityIndicator color={themeColor(colors.oceanBlue)} /> : null}{ratesError && <><Text style={themeStyle(styles.rowDescription)}>{ratesError}</Text><FeedbackPressable accessibilityRole="button" accessibilityLabel="Retry exchange rates" onPress={() => refreshRates(true)} style={styles.retry}><Text style={themeStyle(styles.choiceText)}>Retry exchange rates</Text></FeedbackPressable></>}</View>}
       <Row label="Default Region" description="Pre-filled in trip search" stacked={compact} control={<TextInput accessibilityLabel="Default destination region" value={region} onChangeText={setRegion} style={themeStyle([styles.regionInput, compact && styles.regionInputCompact])} />} last />
     </Section>
     {storageError && <Text style={themeStyle(styles.storageError)}>{storageError}</Text>}
     <Section title="Privacy & Data">
       <Row label="Location Access" description="For transit alerts and geofencing" control={<Text style={themeStyle(styles.allowed)}>Allowed</Text>} />
-      <Row label="Delete Account" description="Permanently remove your data" danger control={<Pressable accessibilityRole="button" style={themeStyle(styles.delete)}><Text style={styles.deleteText}>Delete</Text></Pressable>} last />
+      <Row label="Delete Account" description="Permanently remove your data" danger control={<Pressable accessibilityRole="button" onPress={() => setDeleting(true)} style={themeStyle(styles.delete)}><Text style={themeStyle(styles.deleteText)}>Delete</Text></Pressable>} last />
     </Section>
     </View>
   </ScrollView>
     {editor && <ProfileEditor key={editor} mode={editor} onClose={() => setEditor(null)} onSaved={message => { setEditor(null); setProfileMessage(message); }} />}
+    {deleting && <DeleteAccountDialog onClose={() => setDeleting(false)} />}
   </>;
 }
 const styles = StyleSheet.create({

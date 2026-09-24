@@ -34,12 +34,13 @@ const assert = require('node:assert/strict');
   const light = createTheme(false);
   const dark = createTheme(true);
   const style = { backgroundColor: '#FFFFFF', color: '#0B3C5D', borderColor: '#E7E1D6', padding: 12 };
-  assert.equal(light.themeStyle(style), style);
+  assert.deepEqual(light.themeStyle(style), { backgroundColor: light.surface, color: light.text, borderColor: light.palette.line, padding: 12 });
+  assert.deepEqual(light.themeStyle(light.themeStyle(style)), light.themeStyle(style), 'Nested components preserve resolved coastal colors');
   assert.equal(dark.themeStyle(style).backgroundColor, dark.surface);
   assert.equal(dark.themeStyle(style).color, dark.text);
   assert.equal(dark.themeStyle(style).padding, 12);
   assert.equal(style.backgroundColor, '#FFFFFF', 'The shared light styles must stay unchanged');
-  assert.equal(dark.themeColor('#FFFFFF', 'color'), '#FFFFFF', 'Button labels retain contrast');
+  assert.equal(dark.themeColor('#FFFFFF', 'color'), dark.text, 'Button labels use the coastal foreground');
   assert.equal(dark.themeColor('rgba(0,0,0,0.5)', 'backgroundColor'), 'rgba(0,0,0,0.5)');
   assert.notEqual(dark.themeColor('#F16B4E', 'backgroundColor'), '#F16B4E', 'Dark mode uses a softer coral button');
   assert.equal(dark.themeStyle(() => [style])({ pressed: true })[0].color, dark.text);
@@ -53,7 +54,7 @@ const assert = require('node:assert/strict');
     assert.ok(contrast(dark.themeColor(foreground), dark.surface) >= 4.5, 'Primary, supporting, and placeholder text stays readable');
   }
   for (const accent of ['#0B3C5D', '#F16B4E', '#2A7B4C', '#E8A33D']) {
-    assert.ok(contrast('#FFFFFF', dark.themeColor(accent, 'backgroundColor')) >= 4.5, 'Button labels remain readable on muted accents');
+    assert.ok(contrast(dark.themeColor('#FFFFFF'), dark.themeColor(accent, 'backgroundColor')) >= 4.5, 'Button labels remain readable on muted accents');
   }
   for (const [foreground, tint] of [['#F16B4E', '#FFF1EE'], ['#2A7B4C', '#EDF7EE'], ['#E8A33D', '#FFF8E1'], ['#1A5CB0', '#EAF1FB']]) {
     assert.ok(contrast(dark.themeColor(foreground), dark.themeColor(tint, 'backgroundColor')) >= 4.5, 'Status badges use readable, coordinated color pairs');

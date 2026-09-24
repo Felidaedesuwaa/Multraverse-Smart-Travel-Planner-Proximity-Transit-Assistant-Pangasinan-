@@ -14,6 +14,9 @@ import aiRoutes from './routes/ai'
 import knowledgeRoutes from './routes/knowledge'
 import analyticsRoutes from './routes/analytics'
 import { connectDatabase } from './lib/db'
+import { User } from './models'
+import { PendingRegistration } from './models/PendingRegistration'
+import { AuthLimit } from './lib/authLimits'
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -36,7 +39,11 @@ app.use(cors({
 }))
 // Profile photos are resized on-device and capped at 512 KB by the route.
 app.use('/api/users/me', express.json({ limit: '1mb' }))
-app.use(express.json())
+app.use('/api/auth', express.json({ limit: '16kb' }))
+// Voice recordings are posted to the local speech service as base64. The
+// route validates its own tighter payload shape; this limit keeps recordings
+// usable while still bounding request memory.
+app.use(express.json({ limit: '12mb' }))
 
 app.use('/api/auth', authRoutes)
 app.use('/api/trips', tripRoutes)
@@ -58,7 +65,11 @@ app.use((error: { status?: number }, _req: express.Request, res: express.Respons
 })
 
 connectDatabase()
-  .then(() => app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`)))
+  .then(async () => {
+    // Unique/TTL indexes must exist before accepting concurrent signup requests.
+    await Promise.all([User.init(), PendingRegistration.init(), AuthLimit.init()])
+    app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`))
+  })
   .catch((error) => {
     console.error('Unable to start server:', error)
     process.exit(1)

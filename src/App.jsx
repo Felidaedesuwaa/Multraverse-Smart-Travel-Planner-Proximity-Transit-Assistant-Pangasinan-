@@ -1,5 +1,8 @@
 import { useAppTheme } from "./theme/useAppTheme";
 import { useEffect, useState } from "react";
+import { useFonts } from "expo-font";
+import { Poppins_600SemiBold } from "@expo-google-fonts/poppins/600SemiBold";
+import { DMSans_400Regular } from "@expo-google-fonts/dm-sans/400Regular";
 import { ActivityIndicator, AppState, Modal, Pressable, StatusBar, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { SafeAreaProvider, SafeAreaView, initialWindowMetrics } from "react-native-safe-area-context";
 import { Menu, X } from "lucide-react-native";
@@ -11,6 +14,7 @@ import { colors } from "./theme/colors";
 import { useAuthStore } from "./store/authStore";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import LandingPage from "./pages/LandingPage";
 import UserDashboard from "./pages/UserDashboard";
 import TransitAlarm from "./pages/TransitAlarm";
 import AIItinerary from "./pages/AIItinerary";
@@ -29,6 +33,7 @@ import AdminAnalytics from "./pages/AdminAnalytics";
 import AdminSettings from "./pages/AdminSettings";
 import UserSidebar from "./components/UserSidebar";
 import AdminSidebar from "./components/AdminSidebar";
+import { WorkspaceMotionProvider, ScreenMotion } from "./components/WorkspaceMotion";
 
 const RootStack = createNativeStackNavigator();
 const UserStack = createNativeStackNavigator();
@@ -42,13 +47,14 @@ const linking = {
   prefixes: [],
   config: {
     screens: {
-      // Keep the localhost root on the sign-in screen. Protected routes are
+      // Keep the localhost root on the public landing page. Protected routes are
       // only registered after authentication, so deep links cannot bypass it.
-      Login: "",
+      Landing: "",
+      Login: "login",
       Register: "register",
       User: {
         screens: {
-          Dashboard: "",
+          Dashboard: "dashboard",
           MyTrips: "my-trips",
           Budget: "budget",
           SavedPlaces: "saved-places",
@@ -102,6 +108,7 @@ function UserScreens() {
       )}
       <View style={themeStyle(styles.content)}>
         <UserStack.Navigator
+          screenLayout={({ children }) => <ScreenMotion>{children}</ScreenMotion>}
           screenListeners={({ route }) => ({ focus: () => setActiveScreen(route.name) })}
           screenOptions={{
             headerShown: !isWide,
@@ -187,7 +194,7 @@ function AdminScreens() {
         </View>
       )}
       <View style={themeStyle(styles.content)}>
-        <AdminStack.Navigator screenOptions={{ headerShown: false }}>
+        <AdminStack.Navigator screenLayout={({ children }) => <ScreenMotion>{children}</ScreenMotion>} screenOptions={{ headerShown: false }}>
           <AdminStack.Screen name="AdminDashboard" component={AdminDashboard} />
           <AdminStack.Screen name="AdminRoutes" component={AdminRoutes} />
           <AdminStack.Screen name="AdminGeofences" component={AdminGeofences} />
@@ -212,6 +219,7 @@ function LoadingScreen() {
 }
 
 export default function App() {
+  const [fontsLoaded, fontError] = useFonts({ Poppins: Poppins_600SemiBold, DMSans: DMSans_400Regular });
   const { isDark, background, surface, text } = useAppTheme();
   const init = useAuthStore((state) => state.init);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -226,10 +234,11 @@ export default function App() {
     return () => listener.remove();
   }, [init]);
 
-  if (!ready) return <LoadingScreen />;
+  if (!ready || (!fontsLoaded && !fontError)) return <LoadingScreen />;
 
   return (
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+    <WorkspaceMotionProvider>
     <NavigationContainer
       theme={{ ...(isDark ? DarkTheme : DefaultTheme), colors: { ...(isDark ? DarkTheme : DefaultTheme).colors, background, card: surface, text, primary: colors.sunsetCoral } }}
       linking={linking}
@@ -248,6 +257,7 @@ export default function App() {
           )
         ) : (
           <>
+            <RootStack.Screen name="Landing" component={LandingPage} />
             <RootStack.Screen name="Login" component={LoginPage} />
             <RootStack.Screen name="Register" component={RegisterPage} />
           </>
@@ -256,6 +266,7 @@ export default function App() {
       <CurrencyNotice />
       </View>
     </NavigationContainer>
+    </WorkspaceMotionProvider>
     </SafeAreaProvider>
   );
 }

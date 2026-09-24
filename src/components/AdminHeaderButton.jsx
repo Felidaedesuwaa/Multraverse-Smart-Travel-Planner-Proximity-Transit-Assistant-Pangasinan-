@@ -1,5 +1,6 @@
+import { FeedbackPressable } from "./WorkspaceMotion";
 import { useAppTheme } from "../theme/useAppTheme";
-import { Pressable, StyleSheet, Text } from "react-native";
+import { StyleSheet, Text } from "react-native";
 import { colors } from "../theme/colors";
 
 export default function AdminHeaderButton({
@@ -13,13 +14,15 @@ export default function AdminHeaderButton({
   const { themeStyle } = useAppTheme();
 
   return (
-    <Pressable
+    <FeedbackPressable
+      lift
+      accessibilityRole="button"
       onPress={onPress || onClick}
       style={themeStyle([styles.button, filled ? { backgroundColor: fillColor || colors.sunsetCoral } : styles.outline])}
     >
       {icon}
       <Text style={themeStyle([styles.label, { color: filled ? colors.white : colors.textPrimary }])}>{label}</Text>
-    </Pressable>
+    </FeedbackPressable>
   );
 }
 

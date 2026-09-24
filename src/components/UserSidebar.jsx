@@ -1,7 +1,8 @@
+import { FeedbackPressable } from "./WorkspaceMotion";
 import { useAppTheme } from "../theme/useAppTheme";
 import { darkPalette } from "../theme/darkPalette";
 import { useEffect, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import {
   Bell, Bookmark, Compass, Download, Home,
   Languages, LogOut, MapPin, Settings, Sparkles, Wallet,
@@ -29,7 +30,7 @@ const aiItems = [
 ];
 
 export default function UserSidebar({ activeScreen = "Dashboard", onNavigate, compact = false }) {
-  const { themeStyle, themeColor, isDark } = useAppTheme();
+  const { themeStyle, themeColor, isDark, palette } = useAppTheme();
 
   const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
@@ -59,23 +60,23 @@ export default function UserSidebar({ activeScreen = "Dashboard", onNavigate, co
   const renderNavItem = ({ label, icon: Icon, screen }, isAi = false) => {
     const active = activeScreen === screen;
     return (
-      <Pressable
+      <FeedbackPressable
         key={screen}
         accessibilityRole="button"
         accessibilityState={{ selected: active }}
         onPress={() => handleNavigate(screen)}
-        style={themeStyle(({ pressed }) => [
+        style={themeStyle(({ pressed, hovered }) => [
           styles.item,
           active && styles.activeItem,
-          pressed && !active && styles.pressedItem,
+          (pressed || hovered) && !active && styles.pressedItem,
         ])}
       >
-        <Icon size={18} color={themeColor(active ? colors.sunsetCoral : colors.white, "color")} />
-        <Text style={themeStyle([styles.itemLabel, active && styles.activeLabel])}>
+        <Icon size={18} color={active ? palette.button : palette.onPrimary} />
+        <Text style={themeStyle([styles.itemLabel, active && styles.activeLabel, active && { color: palette.button }])}>
           {label}
         </Text>
         {isAi && <Text style={themeStyle(styles.aiBadge)}>AI</Text>}
-      </Pressable>
+      </FeedbackPressable>
     );
   };
 
@@ -87,7 +88,7 @@ export default function UserSidebar({ activeScreen = "Dashboard", onNavigate, co
     >
       {/* Brand */}
       <View style={themeStyle(styles.brand)}>
-        <View style={themeStyle(styles.brandIcon)}>
+        <View style={themeStyle([styles.brandIcon, { backgroundColor: palette.brand }])}>
           <Compass size={22} color={themeColor(colors.white, "color")} />
         </View>
         <View>
@@ -103,9 +104,9 @@ export default function UserSidebar({ activeScreen = "Dashboard", onNavigate, co
           <Text style={themeStyle(styles.name)} numberOfLines={1}>{name}</Text>
           <Text style={themeStyle(styles.location)}>{user?.role === "PRO" ? "Pro" : "Explorer"}{user?.location ? ` · ${user.location}` : ""}</Text>
         </View>
-        <Pressable onPress={handleLogout} accessibilityLabel="Log out" style={themeStyle(styles.logoutIcon)}>
+        <FeedbackPressable onPress={handleLogout} accessibilityLabel="Log out" style={themeStyle(styles.logoutIcon)}>
           <LogOut size={16} color={themeColor("#8FB0C2", "color")} />
-        </Pressable>
+        </FeedbackPressable>
       </View>
 
       {/* Main Nav */}
@@ -150,10 +151,10 @@ export default function UserSidebar({ activeScreen = "Dashboard", onNavigate, co
 
       </>}
       {/* Logout */}
-      <Pressable accessibilityRole="button" onPress={handleLogout} style={themeStyle(styles.logout)}>
+      <FeedbackPressable accessibilityRole="button" onPress={handleLogout} style={themeStyle(styles.logout)}>
         <LogOut size={18} color={themeColor("#FF9B85", "color")} />
         <Text style={themeStyle(styles.logoutText)}>Log Out</Text>
-      </Pressable>
+      </FeedbackPressable>
     </ScrollView>
   );
 }

@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { Eye, EyeOff } from "lucide-react-native";
 import { colors } from "../theme/colors";
 
-export default function AuthInput({ label, error, isPassword, value, onChangeText, onChange, placeholder, ...props }) {
+export default function AuthInput({ label, error, hint, isPassword, value, onChangeText, onChange, placeholder, ...props }) {
   const { themeStyle, themeColor } = useAppTheme();
 
   const [hidden, setHidden] = useState(isPassword);
@@ -14,6 +14,8 @@ export default function AuthInput({ label, error, isPassword, value, onChangeTex
       <Text style={themeStyle(styles.label)}>{label}</Text>
       <View style={themeStyle([styles.inputRow, { borderColor: error ? colors.sunsetCoral : "rgba(255,255,255,0.15)" }])}>
         <TextInput
+          accessibilityLabel={label}
+          accessibilityHint={error || hint}
           value={value}
           onChangeText={onChangeText || onChange}
           placeholder={placeholder}
@@ -30,7 +32,8 @@ export default function AuthInput({ label, error, isPassword, value, onChangeTex
           </Pressable>
         )}
       </View>
-      {error ? <Text style={themeStyle(styles.error)}>{error}</Text> : null}
+      {hint ? <Text style={themeStyle(styles.hint)}>{hint}</Text> : null}
+      {error ? <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={themeStyle(styles.error)}>{error}</Text> : null}
     </View>
   );
 }
@@ -42,4 +45,5 @@ const styles = StyleSheet.create({
   input: { flex: 1, fontFamily: "DMSans", fontSize: 15, color: colors.white, paddingVertical: 12 },
   toggle: { padding: 4, marginLeft: 8 },
   error: { fontFamily: "DMSans", fontSize: 12, color: "#FF9B85", marginTop: 4 },
+  hint: { fontFamily: "DMSans", fontSize: 12, lineHeight: 18, color: "#A9C4D4", marginTop: 5 },
 });
