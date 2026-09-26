@@ -110,7 +110,7 @@ export default function RegisterPage() {
       <AuthInput label="Password" placeholder="e.g. Lakbay_2026 (use your own)" hint="8–72 characters, at least one capital letter and one number. Only letters, numbers, _, - and @; no spaces." value={password} onChangeText={change("password", setPassword)} onBlur={() => validateField("password")} error={errors.password} isPassword autoComplete="new-password" editable={!isLoading} />
       <AuthInput label="Confirm password" placeholder="Repeat your chosen password" value={confirm} onChangeText={change("confirm", setConfirm)} onBlur={() => validateField("confirm")} error={errors.confirm} isPassword autoComplete="new-password" editable={!isLoading} onSubmitEditing={handleSubmit} />
       {formError ? <Text accessibilityRole="alert" style={themeStyle(styles.formError)}>{formError}</Text> : null}
-      <GradientButton label="Send Verification Code" loading={isLoading} onPress={handleSubmit} />
+      <GradientButton label="Register" loading={isLoading} onPress={handleSubmit} />
     </AuthLayout>
   );
 }

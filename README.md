@@ -208,7 +208,7 @@ Run `npm run test:registration --prefix server` for frontend/server validation p
 
 ### Signup email delivery
 
-Configure these **server-only** values in `server/.env`, then restart the backend:
+Configure these **server-only** values in `server/.env`, then restart the backend. The API and email-check command both load this file explicitly, even when launched from the project root. `npm run dev --prefix server` watches `server/.env` and restarts after saved changes; `npm start --prefix server` requires a manual restart. If the development server was already running before this watcher was added, stop it once with Ctrl+C and run the development command again:
 
 ```dotenv
 SMTP_HOST=smtp.gmail.com
