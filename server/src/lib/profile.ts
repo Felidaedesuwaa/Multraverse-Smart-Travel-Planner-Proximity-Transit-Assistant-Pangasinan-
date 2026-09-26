@@ -1,6 +1,6 @@
 import { registrationNameDetails } from './registration'
 
-export const PROFILE_FIELDS = 'name firstName middleName surname email role location photo createdAt'
+export const PROFILE_FIELDS = 'name firstName middleName surname email role municipality location photo createdAt'
 export const MAX_PHOTO_BYTES = 512 * 1024
 
 type ProfileUpdate = { name?: string; firstName?: string | null; middleName?: string | null; surname?: string | null; location?: string; photo?: string | null }

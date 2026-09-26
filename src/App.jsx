@@ -1,3 +1,4 @@
+import SuperAdminLayout from "./layouts/SuperAdminLayout";
 import { useAppTheme } from "./theme/useAppTheme";
 import { useEffect, useState } from "react";
 import { useFonts } from "expo-font";
@@ -24,6 +25,8 @@ import Budget from "./pages/Budget";
 import SavedPlaces from "./pages/SavedPlaces";
 import OfflineMaps from "./pages/OfflineMaps";
 import SettingsPage from "./pages/SettingsPage";
+import LGUDashboard from "./pages/LGUDashboard";
+import AdminApprovals from "./pages/AdminApprovals";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminRoutes from "./pages/AdminRoutes";
 import AdminGeofences from "./pages/AdminGeofences";
@@ -65,9 +68,12 @@ const linking = {
           Translator: "translator",
         },
       },
+      SuperAdmin: { screens: { SuperAdminDashboard: 'superadmin', SuperAdminUsers: 'superadmin/lgu-accounts', SuperAdminCreateLGU: 'superadmin/lgu-accounts/new', SuperAdminCreateAdmin: 'superadmin/admin-accounts', SuperAdminAuditLog: 'superadmin/audit-log' } },
+      LGU: "lgu",
       Admin: {
         screens: {
           AdminDashboard: "admin",
+          AdminApprovals: "admin/approvals",
           AdminRoutes: "admin/routes",
           AdminGeofences: "admin/geofences",
           AdminUsers: "admin/users",
@@ -194,8 +200,13 @@ function AdminScreens() {
         </View>
       )}
       <View style={themeStyle(styles.content)}>
+        {!isWide && <View style={themeStyle({ flexDirection: 'row', gap: 16, padding: 12, backgroundColor: colors.warmSand })}>
+          <Pressable accessibilityRole="button" onPress={() => handleNavigate('AdminDashboard')}><Text style={themeStyle({ color: colors.oceanBlue })}>Overview</Text></Pressable>
+          <Pressable accessibilityRole="button" onPress={() => handleNavigate('AdminApprovals')}><Text style={themeStyle({ color: colors.oceanBlue })}>LGU approvals</Text></Pressable>
+        </View>}
         <AdminStack.Navigator screenLayout={({ children }) => <ScreenMotion>{children}</ScreenMotion>} screenOptions={{ headerShown: false }}>
           <AdminStack.Screen name="AdminDashboard" component={AdminDashboard} />
+          <AdminStack.Screen name="AdminApprovals" component={AdminApprovals} />
           <AdminStack.Screen name="AdminRoutes" component={AdminRoutes} />
           <AdminStack.Screen name="AdminGeofences" component={AdminGeofences} />
           <AdminStack.Screen name="AdminUsers" component={AdminUsers} />
@@ -250,8 +261,12 @@ export default function App() {
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={background} />
       <RootStack.Navigator screenOptions={{ headerShown: false }}>
         {isAuthenticated ? (
-          user?.role === "ADMIN" ? (
+          user?.role === "SUPERADMIN" ? (
+            <RootStack.Screen name="SuperAdmin" component={SuperAdminLayout} />
+          ) : user?.role === "ADMIN" ? (
             <RootStack.Screen name="Admin" component={AdminScreens} />
+          ) : user?.role === "LGU" ? (
+            <RootStack.Screen name="LGU" component={LGUDashboard} />
           ) : (
             <RootStack.Screen name="User" component={UserScreens} />
           )

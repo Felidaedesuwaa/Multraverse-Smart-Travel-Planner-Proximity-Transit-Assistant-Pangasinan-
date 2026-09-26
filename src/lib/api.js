@@ -76,6 +76,14 @@ async function profileRequest(method, data) {
 }
 
 export const api = {
+  getManagedAccounts: (type = 'lgu') => request(`/api/users/${type}-accounts`),
+  createManagedAccount: (type, data) => request(`/api/users/${type}-accounts`, { method: 'POST', body: JSON.stringify(data) }),
+  getAuditLogs: ({ page = 1, action = '', actor = '' } = {}) => request(`/api/audit-logs?page=${page}&limit=25${action ? `&action=${encodeURIComponent(action)}` : ''}${actor ? `&actor=${encodeURIComponent(actor)}` : ''}`),
+  getLGUResources: resource => request(`/api/lgu/${resource}`),
+  submitLGUResource: (resource, data, id) => request(`/api/lgu/${resource}${id ? `/${id}` : ''}`, { method: id ? 'PUT' : 'POST', body: JSON.stringify(data) }),
+  deleteLGUResource: (resource, id) => request(`/api/lgu/${resource}/${id}`, { method: 'DELETE' }),
+  getApprovals: resource => request(`/api/admin/approvals/${resource}`),
+  reviewSubmission: (resource, id, decision, reason, revision) => request(`/api/admin/approvals/${resource}/${id}/${decision}`, { method: 'POST', body: JSON.stringify({ reason, revision }) }),
   // Auth
   login: (email, password) =>
     request('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }),

@@ -1,3 +1,4 @@
+import { publishedFilter } from '../models/_moderation'
 import { Router, Response } from 'express'
 import { LocalFood, Place, RoutePrice } from '../models'
 import { authenticate, requireAdmin, AuthRequest } from '../middleware/auth'
@@ -8,7 +9,7 @@ router.use(authenticate)
 // ── Places ─────────────────────────────────────────────
 
 router.get('/places', async (req: AuthRequest, res: Response) => {
-  const places = await Place.find().sort({ createdAt: -1 })
+  const places = await Place.find(req.userRole === 'ADMIN' ? {} : publishedFilter).sort({ createdAt: -1 })
   res.json(places)
 })
 
@@ -47,7 +48,7 @@ router.delete('/places/:id', requireAdmin, async (req: AuthRequest<{ id: string 
 // ── Route Prices ───────────────────────────────────────
 
 router.get('/route-prices', async (req: AuthRequest, res: Response) => {
-  const routes = await RoutePrice.find().sort({ createdAt: -1 })
+  const routes = await RoutePrice.find(req.userRole === 'ADMIN' ? {} : publishedFilter).sort({ createdAt: -1 })
   res.json(routes)
 })
 
@@ -86,7 +87,7 @@ router.delete('/route-prices/:id', requireAdmin, async (req: AuthRequest<{ id: s
 // ── Local Food ─────────────────────────────────────────
 
 router.get('/foods', async (req: AuthRequest, res: Response) => {
-  const foods = await LocalFood.find().sort({ createdAt: -1 })
+  const foods = await LocalFood.find(req.userRole === 'ADMIN' ? {} : publishedFilter).sort({ createdAt: -1 })
   res.json(foods)
 })
 

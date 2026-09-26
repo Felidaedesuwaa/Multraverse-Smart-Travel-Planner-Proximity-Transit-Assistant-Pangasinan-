@@ -1,3 +1,4 @@
+import { publishedFilter } from '../models/_moderation'
 import { Router, Response } from 'express'
 import { Place, SavedPlace } from '../models'
 import { authenticate, AuthRequest } from '../middleware/auth'
@@ -18,7 +19,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
 
 router.post('/', async (req: AuthRequest, res: Response) => {
   const { name, category, description, icon } = req.body
-  const matches = typeof name === 'string' ? await Place.find({ name }).select('_id').limit(2) : []
+  const matches = typeof name === 'string' ? await Place.find({ $and: [publishedFilter], name }).select('_id').limit(2) : []
   const place = await SavedPlace.create({ userId: req.userId!, name, category, description, icon, ...(matches.length === 1 ? { placeId: matches[0]._id } : {}) })
   res.status(201).json(place)
 })

@@ -1,3 +1,4 @@
+import { publishedFilter } from '../models/_moderation'
 import express, { Router, Response } from 'express'
 import { authenticate, AuthRequest } from '../middleware/auth'
 import { LocalFood, Phrasebook, Place, RoutePrice } from '../models'
@@ -72,13 +73,13 @@ router.post('/itinerary/model', async (req: AuthRequest, res: Response) => {
 
     const pattern = new RegExp(escapeRegex(destination.trim()), 'i')
     const [matchedPlaces, matchedRoutes, foods] = await Promise.all([
-      Place.find({ $or: [{ municipality: pattern }, { location: pattern }, { name: pattern }] }).lean(),
-      RoutePrice.find({ $or: [{ from: pattern }, { to: pattern }] }).lean(),
-      LocalFood.find().lean(),
+      Place.find({ $and: [publishedFilter], $or: [{ municipality: pattern }, { location: pattern }, { name: pattern }] }).lean(),
+      RoutePrice.find({ $and: [publishedFilter], $or: [{ from: pattern }, { to: pattern }] }).lean(),
+      LocalFood.find(publishedFilter).lean(),
     ])
     const [places, routes] = await Promise.all([
-      matchedPlaces.length ? matchedPlaces : Place.find().limit(6).lean(),
-      matchedRoutes.length ? matchedRoutes : RoutePrice.find({ $or: [{ to: pattern }, { from: /Dagupan/i }] }).limit(8).lean(),
+      matchedPlaces.length ? matchedPlaces : Place.find(publishedFilter).limit(6).lean(),
+      matchedRoutes.length ? matchedRoutes : RoutePrice.find({ $and: [publishedFilter], $or: [{ to: pattern }, { from: /Dagupan/i }] }).limit(8).lean(),
     ])
     const result = await callAI('/itinerary', {
       destination: destination.trim(), budget: String(budget), days,

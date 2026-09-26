@@ -3,6 +3,12 @@ import { StyleSheet, Text, View } from "react-native";
 import { colors } from "../theme/colors";
 
 const statusStyles = {
+  superadmin: { bg: colors.oceanBlueLight, text: colors.oceanBlue },
+  admin: { bg: colors.oceanBlueLight, text: colors.oceanBlue },
+  lgu: { bg: colors.palmGreenLight, text: colors.palmGreen },
+  pending: { bg: colors.coralLight, text: colors.sunsetCoral },
+  approved: { bg: colors.palmGreenLight, text: colors.palmGreen },
+  rejected: { bg: colors.coralLight, text: colors.sunsetCoral },
   upcoming: { bg: colors.coralLight, text: colors.sunsetCoral },
   completed: { bg: colors.palmGreenLight, text: colors.palmGreen },
   active: { bg: colors.palmGreenLight, text: colors.palmGreen },

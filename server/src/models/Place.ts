@@ -1,6 +1,8 @@
 import { model, models, Schema } from 'mongoose'
 import { apiSchemaOptions } from './_helpers'
+import { moderationFields } from './_moderation'
 const placeSchema = new Schema({
+  ...moderationFields,
   name: { type: String, required: true }, description: { type: String, required: true }, location: { type: String, required: true },
   municipality: { type: String, required: true }, category: { type: String, required: true }, entryFee: { type: Number, min: 0, default: null },
   areaId: { type: String, index: true },

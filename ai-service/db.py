@@ -19,6 +19,7 @@ _client: MongoClient | None = None
 _database: Database | None = None
 _cache: dict[str, list[dict[str, Any]]] = {"phrases": [], "places": [], "routes": [], "foods": []}
 _lock = Lock()
+_published_filter = {"pendingDeletion": {"$ne": True}, "$or": [{"approvalStatus": "approved"}, {"approvalStatus": {"$exists": False}}]}
 _fields = {"Filipino": "filipino", "Pangasinan": "pangasinan", "English": "english"}
 
 
@@ -46,9 +47,9 @@ def load_knowledge() -> dict[str, int]:
     with _lock:
         database = get_db()
         _cache["phrases"] = list(database.phrasebooks.find({}, {"_id": 0}))
-        _cache["places"] = list(database.places.find({}, {"_id": 0}))
-        _cache["routes"] = list(database.routeprices.find({}, {"_id": 0}))
-        _cache["foods"] = list(database.localfoods.find({}, {"_id": 0}))
+        _cache["places"] = list(database.places.find(_published_filter, {"_id": 0}))
+        _cache["routes"] = list(database.routeprices.find(_published_filter, {"_id": 0}))
+        _cache["foods"] = list(database.localfoods.find(_published_filter, {"_id": 0}))
         counts = {name: len(items) for name, items in _cache.items()}
         print(f"Loaded MongoDB AI knowledge: {counts}")
         return counts

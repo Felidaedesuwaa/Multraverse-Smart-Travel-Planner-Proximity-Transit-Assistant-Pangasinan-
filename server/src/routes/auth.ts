@@ -10,7 +10,7 @@ const router = Router()
 function authResponse(user: any) {
   return {
     token: jwt.sign({ userId: user._id.toString(), role: user.role }, process.env.JWT_SECRET!, { expiresIn: '7d' }),
-    user: { id: user._id.toString(), name: user.name, firstName: user.firstName, middleName: user.middleName, surname: user.surname, email: user.email, role: user.role, location: user.location, photo: user.photo },
+    user: { id: user._id.toString(), name: user.name, firstName: user.firstName, middleName: user.middleName, surname: user.surname, email: user.email, role: user.role, municipality: user.municipality, location: user.location, photo: user.photo },
   }
 }
 function authFailure(error: unknown, res: Response) {

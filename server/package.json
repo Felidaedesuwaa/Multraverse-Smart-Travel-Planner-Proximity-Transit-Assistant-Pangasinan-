@@ -16,7 +16,12 @@
     "test:auth": "npm run build && node scripts/check-registration-api.cjs --isolated-database",
     "check:email": "npm run build && node scripts/check-email.cjs",
     "test:environment": "npm run build && node scripts/check-environment.cjs",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "seed:lgu": "ts-node seeds/seedLGU.ts",
+    "migrate:lgu": "npm run build && node scripts/migrate-lgu.cjs",
+    "test:lgu": "npm run build && node scripts/check-lgu-api.cjs --isolated-database",
+    "seed:superadmin": "ts-node seeds/seedSuperAdmin.ts",
+    "test:superadmin": "npm run build && node scripts/check-superadmin-api.cjs --isolated-database"
   },
   "keywords": [],
   "author": "",

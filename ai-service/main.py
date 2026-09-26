@@ -256,9 +256,10 @@ def _prompt_records(items: list[dict], fields: tuple[str, ...], limit: int) -> l
 def itinerary(request: ItineraryRequest):
     """Return a JSON itinerary using only MongoDB-backed travel records."""
     context = request.context or {}
-    places = request.places or context.get("places") or get_places_by_destination(request.destination)
-    routes = request.routes or context.get("routes") or get_routes_by_destination(request.destination)
-    foods = request.foods or context.get("foods") or get_local_foods()
+    # Explicit empty Express snapshots must not fall back to stale cached records.
+    places = request.places if "places" in request.model_fields_set else context.get("places", get_places_by_destination(request.destination))
+    routes = request.routes if "routes" in request.model_fields_set else context.get("routes", get_routes_by_destination(request.destination))
+    foods = request.foods if "foods" in request.model_fields_set else context.get("foods", get_local_foods())
     verified_places = _prompt_records(places, ("name", "location", "municipality", "category", "entryFee", "openHours", "tips"), 8)
     verified_routes = _prompt_records(routes, ("from", "to", "vehicle", "price", "duration", "notes"), 8)
     verified_foods = _prompt_records(foods, ("name", "avgPrice", "where", "category"), 6)

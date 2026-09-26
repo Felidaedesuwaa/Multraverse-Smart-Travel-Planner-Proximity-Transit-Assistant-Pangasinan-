@@ -1,7 +1,10 @@
 import './lib/environment'
+import auditLogRoutes from './routes/auditLogs'
 import express from 'express'
 import cors from 'cors'
 
+import lguRoutes from './routes/lgu'
+import approvalRoutes from './routes/approvals'
 import authRoutes from './routes/auth'
 import tripRoutes from './routes/trips'
 import budgetRoutes from './routes/budget'
@@ -14,7 +17,7 @@ import aiRoutes from './routes/ai'
 import knowledgeRoutes from './routes/knowledge'
 import analyticsRoutes from './routes/analytics'
 import { connectDatabase } from './lib/db'
-import { User } from './models'
+import { User, AuditLog } from './models'
 import { PendingRegistration } from './models/PendingRegistration'
 import { AuthLimit } from './lib/authLimits'
 
@@ -45,6 +48,8 @@ app.use('/api/auth', express.json({ limit: '16kb' }))
 // usable while still bounding request memory.
 app.use(express.json({ limit: '12mb' }))
 
+app.use('/api/lgu', lguRoutes)
+app.use('/api/admin/approvals', approvalRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/trips', tripRoutes)
 app.use('/api/budget', budgetRoutes)
@@ -52,6 +57,7 @@ app.use('/api/places', placesRoutes)
 app.use('/api/transit-routes', transitRoutes)
 app.use('/api/geofences', geofenceRoutes)
 app.use('/api/users', userRoutes)
+app.use('/api/audit-logs', auditLogRoutes)
 app.use('/api/locations', locationRoutes)
 app.use('/api/ai', aiRoutes)
 app.use('/api/knowledge', knowledgeRoutes)
@@ -67,7 +73,7 @@ app.use((error: { status?: number }, _req: express.Request, res: express.Respons
 connectDatabase()
   .then(async () => {
     // Unique/TTL indexes must exist before accepting concurrent signup requests.
-    await Promise.all([User.init(), PendingRegistration.init(), AuthLimit.init()])
+    await Promise.all([User.init(), AuditLog.init(), PendingRegistration.init(), AuthLimit.init()])
     app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`))
   })
   .catch((error) => {

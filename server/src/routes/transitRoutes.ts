@@ -1,11 +1,12 @@
+import { publishedFilter } from '../models/_moderation'
 import { Router, Request, Response } from 'express'
 import { TransitRoute } from '../models'
 import { authenticate, requireAdmin, AuthRequest } from '../middleware/auth'
 
 const router = Router()
 
-router.get('/', authenticate, async (req: Request, res: Response) => {
-  const routes = await TransitRoute.find().sort({ createdAt: -1 })
+router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
+  const routes = await TransitRoute.find(req.userRole === 'ADMIN' ? {} : publishedFilter).sort({ createdAt: -1 })
   res.json(routes)
 })
 

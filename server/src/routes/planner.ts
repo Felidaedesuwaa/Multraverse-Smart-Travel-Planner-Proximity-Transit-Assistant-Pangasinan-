@@ -1,3 +1,4 @@
+import { publishedFilter } from '../models/_moderation'
 import { Router } from 'express'
 import mongoose from 'mongoose'
 import { AuthRequest, requireAdmin } from '../middleware/auth'
@@ -19,10 +20,10 @@ router.put('/settings', requireAdmin, async (req, res) => {
 })
 router.get('/planner/catalog', async (req: AuthRequest, res) => {
   const [places, saved, fares, foods] = await Promise.all([
-    Place.find().sort({ name: 1 }).lean(),
+    Place.find(publishedFilter).sort({ name: 1 }).lean(),
     SavedPlace.find({ userId: req.userId }).select('placeId name').lean(),
-    RoutePrice.find().select('from to vehicle price duration notes').lean(),
-    LocalFood.find().select('name description avgPrice where category').lean(),
+    RoutePrice.find(publishedFilter).select('from to vehicle price duration notes').lean(),
+    LocalFood.find(publishedFilter).select('name description avgPrice where category').lean(),
   ])
   const savedIds = savedPlaceIds(places, saved)
   const catalogPlaces = places.map(p => ({ ...p, id: String(p._id), _id: undefined, areaId: areaIdFor(p), saved: savedIds.has(String(p._id)) }))
@@ -48,8 +49,8 @@ router.post('/itinerary', async (req: AuthRequest, res) => {
     // duplicate starting-town field in the planner while preserving route logic.
     const request = validateRequest({ ...req.body, origin: { areaId: profileAreaId(user?.location) } })
     const [places, fares, routes, foods, saved, geofences] = await Promise.all([
-      Place.find().lean(), RoutePrice.find().lean(), TransitRoute.find().lean(), LocalFood.find().lean(),
-      SavedPlace.find({ userId: req.userId }).lean(), Geofence.find({ active: true }).lean(),
+      Place.find(publishedFilter).lean(), RoutePrice.find(publishedFilter).lean(), TransitRoute.find(publishedFilter).lean(), LocalFood.find(publishedFilter).lean(),
+      SavedPlace.find({ userId: req.userId }).lean(), Geofence.find({ $and: [publishedFilter], active: true }).lean(),
     ])
     const plan = buildPlan(request, { places, fares, routes, foods, saved, geofences })
     const draft = await PlannerDraft.create({ userId: req.userId, plan, expiresAt: new Date(Date.now() + 86400000) })
@@ -81,9 +82,9 @@ router.post('/planner/:id/narrative', async (req: AuthRequest<{ id: string }>, r
       .filter((name: unknown): name is string => typeof name === 'string')
     const destinationMatcher = destinationNames.length ? new RegExp(destinationNames.map(escapeRegex).join('|'), 'i') : /$^/
     const [contextPlaces, contextRoutes, contextFoods] = await Promise.all([
-      Place.find({ _id: { $in: placeIds } }).select('name location municipality description entryFee').lean(),
-      RoutePrice.find({ $or: [{ from: destinationMatcher }, { to: destinationMatcher }] }).select('from to vehicle price duration notes').limit(8).lean(),
-      LocalFood.find({ where: destinationMatcher }).select('name description avgPrice where category').limit(6).lean(),
+      Place.find({ $and: [publishedFilter], _id: { $in: placeIds } }).select('name location municipality description entryFee').lean(),
+      RoutePrice.find({ $and: [publishedFilter], $or: [{ from: destinationMatcher }, { to: destinationMatcher }] }).select('from to vehicle price duration notes').limit(8).lean(),
+      LocalFood.find({ $and: [publishedFilter], where: destinationMatcher }).select('name description avgPrice where category').limit(6).lean(),
     ])
     // The FastAPI service has its own startup cache too. This narrower snapshot
     // keeps a request tied to the exact database records used by this plan.

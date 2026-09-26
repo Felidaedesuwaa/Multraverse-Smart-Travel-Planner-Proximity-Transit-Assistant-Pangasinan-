@@ -10,6 +10,7 @@ import { colors } from "../theme/colors";
 import { useAuthStore } from "../store/authStore";
 
 const items = [
+  { label: "LGU approvals", icon: LayoutGrid, screen: "AdminApprovals" },
   { label: "Overview", icon: LayoutGrid, screen: "AdminDashboard" },
   { label: "Routes", icon: Route, screen: "AdminRoutes" },
   { label: "Geofences", icon: Radio, screen: "AdminGeofences" },
