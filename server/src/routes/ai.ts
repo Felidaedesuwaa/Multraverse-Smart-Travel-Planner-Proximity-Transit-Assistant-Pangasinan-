@@ -1,18 +1,20 @@
-import { publishedFilter } from '../models/_moderation'
+import { sanitizeRequest, validateRouter, pagination, validateId } from '../middleware/input'
 import express, { Router, Response } from 'express'
 import { authenticate, AuthRequest } from '../middleware/auth'
-import { LocalFood, Phrasebook, Place, RoutePrice } from '../models'
+import { Phrasebook } from '../models'
 import plannerRoutes from './planner'
 import { AISettings } from '../models/AISettings'
+import phrasebookV2 from '../data/phrasebookV2.json'
 
 const router = Router()
+router.param('id', validateId)
+router.use(sanitizeRequest, validateRouter('ai'))
 router.use(authenticate)
 router.use(plannerRoutes)
 const expressJsonAudio = express.json({ limit: '12mb' })
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000'
 const supportedLanguages = ['Filipino', 'Pangasinan', 'English'] as const
-const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 class AIServiceError extends Error {
   constructor(message: string, readonly status: number) {
@@ -56,7 +58,7 @@ function sendAIError(res: Response, error: unknown, fallback: string) {
 
 // The regular /itinerary endpoint remains the deterministic planner route
 // mounted above. This opt-in model endpoint returns the FastAPI JSON itinerary
-// shape, while supplying an exact, MongoDB-derived context snapshot.
+// shape using the selected tourism guides in FastAPI.
 router.post('/itinerary/model', async (req: AuthRequest, res: Response) => {
   try {
     const { destination, budget, days, preferences } = req.body as {
@@ -71,19 +73,9 @@ router.post('/itinerary/model', async (req: AuthRequest, res: Response) => {
     if (preferences !== undefined && (!Array.isArray(preferences) || preferences.some(item => typeof item !== 'string')))
       return res.status(400).json({ error: 'Preferences must be a list of strings' })
 
-    const pattern = new RegExp(escapeRegex(destination.trim()), 'i')
-    const [matchedPlaces, matchedRoutes, foods] = await Promise.all([
-      Place.find({ $and: [publishedFilter], $or: [{ municipality: pattern }, { location: pattern }, { name: pattern }] }).lean(),
-      RoutePrice.find({ $and: [publishedFilter], $or: [{ from: pattern }, { to: pattern }] }).lean(),
-      LocalFood.find(publishedFilter).lean(),
-    ])
-    const [places, routes] = await Promise.all([
-      matchedPlaces.length ? matchedPlaces : Place.find(publishedFilter).limit(6).lean(),
-      matchedRoutes.length ? matchedRoutes : RoutePrice.find({ $and: [publishedFilter], $or: [{ to: pattern }, { from: /Dagupan/i }] }).limit(8).lean(),
-    ])
     const result = await callAI('/itinerary', {
       destination: destination.trim(), budget: String(budget), days,
-      preferences: preferences || [], places, routes, foods,
+      preferences: preferences || [],
     })
     return res.json(result)
   } catch (error) {
@@ -115,6 +107,7 @@ router.post('/translate', async (req: AuthRequest, res: Response) => {
     const fromField = from.toLowerCase() as 'filipino' | 'pangasinan' | 'english'
     const toField = to.toLowerCase() as 'filipino' | 'pangasinan' | 'english'
     const phrase = await Phrasebook.findOne({
+      $or: phrasebookV2,
       [fromField]: { $regex: `^${needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' },
     })
     if (phrase) return res.json({ translation: phrase[toField], source: 'phrasebook' })
@@ -136,9 +129,9 @@ router.post('/translate', async (req: AuthRequest, res: Response) => {
 // The phrasebook is the source of truth for verified traveller phrases. Keeping
 // this behind the API means additions and corrections in MongoDB appear in the
 // app without a client release or a hard-coded duplicate list.
-router.get('/phrasebook', async (_req: AuthRequest, res: Response) => {
+router.get('/phrasebook', async (req: AuthRequest, res: Response) => {
   try {
-    const phrases = await Phrasebook.find({}).sort({ category: 1, filipino: 1 }).lean()
+    const phrases = await Phrasebook.find({ $or: phrasebookV2 }).sort({ category: 1, filipino: 1, _id: 1 }).skip(pagination(req).skip).limit(pagination(req).limit).lean()
     return res.json(phrases.map(({ _id, filipino, pangasinan, english, category }) => ({
       id: String(_id), filipino, pangasinan, english, category,
     })))

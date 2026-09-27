@@ -1,14 +1,22 @@
+import { sanitizeRequest, validateRouter, pagination, validateId } from '../middleware/input'
 import { Router, Response } from 'express'
-import { BudgetEntry, Trip, TripStop } from '../models'
+import mongoose from 'mongoose'
+import { BudgetEntry, Trip } from '../models'
 import { authenticate, AuthRequest } from '../middleware/auth'
 
 const router = Router()
+router.param('id', validateId)
+router.use(sanitizeRequest, validateRouter('trips'))
 router.use(authenticate)
 
 router.get('/', async (req: AuthRequest, res: Response) => {
-  const trips = await Trip.find({ userId: req.userId }).sort({ createdAt: -1 }).populate('tripStops')
-  const entries = await BudgetEntry.find({ userId: req.userId }).lean()
-  res.json(trips.map(trip => ({ ...trip.toJSON(), spent: entries.filter(entry => String(entry.tripId) === String(trip._id)).reduce((sum, entry) => sum + entry.amount, 0) })))
+  const trips = await Trip.find({ userId: req.userId }).sort({ createdAt: -1, _id: -1 }).skip(pagination(req).skip).limit(pagination(req).limit)
+  const totals = await BudgetEntry.aggregate([
+    { $match: { userId: trips[0]?.userId, tripId: { $in: trips.map(trip => trip._id) } } },
+    { $group: { _id: '$tripId', total: { $sum: '$amount' } } },
+  ])
+  const spent = new Map(totals.map(entry => [String(entry._id), entry.total]))
+  res.json(trips.map(trip => ({ ...trip.toJSON(), spent: spent.get(String(trip._id)) || 0 })))
 })
 
 router.post('/', async (req: AuthRequest, res: Response) => {
@@ -27,9 +35,12 @@ router.put('/:id', async (req: AuthRequest<{ id: string }>, res: Response) => {
 })
 
 router.delete('/:id', async (req: AuthRequest<{ id: string }>, res: Response) => {
-  const trip = await Trip.findOneAndDelete({ _id: req.params.id, userId: req.userId })
+  const trip = await mongoose.connection.transaction(async session => {
+    const removed = await Trip.findOneAndDelete({ _id: req.params.id, userId: req.userId }, { session })
+    if (removed) await BudgetEntry.updateMany({ tripId: removed._id }, { $set: { tripId: null } }, { session })
+    return removed
+  })
   if (!trip) return res.status(404).json({ error: 'Trip not found' })
-  await Promise.all([TripStop.deleteMany({ tripId: trip._id }), BudgetEntry.updateMany({ tripId: trip._id }, { $set: { tripId: null } })])
   res.json({ message: 'Trip deleted' })
 })
 

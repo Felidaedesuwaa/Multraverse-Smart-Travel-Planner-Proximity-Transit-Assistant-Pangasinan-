@@ -1,3 +1,4 @@
+import { hardenSchema } from './_hardening'
 import { model, models, Schema } from 'mongoose'
 import { apiSchemaOptions } from './_helpers'
 
@@ -11,4 +12,5 @@ const auditLogSchema = new Schema({
 auditLogSchema.index({ actor: 1, createdAt: -1 })
 auditLogSchema.index({ action: 1, createdAt: -1 })
 auditLogSchema.index({ createdAt: -1, _id: -1 })
+hardenSchema(auditLogSchema, 'AuditLog')
 export const AuditLog = models.AuditLog || model('AuditLog', auditLogSchema)

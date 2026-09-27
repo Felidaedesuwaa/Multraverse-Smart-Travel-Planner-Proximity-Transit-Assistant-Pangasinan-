@@ -70,12 +70,12 @@ export async function verifyRegistration(challengeId: unknown, code: unknown) {
   if (typeof code !== 'string' || !/^\d{6}$/.test(code)) throw new AuthError('Enter the six-digit code from your email.')
   const filter = { challengeId, attempts: { $lt: 5 }, expiresAt: { $gt: new Date() } }
   // Count every attempt atomically, including simultaneous requests.
-  const attempt = await PendingRegistration.findOneAndUpdate(filter, { $inc: { attempts: 1 } }, { returnDocument: 'after' })
+  const attempt = await PendingRegistration.findOneAndUpdate(filter, { $inc: { attempts: 1 } }, { returnDocument: 'after' }).select('+codeHash')
   if (!attempt || attempt.codeHash !== hashCode(challengeId, code)) throw invalidCode()
   return mongoose.connection.transaction(async session => {
     const pending = await PendingRegistration.findOneAndDelete({
       challengeId, codeHash: attempt.codeHash, expiresAt: { $gt: new Date() },
-    }, { session })
+    }, { session }).select('+passwordHash')
     if (!pending) throw invalidCode()
     const [user] = await User.create([{
       name: pending.name, firstName: pending.firstName, middleName: pending.middleName,

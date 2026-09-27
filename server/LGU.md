@@ -10,7 +10,6 @@ From the repository root:
 
 ```sh
 npm run migrate:lgu --prefix server
-npm run seed:lgu --prefix server
 ```
 
 The migration is idempotent and marks legacy catalog records as approved. It adds
@@ -21,23 +20,9 @@ food, fare, geofence, and transit records before LGUs can manage them. Use the s
 spelling on the account and resources (for example `Dagupan`). LGUs cannot assign
 or change that ownership, including through profile updates.
 
-The seed creates six sample accounts, all with password `Lgu123!`:
-
-| Account | Municipality |
-| --- | --- |
-| lgu.dagupan@multraverse.ph | Dagupan |
-| lgu.alaminos@multraverse.ph | Alaminos |
-| lgu.urdaneta@multraverse.ph | Urdaneta |
-| lgu.sancarlos@multraverse.ph | San Carlos |
-| lgu.malasiqui@multraverse.ph | Malasiqui |
-| lgu.bolinao@multraverse.ph | Bolinao |
-
-Existing accounts/passwords, including `lgu@multraverse.ph`, are preserved.
-Override the batch with **both** `LGU_SEED_EMAIL` and `LGU_SEED_MUNICIPALITY` to
-create one account in any of the 48 LGUs. `LGU_SEED_PASSWORD` overrides the sample
-password and is required in production. The seed passes role `lgu`; the existing
-User setter stores `LGU` for compatibility with navigation and authorization.
-Migration and seed scripts are supplied separately and are not run at startup.
+The disabled demo account seed was removed. Create LGU accounts through the
+existing administrator workflow. `server/src/data/lguSeedAccounts.ts` remains
+only as fixtures for the isolated API tests; it does not provision live accounts.
 
 ## Approval contract
 
@@ -123,8 +108,7 @@ names matching the generated LGU test-database pattern for interrupted runs.
   Pangasinan scopes fail closed; new account municipality aliases (e.g. Dagupan
   City) normalize to the canonical catalog name. Old raw noncanonical account
   values need correction before access; resource ownership is never guessed.
-- `server/seeds/seedLGU.ts`: replaced the single-city default with six fixtures in
-  `server/src/data/lguSeedAccounts.ts`; no dashboard components are duplicated.
+- `server/src/data/lguSeedAccounts.ts`: isolated API-test fixtures only.
 
 Run `node scripts/check-lgu-municipalities.cjs` to check all 48 geographic viewports,
 zoom, aliases, four cities, and parity with the existing backend catalog. The LGU

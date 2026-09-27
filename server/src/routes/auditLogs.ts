@@ -1,9 +1,12 @@
+import { sanitizeRequest, validateRouter, pagination, validateId } from '../middleware/input'
 import { Router } from 'express'
 import { isValidObjectId } from 'mongoose'
 import { AuditLog } from '../models'
 import { authenticate, requireSuperAdmin } from '../middleware/auth'
 
 const router = Router()
+router.param('id', validateId)
+router.use(sanitizeRequest, validateRouter('auditLogs'))
 router.use(authenticate, requireSuperAdmin)
 router.get('/', async (req, res) => {
   if (Object.keys(req.query).some(key => !['page', 'limit', 'action', 'actor'].includes(key))) return res.status(400).json({ error: 'Unsupported audit filter' })

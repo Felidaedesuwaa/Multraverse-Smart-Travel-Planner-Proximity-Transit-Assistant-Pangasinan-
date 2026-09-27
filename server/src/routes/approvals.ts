@@ -1,3 +1,4 @@
+import { sanitizeRequest, validateRouter, pagination, validateId } from '../middleware/input'
 import { AuditLog } from '../models'
 import { Router } from 'express'
 import { isValidObjectId } from 'mongoose'
@@ -5,6 +6,8 @@ import { authenticate, AuthRequest, requireAdmin } from '../middleware/auth'
 import { lguResources } from '../lib/lguResources'
 
 const router = Router()
+router.param('id', validateId)
+router.use(sanitizeRequest, validateRouter('approvals'))
 router.use(authenticate, requireAdmin)
 router.use('/:resource', (req, res, next) => {
   if (!Object.prototype.hasOwnProperty.call(lguResources, req.params.resource)) return res.status(404).json({ error: 'Unknown resource' })
@@ -13,7 +16,7 @@ router.use('/:resource', (req, res, next) => {
 router.get('/:resource', async (req: AuthRequest<{ resource: string }>, res) => {
   const status = req.query.status || 'pending'
   if (!['pending', 'approved', 'rejected'].includes(String(status))) return res.status(400).json({ error: 'Invalid status' })
-  res.json(await lguResources[req.params.resource].model.find({ approvalStatus: status }).sort({ submittedAt: -1 }))
+  res.json(await lguResources[req.params.resource].model.find({ approvalStatus: status }).sort({ submittedAt: -1, _id: -1 }).skip(pagination(req).skip).limit(pagination(req).limit))
 })
 router.post('/:resource/:id/:decision', async (req: AuthRequest<{ resource: string; id: string; decision: string }>, res) => {
   const { id, decision, resource } = req.params

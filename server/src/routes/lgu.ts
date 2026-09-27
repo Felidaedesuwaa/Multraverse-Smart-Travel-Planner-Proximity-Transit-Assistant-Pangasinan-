@@ -1,13 +1,16 @@
+import { sanitizeRequest, validateRouter, pagination, validateId } from '../middleware/input'
 import { Router } from 'express'
 import { isValidObjectId } from 'mongoose'
 import { authenticate, AuthRequest, requireRole } from '../middleware/auth'
 import { lguResources, resourceInput } from '../lib/lguResources'
 
 const router = Router()
+router.param('id', validateId)
+router.use(sanitizeRequest, validateRouter('lgu'))
 router.use(authenticate, requireRole(['lgu']))
 // All five resources share this guard and the exact authenticated account scope.
 router.use((req, res, next) => {
-  if (Object.keys(req.query).some(key => key !== 'status')) return res.status(400).json({ error: 'Only a status filter is supported; municipality comes from your account' })
+  if (Object.keys(req.query).some(key => !['status', 'page', 'limit'].includes(key))) return res.status(400).json({ error: 'Only a status filter is supported; municipality comes from your account' })
   next()
 })
 
@@ -23,7 +26,7 @@ router.get('/:resource', async (req: AuthRequest<{ resource: string }>, res) => 
     if (!['pending', 'approved', 'rejected'].includes(String(req.query.status))) return res.status(400).json({ error: 'Invalid status' })
     query.approvalStatus = req.query.status
   }
-  res.json(await model.find(query).sort({ submittedAt: -1, createdAt: -1 }))
+  res.json(await model.find(query).sort({ submittedAt: -1, createdAt: -1, _id: -1 }).skip(pagination(req).skip).limit(pagination(req).limit))
 })
 
 router.get('/:resource/:id', async (req: AuthRequest<{ resource: string; id: string }>, res) => {

@@ -7,9 +7,9 @@ const { AISettings } = require('../dist/models/AISettings');
 const { buildPlan } = require('../dist/lib/planner');
 const id = n => String(n).padStart(24, '0');
 const request = { origin: { areaId: 'dagupan' }, destinations: [{ areaId: 'alaminos', placeIds: [] }], dates: { start: '2027-01-04' }, startTime: '08:00', days: 1, budget: 1000, travelers: 1, preferences: [], transportModes: ['bus'], pace: 'balanced', lodging: { preference: 'none', nightlyBudget: 0, rooms: 1 }, foodPerPersonPerDay: 100, useSavedPlaces: false, returnToOrigin: false, excludedPlaceIds: [] };
-const place = { _id: id(1), name: 'Fixture Garden', municipality: 'Alaminos', description: 'Explore the garden and enjoy its shade.', location: 'Alaminos' };
+const place = { _id: id(1), name: 'Hundred Islands National Park', municipality: 'Alaminos', description: 'Offline test fixture description.', location: 'Alaminos' };
 const plan = buildPlan(request, { places: [place], fares: [], routes: [], saved: [], foods: [], geofences: [] });
-const query = value => ({ lean: async () => value, select() { return this; }, sort() { return this; }, limit() { return this; }, populate: async () => value, then(resolve, reject) { return Promise.resolve(value).then(resolve, reject); } });
+const query = value => ({ lean: async () => value, select() { return this; }, sort() { return this; }, skip() { return this; }, limit() { return this; }, populate: async () => value, then(resolve, reject) { return Promise.resolve(value).then(resolve, reject); } });
 models.User.findById = () => query({ location: 'Dagupan' });
 for (const key of ['Place', 'RoutePrice', 'TransitRoute', 'LocalFood', 'SavedPlace', 'Geofence']) models[key].find = () => query(key === 'Place' ? [place] : []);
 let controls = { itineraryNarrative: false, translation: true };
@@ -56,7 +56,20 @@ const server = app.listen(0, '127.0.0.1', async () => {
     const count = modelCalls;
     assert.equal((await (await call(`/planner/${id(50)}/narrative`, {})).json()).narrativeStatus, 'service-cooling-down');
     assert.equal(modelCalls, count);
+    const guide = require('../dist/data/cityGuides.json').find(g => g.area_id === 'dagupan');
+    const dagupanPlaces = guide.attractions.map((a, i) => ({ _id: id(200 + i), name: a.name, municipality: 'Dagupan', location: 'Dagupan', description: 'Old text' }));
+    models.Place.find = () => query([{ _id: id(999), name: 'Star Plaza Hotel', municipality: 'Dagupan' },
+      ...Array.from({ length: 201 }, (_, i) => ({ ...place, municipality: 'Anda', _id: id(1000 + i), name: `Fixture ${i}` })), ...dagupanPlaces]);
+    const firstPage = await (await call('/planner/catalog?page=1&limit=200', undefined, {}, 'GET')).json();
+    const secondPage = await (await call('/planner/catalog?page=2&limit=200', undefined, {}, 'GET')).json();
+    assert.equal(firstPage.places.length, 200, 'Filtering must precede pagination');
+    assert.equal(secondPage.places.length, 10);
+    assert.equal([...firstPage.places, ...secondPage.places].filter(p => p.areaId === 'dagupan').length, 9);
+    const cityPlan = await (await call('/itinerary', { ...request, destinations: [{ areaId: 'dagupan', placeIds: [] }] })).json();
+    assert.equal(cityPlan.days[0].stops[0].place, 'Dagupan City Museum & City Plaza');
+    assert.ok(cityPlan.days[0].stops.every(s => s.areaId === 'dagupan' && s.notes.some(note => note.includes('Dagupan_City_Tourism_Guide.pdf'))));
     console.log('PASS: HTTP validation, owner isolation, admin enforcement, incomplete-save acknowledgement, hallucinated-text rejection, outage fallback and circuit cooldown.');
+    console.log('PASS: Dagupan guide selection and complete attraction catalog pagination.');
   } catch (error) { console.error(error); process.exitCode = 1; }
   finally { global.fetch = nativeFetch; server.close(); }
 });

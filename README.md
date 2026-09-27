@@ -129,17 +129,18 @@ EXPO_PUBLIC_API_URL=http://YOUR_API_HOST:3001
 
 Web and the iOS simulator use `http://localhost:3001` by default. Android devices may need the computer's LAN IP address.
 
-## Database Seeding
+## Database setup
 
-Run these commands from the `server` directory after configuring MongoDB:
+The database uses 15 validated collections. Budget preferences are embedded in users, and itinerary days/stops are embedded in trips. See [the database design](server/DATABASE-DESIGN.md) for the collection map and lifecycle rules.
 
-```bash
-npm run seed
-npm run seed:kb
-npm run seed:phrases
+From the server directory, provision the schema without inserting sample data:
+
+```powershell
+npm.cmd run db:rebuild -- --dry-run --database=multraverse --out=database-preflight.json
+npm.cmd run db:rebuild -- --apply --database=multraverse --out=database-before-rebuild.json
 ```
 
-The seed scripts populate the main data, knowledge base, and phrasebook collections. They are safe to run repeatedly because each script checks whether its data already exists.
+Rebuild preserves existing documents. It requires permission to create collections/indexes and to run collMod on existing collections. Legacy demo seeds are disabled; enter real catalog records through the administrator/LGU forms. Users and phrasebooks already in Atlas are preserved.
 
 ## Available Scripts
 
@@ -161,9 +162,9 @@ Backend scripts from `server/`:
 | `npm run dev`          | Run the API with Nodemon and ts-node |
 | `npm run build`        | Compile the TypeScript API           |
 | `npm start`            | Start the compiled API               |
-| `npm run seed`         | Seed the main collections            |
-| `npm run seed:kb`      | Seed the knowledge base              |
-| `npm run seed:phrases` | Seed the phrasebook                  |
+| `npm run db:rebuild -- --dry-run --database=multraverse` | Review schema and index setup |
+| `npm run test:database` | Check the embedded document design |
+| `npm run test:hardening` | Check input and schema validation |
 
 ## Project Structure
 
@@ -186,10 +187,9 @@ multraverse-web/
       models/             Mongoose models
       routes/             API route modules
       index.ts            API entry point
-    seeds/                MongoDB seed scripts
-      seed.ts
-      seedKnowledge.ts
-      seedPhrasebook.ts
+    seeds/                Disabled historical demo seeds (explicit superadmin bootstrap excepted)
+      seedCityGuides.ts
+    prisma/seedPhrasebookV2.ts
     .env.example          Backend environment template
     package.json          Backend scripts and dependencies
   app.json               Expo configuration
@@ -241,3 +241,6 @@ The default [Photon public demo](https://github.com/komoot/photon#demo-server) n
 Change Photo offers 16 bundled travel avatars and a local image upload. Both use a preview and explicit Save Changes; Cancel discards changes. Avatar IDs (`travel:01` through `travel:16`) or resized JPEGs persist in the existing profile `photo` field. Existing photo uploads require no migration.
 
 Profile API checks: `npm run build --prefix server`, then `node server/scripts/check-profile.cjs` and `node server/scripts/check-locations.cjs`.
+
+AI knowledge uses Phrasebook V2 and the uploaded guides for Dagupan, Alaminos, Urdaneta, San Carlos, Lingayen, Manaoag and Bolinao.
+See [AI service setup and source workflow](ai-service/README.md).

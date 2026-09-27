@@ -28,7 +28,9 @@ const fixtures = {
 ;(async () => {
   try {
     await mongoose.connect(uri, { dbName, serverSelectionTimeoutMS: 10000 })
-    assert.equal(mongoose.connection.name, dbName)
+    assert.equal(mongoose.connection.name, dbName);
+    // Production schemas disable implicit DDL; provision only this isolated test database.
+    for (const model of Object.values(mongoose.models)) { await model.createCollection(); await model.createIndexes(); }
     server = await new Promise(resolve => { const listener = app.listen(0, '127.0.0.1', () => resolve(listener)) })
     const call = async (url, token, method = 'GET', body) => {
       const result = await fetch(`http://127.0.0.1:${server.address().port}/api/${url}`, { method, headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) })

@@ -1,3 +1,4 @@
+import { hardenSchema } from './_hardening'
 import { model, models, Schema } from 'mongoose'
 import { apiSchemaOptions, objectId } from './_helpers'
 const savedPlaceSchema = new Schema({
@@ -8,4 +9,5 @@ const savedPlaceSchema = new Schema({
   userNote: { type: String, default: '' }, photos: [{ type: String }],
   isPublic: { type: Boolean, default: true }, addedToTrip: { type: Boolean, default: false },
 }, { ...apiSchemaOptions, timestamps: { createdAt: true, updatedAt: false } })
+hardenSchema(savedPlaceSchema, 'SavedPlace')
 export const SavedPlace = models.SavedPlace || model('SavedPlace', savedPlaceSchema)

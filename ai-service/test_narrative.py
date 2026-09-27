@@ -23,9 +23,8 @@ class NarrativeTests(unittest.TestCase):
 
     def test_empty_approved_snapshot_does_not_use_cached_content(self):
         request = main.ItineraryRequest(destination='Dagupan', budget='1000', days=1, places=[], routes=[], foods=[])
-        with patch.object(main, 'get_places_by_destination', return_value=[{'name': 'Hidden place'}]), patch.object(main, 'get_routes_by_destination', return_value=[{'from': 'Hidden route'}]), patch.object(main, 'get_local_foods', return_value=[{'name': 'Hidden food'}]), patch.object(main, 'generate_response', return_value='{"days": []}') as generate:
-            main.itinerary(request)
-        self.assertNotIn('Hidden', generate.call_args.args[0])
+        result = main.itinerary(request)
+        self.assertEqual(result['days'][0]['stops'], [])
 
     def test_busy_does_not_queue_inference(self):
         main.GENERATION_LOCK.acquire()

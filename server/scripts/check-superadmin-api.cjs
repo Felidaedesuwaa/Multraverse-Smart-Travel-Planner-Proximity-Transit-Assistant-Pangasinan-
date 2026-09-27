@@ -21,16 +21,18 @@ let server
 ;(async () => {
   try {
     await mongoose.connect(uri, { dbName, serverSelectionTimeoutMS: 10000 })
-    assert.equal(mongoose.connection.name, dbName)
+    assert.equal(mongoose.connection.name, dbName);
+    // Production schemas disable implicit DDL; provision only this isolated test database.
+    for (const model of Object.values(mongoose.models)) { await model.createCollection(); await model.createIndexes(); }
     await Promise.all([User.init(), AuditLog.init()])
     const results = await Promise.all([bootstrapSuperAdmin('superadmin@multraverse.ph', 'Superadmin123!'), bootstrapSuperAdmin('superadmin@multraverse.ph', 'Superadmin123!')])
     assert.equal(results.filter(item => item.created).length, 1)
     assert.equal(await User.countDocuments({ role: 'SUPERADMIN' }), 1)
-    const superadmin = await User.findOne({ role: 'SUPERADMIN' })
+    const superadmin = await User.findOne({ role: 'SUPERADMIN' }).select('+passwordHash')
     assert.equal(superadmin.createdBy, null)
     const originalHash = superadmin.passwordHash
     await bootstrapSuperAdmin('different@multraverse.ph', 'Different123!')
-    assert.equal((await User.findById(superadmin._id)).passwordHash, originalHash)
+    assert.equal((await User.findById(superadmin._id).select('+passwordHash')).passwordHash, originalHash)
     const token = user => jwt.sign({ userId: String(user._id), role: 'SUPERADMIN' }, process.env.JWT_SECRET)
     const superToken = token(superadmin)
     const accounts = []
@@ -61,7 +63,7 @@ let server
     assert.equal(created.status, 201, JSON.stringify(created.body))
     assert.equal(created.body.role, 'LGU'); assert.equal(created.body.createdBy.email, superadmin.email)
     assert.equal(created.body.passwordHash, undefined); assert.equal(created.body.password, undefined)
-    const saved = await User.findById(created.body.id)
+    const saved = await User.findById(created.body.id).select('+passwordHash')
     assert.ok(await bcrypt.compare(lguInput.password, saved.passwordHash))
     const accountAudit = await AuditLog.findOne({ action: 'create_lgu_account', targetUser: saved._id })
     assert.equal(String(accountAudit.actor), String(superadmin._id)); assert.equal(accountAudit.metadata.municipality, 'Alaminos')

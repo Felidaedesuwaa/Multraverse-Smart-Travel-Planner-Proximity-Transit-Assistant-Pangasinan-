@@ -18,7 +18,7 @@ if (!uri) { console.error('Configure AUTH_TEST_MONGODB_URI or MONGODB_URI first.
 process.env.JWT_SECRET = randomBytes(32).toString('hex');
 Object.assign(process.env, { SMTP_HOST: 'smtp.test.invalid', SMTP_PORT: '465', SMTP_USER: 'test', SMTP_PASS: 'test', MAIL_FROM: 'test@test.invalid' });
 const dbName = `multraverse_auth_test_${randomBytes(6).toString('hex')}`;
-const { User, Trip, TripStop, BudgetEntry, BudgetSettings, SavedPlace } = require('../dist/models');
+const { User, Trip, BudgetEntry, SavedPlace } = require('../dist/models');
 const { PendingRegistration } = require('../dist/models/PendingRegistration');
 const { PlannerDraft } = require('../dist/models/PlannerDraft');
 const { AuthLimit, AuthError, authLimit } = require('../dist/lib/authLimits');
@@ -43,7 +43,9 @@ let server;
   try {
     await mongoose.connect(uri, { dbName, serverSelectionTimeoutMS: 10000 });
     assert.equal(mongoose.connection.name, dbName);
-    await Promise.all([User, Trip, TripStop, BudgetEntry, BudgetSettings, SavedPlace, PendingRegistration, PlannerDraft, AuthLimit].map(model => model.init()));
+    // Production schemas disable implicit DDL; provision only this isolated test database.
+    for (const model of Object.values(mongoose.models)) { await model.createCollection(); await model.createIndexes(); }
+    await Promise.all([User, Trip, BudgetEntry, SavedPlace, PendingRegistration, PlannerDraft, AuthLimit].map(model => model.init()));
     server = await new Promise(resolve => { const instance = app.listen(0, '127.0.0.1', () => resolve(instance)); });
     const call = async (route, body, token, method = 'POST') => {
       const response = await fetch(`http://127.0.0.1:${server.address().port}/api/${route}`, {
@@ -65,14 +67,15 @@ let server;
     deliveryFails = true;
     assert.equal((await register({})).status, 503); assert.equal(await PendingRegistration.countDocuments(), 0);
     deliveryFails = false;
-    const started = await register({ role: 'ADMIN', email: ' JUAN@GMAIL.COM ' });
+    assert.equal((await register({ role: 'ADMIN' })).status, 400, 'Reject unexpected account fields');
+    const started = await register({ email: ' JUAN@GMAIL.COM ' });
     assert.equal(started.status, 202); assert.equal(started.body.token, undefined); assert.equal(started.body.code, undefined);
     const challenge = started.body.challengeId;
-    let pending = await PendingRegistration.findOne({ challengeId: challenge });
+    let pending = await PendingRegistration.findOne({ challengeId: challenge }).select('+passwordHash +codeHash');
     assert.notEqual(pending.codeHash, deliveries.get(valid.email)); assert.equal(pending.password, undefined);
     assert.ok(await bcrypt.compare(valid.password, pending.passwordHash));
     assert.equal(await User.countDocuments(), 0, 'No login-capable account before verification');
-    assert.equal((await call('auth/login', valid)).status, 401);
+    assert.equal((await call('auth/login', { email: valid.email, password: valid.password })).status, 401);
     assert.equal((await call('auth/register/resend', { challengeId: challenge })).status, 429);
     assert.equal((await register({})).status, 429);
     assert.equal((await verify({ $ne: null }, '123456')).status, 400);
@@ -101,7 +104,7 @@ let server;
     assert.ok((await User.findById(registered.user.id)).emailVerifiedAt);
     assert.equal((await verify(challenge, deliveries.get(valid.email))).status, 400);
     assert.equal((await register({})).status, 400);
-    assert.equal((await call('auth/login', valid)).status, 200);
+    assert.equal((await call('auth/login', { email: valid.email, password: valid.password })).status, 200);
     await resetLimits();
     const other = await User.create({ name: 'Other Traveler', email: 'other@gmail.com', passwordHash: await bcrypt.hash(valid.password, 10) });
     const otherToken = jwt.sign({ userId: other._id.toString(), role: 'ADMIN' }, process.env.JWT_SECRET);
@@ -110,11 +113,11 @@ let server;
     const owner = registered.user.id;
     for (const userId of [owner, other._id]) {
       const trip = await Trip.create({ userId, title: 'Test trip', location: 'Pangasinan', date: '2027-01-01' });
-      await TripStop.create({ tripId: trip._id, name: 'Test stop', order: 1 });
+
       await BudgetEntry.create({ userId, tripId: trip._id, label: 'Lunch', amount: 100 });
-      await BudgetSettings.create({ userId });
+      await User.updateOne({ _id: userId }, { $set: { budgetSettings: { monthlyBudget: 500, savingsTarget: 10 } } });
       await SavedPlace.create({ userId, name: 'Test place', category: 'Nature', isPublic: true });
-      await PlannerDraft.create({ userId, plan: { test: true }, expiresAt: new Date(Date.now() + 600000) });
+      await PlannerDraft.create({ userId, plan: require('../dist/lib/planner').buildPlan({ origin: { areaId: 'dagupan' }, destinations: [{ areaId: 'alaminos', placeIds: [] }], dates: { start: '2027-01-01' }, startTime: '08:00', days: 1, budget: 1000, travelers: 1, preferences: [], transportModes: ['bus'], pace: 'balanced', lodging: { preference: 'none', nightlyBudget: 0, rooms: 1 }, foodPerPersonPerDay: 100, useSavedPlaces: false, returnToOrigin: false, excludedPlaceIds: [] }, { places: [], fares: [], routes: [], foods: [], saved: [], geofences: [] }), expiresAt: new Date(Date.now() + 600000) });
     }
     const remove = body => call('users/me', body, registered.token, 'DELETE');
     assert.equal((await call('users/me', { password: valid.password, confirmation: true }, null, 'DELETE')).status, 401);
@@ -125,16 +128,16 @@ let server;
     BudgetEntry.deleteMany = async () => { throw new Error('Simulated deletion failure'); };
     try { assert.equal((await remove({ password: valid.password, confirmation: true })).status, 500); }
     finally { BudgetEntry.deleteMany = originalDelete; }
-    assert.equal(await User.countDocuments(), 2); assert.equal(await Trip.countDocuments(), 2); assert.equal(await TripStop.countDocuments(), 2);
+    assert.equal(await User.countDocuments(), 2); assert.equal(await Trip.countDocuments(), 2);
     assert.equal((await remove({ password: valid.password, confirmation: true, userId: other._id })).status, 200);
     assert.equal(await User.countDocuments(), 1); assert.ok(await User.exists({ _id: other._id }));
-    for (const model of [Trip, BudgetEntry, BudgetSettings, SavedPlace, PlannerDraft]) {
+    for (const model of [Trip, BudgetEntry, SavedPlace, PlannerDraft]) {
       assert.equal(await model.countDocuments({ userId: owner }), 0, `${model.modelName} removed`);
       assert.equal(await model.countDocuments({ userId: other._id }), 1, `${model.modelName} owner isolation`);
     }
-    assert.equal(await TripStop.countDocuments(), 1);
+    assert.equal((await User.findById(other._id)).budgetSettings.monthlyBudget, 500);
     assert.equal((await call('users/me', undefined, registered.token, 'GET')).status, 401);
-    assert.equal((await call('auth/login', valid)).status, 401);
+    assert.equal((await call('auth/login', { email: valid.email, password: valid.password })).status, 401);
     assert.equal((await register({})).status, 202, 'Deleted email can register again with a new verification');
     assert.equal((await call('auth/register/resend', { challengeId: '0'.repeat(64) })).status, 410);
     for (let i = 0; i < 5; i++) await authLimit('test-limit', 'test-key', 5, 600000);

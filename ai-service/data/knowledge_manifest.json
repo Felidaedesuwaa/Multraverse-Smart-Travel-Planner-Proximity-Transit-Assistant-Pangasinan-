@@ -1,0 +1,13 @@
+{
+  "sha256": "569956671c0d4aa48d66279bc872d8064a17acbe2e6af54fc8eb67b09db12200",
+  "records": 994,
+  "phrases": 95,
+  "lgus": 7,
+  "city_guides": 7,
+  "fare_sections": 11,
+  "sources": [
+    "server/prisma/seedPhrasebookV2.ts",
+    "server/src/data/cityGuides.json",
+    "server/src/data/pangasinanFares.json"
+  ]
+}

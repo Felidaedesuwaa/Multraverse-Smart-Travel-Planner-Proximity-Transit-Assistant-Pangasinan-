@@ -1,3 +1,4 @@
+import { hardenSchema } from './_hardening'
 import { model, models, Schema } from 'mongoose'
 import { apiSchemaOptions } from './_helpers'
 import { moderationFields } from './_moderation'
@@ -10,4 +11,5 @@ const transitRouteSchema = new Schema({
   areaIds: [String], stopNames: [String], firstDeparture: String, lastDeparture: String,
   verifiedAt: Date, sourceUrl: String,
 }, apiSchemaOptions)
+hardenSchema(transitRouteSchema, 'TransitRoute')
 export const TransitRoute = models.TransitRoute || model('TransitRoute', transitRouteSchema)

@@ -1,3 +1,4 @@
+import { sanitizeRequest } from './middleware/input'
 import './lib/environment'
 import auditLogRoutes from './routes/auditLogs'
 import express from 'express'
@@ -16,7 +17,7 @@ import locationRoutes from './routes/locations'
 import aiRoutes from './routes/ai'
 import knowledgeRoutes from './routes/knowledge'
 import analyticsRoutes from './routes/analytics'
-import { connectDatabase } from './lib/db'
+import { connectDatabase, verifyDatabaseLayout } from './lib/db'
 import { User, AuditLog } from './models'
 import { PendingRegistration } from './models/PendingRegistration'
 import { AuthLimit } from './lib/authLimits'
@@ -48,6 +49,8 @@ app.use('/api/auth', express.json({ limit: '16kb' }))
 // usable while still bounding request memory.
 app.use(express.json({ limit: '12mb' }))
 
+app.use(sanitizeRequest)
+
 app.use('/api/lgu', lguRoutes)
 app.use('/api/admin/approvals', approvalRoutes)
 app.use('/api/auth', authRoutes)
@@ -65,14 +68,15 @@ app.use('/api/analytics', analyticsRoutes)
 
 app.get('/api/health', (_, res) => res.json({ status: 'ok' }))
 
-app.use((error: { status?: number }, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  const status = error.status || 500
+app.use((error: { status?: number; name?: string; code?: number }, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  const status = error.status || (['ValidationError', 'CastError', 'StrictModeError'].includes(error.name || '') || error.code === 121 ? 400 : error.code === 11000 ? 409 : 500)
   res.status(status).json({ error: status === 413 ? 'Photo is too large. Choose a smaller image.' : status === 400 ? 'Invalid request' : 'Unable to complete the request. Please try again.' })
 })
 
 connectDatabase()
   .then(async () => {
-    // Unique/TTL indexes must exist before accepting concurrent signup requests.
+    await verifyDatabaseLayout()
+    // Run db:harden before deployment: models no longer create indexes implicitly.
     await Promise.all([User.init(), AuditLog.init(), PendingRegistration.init(), AuthLimit.init()])
     app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`))
   })

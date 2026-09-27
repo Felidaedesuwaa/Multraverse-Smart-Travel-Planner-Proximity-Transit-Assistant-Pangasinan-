@@ -1,3 +1,4 @@
+import { sanitizeRequest, validateRouter, pagination, validateId } from '../middleware/input'
 import { createManagedAccount, managedAccountInput, MANAGED_USER_FIELDS } from '../lib/managedAccounts'
 import { Router, Response } from 'express'
 import { User } from '../models'
@@ -8,11 +9,13 @@ import { deleteAccount } from '../lib/deleteAccount'
 import { AuthError, authLimit } from '../lib/authLimits'
 
 const router = Router()
+router.param('id', validateId)
+router.use(sanitizeRequest, validateRouter('users'))
 router.use(authenticate)
 
 for (const [path, role] of [['lgu-accounts', 'LGU'], ['admin-accounts', 'ADMIN']] as const) {
-  router.get(`/${path}`, requireSuperAdmin, async (_req, res) => {
-    res.json(await User.find({ role }).select(MANAGED_USER_FIELDS).populate('createdBy', 'email role').sort({ createdAt: -1, _id: -1 }))
+  router.get(`/${path}`, requireSuperAdmin, async (req, res) => {
+    res.json(await User.find({ role }).select(MANAGED_USER_FIELDS).populate('createdBy', 'email role').sort({ createdAt: -1, _id: -1 }).skip(pagination(req).skip).limit(pagination(req).limit))
   })
   router.post(`/${path}`, requireSuperAdmin, async (req: AuthRequest, res, next) => {
     let input
@@ -56,7 +59,7 @@ router.put('/me', async (req: AuthRequest, res: Response) => {
 })
 
 router.get('/', requireAdmin, async (req: AuthRequest, res: Response) => {
-  const users = await User.find().select('name email role municipality location createdAt').sort({ createdAt: -1 })
+  const users = await User.find().select('name email role municipality location createdAt').sort({ createdAt: -1, _id: -1 }).skip(pagination(req).skip).limit(pagination(req).limit)
   res.json(users)
 })
 

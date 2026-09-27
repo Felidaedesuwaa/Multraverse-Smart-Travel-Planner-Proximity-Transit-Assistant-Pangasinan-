@@ -1,0 +1,2725 @@
+[
+  {
+    "entity_id": "CITY-GUIDE-ALAMINOS",
+    "area_id": "alaminos",
+    "name": "Alaminos City",
+    "title": "Alaminos City Tourism Guide",
+    "source_file": "Alaminos_City_Tourism_Guide.pdf",
+    "source_sha256": "fb5a36db5d21bae07b4fa28e117d6d1a4e5588b9a0854ea68d2ebd35b572fc64",
+    "source_date": "2026-09",
+    "source_date_note": "The guide states September 2026; no specific day is supplied.",
+    "source_url": "https://www.alaminoscity.gov.ph/public-service/programs-and-projects/tourism/",
+    "source_urls": [
+      "https://www.alaminoscity.gov.ph/public-service/programs-and-projects/tourism/",
+      "https://www.alaminoscity.gov.ph/discover-alaminos/",
+      "https://www.alaminoscity.gov.ph/i-choose-hundred-islands/download/HundredIslandsNationalPark-RatesFees.pdf",
+      "https://www.alaminoscity.gov.ph/i-choose-hundred-islands/download/WhereToStayinAlaminosCity.pdf",
+      "https://alaminoscity.gov.ph/i-choose-hundred-islands/download/WhereToDineInAlaminosCity.pdf"
+    ],
+    "attribution_note": "Source-attributed PDF extraction. Local listings are not individually linked. No live verification performed.",
+    "city_only": true,
+    "profile": "Alaminos City is the home and main gateway of Hundred Islands National Park. The city combines island-hopping, coastal recreation, city-center heritage, local food, and a growing hospitality sector. The official city government describes Hundred Islands National Park as a major tourism asset and provides a Tourism Information Center at Plaza Enrique Braganza. For visitors, Lucap is the key area because Lucap Wharf is the departure point for Hundred Islands. Poblacion provides access to the city center, while coastal areas such as Bolo and Telbang offer beach and resort options.",
+    "attractions": [
+      {
+        "name": "Hundred Islands National Park",
+        "category": "Islands and Beaches",
+        "aliases": [
+          "Hundred Islands"
+        ],
+        "description": "Alaminos City’s signature destination: a protected island-and-seascape area accessed from Lucap Wharf. Island-hopping can include stops such as Governor’s Island, Quezon Island, Children’s Island, and other islands depending on the boat tour and current operating arrangements.",
+        "source_page": 2
+      },
+      {
+        "name": "Lucap Wharf & Lucap Baywalk",
+        "category": "Waterfront",
+        "aliases": [
+          "Lucap Wharf",
+          "Lucap Baywalk"
+        ],
+        "description": "The principal mainland gateway for Hundred Islands tours. The wharf is where visitors arrange boats, while the Lucap waterfront provides a place to walk, take photographs, and enjoy the coastal setting.",
+        "source_page": 2
+      },
+      {
+        "name": "Lucap Park",
+        "category": "Park",
+        "aliases": [],
+        "description": "A waterfront public space near the Hundred Islands gateway and a convenient stop before or after island-hopping.",
+        "source_page": 2
+      },
+      {
+        "name": "Pilgrimage Island / Christ the Savior",
+        "category": "Religious",
+        "aliases": [
+          "Pilgrimage Island",
+          "Christ the Savior"
+        ],
+        "description": "A religious and scenic attraction within Hundred Islands, featuring the Christ the Savior statue and views over the surrounding waters.",
+        "source_page": 2
+      },
+      {
+        "name": "Hundred Island Floating Boardwalk",
+        "category": "Waterfront",
+        "aliases": [],
+        "description": "A waterfront attraction within the Hundred Islands area that provides another way to experience the coastal scenery.",
+        "source_page": 2
+      },
+      {
+        "name": "People’s Park & E-Kawayan Food Court",
+        "category": "Food and Culture",
+        "aliases": [],
+        "description": "A city leisure area with gazebos, seating, garden markers, and a food court showcasing traditional Alaminian cuisine.",
+        "source_page": 2
+      },
+      {
+        "name": "St. Joseph the Patriarch Parish / Cathedral area",
+        "category": "Religious",
+        "aliases": [
+          "St. Joseph Cathedral Parish"
+        ],
+        "description": "A central religious landmark and a useful stop for visitors exploring the city proper.",
+        "source_page": 2
+      },
+      {
+        "name": "Bolo Beach area",
+        "category": "Beach",
+        "aliases": [
+          "Bolo Beach"
+        ],
+        "description": "A coastal recreation area in Bolo/Telbang, Alaminos City, with beach resorts and local boat-rental services.",
+        "source_page": 2
+      }
+    ],
+    "hotels": [
+      {
+        "name": "PROXY Plus by The Oriental Pangasinan",
+        "location": "Lucap Wharf, Alaminos City",
+        "description": "Hotel at the Hundred Islands gateway.",
+        "source_page": 4,
+        "aliases": []
+      },
+      {
+        "name": "Island Tropic Hotel & Restaurant",
+        "location": "Barangay Lucap",
+        "description": "Established hotel option near the island gateway.",
+        "source_page": 4,
+        "aliases": [
+          "Island Tropic Hotel and Restaurant"
+        ]
+      },
+      {
+        "name": "Islandia Hotel & Restaurant",
+        "location": "Barangay Palamis",
+        "description": "City hotel with restaurant.",
+        "source_page": 4,
+        "aliases": []
+      },
+      {
+        "name": "City Hotel",
+        "location": "Sadsaran St., Poblacion",
+        "description": "Central-city accommodation.",
+        "source_page": 4,
+        "aliases": []
+      },
+      {
+        "name": "Villa Antolin Hotel",
+        "location": "Barangay Lucap",
+        "description": "Accommodation near the Hundred Islands departure area.",
+        "source_page": 4,
+        "aliases": []
+      },
+      {
+        "name": "Vista de las Islas",
+        "location": "Barangay Lucap",
+        "description": "Lucap-area accommodation.",
+        "source_page": 4,
+        "aliases": []
+      },
+      {
+        "name": "Villa Milagros Hotel",
+        "location": "Barangay Lucap",
+        "description": "Lucap accommodation.",
+        "source_page": 4,
+        "aliases": []
+      },
+      {
+        "name": "Sweet Honey Hotel",
+        "location": "Barangay Lucap",
+        "description": "Lucap-area hotel.",
+        "source_page": 4,
+        "aliases": []
+      },
+      {
+        "name": "Asia Novo Boutique Hotel-Alaminos",
+        "location": "Poblacion",
+        "description": "Current local hotel listing in the city center.",
+        "source_page": 4,
+        "aliases": []
+      },
+      {
+        "name": "Carribean Transient House",
+        "location": "Sitio Galiz, Lucap",
+        "description": "Transient accommodation near Hundred Islands.",
+        "source_page": 4,
+        "aliases": []
+      },
+      {
+        "name": "Como Laya Resort",
+        "location": "Barangay Magsaysay",
+        "description": "Resort accommodation within Alaminos City.",
+        "source_page": 4,
+        "aliases": []
+      },
+      {
+        "name": "The Blessed Purple Bamboo Beach Resort",
+        "location": "Telbang",
+        "description": "Beach resort within Alaminos City.",
+        "source_page": 4,
+        "aliases": []
+      }
+    ],
+    "local_foods": [
+      {
+        "name": "Pinapaitang Kambing",
+        "description": "A traditional Alaminian dish highlighted by the city government at its People’s Park/E-Kawayan Food Court.",
+        "source_page": 4
+      },
+      {
+        "name": "Kilawing Bangus Alaminos",
+        "description": "A local preparation of bangus highlighted by the city government as part of traditional Alaminian cuisine.",
+        "source_page": 4
+      },
+      {
+        "name": "Alaminos Longganisa",
+        "description": "Traditional fried local sausage specifically identified by the city government.",
+        "source_page": 4
+      },
+      {
+        "name": "Fresh seafood",
+        "description": "With Alaminos’ coastal and fishing identity, seafood is a natural choice at local restaurants, especially in Lucap.",
+        "source_page": 4
+      }
+    ],
+    "dining": [
+      {
+        "name": "Maxine By The Sea Seafood Restaurant",
+        "source_page": 4
+      },
+      {
+        "name": "Island Chef Resto Grill",
+        "source_page": 4
+      },
+      {
+        "name": "Golden Cress Restaurant & Events",
+        "source_page": 4
+      },
+      {
+        "name": "Kainan ni Myra",
+        "source_page": 4
+      },
+      {
+        "name": "Jai’s Grill & Resto",
+        "source_page": 4
+      },
+      {
+        "name": "Alaminos City People’s Food Court",
+        "source_page": 4
+      },
+      {
+        "name": "Eliana’s Grill & Restaurant",
+        "source_page": 4
+      },
+      {
+        "name": "Hundred Islands Cafe Silvers by Gold",
+        "source_page": 4
+      },
+      {
+        "name": "Papatok’s Restaurant",
+        "source_page": 4
+      },
+      {
+        "name": "Rey-Lyn Restaurant",
+        "source_page": 4
+      },
+      {
+        "name": "Uly’s Grill & Bar",
+        "source_page": 4
+      }
+    ],
+    "dining_note": "Current local listings include Maxine By The Sea Seafood Restaurant in Lucap, Island Chef Resto Grill in Lucap, Golden Cress Restaurant & Events in Poblacion, Kainan ni Myra on McArthur Highway, and Jai’s Grill & Resto in Palamis. The City Government’s published dining list also includes Alaminos City People’s Food Court, Eliana’s Grill & Restaurant, Hundred Islands Cafe Silvers by Gold, Papatok’s Restaurant, Rey-Lyn Restaurant, and Uly’s Grill & Bar.",
+    "itinerary_attraction_order": [
+      "Lucap Wharf & Lucap Baywalk",
+      "Hundred Islands National Park",
+      "Pilgrimage Island / Christ the Savior",
+      "Lucap Park",
+      "People’s Park & E-Kawayan Food Court",
+      "St. Joseph the Patriarch Parish / Cathedral area",
+      "Bolo Beach area",
+      "Hundred Island Floating Boardwalk"
+    ],
+    "sample_itinerary": [
+      {
+        "period": "DAY 1 — MORNING",
+        "suggestion": "Arrive in Alaminos → check in or leave bags → proceed to Lucap Wharf / Tourism Welcome Center.",
+        "source_page": 4
+      },
+      {
+        "period": "DAY 1 — MIDDAY",
+        "suggestion": "Hundred Islands island-hopping tour → swimming, sightseeing, snorkeling, and selected adventure activities.",
+        "source_page": 4
+      },
+      {
+        "period": "DAY 1 — AFTERNOON",
+        "suggestion": "Visit a permitted island attraction such as Christ the Savior / Pilgrimage Island → return to Lucap.",
+        "source_page": 4
+      },
+      {
+        "period": "DAY 1 — EVENING",
+        "suggestion": "Dinner in Lucap or Poblacion → waterfront walk at Lucap Baywalk.",
+        "source_page": 4
+      },
+      {
+        "period": "DAY 2 — MORNING",
+        "suggestion": "City-center exploration → People’s Park / E-Kawayan Food Court → local breakfast or early lunch.",
+        "source_page": 4
+      },
+      {
+        "period": "DAY 2 — AFTERNOON",
+        "suggestion": "Bolo/Telbang coastal area → beach or resort activity → return to the city.",
+        "source_page": 4
+      },
+      {
+        "period": "DAY 2 — EVENING",
+        "suggestion": "Try local Alaminian dishes and purchase local food souvenirs before departure.",
+        "source_page": 5
+      }
+    ],
+    "activities": [
+      {
+        "name": "Island hopping",
+        "description": "Ride a registered service boat and explore the islands of Hundred Islands National Park.",
+        "source_page": 3
+      },
+      {
+        "name": "Zipline",
+        "description": "The official city rate sheet lists zipline activities at Governor’s Island and Quezon Island.",
+        "source_page": 3
+      },
+      {
+        "name": "Helmet diving",
+        "description": "Underwater helmet-diving activity listed by the City Government for Hundred Islands.",
+        "source_page": 3
+      },
+      {
+        "name": "Kayaking",
+        "description": "Kayaks are available as a water activity; the city’s published rate sheet lists kayak rental.",
+        "source_page": 3
+      },
+      {
+        "name": "Snorkeling",
+        "description": "Explore shallow coastal waters using rented snorkeling equipment where permitted.",
+        "source_page": 3
+      },
+      {
+        "name": "Banana boat",
+        "description": "Group water activity listed among the park’s recreational offerings.",
+        "source_page": 3
+      },
+      {
+        "name": "Wall climbing & rappelling",
+        "description": "Adventure activities listed by the city for Hundred Islands.",
+        "source_page": 3
+      },
+      {
+        "name": "Swimming & beach time",
+        "description": "Enjoy designated swimming areas on appropriate islands and coastal areas, following current safety rules.",
+        "source_page": 3
+      },
+      {
+        "name": "Photography & sightseeing",
+        "description": "Capture island formations, coastal views, Lucap waterfront scenery, and the Christ the Savior landmark.",
+        "source_page": 3
+      },
+      {
+        "name": "Food trip",
+        "description": "Try traditional Alaminian dishes and seafood in the city’s food court and local restaurants.",
+        "source_page": 3
+      }
+    ],
+    "boat_rentals": [
+      {
+        "size": "Small",
+        "capacity": 5,
+        "one_day_rate": 1400,
+        "two_day_rate": 3000,
+        "currency": "PHP",
+        "basis": "boat",
+        "reference_only": true,
+        "current_rate_verified": false,
+        "warning": "Older official published schedule; reference only, not guaranteed 2026 prices. Confirm current rates, fees, inclusions and operating status with the City Tourism Office / Welcome Center before payment.",
+        "source_page": 2
+      },
+      {
+        "size": "Medium",
+        "capacity": 10,
+        "one_day_rate": 1800,
+        "two_day_rate": 3800,
+        "currency": "PHP",
+        "basis": "boat",
+        "reference_only": true,
+        "current_rate_verified": false,
+        "warning": "Older official published schedule; reference only, not guaranteed 2026 prices. Confirm current rates, fees, inclusions and operating status with the City Tourism Office / Welcome Center before payment.",
+        "source_page": 2
+      },
+      {
+        "size": "Large",
+        "capacity": 15,
+        "one_day_rate": 2000,
+        "two_day_rate": 4500,
+        "currency": "PHP",
+        "basis": "boat",
+        "reference_only": true,
+        "current_rate_verified": false,
+        "warning": "Older official published schedule; reference only, not guaranteed 2026 prices. Confirm current rates, fees, inclusions and operating status with the City Tourism Office / Welcome Center before payment.",
+        "source_page": 2
+      }
+    ],
+    "activity_rates": [
+      {
+        "name": "Governor’s Island zipline (546 m)",
+        "amount": 250,
+        "basis": "jump",
+        "currency": "PHP",
+        "reference_only": true,
+        "current_rate_verified": false,
+        "warning": "Older official published schedule; reference only, not guaranteed 2026 prices. Confirm current rates, fees, inclusions and operating status with the City Tourism Office / Welcome Center before payment.",
+        "source_page": 3
+      },
+      {
+        "name": "Quezon Island zipline (120 m)",
+        "amount": 100,
+        "basis": "jump",
+        "currency": "PHP",
+        "reference_only": true,
+        "current_rate_verified": false,
+        "warning": "Older official published schedule; reference only, not guaranteed 2026 prices. Confirm current rates, fees, inclusions and operating status with the City Tourism Office / Welcome Center before payment.",
+        "source_page": 3
+      },
+      {
+        "name": "Wall climbing",
+        "amount": 50,
+        "basis": "person",
+        "currency": "PHP",
+        "reference_only": true,
+        "current_rate_verified": false,
+        "warning": "Older official published schedule; reference only, not guaranteed 2026 prices. Confirm current rates, fees, inclusions and operating status with the City Tourism Office / Welcome Center before payment.",
+        "source_page": 3
+      },
+      {
+        "name": "Rappelling",
+        "amount": 50,
+        "basis": "person",
+        "currency": "PHP",
+        "reference_only": true,
+        "current_rate_verified": false,
+        "warning": "Older official published schedule; reference only, not guaranteed 2026 prices. Confirm current rates, fees, inclusions and operating status with the City Tourism Office / Welcome Center before payment.",
+        "source_page": 3
+      },
+      {
+        "name": "3-in-1 package",
+        "amount": 175,
+        "basis": null,
+        "currency": "PHP",
+        "reference_only": true,
+        "current_rate_verified": false,
+        "warning": "Older official published schedule; reference only, not guaranteed 2026 prices. Confirm current rates, fees, inclusions and operating status with the City Tourism Office / Welcome Center before payment.",
+        "source_page": 3
+      },
+      {
+        "name": "Banana boat (max 7 pax)",
+        "amount": 1500,
+        "basis": "ride",
+        "currency": "PHP",
+        "reference_only": true,
+        "current_rate_verified": false,
+        "warning": "Older official published schedule; reference only, not guaranteed 2026 prices. Confirm current rates, fees, inclusions and operating status with the City Tourism Office / Welcome Center before payment.",
+        "source_page": 3
+      },
+      {
+        "name": "Helmet diving",
+        "amount": 400,
+        "basis": "20-minute dive",
+        "currency": "PHP",
+        "reference_only": true,
+        "current_rate_verified": false,
+        "warning": "Older official published schedule; reference only, not guaranteed 2026 prices. Confirm current rates, fees, inclusions and operating status with the City Tourism Office / Welcome Center before payment.",
+        "source_page": 3
+      },
+      {
+        "name": "Kayaking (max 2 pax)",
+        "amount": 250,
+        "basis": "hour",
+        "currency": "PHP",
+        "reference_only": true,
+        "current_rate_verified": false,
+        "warning": "Older official published schedule; reference only, not guaranteed 2026 prices. Confirm current rates, fees, inclusions and operating status with the City Tourism Office / Welcome Center before payment.",
+        "source_page": 3
+      },
+      {
+        "name": "Snorkeling gear",
+        "amount": 250,
+        "basis": "set",
+        "currency": "PHP",
+        "reference_only": true,
+        "current_rate_verified": false,
+        "warning": "Older official published schedule; reference only, not guaranteed 2026 prices. Confirm current rates, fees, inclusions and operating status with the City Tourism Office / Welcome Center before payment.",
+        "source_page": 3
+      }
+    ],
+    "rate_warning": "Older official published schedule; reference only, not guaranteed 2026 prices. Confirm current rates, fees, inclusions and operating status with the City Tourism Office / Welcome Center before payment.",
+    "practical_notes": "Start at the City Tourism Office / Welcome Center The official city website directs visitors to the Welcome Center at Don Gonzalo Montemayor Wharf in Barangay Lucap for assistance with Hundred Islands tours, boats, and water activities. Book/arrange boats through official channels The city has trained and registered boat operators and advises visitors to transact through the City Tourism Office / Welcome Center. Confirm current rates Published official rate sheets online are older documents. Ask for the current 2026 fees before payment. Follow water-safety rules Use life jackets and follow the instructions of boat operators and park personnel, especially during rough weather. Protect the park Hundred Islands is a protected natural area. Keep the islands and water clean and follow current environmental rules.",
+    "operating_details_verified": false,
+    "source_pages": [
+      {
+        "page": 1,
+        "text": "Alaminos City Tourism Guide    Page 1\n ALAMINOS CITY\n TOURISM GUIDE\n Hundred Islands  Boat Rentals  Activities  Hotels  Food\n A city-only guide to Alaminos City, Pangasinan\nThis guide intentionally covers places, activities, accommodations, and food establishments located\nwithin Alaminos City only. Nearby destinations in other municipalities are excluded.\nUpdated guide  September 2026\n"
+      },
+      {
+        "page": 2,
+        "text": "Alaminos City Tourism Guide    Page 2\nWELCOME TO ALAMINOS CITY\nAlaminos City is the home and main gateway of Hundred Islands National Park. The city combines island-hopping, coastal\nrecreation, city-center heritage, local food, and a growing hospitality sector. The official city government describes Hundred\nIslands National Park as a major tourism asset and provides a Tourism Information Center at Plaza Enrique Braganza.\nFor visitors, Lucap is the key area because Lucap Wharf is the departure point for Hundred Islands. Poblacion provides\naccess to the city center, while coastal areas such as Bolo and Telbang offer beach and resort options.\nPLACES TO VISIT & ATTRACTIONS\nHundred Islands National Park\nAlaminos City’s signature destination: a protected island-and-seascape area accessed from Lucap Wharf. Island-hopping\ncan include stops such as Governor’s Island, Quezon Island, Children’s Island, and other islands depending on the boat tour\nand current operating arrangements.\nLucap Wharf & Lucap Baywalk\nThe principal mainland gateway for Hundred Islands tours. The wharf is where visitors arrange boats, while the Lucap\nwaterfront provides a place to walk, take photographs, and enjoy the coastal setting.\nLucap Park\nA waterfront public space near the Hundred Islands gateway and a convenient stop before or after island-hopping.\nPilgrimage Island / Christ the Savior\nA religious and scenic attraction within Hundred Islands, featuring the Christ the Savior statue and views over the\nsurrounding waters.\nHundred Island Floating Boardwalk\nA waterfront attraction within the Hundred Islands area that provides another way to experience the coastal scenery.\nPeople’s Park & E-Kawayan Food Court\nA city leisure area with gazebos, seating, garden markers, and a food court showcasing traditional Alaminian cuisine.\nSt. Joseph the Patriarch Parish / Cathedral area\nA central religious landmark and a useful stop for visitors exploring the city proper.\nBolo Beach area\nA coastal recreation area in Bolo/Telbang, Alaminos City, with beach resorts and local boat-rental services.\nHUNDRED ISLANDS BOAT RENTALS\nThe official City Government of Alaminos publishes motorboat rates for Hundred Islands. The city’s\npublished rate sheet currently available online is an older official schedule, so treat the figures below as a\nreference rather than a guaranteed 2026 price. Confirm the current rate, fees, route, and inclusions at the\nCity Tourism Office / Welcome Center before paying.\nBoat size\nCapacity\nPublished 1-day rate\nPublished 2-day rate\nSmall\nUp to 5 pax\n■1,400\n■3,000\nMedium\nUp to 10 pax\n■1,800\n■3,800\nLarge\nUp to 15 pax\n■2,000\n■4,500\nA separate local listing also shows a boat-rental service at Bolo 2 Beach. For Hundred Islands tours, the city advises visitors\nto transact through the City Tourism Office / Welcome Center and registered boat operators.\nACTIVITIES TO DO\n"
+      },
+      {
+        "page": 3,
+        "text": "Alaminos City Tourism Guide    Page 3\nIsland hopping\nRide a registered service boat and explore the islands of Hundred Islands National Park.\nZipline\nThe official city rate sheet lists zipline activities at Governor’s Island and Quezon Island.\nHelmet diving\nUnderwater helmet-diving activity listed by the City Government for Hundred Islands.\nKayaking\nKayaks are available as a water activity; the city’s published rate sheet lists kayak rental.\nSnorkeling\nExplore shallow coastal waters using rented snorkeling equipment where permitted.\nBanana boat\nGroup water activity listed among the park’s recreational offerings.\nWall climbing & rappelling\nAdventure activities listed by the city for Hundred Islands.\nSwimming & beach time\nEnjoy designated swimming areas on appropriate islands and coastal areas, following current safety rules.\nPhotography & sightseeing\nCapture island formations, coastal views, Lucap waterfront scenery, and the Christ the Savior landmark.\nFood trip\nTry traditional Alaminian dishes and seafood in the city’s food court and local restaurants.\nPUBLISHED ACTIVITY RATES — REFERENCE ONLY\n Activity\nPublished rate\nGovernor’s Island zipline (546 m)\n■250 / jump\nQuezon Island zipline (120 m)\n■100 / jump\nWall climbing\n■50 / person\nRappelling\n■50 / person\n3-in-1 package\n■175\nBanana boat (max 7 pax)\n■1,500 / ride\nHelmet diving\n■400 / 20-minute dive\nKayaking (max 2 pax)\n■250 / hour\nSnorkeling gear\n■250 / set\nImportant: these activity figures come from the City Government’s published Hundred Islands rate sheet and may have changed. Confirm current 2026 rates\nand operating status before your trip.\n"
+      },
+      {
+        "page": 4,
+        "text": "Alaminos City Tourism Guide    Page 4\nHOTELS & PLACES TO STAY — ALAMINOS CITY ONLY\nThe following accommodations are identified in Alaminos City. Lucap is especially convenient for visitors taking an early\nHundred Islands boat; Poblacion is useful for access to the city center.\nAccommodation\nLocation\nDescription\nPROXY Plus by The Oriental Pangasinan\nLucap Wharf, Alaminos City\nHotel at the Hundred Islands gateway.\nIsland Tropic Hotel & Restaurant\nBarangay Lucap\nEstablished hotel option near the island gateway.\nIslandia Hotel & Restaurant\nBarangay Palamis\nCity hotel with restaurant.\nCity Hotel\nSadsaran St., Poblacion\nCentral-city accommodation.\nVilla Antolin Hotel\nBarangay Lucap\nAccommodation near the Hundred Islands departure area.\nVista de las Islas\nBarangay Lucap\nLucap-area accommodation.\nVilla Milagros Hotel\nBarangay Lucap\nLucap accommodation.\nSweet Honey Hotel\nBarangay Lucap\nLucap-area hotel.\nAsia Novo Boutique Hotel-Alaminos\nPoblacion\nCurrent local hotel listing in the city center.\nCarribean Transient House\nSitio Galiz, Lucap\nTransient accommodation near Hundred Islands.\nComo Laya Resort\nBarangay Magsaysay\nResort accommodation within Alaminos City.\nThe Blessed Purple Bamboo Beach Resort\nTelbang\nBeach resort within Alaminos City.\nAvailability, room rates, amenities, and operating status can change. Contact the property directly before booking.\nLOCAL FOODS TO TRY\nPinapaitang Kambing\nA traditional Alaminian dish highlighted by the city government at its People’s Park/E-Kawayan Food Court.\nKilawing Bangus Alaminos\nA local preparation of bangus highlighted by the city government as part of traditional Alaminian cuisine.\nAlaminos Longganisa\nTraditional fried local sausage specifically identified by the city government.\nFresh seafood\nWith Alaminos’ coastal and fishing identity, seafood is a natural choice at local restaurants, especially in Lucap.\nRESTAURANTS / FOOD STOPS IN ALAMINOS CITY\nCurrent local listings include Maxine By The Sea Seafood Restaurant in Lucap, Island Chef Resto Grill in Lucap, Golden\nCress Restaurant & Events in Poblacion, Kainan ni Myra on McArthur Highway, and Jai’s Grill & Resto in Palamis. The City\nGovernment’s published dining list also includes Alaminos City People’s Food Court, Eliana’s Grill & Restaurant, Hundred\nIslands Cafe Silvers by Gold, Papatok’s Restaurant, Rey-Lyn Restaurant, and Uly’s Grill & Bar.\nSAMPLE 2-DAY ALAMINOS CITY ITINERARY\n Time\nPlan\nDAY 1 — MORNING\nArrive in Alaminos → check in or leave bags → proceed to Lucap Wharf / Tourism Welcome Center.\nDAY 1 — MIDDAY\nHundred Islands island-hopping tour → swimming, sightseeing, snorkeling, and selected adventure activities.\nDAY 1 — AFTERNOON\nVisit a permitted island attraction such as Christ the Savior / Pilgrimage Island → return to Lucap.\nDAY 1 — EVENING\nDinner in Lucap or Poblacion → waterfront walk at Lucap Baywalk.\nDAY 2 — MORNING\nCity-center exploration → People’s Park / E-Kawayan Food Court → local breakfast or early lunch.\nDAY 2 — AFTERNOON\nBolo/Telbang coastal area → beach or resort activity → return to the city.\n"
+      },
+      {
+        "page": 5,
+        "text": "Alaminos City Tourism Guide    Page 5\nTime\nPlan\nDAY 2 — EVENING\nTry local Alaminian dishes and purchase local food souvenirs before departure.\n"
+      },
+      {
+        "page": 6,
+        "text": "Alaminos City Tourism Guide    Page 6\nPRACTICAL TRAVEL NOTES\nStart at the City Tourism Office / Welcome Center\nThe official city website directs visitors to the Welcome Center at Don Gonzalo Montemayor Wharf in Barangay Lucap for\nassistance with Hundred Islands tours, boats, and water activities.\nBook/arrange boats through official channels\nThe city has trained and registered boat operators and advises visitors to transact through the City Tourism Office /\nWelcome Center.\nConfirm current rates\nPublished official rate sheets online are older documents. Ask for the current 2026 fees before payment.\nFollow water-safety rules\nUse life jackets and follow the instructions of boat operators and park personnel, especially during rough weather.\nProtect the park\nHundred Islands is a protected natural area. Keep the islands and water clean and follow current environmental rules.\nOFFICIAL / REFERENCE SOURCES\n City Government of Alaminos — Tourism: https://www.alaminoscity.gov.ph/public-service/programs-and-projects/tourism/\n City Government of Alaminos — Discover Alaminos: https://www.alaminoscity.gov.ph/discover-alaminos/\n City Government of Alaminos — Hundred Islands National Park Rates:\nhttps://www.alaminoscity.gov.ph/i-choose-hundred-islands/download/HundredIslandsNationalPark-RatesFees.pdf\n City Government of Alaminos — Where to Stay in Alaminos City:\nhttps://www.alaminoscity.gov.ph/i-choose-hundred-islands/download/WhereToStayinAlaminosCity.pdf\n City Government of Alaminos — Where to Dine in Alaminos City:\nhttps://alaminoscity.gov.ph/i-choose-hundred-islands/download/WhereToDineInAlaminosCity.pdf\nSTRICT SCOPE: This guide is limited to Alaminos City, Pangasinan. Nearby destinations outside\nAlaminos City were intentionally excluded.\n"
+      }
+    ]
+  },
+  {
+    "entity_id": "MUNICIPAL-GUIDE-BOLINAO",
+    "area_id": "bolinao",
+    "name": "Bolinao",
+    "title": "Bolinao Tourism Guide",
+    "lgu_type": "Municipality",
+    "city_only": false,
+    "municipality_only": true,
+    "source_file": "Bolinao_Tourism_Guide.pdf",
+    "source_sha256": "d0296e18104bb4ab279630ce4d69a7fd65bb22d26b50ec69fe70d33e64fa26b9",
+    "source_date": null,
+    "listings_checked_month": "2026-09",
+    "source_date_note": "The PDF says local listings were checked in September 2026; it does not state a publication date.",
+    "source_url": "urn:sha256:d0296e18104bb4ab279630ce4d69a7fd65bb22d26b50ec69fe70d33e64fa26b9",
+    "source_urls": [],
+    "source_references": " Municipality of Bolinao — official Tourism page and accommodation/restaurant directory.\n  Municipality of Bolinao — official municipal website and tourism announcements.\n  Official Website of the Province of Pangasinan — Bolinao profile, attractions, fishing heritage, and binungey.\n Philippine Information Agency — Bolinao tourism and Semana Santa visitor information, including falls, lighthouse, cave,\n Patar Beach, and water activities.\n Tourism Promotions Board / Department of Tourism — Pangasinan destination and tourism-site listings.\n  Current local business listings checked in September 2026 for Bolinao resorts, restaurants, river cruises, beaches, and\n waterfalls.\n Recent local travel references were used only for practical waterfall details; fees and operating conditions are explicitly\n treated as changeable.",
+    "attribution_note": "No exact source URLs are printed in this PDF. source_url is a content-addressed PDF identifier, not a website URL. Named references are retained; no live verification performed.",
+    "profile": "Bolinao is a municipality in western Pangasinan facing the West Philippine Sea. The Province of Pangasinan describes it as a major beach and nature destination, with Patar Beach, Balingasay River, giant-clam conservation, and the historic Cape Bolinao Lighthouse among its attractions. The town also has a long fishing tradition, reflected in the annual Mangunguna Festival. A signature local food is binungey, sticky rice cooked inside bamboo over charcoal or wood fire. Best for  Waterfalls: Bolinao Falls 1, 2 and 3, with swimming, pools, and locally offered rafting/kayaking activities.  Beach trips: Patar Beach, rock formations, sunset viewing, and coastal photography.  Nature: Balingasay River cruises, Enchanted Cave, and giant-clam/ecotourism experiences.  Heritage: Cape Bolinao Lighthouse and Saint James the Great Parish Church.  Food: Binungey, seafood, grilled dishes, and Pangasinan delicacies.",
+    "attractions": [
+      {
+        "name": "Patar White Sand Beach",
+        "description": "Bolinao's signature beach destination, known for its light-colored sand, coconut-lined coast, rock formations, and sunsets. It is one of the municipality's most popular stops for swimming, relaxing, and photography.",
+        "source_page": 2,
+        "category": "Beach",
+        "aliases": [
+          "Patar Beach"
+        ]
+      },
+      {
+        "name": "Cape Bolinao Lighthouse",
+        "description": "A historic lighthouse built in 1905 on Cape Bolinao. It stands on a rocky coastal promontory and is one of the town's best-known heritage and photography landmarks.",
+        "source_page": 2,
+        "category": "Culture and Heritage",
+        "aliases": []
+      },
+      {
+        "name": "Enchanted Cave",
+        "description": "A natural limestone cave with a clear freshwater pool. The cave is a popular swimming and nature attraction and can be paired with Patar Beach and the lighthouse on the same day.",
+        "source_page": 2,
+        "category": "Farm and Nature",
+        "aliases": []
+      },
+      {
+        "name": "Balingasay River",
+        "description": "A mangrove-lined river and ecotourism attraction associated with boat cruises and floating dining. The Province of Pangasinan highlights it as the cleanest river in Region 1 and one of Bolinao's key natural assets.",
+        "source_page": 2,
+        "category": "Farm and Nature",
+        "aliases": []
+      },
+      {
+        "name": "Saint James the Great Parish Church",
+        "description": "A historic church in Barangay Germinal. Philippine government tourism reporting identifies it as a major heritage and Holy Week destination, with black coral-stone construction and a tall bell tower.",
+        "source_page": 2,
+        "category": "Religious",
+        "aliases": [
+          "St. James the Great Parish Church"
+        ]
+      },
+      {
+        "name": "Bolinao Falls 1–3",
+        "description": "The municipality's famous inland waterfall cluster in Barangay Samang Norte. The three numbered falls offer different swimming pools and visitor experiences and are commonly visited together.",
+        "source_page": 2,
+        "category": "Farm and Nature",
+        "aliases": [
+          "Bolinao Falls"
+        ]
+      },
+      {
+        "name": "Giant Clam / Marine Conservation Experience",
+        "description": "Bolinao is associated with giant-clam conservation and marine research. Visitor access and tour arrangements can vary, so confirm the currently operating facility or tour provider before travel.",
+        "source_page": 2,
+        "category": "Farm and Nature",
+        "aliases": []
+      },
+      {
+        "name": "Old Rock / Rock Formations",
+        "description": "The coastal rock formations around Patar provide scenic viewpoints and are popular for photography, especially around golden hour.",
+        "source_page": 2,
+        "category": "Farm and Nature",
+        "aliases": []
+      },
+      {
+        "name": "Patar-area Caves and Nature Attractions",
+        "description": "Bolinao's limestone landscape supports several cave and nature attractions. Access can vary by site; use established guides and current local tourism information.",
+        "source_page": 3,
+        "category": "Farm and Nature",
+        "aliases": []
+      }
+    ],
+    "activities": [
+      {
+        "name": "Waterfall-hopping",
+        "description": "Spend a half-day or full morning visiting Falls 1, 2 and 3. Start early to allow time for travel, swimming, and changing local conditions.",
+        "source_page": 3
+      },
+      {
+        "name": "Beach day at Patar",
+        "description": "Swim, relax, photograph the coastline, explore rock formations, and stay for sunset.",
+        "source_page": 3
+      },
+      {
+        "name": "Sunset photography",
+        "description": "Combine Patar Beach and the coastal rock formations with Cape Bolinao Lighthouse for a dedicated golden-hour photo circuit.",
+        "source_page": 3
+      },
+      {
+        "name": "Balingasay River cruise",
+        "description": "Take a river cruise or floating-cottage experience when operating. River dining and mangrove scenery make this a slower alternative to the beach.",
+        "source_page": 3
+      },
+      {
+        "name": "Cave swimming",
+        "description": "Swim in the freshwater pool at Enchanted Cave and explore the surrounding limestone landscape.",
+        "source_page": 4
+      },
+      {
+        "name": "Island / coastal activities",
+        "description": "Depending on current local operators and sea conditions, activities can include island hopping, kayaking, banana boat rides, and jet skiing.",
+        "source_page": 4
+      },
+      {
+        "name": "Giant-clam and marine tourism",
+        "description": "Learn about Bolinao's giant-clam conservation work through an operating local tour or facility.",
+        "source_page": 4
+      },
+      {
+        "name": "Heritage tour",
+        "description": "Visit Saint James the Great Parish Church and Cape Bolinao Lighthouse for a combination of religious and maritime history.",
+        "source_page": 4
+      },
+      {
+        "name": "Seafood food trip",
+        "description": "Try locally prepared seafood, grilled dishes, and river-side dining in Bolinao.",
+        "source_page": 4
+      },
+      {
+        "name": "Try binungey",
+        "description": "Taste the municipality's signature bamboo-cooked sticky-rice delicacy.",
+        "source_page": 4
+      },
+      {
+        "name": "Camping / beach stay",
+        "description": "Bolinao has numerous beach resorts, vacation houses, and camping-style accommodations, especially around Patar.",
+        "source_page": 4
+      },
+      {
+        "name": "Mangunguna Festival",
+        "description": "If your visit coincides with the annual fisherman-themed festival, check the municipal calendar for the current year's public events.",
+        "source_page": 4
+      }
+    ],
+    "hotels": [
+      {
+        "name": "Puerto del Sol Beach Resort & Hotel Club",
+        "source_page": 4,
+        "source_pages": [
+          4
+        ],
+        "location": "Patar",
+        "description": "Full-service beach resort and hotel option.",
+        "aliases": [
+          "Puerto Del Sol Beach Resort"
+        ]
+      },
+      {
+        "name": "Sundowners Vacation Villas",
+        "source_page": 4,
+        "source_pages": [
+          4
+        ],
+        "location": "Luciente 1",
+        "description": "Vacation-villa style accommodation within Bolinao.",
+        "aliases": []
+      },
+      {
+        "name": "Villa Soledad Beach Resort",
+        "source_page": 4,
+        "source_pages": [
+          4
+        ],
+        "location": "Patar",
+        "description": "Beach resort option near Patar.",
+        "aliases": []
+      },
+      {
+        "name": "Casa Almarenzo Bed & Breakfast Resort",
+        "source_page": 4,
+        "source_pages": [
+          4
+        ],
+        "location": "Estanza",
+        "description": "Bed-and-breakfast/resort option within Bolinao.",
+        "aliases": [
+          "Casa Almarenzo Bed & Breakfast"
+        ]
+      },
+      {
+        "name": "Cris Del Mar Resort",
+        "source_page": 4,
+        "source_pages": [
+          4
+        ],
+        "location": "Luciente 1",
+        "description": "Resort option for families and groups.",
+        "aliases": []
+      },
+      {
+        "name": "Shoreline88 Beach Resort",
+        "source_page": 4,
+        "source_pages": [
+          4
+        ],
+        "location": "Patar",
+        "description": "Smaller beach-resort option.",
+        "aliases": []
+      },
+      {
+        "name": "Bolinao Eco Lodge",
+        "source_page": 4,
+        "source_pages": [
+          4
+        ],
+        "location": "Germinal",
+        "description": "Lodge option in the town area.",
+        "aliases": []
+      }
+    ],
+    "local_foods": [
+      {
+        "name": "Binungey",
+        "source_page": 4,
+        "source_pages": [
+          4,
+          5
+        ],
+        "description": "Bolinao's signature delicacy: sweet sticky rice cooked inside bamboo over charcoal or wood fire."
+      },
+      {
+        "name": "Fresh seafood",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "description": "Bolinao's fishing tradition makes seafood a natural choice, including grilled fish, shellfish, crab, squid, and other locally prepared dishes."
+      },
+      {
+        "name": "Seafood grill",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "description": "Look for grilled seafood and Filipino dishes at local restaurants and resort restaurants."
+      },
+      {
+        "name": "Pangasinan delicacies",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "description": "Try local rice cakes and other native snacks available from town vendors and markets."
+      },
+      {
+        "name": "Bolinao pasalubong",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "description": "Packaged food products and locally made souvenirs can be found around the town and tourism areas."
+      }
+    ],
+    "dining": [
+      {
+        "name": "Sungayan Grill",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "location": "Bolinao",
+        "description": "Seafood dining and a river-cruise/floating-restaurant experience."
+      },
+      {
+        "name": "Bolinao Seafood Grill",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "location": "Bolinao",
+        "description": "Casual seafood and Filipino dining."
+      },
+      {
+        "name": "Bolinao Seafood Grill ATBP",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "location": "Bolinao",
+        "description": "Seafood-oriented local restaurant."
+      },
+      {
+        "name": "Adoras Seafood Grill and Restaurant",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "location": "Concordia",
+        "description": "Seafood and Filipino meal option."
+      },
+      {
+        "name": "River Village Resort and Restaurant",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "location": "Ilog-Malino",
+        "description": "Seafood restaurant in a resort setting."
+      },
+      {
+        "name": "Oldschool Bar & Restaurant Bolinao",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "location": "Don Ponciano Cacho",
+        "description": "Casual dining option in town."
+      }
+    ],
+    "sample_itinerary": [
+      {
+        "day": 1,
+        "period": "DAY 1 — 7:00 AM",
+        "suggestion": "Breakfast and depart for Patar area.",
+        "source_page": 6,
+        "illustrative_time_only": true
+      },
+      {
+        "day": 1,
+        "period": "8:00 AM",
+        "suggestion": "Patar Beach — swimming, beach walk and rock formations.",
+        "source_page": 6,
+        "illustrative_time_only": true
+      },
+      {
+        "day": 1,
+        "period": "10:30 AM",
+        "suggestion": "Cape Bolinao Lighthouse and coastal photography.",
+        "source_page": 6,
+        "illustrative_time_only": true
+      },
+      {
+        "day": 1,
+        "period": "12:00 NN",
+        "suggestion": "Lunch at a Bolinao seafood restaurant.",
+        "source_page": 6,
+        "illustrative_time_only": true
+      },
+      {
+        "day": 1,
+        "period": "1:30 PM",
+        "suggestion": "Enchanted Cave — swimming and limestone scenery.",
+        "source_page": 6,
+        "illustrative_time_only": true
+      },
+      {
+        "day": 1,
+        "period": "4:00 PM",
+        "suggestion": "Return to Patar; rest and sunset photography.",
+        "source_page": 6,
+        "illustrative_time_only": true
+      },
+      {
+        "day": 1,
+        "period": "6:30 PM",
+        "suggestion": "Dinner and overnight at a Bolinao resort.",
+        "source_page": 6,
+        "illustrative_time_only": true
+      },
+      {
+        "day": 2,
+        "period": "DAY 2 — 6:30 AM",
+        "suggestion": "Early breakfast and depart for Samang Norte.",
+        "source_page": 6,
+        "illustrative_time_only": true
+      },
+      {
+        "day": 2,
+        "period": "7:30 AM",
+        "suggestion": "Bolinao Falls 1, 2 and 3 — swimming, photography and permitted water activities.",
+        "source_page": 6,
+        "illustrative_time_only": true
+      },
+      {
+        "day": 2,
+        "period": "12:00 NN",
+        "suggestion": "Lunch / rest after the waterfalls.",
+        "source_page": 6,
+        "illustrative_time_only": true
+      },
+      {
+        "day": 2,
+        "period": "2:00 PM",
+        "suggestion": "Balingasay River cruise / floating dining, subject to current operations.",
+        "source_page": 6,
+        "illustrative_time_only": true
+      },
+      {
+        "day": 2,
+        "period": "4:00 PM",
+        "suggestion": "Saint James the Great Parish Church and town-center stop.",
+        "source_page": 6,
+        "illustrative_time_only": true
+      },
+      {
+        "day": 2,
+        "period": "5:00 PM",
+        "suggestion": "Buy binungey and other local pasalubong before departure.",
+        "source_page": 6,
+        "illustrative_time_only": true
+      }
+    ],
+    "itinerary_attraction_order": [
+      "Patar White Sand Beach",
+      "Cape Bolinao Lighthouse",
+      "Enchanted Cave",
+      "Bolinao Falls 1–3",
+      "Balingasay River",
+      "Saint James the Great Parish Church",
+      "Giant Clam / Marine Conservation Experience",
+      "Old Rock / Rock Formations",
+      "Patar-area Caves and Nature Attractions"
+    ],
+    "practical_notes": " Waterfall safety: Confirm current swimming conditions and local rules. Wear a life jacket when required, especially in deep pools, and avoid unapproved cliff jumps.  Water activities: Banana boats, jet skis, kayaking, and island-hopping depend on weather, sea conditions, and current operators.  Swimming hours: Recent Philippine government tourism guidance reported swimming at Bolinao attractions as allowed from 6:00 a.m. to 6:30 p.m.; verify current local rules before entering the water.  Falls fees: Online reports show different fee structures over time. Treat posted online prices as estimates and confirm the current entrance, parking, cottage, raft, kayak, and life-jacket fees locally.  Best waterfall timing: Starting early helps avoid the strongest midday heat and allows more time for all three falls.  Beach conditions: Sea conditions and weather can affect swimming and boat activities. Follow local advisories.  Local transport: Tricycles, private vehicles, and hired local transport are practical for linking Patar, Samang Norte, town, and river areas.  Respect the environment: Keep plastic and food waste out of beaches, caves, rivers, and waterfall areas; do not damage coral, limestone, mangroves, or marine life.",
+    "access_note": "Confirm current swimming conditions and local rules. Use designated swimming areas, wear a life jacket where required, and do not jump from unapproved heights. Water activities and marine tours depend on current operators, weather and access.",
+    "operating_details_verified": false,
+    "source_pages": [
+      {
+        "page": 1,
+        "text": "Bolinao Tourism Guide    Page 1\n BOLINAO\n TOURISM GUIDE\n Attractions  Waterfalls  Activities  Hotels  Food  Beaches\n STRICT GEOGRAPHIC SCOPE\nThis guide covers Bolinao, Pangasinan only. All attractions, activities, hotels, resorts, restaurants, and\nfood stops are within the Municipality of Bolinao. Neighboring municipalities and cities are intentionally\nexcluded.\nBolinao is a coastal and nature-tourism destination known for Patar Beach, Cape Bolinao Lighthouse, Enchanted Cave,\nBalingasay River, its giant-clam conservation story, and the famous Bolinao Falls 1–3.\nResearch basis: official Bolinao municipal/provincial tourism information, Philippine government tourism/news sources, and current local\nbusiness listings checked in September 2026.\n"
+      },
+      {
+        "page": 2,
+        "text": "Bolinao Tourism Guide    Page 2\n1. BOLINAO AT A GLANCE\nBolinao is a municipality in western Pangasinan facing the West Philippine Sea. The Province of Pangasinan describes it\nas a major beach and nature destination, with Patar Beach, Balingasay River, giant-clam conservation, and the historic\nCape Bolinao Lighthouse among its attractions.\nThe town also has a long fishing tradition, reflected in the annual Mangunguna Festival. A signature local food is\nbinungey, sticky rice cooked inside bamboo over charcoal or wood fire.\nBest for\n Waterfalls: Bolinao Falls 1, 2 and 3, with swimming, pools, and locally offered rafting/kayaking activities.\n Beach trips: Patar Beach, rock formations, sunset viewing, and coastal photography.\n Nature: Balingasay River cruises, Enchanted Cave, and giant-clam/ecotourism experiences.\n Heritage: Cape Bolinao Lighthouse and Saint James the Great Parish Church.\n Food: Binungey, seafood, grilled dishes, and Pangasinan delicacies.\n2. TOP PLACES TO VISIT\n1. Patar White Sand Beach\nBolinao's signature beach destination, known for its light-colored sand, coconut-lined coast, rock formations, and sunsets.\nIt is one of the municipality's most popular stops for swimming, relaxing, and photography.\n2. Cape Bolinao Lighthouse\nA historic lighthouse built in 1905 on Cape Bolinao. It stands on a rocky coastal promontory and is one of the town's\nbest-known heritage and photography landmarks.\n3. Enchanted Cave\nA natural limestone cave with a clear freshwater pool. The cave is a popular swimming and nature attraction and can be\npaired with Patar Beach and the lighthouse on the same day.\n4. Balingasay River\nA mangrove-lined river and ecotourism attraction associated with boat cruises and floating dining. The Province of\nPangasinan highlights it as the cleanest river in Region 1 and one of Bolinao's key natural assets.\n5. Saint James the Great Parish Church\nA historic church in Barangay Germinal. Philippine government tourism reporting identifies it as a major heritage and Holy\nWeek destination, with black coral-stone construction and a tall bell tower.\n6. Bolinao Falls 1–3\nThe municipality's famous inland waterfall cluster in Barangay Samang Norte. The three numbered falls offer different\nswimming pools and visitor experiences and are commonly visited together.\n7. Giant Clam / Marine Conservation Experience\nBolinao is associated with giant-clam conservation and marine research. Visitor access and tour arrangements can vary,\nso confirm the currently operating facility or tour provider before travel.\n8. Old Rock / Rock Formations\nThe coastal rock formations around Patar provide scenic viewpoints and are popular for photography, especially around\ngolden hour.\n"
+      },
+      {
+        "page": 3,
+        "text": "Bolinao Tourism Guide    Page 3\n9. Patar-area Caves and Nature Attractions\nBolinao's limestone landscape supports several cave and nature attractions. Access can vary by site; use established\nguides and current local tourism information.\n3. FAMOUS FALLS — BOLINAO FALLS 1, 2 & 3\nBolinao Falls is a cluster of three well-known freshwater swimming stops in Barangay Samang Norte. Current local\nsources describe Falls 1, 2 and 3 as connected by the same general stream system and close enough to visit in one\nouting. Conditions, entrance fees, life-jacket rules, cottages, and operating arrangements can change, so confirm locally\non the day.\nBolinao Falls 1\nThe tallest and most dramatic of the three. It has a deep catch basin and is associated with swimming, bamboo-raft/kayak\nactivities, and a jump platform. Deep water and slippery rocks make life-jacket use and conservative swimming important.\nBolinao Falls 2\nA more relaxed waterfall stop with a broader swimming area. The Falls 2 area is also associated with a shallow\nspring-falls section and rock pools, giving visitors more options for wading and swimming.\nBolinao Falls 3\nKnown for a wide pool, surrounding greenery, rock formations, and locally offered bamboo-raft activities. It also has\nshallower areas that can suit visitors who prefer relaxed swimming, subject to current water conditions.\nWaterfall activities\n Swimming and wading\n Bamboo-raft/balsa rides where currently offered\n Kayaking where currently offered\n Photography and nature walks\n Cliff/jump-platform activities only where officially permitted and only with appropriate safety equipment\nSafety: Water depth, currents, rocks, and local rules can change. Use designated swimming areas, follow caretakers'\ninstructions, wear a life jacket where required, and do not jump from unapproved heights.\n4. THINGS TO DO IN BOLINAO\n1. Waterfall-hopping\nSpend a half-day or full morning visiting Falls 1, 2 and 3. Start early to allow time for travel, swimming, and changing local\nconditions.\n2. Beach day at Patar\nSwim, relax, photograph the coastline, explore rock formations, and stay for sunset.\n3. Sunset photography\nCombine Patar Beach and the coastal rock formations with Cape Bolinao Lighthouse for a dedicated golden-hour photo\ncircuit.\n4. Balingasay River cruise\nTake a river cruise or floating-cottage experience when operating. River dining and mangrove scenery make this a slower\nalternative to the beach.\n"
+      },
+      {
+        "page": 4,
+        "text": "Bolinao Tourism Guide    Page 4\n5. Cave swimming\nSwim in the freshwater pool at Enchanted Cave and explore the surrounding limestone landscape.\n6. Island / coastal activities\nDepending on current local operators and sea conditions, activities can include island hopping, kayaking, banana boat\nrides, and jet skiing.\n7. Giant-clam and marine tourism\nLearn about Bolinao's giant-clam conservation work through an operating local tour or facility.\n8. Heritage tour\nVisit Saint James the Great Parish Church and Cape Bolinao Lighthouse for a combination of religious and maritime\nhistory.\n9. Seafood food trip\nTry locally prepared seafood, grilled dishes, and river-side dining in Bolinao.\n10. Try binungey\nTaste the municipality's signature bamboo-cooked sticky-rice delicacy.\n11. Camping / beach stay\nBolinao has numerous beach resorts, vacation houses, and camping-style accommodations, especially around Patar.\n12. Mangunguna Festival\nIf your visit coincides with the annual fisherman-themed festival, check the municipal calendar for the current year's public\nevents.\n5. WHERE TO STAY — BOLINAO ONLY\n Property\nArea\nType / note\nPuerto del Sol Beach Resort & Hotel\nClub\nPatar\nFull-service beach resort and hotel option.\nSundowners Vacation Villas\nLuciente 1\nVacation-villa style accommodation within Bolinao.\nVilla Soledad Beach Resort\nPatar\nBeach resort option near Patar.\nCasa Almarenzo Bed & Breakfast\nResort\nEstanza\nBed-and-breakfast/resort option within Bolinao.\nCris Del Mar Resort\nLuciente 1\nResort option for families and groups.\nShoreline88 Beach Resort\nPatar\nSmaller beach-resort option.\nBolinao Eco Lodge\nGerminal\nLodge option in the town area.\nThe Municipality of Bolinao's tourism directory lists a large number of accommodation establishments, including beach resorts, transient houses,\nhotels, and private resorts. The properties above are a practical shortlist; confirm current rates and availability directly before booking.\n6. WHAT TO EAT & TRY\nBinungey\n"
+      },
+      {
+        "page": 5,
+        "text": "Bolinao Tourism Guide    Page 5\nBolinao's signature delicacy: sweet sticky rice cooked inside bamboo over charcoal or wood fire.\nFresh seafood\nBolinao's fishing tradition makes seafood a natural choice, including grilled fish, shellfish, crab, squid, and other locally\nprepared dishes.\nSeafood grill\nLook for grilled seafood and Filipino dishes at local restaurants and resort restaurants.\nPangasinan delicacies\nTry local rice cakes and other native snacks available from town vendors and markets.\nBolinao pasalubong\nPackaged food products and locally made souvenirs can be found around the town and tourism areas.\nCurrent Bolinao food stops\n Food stop\nArea\nUse in itinerary\nSungayan Grill\nBolinao\nSeafood dining and a river-cruise/floating-restaurant\nexperience.\nBolinao Seafood Grill\nBolinao\nCasual seafood and Filipino dining.\nBolinao Seafood Grill ATBP\nBolinao\nSeafood-oriented local restaurant.\nAdoras Seafood Grill and Restaurant\nConcordia\nSeafood and Filipino meal option.\nRiver Village Resort and Restaurant\nIlog-Malino\nSeafood restaurant in a resort setting.\nOldschool Bar & Restaurant Bolinao\nDon Ponciano Cacho\nCasual dining option in town.\n"
+      },
+      {
+        "page": 6,
+        "text": "Bolinao Tourism Guide    Page 6\n7. SAMPLE 2-DAY BOLINAO ITINERARY\n Time\nPlan\nDAY 1 — 7:00 AM\nBreakfast and depart for Patar area.\n8:00 AM\nPatar Beach — swimming, beach walk and rock formations.\n10:30 AM\nCape Bolinao Lighthouse and coastal photography.\n12:00 NN\nLunch at a Bolinao seafood restaurant.\n1:30 PM\nEnchanted Cave — swimming and limestone scenery.\n4:00 PM\nReturn to Patar; rest and sunset photography.\n6:30 PM\nDinner and overnight at a Bolinao resort.\nDAY 2 — 6:30 AM\nEarly breakfast and depart for Samang Norte.\n7:30 AM\nBolinao Falls 1, 2 and 3 — swimming, photography and permitted water activities.\n12:00 NN\nLunch / rest after the waterfalls.\n2:00 PM\nBalingasay River cruise / floating dining, subject to current operations.\n4:00 PM\nSaint James the Great Parish Church and town-center stop.\n5:00 PM\nBuy binungey and other local pasalubong before departure.\n8. PRACTICAL TRAVEL NOTES\n  Waterfall safety: Confirm current swimming conditions and local rules. Wear a life jacket when required, especially in deep\n pools, and avoid unapproved cliff jumps.\n Water activities: Banana boats, jet skis, kayaking, and island-hopping depend on weather, sea conditions, and current\n operators.\n Swimming hours: Recent Philippine government tourism guidance reported swimming at Bolinao attractions as allowed\n from 6:00 a.m. to 6:30 p.m.; verify current local rules before entering the water.\n Falls fees: Online reports show different fee structures over time. Treat posted online prices as estimates and confirm the\n current entrance, parking, cottage, raft, kayak, and life-jacket fees locally.\n Best waterfall timing: Starting early helps avoid the strongest midday heat and allows more time for all three falls.\n  Beach conditions: Sea conditions and weather can affect swimming and boat activities. Follow local advisories.\n  Local transport: Tricycles, private vehicles, and hired local transport are practical for linking Patar, Samang Norte, town,\n and river areas.\n Respect the environment: Keep plastic and food waste out of beaches, caves, rivers, and waterfall areas; do not damage\n coral, limestone, mangroves, or marine life.\n9. SOURCES & RESEARCH NOTES\n  Municipality of Bolinao — official Tourism page and accommodation/restaurant directory.\n  Municipality of Bolinao — official municipal website and tourism announcements.\n  Official Website of the Province of Pangasinan — Bolinao profile, attractions, fishing heritage, and binungey.\n "
+      },
+      {
+        "page": 7,
+        "text": "Bolinao Tourism Guide    Page 7\n Philippine Information Agency — Bolinao tourism and Semana Santa visitor information, including falls, lighthouse, cave,\n Patar Beach, and water activities.\n Tourism Promotions Board / Department of Tourism — Pangasinan destination and tourism-site listings.\n  Current local business listings checked in September 2026 for Bolinao resorts, restaurants, river cruises, beaches, and\n waterfalls.\n Recent local travel references were used only for practical waterfall details; fees and operating conditions are explicitly\n treated as changeable.\nSTRICT SCOPE CHECK\nThis guide is limited to Bolinao, Pangasinan. Attractions in Alaminos City, Anda, Bani, Burgos, Dasol, and\nother neighboring jurisdictions are excluded.\n"
+      }
+    ],
+    "waterfall_details": "Bolinao Falls is a cluster of three well-known freshwater swimming stops in Barangay Samang Norte. Current local sources describe Falls 1, 2 and 3 as connected by the same general stream system and close enough to visit in one outing. Conditions, entrance fees, life-jacket rules, cottages, and operating arrangements can change, so confirm locally on the day. Bolinao Falls 1 The tallest and most dramatic of the three. It has a deep catch basin and is associated with swimming, bamboo-raft/kayak activities, and a jump platform. Deep water and slippery rocks make life-jacket use and conservative swimming important. Bolinao Falls 2 A more relaxed waterfall stop with a broader swimming area. The Falls 2 area is also associated with a shallow spring-falls section and rock pools, giving visitors more options for wading and swimming. Bolinao Falls 3 Known for a wide pool, surrounding greenery, rock formations, and locally offered bamboo-raft activities. It also has shallower areas that can suit visitors who prefer relaxed swimming, subject to current water conditions. Waterfall activities  Swimming and wading  Bamboo-raft/balsa rides where currently offered  Kayaking where currently offered  Photography and nature walks  Cliff/jump-platform activities only where officially permitted and only with appropriate safety equipment Safety: Water depth, currents, rocks, and local rules can change. Use designated swimming areas, follow caretakers' instructions, wear a life jacket where required, and do not jump from unapproved heights.",
+    "festivals": "If your visit coincides with the annual fisherman-themed festival, check the municipal calendar for the current year's public events."
+  },
+  {
+    "entity_id": "CITY-GUIDE-DAGUPAN",
+    "area_id": "dagupan",
+    "name": "Dagupan City",
+    "title": "Dagupan City Tourism Guide",
+    "source_file": "Dagupan_City_Tourism_Guide.pdf",
+    "source_sha256": "e0316936fe3c0dbfc89326e8d47a78eb974d89be942202b89c30adfa4367b8ea",
+    "source_date": null,
+    "source_date_note": "No publication or snapshot date is stated in the supplied PDF.",
+    "source_url": "https://dagupan.gov.ph/tourism/",
+    "source_urls": [
+      "https://dagupan.gov.ph/tourism/",
+      "https://dagupan.gov.ph/the-city/about-dagupan-city/"
+    ],
+    "attribution_note": "The PDF cites the city government, DOT and unspecified current local listings; no live verification was performed.",
+    "city_only": true,
+    "profile": "Dagupan City is an independent component city of Pangasinan and is crossed by seven rivers. Its identity is strongly connected to fishing, aquaculture, commerce, heritage, and food—especially Dagupan bangus. The city government describes Dagupan as the “World’s Bangus Capital.” For visitors, the city offers a mix of beach and waterfront experiences, historical landmarks, city-center culture, and distinctly Dagupan food traditions.",
+    "attractions": [
+      {
+        "name": "Tondaligan Beach / Tondaligan People’s Park",
+        "description": "A major coastal recreation area in Bonuan. The city government describes Tondaligan People’s Park as a large foreshore area with the Japanese-Philippine Friendship Memorial Garden, Tomb of the Unknown Soldiers, and Mayor’s Pavilion. The nearby Tondaligan Baywalk is also a waterfront stop.",
+        "category": "Beach",
+        "aliases": [
+          "Tondaligan Beach",
+          "Tondaligan People's Park"
+        ],
+        "source_page": 2
+      },
+      {
+        "name": "Dawel River Cruise",
+        "description": "A river experience beginning near Dawel Bridge in Catacdang, Bonuan Gueset. The city government notes mangroves, fish including Dagupan bangus, birdlife, and remnants of old railway tracks along the route.",
+        "category": "River experience",
+        "aliases": [],
+        "source_page": 2
+      },
+      {
+        "name": "Dagupan City Museum & City Plaza",
+        "description": "A city-center cultural stop. The museum houses old photographs, antique household objects, works by native contemporary artists, and works associated with National Artist Victorio Edades. City Plaza also contains the Rizal monument, a Senior Citizen’s Park, and a Children’s Park.",
+        "category": "Culture and Heritage",
+        "aliases": [
+          "Dagupan City Museum",
+          "City Plaza & Dagupan City Museum"
+        ],
+        "source_page": 2
+      },
+      {
+        "name": "Old St. John Cathedral / St. John the Evangelist",
+        "description": "A historic religious landmark associated with important episodes in Dagupan’s history, including the 1898 battle in the church grounds and the marriage of Leonor Rivera and Henry Kipping.",
+        "category": "Religious",
+        "aliases": [
+          "Saint John the Evangelist Cathedral",
+          "Old St. John Cathedral"
+        ],
+        "source_page": 2
+      },
+      {
+        "name": "Historic PNR / Spanish Railroad Station Site",
+        "description": "A heritage reminder of the Manila–Dagupan railway connection. The city’s tourism page identifies the Spanish-era railroad station among Dagupan’s historical places.",
+        "category": "Culture and Heritage",
+        "aliases": [],
+        "source_page": 2
+      },
+      {
+        "name": "Gabaldon Building",
+        "description": "The historic Home Economics Building of West Central Elementary School. The city government identifies the structure as having been constructed in 1909 and notes its association with Gen. Douglas MacArthur’s headquarters in Dagupan.",
+        "category": "Culture and Heritage",
+        "aliases": [],
+        "source_page": 2
+      },
+      {
+        "name": "Franklin Bridge Ruins",
+        "description": "Remnants connected with the 1935 flood that washed away the bridge and affected the old Colegio de San Alberto Magno.",
+        "category": "Culture and Heritage",
+        "aliases": [],
+        "source_page": 2
+      },
+      {
+        "name": "Dagupan Water Tower",
+        "description": "A more-than-century-old landmark in the city center that once supplied Dagupan’s water needs.",
+        "category": "Culture and Heritage",
+        "aliases": [],
+        "source_page": 2
+      },
+      {
+        "name": "Bonuan Blue Beach",
+        "description": "A coastal leisure area in Bonuan and part of Dagupan’s long-standing seaside recreation identity.",
+        "category": "Beach",
+        "aliases": [],
+        "source_page": 2
+      }
+    ],
+    "hotels": [
+      {
+        "name": "Star Plaza Hotel",
+        "location": "AB Fernandez Ave., Dagupan City",
+        "description": "Central-city hotel; convenient for the downtown area.",
+        "source_page": 3
+      },
+      {
+        "name": "Lenox Hotel",
+        "location": "Rizal St., Downtown District, Dagupan City",
+        "description": "Downtown accommodation near central Dagupan.",
+        "source_page": 3
+      },
+      {
+        "name": "HOTEL Monde",
+        "location": "108 AB Fernandez W Ave., Downtown District, Dagupan City",
+        "description": "Central Dagupan option.",
+        "source_page": 3
+      },
+      {
+        "name": "Bedbox Hotel Dagupan",
+        "location": "Rizal St., Downtown District, Dagupan City",
+        "description": "Budget-oriented city-center accommodation.",
+        "source_page": 3
+      },
+      {
+        "name": "Damara Hotel at Ciudad Elmina",
+        "location": "Ciudad Elmina Fishing Village, Fernandez Rd., Bacayao Norte, Dagupan City",
+        "description": "Hotel within the Ciudad Elmina fishing-village area.",
+        "source_page": 3
+      },
+      {
+        "name": "RedDoorz @ Tondaligan Beach Hotel",
+        "location": "Tondaligan Rd., Bonuan Gueset, Dagupan City",
+        "description": "Beach-area accommodation near Tondaligan.",
+        "source_page": 3
+      }
+    ],
+    "local_foods": [
+      {
+        "name": "Dagupan Bangus",
+        "description": "The city’s signature food. Try bangus grilled (inkalot), fried boneless daing, or in sour soup/sinigang.",
+        "source_page": 3
+      },
+      {
+        "name": "Pigar-Pigar",
+        "description": "Thinly sliced beef or carabao meat seasoned with salt and pepper, cooked with onions and commonly served with vegetables. The city government identifies Galvan Street as a place associated with this dish.",
+        "source_page": 3
+      },
+      {
+        "name": "Kaleskes",
+        "description": "A traditional dish using beef and beef offal, slowly cooked and associated with food stalls around Herrero-Perez.",
+        "source_page": 3
+      },
+      {
+        "name": "Bagoong / Inasin / Monamon",
+        "description": "A salty fish condiment associated with Pangasinan cuisine and traditionally produced near the old Perez market area.",
+        "source_page": 3
+      },
+      {
+        "name": "Buko Pastillas",
+        "description": "A soft, chewy coconut-based sweet associated by the city government with Lasip Grande.",
+        "source_page": 3
+      },
+      {
+        "name": "Bocayo",
+        "description": "Young coconut cooked with molasses or sugar until it becomes a sweet, crunchy delicacy.",
+        "source_page": 3
+      }
+    ],
+    "itinerary_attraction_order": [
+      "Dagupan City Museum & City Plaza",
+      "Old St. John Cathedral / St. John the Evangelist",
+      "Dawel River Cruise",
+      "Tondaligan Beach / Tondaligan People’s Park",
+      "Historic PNR / Spanish Railroad Station Site",
+      "Gabaldon Building",
+      "Franklin Bridge Ruins",
+      "Dagupan Water Tower",
+      "Bonuan Blue Beach"
+    ],
+    "dining": [
+      {
+        "name": "MATUTINA-GERRY’s Seafood House",
+        "source_page": 3
+      },
+      {
+        "name": "Kainan ni Mang Peping",
+        "source_page": 3
+      },
+      {
+        "name": "Dad Joe’s Restaurant",
+        "source_page": 3
+      },
+      {
+        "name": "Sangkalan Restaurant Dagupan",
+        "source_page": 3
+      },
+      {
+        "name": "Ciudad Elmina Fishing Village",
+        "source_page": 3
+      }
+    ],
+    "dining_note": "For visitors who want named dining options inside Dagupan City, current local listings include MATUTINA-GERRY’s Seafood House in Barangay Pantal, Kainan ni Mang Peping on De Venecia Highway Extension, Dad Joe’s Restaurant, Sangkalan Restaurant Dagupan, and Ciudad Elmina Fishing Village. Ask for local bangus and other Pangasinan specialties.",
+    "festival": "The Bangus Festival is one of Dagupan’s major annual celebrations, highlighting the city’s milkfish industry through street dancing, culinary activities, bangus-related competitions, and community events. The city government also highlights the famous “101 Ways to Cook Bangus” and the Kalutan ed Dalan grilling event.",
+    "sample_itinerary": [
+      {
+        "period": "Morning",
+        "suggestion": "City Plaza & Dagupan City Museum → Old St. John Cathedral → historic downtown landmarks",
+        "source_page": 3
+      },
+      {
+        "period": "Lunch",
+        "suggestion": "Try Dagupan bangus, pigar-pigar, or kaleskes",
+        "source_page": 3
+      },
+      {
+        "period": "Afternoon",
+        "suggestion": "Dawel River Cruise or a waterfront visit → Tondaligan Beach / People’s Park",
+        "source_page": 3
+      },
+      {
+        "period": "Late afternoon",
+        "suggestion": "Tondaligan Baywalk / Bonuan coastal area",
+        "source_page": 3
+      },
+      {
+        "period": "Evening",
+        "suggestion": "Dinner featuring local seafood and bangus → return to a Dagupan City hotel",
+        "source_page": 3
+      }
+    ],
+    "heritage_note": "The Dagupan City Government has also identified numerous important cultural property and built-heritage sites, including the PNR Station, lighthouse in Bonuan Gueset, Vicar Hotel, Sanctuario de San Juan, Metropolitan Cathedral of Saint John, MacArthur landing marker, and other landmarks.",
+    "operating_details_verified": false,
+    "source_pages": [
+      {
+        "page": 1,
+        "text": "Dagupan City Tourism Guide    Page 1\n DAGUPAN CITY\n TOURISM GUIDE\n Places to Visit  Attractions  Hotels  Local Foods\n A city-only guide to Dagupan, Pangasinan\nDagupan City is known for its seven rivers, coastal character, cultural heritage, and famous\npond-raised bangus (milkfish). This guide intentionally includes destinations and businesses\nlocated within Dagupan City only.\nPrepared from the City Government of Dagupan tourism information and current local listings.\n"
+      },
+      {
+        "page": 2,
+        "text": "Dagupan City Tourism Guide    Page 2\nWELCOME TO DAGUPAN CITY\nDagupan City is an independent component city of Pangasinan and is crossed by seven rivers. Its identity is strongly\nconnected to fishing, aquaculture, commerce, heritage, and food—especially Dagupan bangus. The city government\ndescribes Dagupan as the “World’s Bangus Capital.”\nFor visitors, the city offers a mix of beach and waterfront experiences, historical landmarks, city-center culture, and\ndistinctly Dagupan food traditions.\nPLACES TO VISIT & ATTRACTIONS\nTondaligan Beach / Tondaligan People’s Park\nA major coastal recreation area in Bonuan. The city government describes Tondaligan People’s Park as a large\nforeshore area with the Japanese-Philippine Friendship Memorial Garden, Tomb of the Unknown Soldiers, and Mayor’s\nPavilion. The nearby Tondaligan Baywalk is also a waterfront stop.\nDawel River Cruise\nA river experience beginning near Dawel Bridge in Catacdang, Bonuan Gueset. The city government notes mangroves,\nfish including Dagupan bangus, birdlife, and remnants of old railway tracks along the route.\nDagupan City Museum & City Plaza\nA city-center cultural stop. The museum houses old photographs, antique household objects, works by native\ncontemporary artists, and works associated with National Artist Victorio Edades. City Plaza also contains the Rizal\nmonument, a Senior Citizen’s Park, and a Children’s Park.\nOld St. John Cathedral / St. John the Evangelist\nA historic religious landmark associated with important episodes in Dagupan’s history, including the 1898 battle in the\nchurch grounds and the marriage of Leonor Rivera and Henry Kipping.\nHistoric PNR / Spanish Railroad Station Site\nA heritage reminder of the Manila–Dagupan railway connection. The city’s tourism page identifies the Spanish-era\nrailroad station among Dagupan’s historical places.\nGabaldon Building\nThe historic Home Economics Building of West Central Elementary School. The city government identifies the structure\nas having been constructed in 1909 and notes its association with Gen. Douglas MacArthur’s headquarters in\nDagupan.\nFranklin Bridge Ruins\nRemnants connected with the 1935 flood that washed away the bridge and affected the old Colegio de San Alberto\nMagno.\nDagupan Water Tower\nA more-than-century-old landmark in the city center that once supplied Dagupan’s water needs.\nBonuan Blue Beach\nA coastal leisure area in Bonuan and part of Dagupan’s long-standing seaside recreation identity.\nHeritage note: The Dagupan City Government has also identified numerous important cultural\nproperty and built-heritage sites, including the PNR Station, lighthouse in Bonuan Gueset, Vicar\nHotel, Sanctuario de San Juan, Metropolitan Cathedral of Saint John, MacArthur landing marker,\nand other landmarks.\n"
+      },
+      {
+        "page": 3,
+        "text": "Dagupan City Tourism Guide    Page 3\nHOTELS TO STAY IN — DAGUPAN CITY ONLY\n Hotel\nLocation\nNotes\nStar Plaza Hotel\nAB Fernandez Ave., Dagupan City\nCentral-city hotel; convenient for the downtown area.\nLenox Hotel\nRizal St., Downtown District, Dagupan City\nDowntown accommodation near central Dagupan.\nHOTEL Monde\n108 AB Fernandez W Ave., Downtown District, Dagupan City\nCentral Dagupan option.\nBedbox Hotel Dagupan\nRizal St., Downtown District, Dagupan City\nBudget-oriented city-center accommodation.\nDamara Hotel at Ciudad Elmina\nCiudad Elmina Fishing Village, Fernandez Rd., Bacayao Norte, Dagupan City\nHotel within the Ciudad Elmina fishing-village area.\nRedDoorz @ Tondaligan Beach Hotel\nTondaligan Rd., Bonuan Gueset, Dagupan City\nBeach-area accommodation near Tondaligan.\nAccommodation prices, room availability, and operating details can change. Confirm directly with the hotel before booking.\nLOCAL FOODS TO TRY\n Food / Delicacy\nWhat to try\nDagupan Bangus\nThe city’s signature food. Try bangus grilled (inkalot), fried boneless daing, or in sour soup/sinigang.\nPigar-Pigar\nThinly sliced beef or carabao meat seasoned with salt and pepper, cooked with onions and commonly served with vegetables. The city government identifies Galvan Street as a place associated with this dish.\nKaleskes\nA traditional dish using beef and beef offal, slowly cooked and associated with food stalls around Herrero-Perez.\nBagoong / Inasin / Monamon\nA salty fish condiment associated with Pangasinan cuisine and traditionally produced near the old Perez market area.\nBuko Pastillas\nA soft, chewy coconut-based sweet associated by the city government with Lasip Grande.\nBocayo\nYoung coconut cooked with molasses or sugar until it becomes a sweet, crunchy delicacy.\nDAGUPAN FOOD STOPS\nFor visitors who want named dining options inside Dagupan City, current local listings include MATUTINA-GERRY’s\nSeafood House in Barangay Pantal, Kainan ni Mang Peping on De Venecia Highway Extension, Dad Joe’s Restaurant,\nSangkalan Restaurant Dagupan, and Ciudad Elmina Fishing Village. Ask for local bangus and other Pangasinan\nspecialties.\nDAGUPAN’S SIGNATURE FESTIVAL\nThe Bangus Festival is one of Dagupan’s major annual celebrations, highlighting the city’s milkfish industry through\nstreet dancing, culinary activities, bangus-related competitions, and community events. The city government also\nhighlights the famous “101 Ways to Cook Bangus” and the Kalutan ed Dalan grilling event.\nSAMPLE 1-DAY DAGUPAN CITY ITINERARY\n Time\nSuggested plan\nMorning\nCity Plaza & Dagupan City Museum → Old St. John Cathedral → historic downtown landmarks\nLunch\nTry Dagupan bangus, pigar-pigar, or kaleskes\nAfternoon\nDawel River Cruise or a waterfront visit → Tondaligan Beach / People’s Park\nLate afternoon\nTondaligan Baywalk / Bonuan coastal area\nEvening\nDinner featuring local seafood and bangus → return to a Dagupan City hotel\n"
+      },
+      {
+        "page": 4,
+        "text": "Dagupan City Tourism Guide    Page 4\nSOURCE & SCOPE NOTES\nThis guide was prepared specifically to satisfy the request for Dagupan City destinations only. The principal tourism\nand historical descriptions were checked against the official City Government of Dagupan tourism and city pages.\nCurrent hotel and local-business names/locations were cross-checked against current local listings.\n City Government of Dagupan — Tourism page: dagupan.gov.ph/tourism/\n City Government of Dagupan — About Dagupan City: dagupan.gov.ph/the-city/about-dagupan-city/\n Department of Tourism — Love the Philippines: Dagupan destination page\n Current local business listings for hotels, restaurants, and attractions in Dagupan City\nCITY-ONLY CHECK: Places outside Dagupan City were intentionally excluded, including nearby\ndestinations in other municipalities/cities of Pangasinan.\n"
+      }
+    ]
+  },
+  {
+    "entity_id": "MUNICIPAL-GUIDE-LINGAYEN",
+    "area_id": "lingayen",
+    "name": "Lingayen",
+    "title": "Lingayen Tourism Guide",
+    "lgu_type": "Municipality",
+    "city_only": false,
+    "municipality_only": true,
+    "source_file": "Lingayen_Tourism_Guide.pdf",
+    "source_sha256": "e8132e47417d003cf1bd8b65816b41e0bd16454fe4a4532b6b8e21fab42b2f58",
+    "source_date": null,
+    "listings_checked_month": "2026-09",
+    "source_date_note": "The PDF says local listings were checked in September 2026; it does not state a publication date.",
+    "source_url": "urn:sha256:e8132e47417d003cf1bd8b65816b41e0bd16454fe4a4532b6b8e21fab42b2f58",
+    "source_urls": [],
+    "source_references": " Municipality of Lingayen — Tourist Spots / tourism information.\n  Municipality of Lingayen — Industry and agriculture information.\n  Municipality of Lingayen — 2026 Bagoong Festival announcements and food showcase.\n  Official Website of the Province of Pangasinan — Lingayen profile and heritage/tourism information.\n  Official Province of Pangasinan — Capitol Resort Hotel information.\n  Philippine Information Agency — 2026 report on bagoong and local food tourism in Lingayen.\n  Philippine News Agency — Bagoong Festival coverage and bagoong-factory tour information.\n  Current local business listings checked in September 2026 for Lingayen hotels, resorts, restaurants, and attractions.",
+    "attribution_note": "No exact source URLs are printed in this PDF. source_url is a content-addressed PDF identifier, not a website URL. Named references are retained; no live verification performed.",
+    "profile": "Lingayen was founded in 1614 and became the capital of Pangasinan. Its history includes the World War II landing in Lingayen Gulf and a strong civic and cultural landscape around the provincial Capitol complex. Today, the town combines coastal recreation, heritage sites, food tourism, and local industry. The Municipality of Lingayen identifies bagoong as its One Town, One Product (OTOP). Its coastal setting, the Agno River, and an 11.5-kilometer coastline support fisheries and other aquatic resources, while local tourism highlights heritage buildings, the Baywalk, and the Limahong Channel. Best for  Heritage: Casa Real, the Capitol complex, Sison Auditorium, churches, and WWII memorial sites.  Coastal leisure: Lingayen Beach and Baywalk, sunsets, walks, and photo stops.  Food tourism: Lingayen bagoong, bagoong-based dishes, sundot-kulangot, kalamay, and local seafood.  Ecotourism: Limahong Channel, its tourism center, and the nearby bike/ecotourism area.",
+    "attractions": [
+      {
+        "name": "Lingayen Beach & Baywalk",
+        "description": "A scenic coastal public area and one of Lingayen's signature visitor stops. The municipal tourism page describes it as a tranquil gathering and pictorial site. Ideal for walking, sunset viewing, casual recreation, and photography.",
+        "source_page": 2,
+        "category": "Beach",
+        "aliases": [
+          "Lingayen Beach",
+          "Lingayen Baywalk"
+        ]
+      },
+      {
+        "name": "Casa Real / Provincial Museum",
+        "description": "A restored national historical landmark and former provincial seat of government. The building dates to the Spanish period and now houses the provincial museum, making it a key stop for Lingayen and Pangasinan history.",
+        "source_page": 2,
+        "category": "Culture and Heritage",
+        "aliases": [
+          "Casa Real"
+        ]
+      },
+      {
+        "name": "Pangasinan Provincial Capitol",
+        "description": "The provincial government center and a major architectural landmark in Lingayen. Include the Capitol complex in a heritage walk, while observing public-access rules for government offices.",
+        "source_page": 2,
+        "category": "Culture and Heritage",
+        "aliases": [
+          "Capitol Building"
+        ]
+      },
+      {
+        "name": "Urduja House",
+        "description": "The official residence of the Governor of Pangasinan, located in the Capitol complex. Best treated as an exterior/heritage viewing stop unless an authorized visit or event provides access.",
+        "source_page": 2,
+        "category": "Culture and Heritage",
+        "aliases": []
+      },
+      {
+        "name": "Sison Auditorium",
+        "description": "A major cultural venue in the provincial capital used for social and cultural events. Check the current event schedule if you want to see a performance or public program.",
+        "source_page": 2,
+        "category": "Culture and Heritage",
+        "aliases": []
+      },
+      {
+        "name": "Limahong Channel & Tourism Center",
+        "description": "A historical and ecotourism site associated with Limahong's 1574 escape route. Municipal plans and tourism materials highlight the channel as a place for history, nature, and recreational activities.",
+        "source_page": 2,
+        "category": "Farm and Nature",
+        "aliases": [
+          "Limahong Channel"
+        ]
+      },
+      {
+        "name": "Veterans Memorial Park",
+        "description": "An open-air WWII heritage site with relics and memorabilia, including the MacArthur Landing Marker. It provides context for the historic Lingayen Gulf landing.",
+        "source_page": 2,
+        "category": "Culture and Heritage",
+        "aliases": []
+      },
+      {
+        "name": "Epiphany of Our Lord Parish",
+        "description": "A historic Roman Catholic church formerly known as the Three Kings Parish and identified by the municipal tourism office as one of the country's older Catholic churches.",
+        "source_page": 2,
+        "category": "Religious",
+        "aliases": [
+          "Epiphany of Our Lord Co-Cathedral Parish"
+        ]
+      },
+      {
+        "name": "Fidel V. Ramos Ancestral Home",
+        "description": "The well-preserved ancestral home of former Philippine President Fidel V. Ramos, identified by the Province of Pangasinan as a Lingayen heritage attraction. Observe any private-property or access restrictions.",
+        "source_page": 3,
+        "category": "Culture and Heritage",
+        "aliases": [
+          "Fidel V. Ramos Ancestral House"
+        ]
+      },
+      {
+        "name": "Lingayen Town Plaza",
+        "description": "A central civic landmark in the town proper, located in front of the Municipal Hall. It works well as a short stop when combining the town center with nearby heritage sites.",
+        "source_page": 3,
+        "category": "Park",
+        "aliases": []
+      },
+      {
+        "name": "Narciso Ramos Sports & Civic Center",
+        "description": "A venue for local, regional, and national sports and civic activities. Check event schedules when planning a visit.",
+        "source_page": 3,
+        "category": "Recreation",
+        "aliases": []
+      },
+      {
+        "name": "Colegio del Santissimo Rosario Ruins",
+        "description": "Remains associated with the former girls' school run by Dominican sisters. The municipal tourism office notes that the site is now part of private property, so viewing should respect access restrictions.",
+        "source_page": 3,
+        "category": "Culture and Heritage",
+        "aliases": []
+      }
+    ],
+    "activities": [
+      {
+        "name": "Heritage walking tour",
+        "description": "Start around the Town Plaza and municipal center, then continue toward Casa Real, the Capitol complex, Sison Auditorium, and other nearby heritage landmarks.",
+        "source_page": 4
+      },
+      {
+        "name": "Beach and Baywalk afternoon",
+        "description": "Spend a relaxed afternoon along Lingayen Beach and Baywalk. Pair a coastal walk with sunset photography and a local meal.",
+        "source_page": 4
+      },
+      {
+        "name": "Museum and history stop",
+        "description": "Visit Casa Real/Provincial Museum to deepen the historical context before seeing the WWII memorial sites.",
+        "source_page": 4
+      },
+      {
+        "name": "Limahong Channel exploration",
+        "description": "Visit the Limahong Channel Tourism Center and surrounding ecotourism area. Depending on current operations, activities may include cycling and nature-oriented recreation.",
+        "source_page": 4
+      },
+      {
+        "name": "Bagoong food trip",
+        "description": "Try Lingayen bagoong as a condiment or in prepared dishes, and look for local manufacturers or food showcases when available.",
+        "source_page": 4
+      },
+      {
+        "name": "Local delicacy tasting",
+        "description": "Try sundot-kulangot and kalamay, both highlighted by the municipal tourism office during its 2026 food showcase.",
+        "source_page": 4
+      },
+      {
+        "name": "Seafood and coastal dining",
+        "description": "Look for local seafood and Filipino dishes in Lingayen's town-center and coastal dining areas.",
+        "source_page": 4
+      },
+      {
+        "name": "Festival experience",
+        "description": "If visiting during the annual Bagoong Festival, join public food, cultural, cooking, and street-dance activities. The 2026 celebration ran March 18–20.",
+        "source_page": 4
+      },
+      {
+        "name": "Photography circuit",
+        "description": "Combine the Baywalk, Town Plaza, heritage buildings, Capitol grounds, and WWII markers for a full-day photo route.",
+        "source_page": 4
+      }
+    ],
+    "hotels": [
+      {
+        "name": "Capitol Resort Hotel",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "location": "Alvear St., Capitol Compound",
+        "description": "Provincial-government hotel; Lingayen Gulf views; central for Capitol-area sightseeing.",
+        "aliases": []
+      },
+      {
+        "name": "YRS Resort",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "location": "Baywalk, Sitio Aliguas, Libsong East",
+        "description": "Hotel/resort option near the coast.",
+        "aliases": []
+      },
+      {
+        "name": "TripTych Baywalk Beach Resort",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "location": "Baywalk, Libsong East",
+        "description": "Resort hotel near the Baywalk area.",
+        "aliases": []
+      },
+      {
+        "name": "Bergamo Hotel",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "location": "Torres-Bugallon, Poblacion",
+        "description": "Town-center hotel option.",
+        "aliases": []
+      },
+      {
+        "name": "El Puerto Marina Beach Resort & Vacation Club",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "location": "Don Martin Domingo St.",
+        "description": "Resort hotel within Lingayen.",
+        "aliases": []
+      },
+      {
+        "name": "Baywalk Paradise Inn",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "location": "Salvacion / Baywalk extension, Maniboc",
+        "description": "Inn option near the coastal area.",
+        "aliases": []
+      }
+    ],
+    "local_foods": [
+      {
+        "name": "Lingayen bagoong",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "description": "The municipality's OTOP and signature food product. Try it with rice, vegetables, grilled food, green mangoes, or in prepared dishes."
+      },
+      {
+        "name": "Alamang",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "description": "A related fermented shrimp product highlighted with bagoong in the municipality's 2026 food-tourism program."
+      },
+      {
+        "name": "Sundot-kulangot",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "description": "A traditional sweet highlighted by the municipality in its 2026 Taway-Taway food showcase."
+      },
+      {
+        "name": "Kalamay",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "description": "Another local sweet featured in Lingayen's 2026 culinary showcase."
+      },
+      {
+        "name": "Bagoong-based dishes",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "description": "Look for bagoong fried rice, bagoong longganisa, and other creative dishes during food events or at local restaurants."
+      },
+      {
+        "name": "Seafood and Filipino dishes",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "description": "Lingayen's coastal setting supports seafood and everyday Filipino cooking; local restaurants offer additional choices."
+      }
+    ],
+    "dining": [
+      {
+        "name": "Mesa de Amor",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "location": "Avenida Rizal W",
+        "description": "Town-center dining / local meal stop."
+      },
+      {
+        "name": "Papa Dong's Restaurant",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "location": "Poblacion",
+        "description": "Casual Filipino dining option."
+      },
+      {
+        "name": "B & T Restaurant",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "location": "Avenida Rizal E Rd",
+        "description": "Convenient town-center meal stop."
+      },
+      {
+        "name": "Calazan View Grill",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "location": "Urbiztondo–Lingayen Rd",
+        "description": "Grill/Filipino food option within Lingayen."
+      },
+      {
+        "name": "Nanay Remy's Foodhouse",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "location": "Alvear II, Poblacion",
+        "description": "Local casual food stop."
+      }
+    ],
+    "sample_itinerary": [
+      {
+        "day": 1,
+        "period": "7:30 AM",
+        "suggestion": "Breakfast in the town proper.",
+        "source_page": 6,
+        "illustrative_time_only": true
+      },
+      {
+        "day": 1,
+        "period": "8:30 AM",
+        "suggestion": "Town Plaza → Casa Real / Provincial Museum.",
+        "source_page": 6,
+        "illustrative_time_only": true
+      },
+      {
+        "day": 1,
+        "period": "10:00 AM",
+        "suggestion": "Capitol complex → Sison Auditorium → Urduja House exterior viewing.",
+        "source_page": 6,
+        "illustrative_time_only": true
+      },
+      {
+        "day": 1,
+        "period": "11:30 AM",
+        "suggestion": "Epiphany of Our Lord Parish / nearby heritage stops.",
+        "source_page": 6,
+        "illustrative_time_only": true
+      },
+      {
+        "day": 1,
+        "period": "12:30 PM",
+        "suggestion": "Lunch featuring Lingayen bagoong or seafood.",
+        "source_page": 6,
+        "illustrative_time_only": true
+      },
+      {
+        "day": 1,
+        "period": "2:00 PM",
+        "suggestion": "Limahong Channel Tourism Center and ecotourism area.",
+        "source_page": 6,
+        "illustrative_time_only": true
+      },
+      {
+        "day": 1,
+        "period": "4:00 PM",
+        "suggestion": "Veterans Memorial Park / WWII heritage stop.",
+        "source_page": 6,
+        "illustrative_time_only": true
+      },
+      {
+        "day": 1,
+        "period": "5:00 PM",
+        "suggestion": "Lingayen Beach & Baywalk for sunset and photos.",
+        "source_page": 6,
+        "illustrative_time_only": true
+      },
+      {
+        "day": 1,
+        "period": "6:30 PM",
+        "suggestion": "Dinner and local sweets; buy sealed Lingayen bagoong as a souvenir.",
+        "source_page": 6,
+        "illustrative_time_only": true
+      }
+    ],
+    "itinerary_attraction_order": [
+      "Lingayen Town Plaza",
+      "Casa Real / Provincial Museum",
+      "Pangasinan Provincial Capitol",
+      "Sison Auditorium",
+      "Urduja House",
+      "Epiphany of Our Lord Parish",
+      "Limahong Channel & Tourism Center",
+      "Veterans Memorial Park",
+      "Lingayen Beach & Baywalk",
+      "Fidel V. Ramos Ancestral Home",
+      "Narciso Ramos Sports & Civic Center",
+      "Colegio del Santissimo Rosario Ruins"
+    ],
+    "practical_notes": " Getting around: Tricycles are the main local public transport around town; private vehicles are useful for linking the coastal and heritage stops efficiently.  Beach timing: Late afternoon is useful for combining the Baywalk with sunset photography.  Government sites: Capitol-area buildings may have public-access limits because they remain active government facilities.  Private heritage sites: Respect access restrictions at the Fidel V. Ramos ancestral home and Colegio del Santissimo Rosario ruins.  Food purchases: For bagoong and other packaged products, choose sealed products with clear labeling and observe local food-safety guidance.  Events: Festival schedules, traffic schemes, venue access, and tourism-center operations can change. Check current municipal announcements before travel.",
+    "access_note": "Government buildings may have public-access limits. Urduja House is an exterior viewing stop unless access is authorized. Respect private-property restrictions at the Fidel V. Ramos ancestral home and Colegio del Santissimo Rosario ruins.",
+    "operating_details_verified": false,
+    "source_pages": [
+      {
+        "page": 1,
+        "text": "Lingayen Tourism Guide    Page 1\n LINGAYEN\n TOURISM GUIDE\n Attractions  Activities  Hotels  Local Food  Heritage\n STRICT GEOGRAPHIC SCOPE\nThis guide covers Lingayen, Pangasinan only. Attractions, activities, hotels, resorts, and food stops\nlisted here are within the Municipality of Lingayen. Neighboring municipalities and cities are intentionally\nexcluded.\nLingayen is the capital municipality of Pangasinan and a coastal heritage destination shaped by government, history, the\nLingayen Gulf, and its long-standing bagoong-making industry.\nGuide basis: official municipal/provincial tourism information plus current local business listings checked in September 2026.\n"
+      },
+      {
+        "page": 2,
+        "text": "Lingayen Tourism Guide    Page 2\n1. LINGAYEN AT A GLANCE\nLingayen was founded in 1614 and became the capital of Pangasinan. Its history includes the World War II landing in\nLingayen Gulf and a strong civic and cultural landscape around the provincial Capitol complex. Today, the town combines\ncoastal recreation, heritage sites, food tourism, and local industry.\nThe Municipality of Lingayen identifies bagoong as its One Town, One Product (OTOP). Its coastal setting, the Agno\nRiver, and an 11.5-kilometer coastline support fisheries and other aquatic resources, while local tourism highlights\nheritage buildings, the Baywalk, and the Limahong Channel.\nBest for\n Heritage: Casa Real, the Capitol complex, Sison Auditorium, churches, and WWII memorial sites.\n Coastal leisure: Lingayen Beach and Baywalk, sunsets, walks, and photo stops.\n Food tourism: Lingayen bagoong, bagoong-based dishes, sundot-kulangot, kalamay, and local seafood.\n Ecotourism: Limahong Channel, its tourism center, and the nearby bike/ecotourism area.\n2. PLACES TO VISIT\n1. Lingayen Beach & Baywalk\nA scenic coastal public area and one of Lingayen's signature visitor stops. The municipal tourism page describes it as a\ntranquil gathering and pictorial site. Ideal for walking, sunset viewing, casual recreation, and photography.\n2. Casa Real / Provincial Museum\nA restored national historical landmark and former provincial seat of government. The building dates to the Spanish period\nand now houses the provincial museum, making it a key stop for Lingayen and Pangasinan history.\n3. Pangasinan Provincial Capitol\nThe provincial government center and a major architectural landmark in Lingayen. Include the Capitol complex in a\nheritage walk, while observing public-access rules for government offices.\n4. Urduja House\nThe official residence of the Governor of Pangasinan, located in the Capitol complex. Best treated as an exterior/heritage\nviewing stop unless an authorized visit or event provides access.\n5. Sison Auditorium\nA major cultural venue in the provincial capital used for social and cultural events. Check the current event schedule if you\nwant to see a performance or public program.\n6. Limahong Channel & Tourism Center\nA historical and ecotourism site associated with Limahong's 1574 escape route. Municipal plans and tourism materials\nhighlight the channel as a place for history, nature, and recreational activities.\n7. Veterans Memorial Park\nAn open-air WWII heritage site with relics and memorabilia, including the MacArthur Landing Marker. It provides context\nfor the historic Lingayen Gulf landing.\n8. Epiphany of Our Lord Parish\nA historic Roman Catholic church formerly known as the Three Kings Parish and identified by the municipal tourism office\nas one of the country's older Catholic churches.\n"
+      },
+      {
+        "page": 3,
+        "text": "Lingayen Tourism Guide    Page 3\n9. Fidel V. Ramos Ancestral Home\nThe well-preserved ancestral home of former Philippine President Fidel V. Ramos, identified by the Province of\nPangasinan as a Lingayen heritage attraction. Observe any private-property or access restrictions.\n10. Lingayen Town Plaza\nA central civic landmark in the town proper, located in front of the Municipal Hall. It works well as a short stop when\ncombining the town center with nearby heritage sites.\n11. Narciso Ramos Sports & Civic Center\nA venue for local, regional, and national sports and civic activities. Check event schedules when planning a visit.\n12. Colegio del Santissimo Rosario Ruins\nRemains associated with the former girls' school run by Dominican sisters. The municipal tourism office notes that the site\nis now part of private property, so viewing should respect access restrictions.\n"
+      },
+      {
+        "page": 4,
+        "text": "Lingayen Tourism Guide    Page 4\n3. THINGS TO DO\n1. Heritage walking tour\nStart around the Town Plaza and municipal center, then continue toward Casa Real, the Capitol complex, Sison\nAuditorium, and other nearby heritage landmarks.\n2. Beach and Baywalk afternoon\nSpend a relaxed afternoon along Lingayen Beach and Baywalk. Pair a coastal walk with sunset photography and a local\nmeal.\n3. Museum and history stop\nVisit Casa Real/Provincial Museum to deepen the historical context before seeing the WWII memorial sites.\n4. Limahong Channel exploration\nVisit the Limahong Channel Tourism Center and surrounding ecotourism area. Depending on current operations, activities\nmay include cycling and nature-oriented recreation.\n5. Bagoong food trip\nTry Lingayen bagoong as a condiment or in prepared dishes, and look for local manufacturers or food showcases when\navailable.\n6. Local delicacy tasting\nTry sundot-kulangot and kalamay, both highlighted by the municipal tourism office during its 2026 food showcase.\n7. Seafood and coastal dining\nLook for local seafood and Filipino dishes in Lingayen's town-center and coastal dining areas.\n8. Festival experience\nIf visiting during the annual Bagoong Festival, join public food, cultural, cooking, and street-dance activities. The 2026\ncelebration ran March 18–20.\n9. Photography circuit\nCombine the Baywalk, Town Plaza, heritage buildings, Capitol grounds, and WWII markers for a full-day photo route.\n4. LINGAYEN BAGOONG FESTIVAL\nBagoong is Lingayen's OTOP and a defining part of its food identity. The municipality has celebrated the Bagoong\nFestival since 2011. The 2026 edition ran March 18–20 and included food showcases, a cooking competition, cultural\nactivities, and street-dancing events.\nThe 2026 Taway-Taway Food Showcase highlighted sundot-kulangot, kalamay, bagoong fried rice, and bagoong\nlongganisa. A 2026 Philippine Information Agency report also documented a cooking competition centered on bagoong\nand alamang.\nPlanning tip: Festival dates and road closures can change each year. Check the Municipality of Lingayen's current\nannouncements before traveling.\n5. WHERE TO STAY — LINGAYEN ONLY\n"
+      },
+      {
+        "page": 5,
+        "text": "Lingayen Tourism Guide    Page 5\nProperty\nLocation\nType / note\nCapitol Resort Hotel\nAlvear St., Capitol Compound\nProvincial-government hotel; Lingayen Gulf views;\ncentral for Capitol-area sightseeing.\nYRS Resort\nBaywalk, Sitio Aliguas, Libsong East\nHotel/resort option near the coast.\nTripTych Baywalk Beach Resort\nBaywalk, Libsong East\nResort hotel near the Baywalk area.\nBergamo Hotel\nTorres-Bugallon, Poblacion\nTown-center hotel option.\nEl Puerto Marina Beach Resort &\nVacation Club\nDon Martin Domingo St.\nResort hotel within Lingayen.\nBaywalk Paradise Inn\nSalvacion / Baywalk extension, Maniboc\nInn option near the coastal area.\nHotel listings are current local options checked for this guide; room rates, availability, and amenities can change. Confirm directly before booking.\n6. WHAT TO EAT & TRY\nLingayen bagoong\nThe municipality's OTOP and signature food product. Try it with rice, vegetables, grilled food, green mangoes, or in\nprepared dishes.\nAlamang\nA related fermented shrimp product highlighted with bagoong in the municipality's 2026 food-tourism program.\nSundot-kulangot\nA traditional sweet highlighted by the municipality in its 2026 Taway-Taway food showcase.\nKalamay\nAnother local sweet featured in Lingayen's 2026 culinary showcase.\nBagoong-based dishes\nLook for bagoong fried rice, bagoong longganisa, and other creative dishes during food events or at local restaurants.\nSeafood and Filipino dishes\nLingayen's coastal setting supports seafood and everyday Filipino cooking; local restaurants offer additional choices.\nCurrent Lingayen food stops\n Food stop\nLocation\nUse in itinerary\nMesa de Amor\nAvenida Rizal W\nTown-center dining / local meal stop.\nPapa Dong's Restaurant\nPoblacion\nCasual Filipino dining option.\nB & T Restaurant\nAvenida Rizal E Rd\nConvenient town-center meal stop.\nCalazan View Grill\nUrbiztondo–Lingayen Rd\nGrill/Filipino food option within Lingayen.\nNanay Remy's Foodhouse\nAlvear II, Poblacion\nLocal casual food stop.\n"
+      },
+      {
+        "page": 6,
+        "text": "Lingayen Tourism Guide    Page 6\n7. SAMPLE 1-DAY LINGAYEN ITINERARY\n Time\nPlan\n7:30 AM\nBreakfast in the town proper.\n8:30 AM\nTown Plaza → Casa Real / Provincial Museum.\n10:00 AM\nCapitol complex → Sison Auditorium → Urduja House exterior viewing.\n11:30 AM\nEpiphany of Our Lord Parish / nearby heritage stops.\n12:30 PM\nLunch featuring Lingayen bagoong or seafood.\n2:00 PM\nLimahong Channel Tourism Center and ecotourism area.\n4:00 PM\nVeterans Memorial Park / WWII heritage stop.\n5:00 PM\nLingayen Beach & Baywalk for sunset and photos.\n6:30 PM\nDinner and local sweets; buy sealed Lingayen bagoong as a souvenir.\n8. PRACTICAL TRAVEL NOTES\n  Getting around: Tricycles are the main local public transport around town; private vehicles are useful for linking the coastal\n and heritage stops efficiently.\n Beach timing: Late afternoon is useful for combining the Baywalk with sunset photography.\n  Government sites: Capitol-area buildings may have public-access limits because they remain active government facilities.\n  Private heritage sites: Respect access restrictions at the Fidel V. Ramos ancestral home and Colegio del Santissimo\n Rosario ruins.\n Food purchases: For bagoong and other packaged products, choose sealed products with clear labeling and observe\n local food-safety guidance.\n Events: Festival schedules, traffic schemes, venue access, and tourism-center operations can change. Check current\n municipal announcements before travel.\n9. SOURCES & RESEARCH NOTES\n  Municipality of Lingayen — Tourist Spots / tourism information.\n  Municipality of Lingayen — Industry and agriculture information.\n  Municipality of Lingayen — 2026 Bagoong Festival announcements and food showcase.\n  Official Website of the Province of Pangasinan — Lingayen profile and heritage/tourism information.\n  Official Province of Pangasinan — Capitol Resort Hotel information.\n  Philippine Information Agency — 2026 report on bagoong and local food tourism in Lingayen.\n  Philippine News Agency — Bagoong Festival coverage and bagoong-factory tour information.\n  Current local business listings checked in September 2026 for Lingayen hotels, resorts, restaurants, and attractions.\n "
+      },
+      {
+        "page": 7,
+        "text": "Lingayen Tourism Guide    Page 7\nSTRICT SCOPE CHECK\nAll recommendations in this guide are intended to be within Lingayen, Pangasinan only. Neighboring\nBinmaley, Bugallon, Labrador, Dagupan, and other municipalities/cities are excluded.\n"
+      }
+    ],
+    "festivals": "Bagoong is Lingayen's OTOP and a defining part of its food identity. The municipality has celebrated the Bagoong Festival since 2011. The 2026 edition ran March 18–20 and included food showcases, a cooking competition, cultural activities, and street-dancing events. The 2026 Taway-Taway Food Showcase highlighted sundot-kulangot, kalamay, bagoong fried rice, and bagoong longganisa. A 2026 Philippine Information Agency report also documented a cooking competition centered on bagoong and alamang. Planning tip: Festival dates and road closures can change each year. Check the Municipality of Lingayen's current announcements before traveling."
+  },
+  {
+    "entity_id": "MUNICIPAL-GUIDE-MANAOAG",
+    "area_id": "manaoag",
+    "name": "Manaoag",
+    "title": "Manaoag Tourism Guide",
+    "lgu_type": "Municipality",
+    "city_only": false,
+    "municipality_only": true,
+    "source_file": "Manaoag_Tourism_Guide.pdf",
+    "source_sha256": "195b79311f4dc0c16bb54e7d6ebf1123d831c1ba1ab3e22f128a18f5ba95026e",
+    "source_date": null,
+    "listings_checked_month": "2026-09",
+    "source_date_note": "The PDF says local listings were checked in September 2026; it does not state a publication date.",
+    "source_url": "urn:sha256:195b79311f4dc0c16bb54e7d6ebf1123d831c1ba1ab3e22f128a18f5ba95026e",
+    "source_urls": [],
+    "source_references": " Official eLGU News Portal of Manaoag — municipal overview and tourism identity.\n  Official Website of the Province of Pangasinan — Manaoag profile and Galicayo Festival information.\n  Minor Basilica of Our Lady of the Rosary of Manaoag — official Basilica history, visitor information, and Mass schedule.\n  Department of Tourism — Love the Philippines / Pangasinan destination information.\n  Philippine News Agency — Manaoag tourism reporting, including 2024 visitor data, Virgin's Well, resorts, Baba's Eco Farm,\n and sampaguita farm tours.\n Philippine News Agency — Pangasinan sampaguita-farm/agri-tourism reporting.\n  Department of Agriculture Regional Field Office 1 — Baritao sampaguita farming/agri-tourism development.\n  Current local business listings checked in September 2026 for Manaoag hotels, restaurants, and attractions.",
+    "attribution_note": "No exact source URLs are printed in this PDF. source_url is a content-addressed PDF identifier, not a website URL. Named references are retained; no live verification performed.",
+    "profile": "Manaoag is a historic municipality in Pangasinan widely known as a pilgrimage town. The Province of Pangasinan identifies the Minor Basilica of Our Lady of the Holy Rosary of Manaoag as the town's defining attraction and notes the annual Galicayo Festival in honor of Our Lady of Manaoag. Recent municipal tourism reporting also shows that Manaoag is developing attractions beyond the Basilica, including the Virgin's Well, sampaguita farms in Barangay Baritao, eco-farm experiences, resorts, and local culinary offerings. Best for  Pilgrimage: Basilica visits, Mass, prayer, candle lighting, religious articles, and sacred heritage.  Farm tourism: Sampaguita farming and garland-making, eco-farm experiences, and rural landscapes.  Food: Tupig, patupat, puto, native kakanin, Pangasinan-style Filipino dishes, and local market finds.  Culture: Galicayo Festival, devotional crafts, rosaries, and local handicrafts.",
+    "attractions": [
+      {
+        "name": "Minor Basilica of Our Lady of the Rosary of Manaoag",
+        "description": "The spiritual heart of Manaoag and its best-known landmark. The Basilica houses the centuries-old image of Our Lady of the Rosary of Manaoag, known locally as Apo Baket. Visitors can attend Mass, pray, light candles, and visit sacred spaces including the museum and rosary/candle areas.",
+        "source_page": 2,
+        "category": "Religious",
+        "aliases": [
+          "Minor Basilica of Our Lady of the Holy Rosary of Manaoag"
+        ]
+      },
+      {
+        "name": "Basilica Museum & Sacred Spaces",
+        "description": "Explore the Basilica's religious heritage through its museum and devotional areas. The Department of Tourism specifically highlights the rosary park, candle gallery, and museum as visitor experiences.",
+        "source_page": 2,
+        "category": "Culture and Heritage",
+        "aliases": []
+      },
+      {
+        "name": "Virgin's Well — Barangay Pugaro",
+        "description": "A pilgrimage site associated with a spring traditionally believed by devotees to have healing significance. Recent Philippine News Agency reporting identifies it as one of Manaoag's other established visitor attractions.",
+        "source_page": 2,
+        "category": "Religious",
+        "aliases": [
+          "Virgin's Well"
+        ]
+      },
+      {
+        "name": "Sampaguita Farms — Barangay Baritao",
+        "description": "A small farming area where local growers cultivate sampaguita and make flower garlands. Municipal tourism has offered scheduled small-group tours; morning visits are useful for seeing flower harvesting and garland preparation.",
+        "source_page": 2,
+        "category": "Farm and Nature",
+        "aliases": []
+      },
+      {
+        "name": "Baba's Eco Farm — Barangay Inamotan",
+        "description": "An eco-farm destination identified by the municipal tourism office as one of Manaoag's visitor attractions. It is suited to visitors interested in plants, flowers, rural scenery, and a quieter countryside experience.",
+        "source_page": 2,
+        "category": "Farm and Nature",
+        "aliases": [
+          "Baba's Eco Farm"
+        ]
+      },
+      {
+        "name": "AGTALON / Manaoag Organic Hub",
+        "description": "An agriculture and livelihood-oriented site connected with sustainable farming and organic production. Tourism-planning documents identified it as a potential farm-tourism and slow-food experience; confirm current visitor arrangements before going.",
+        "source_page": 2,
+        "category": "Farm and Nature",
+        "aliases": [
+          "AGTALON, Inc. | Manaoag Organic Hub"
+        ]
+      },
+      {
+        "name": "Manaoag Public Market",
+        "description": "A practical stop for local produce, native delicacies, religious souvenirs, woven goods, and everyday town life. It is particularly useful for food and pasalubong shopping.",
+        "source_page": 2,
+        "category": "Market",
+        "aliases": []
+      },
+      {
+        "name": "Rizal Park",
+        "description": "A small public park in the town area suitable for a short rest or stop during a town-center itinerary.",
+        "source_page": 2,
+        "category": "Park",
+        "aliases": []
+      },
+      {
+        "name": "Manaoag Rural Landscape & Viewpoints",
+        "description": "Manaoag's agricultural setting provides quiet countryside scenery beyond the pilgrimage core. Treat informal viewpoints and private land respectfully and use established public access routes.",
+        "source_page": 3,
+        "category": "Farm and Nature",
+        "aliases": []
+      }
+    ],
+    "activities": [
+      {
+        "name": "Attend Mass at the Basilica",
+        "description": "Check the Basilica's current schedule before your visit. Its official site lists weekday and weekend Masses, with schedules subject to change.",
+        "source_page": 3
+      },
+      {
+        "name": "Light candles and visit the devotional areas",
+        "description": "Spend time in the Basilica complex for prayer, reflection, candle lighting, and religious-heritage viewing.",
+        "source_page": 3
+      },
+      {
+        "name": "Take a Basilica heritage walk",
+        "description": "Explore the church exterior and interior spaces, museum, rosary areas, and surrounding devotional shops at a respectful pace.",
+        "source_page": 3
+      },
+      {
+        "name": "Visit the Virgin's Well",
+        "description": "Add the Pugaro site to a pilgrimage itinerary and allow extra time for the rural approach.",
+        "source_page": 3
+      },
+      {
+        "name": "Schedule a sampaguita farm visit",
+        "description": "Coordinate ahead with the municipal tourism office when tours are operating. Early morning is the most useful period for observing harvesting and garland-making.",
+        "source_page": 3
+      },
+      {
+        "name": "Explore an eco-farm",
+        "description": "Visit Baba's Eco Farm or another currently operating Manaoag farm attraction after confirming access, schedules, and any entrance requirements.",
+        "source_page": 3
+      },
+      {
+        "name": "Shop for devotional souvenirs",
+        "description": "Look for rosaries, Marian images, religious articles, shirts, keychains, and other pilgrimage keepsakes around the Basilica and town market.",
+        "source_page": 3
+      },
+      {
+        "name": "Taste local kakanin",
+        "description": "Try fresh tupig, patupat, puto, native rice cakes, and other Pangasinan delicacies from established local vendors.",
+        "source_page": 3
+      },
+      {
+        "name": "Experience Galicayo Festival",
+        "description": "Plan a December visit when the annual faith-and-culture celebration is taking place, subject to the municipality's current calendar.",
+        "source_page": 3
+      },
+      {
+        "name": "Take a slow-food / countryside day",
+        "description": "Combine a farm visit, local lunch, public-market shopping, and a return to the Basilica for an evening devotional stop.",
+        "source_page": 3
+      }
+    ],
+    "hotels": [
+      {
+        "name": "The Manaoag Hotel",
+        "source_page": 4,
+        "source_pages": [
+          4
+        ],
+        "location": "Tiong St., Poblacion",
+        "description": "Central hotel near the Basilica; suitable for pilgrimage and town-center stays.",
+        "aliases": []
+      },
+      {
+        "name": "Top Star Hotel Manaoag",
+        "source_page": 4,
+        "source_pages": [
+          4
+        ],
+        "location": "Llamido St.",
+        "description": "Small hotel/bed-and-breakfast option close to the pilgrimage area.",
+        "aliases": []
+      },
+      {
+        "name": "Apples&Pears; Hotel",
+        "source_page": 4,
+        "source_pages": [
+          4
+        ],
+        "location": "Zone 1, Sta. Ines",
+        "description": "Hotel option within Manaoag, useful for visitors seeking a quieter stay outside the immediate church core.",
+        "aliases": []
+      },
+      {
+        "name": "Amber's Paradise",
+        "source_page": 4,
+        "source_pages": [
+          4
+        ],
+        "location": "Manaoag, Pangasinan",
+        "description": "Hotel/resort attraction identified in municipal tourism reporting; confirm current accommodation availability.",
+        "aliases": []
+      },
+      {
+        "name": "One Alo Resort",
+        "source_page": 4,
+        "source_pages": [
+          4
+        ],
+        "location": "Manaoag, Pangasinan",
+        "description": "Resort identified in recent municipal tourism reporting; confirm current room and facility availability.",
+        "aliases": [
+          "OneAlo Hotel and Resort"
+        ]
+      }
+    ],
+    "local_foods": [
+      {
+        "name": "Tupig",
+        "source_page": 4,
+        "source_pages": [
+          4
+        ],
+        "description": "A grilled sticky-rice and coconut delicacy commonly sold around the pilgrimage area and public market. Look for freshly grilled batches."
+      },
+      {
+        "name": "Patupat",
+        "source_page": 4,
+        "source_pages": [
+          4
+        ],
+        "description": "A traditional sticky-rice delicacy associated with Pangasinan and commonly available through local food vendors."
+      },
+      {
+        "name": "Puto and native kakanin",
+        "source_page": 4,
+        "source_pages": [
+          4
+        ],
+        "description": "Steamed rice cakes and assorted native sweets make easy snacks or pasalubong."
+      },
+      {
+        "name": "Pangasinan-style Filipino dishes",
+        "source_page": 4,
+        "source_pages": [
+          4
+        ],
+        "description": "Look for local preparations of grilled meats, vegetables, rice dishes, and other everyday Filipino food."
+      },
+      {
+        "name": "Fresh local produce",
+        "source_page": 4,
+        "source_pages": [
+          4
+        ],
+        "description": "Manaoag's agricultural setting makes its public market a useful place to browse fruits, vegetables, and other farm products."
+      },
+      {
+        "name": "Devotional-market treats & pasalubong",
+        "source_page": 4,
+        "source_pages": [
+          4
+        ],
+        "description": "Combine food shopping with the purchase of rosaries, Marian images, shirts, keychains, woven goods, and other locally sold souvenirs."
+      }
+    ],
+    "dining": [
+      {
+        "name": "MANA Restaurant",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "location": "Tiong St.",
+        "description": "Convenient meal stop near the central pilgrimage area."
+      },
+      {
+        "name": "Gerry's Grill Manaoag",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "location": "Manaoag, Pangasinan",
+        "description": "Casual Filipino dining option."
+      },
+      {
+        "name": "Hapag Kainan sa Manaoag",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "location": "Cabanbanan",
+        "description": "Local dining option outside the immediate Basilica core."
+      },
+      {
+        "name": "Hardin sa Paraiso Grill & Restaurant",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "location": "Brgy. Lelemaan",
+        "description": "Grill and Filipino dining in a more relaxed setting."
+      },
+      {
+        "name": "Dad Joe's Cafe",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "location": "Pao",
+        "description": "Cafe / casual food stop."
+      },
+      {
+        "name": "Kainan Sa Kubo Ningnangan Ed Manaoag",
+        "source_page": 5,
+        "source_pages": [
+          5
+        ],
+        "location": "Caloocan",
+        "description": "Casual local dining option."
+      }
+    ],
+    "sample_itinerary": [
+      {
+        "day": 1,
+        "period": "6:30 AM",
+        "suggestion": "Arrive early; breakfast or coffee near the Basilica.",
+        "source_page": 6,
+        "illustrative_time_only": true
+      },
+      {
+        "day": 1,
+        "period": "7:30 AM",
+        "suggestion": "Minor Basilica of Our Lady of the Rosary of Manaoag — Mass, prayer, museum and devotional areas.",
+        "source_page": 6,
+        "illustrative_time_only": true
+      },
+      {
+        "day": 1,
+        "period": "9:30 AM",
+        "suggestion": "Browse religious articles, rosaries, local crafts, and kakanin around the Basilica area.",
+        "source_page": 6,
+        "illustrative_time_only": true
+      },
+      {
+        "day": 1,
+        "period": "10:30 AM",
+        "suggestion": "Virgin's Well in Barangay Pugaro.",
+        "source_page": 6,
+        "illustrative_time_only": true
+      },
+      {
+        "day": 1,
+        "period": "12:00 NN",
+        "suggestion": "Lunch at a Manaoag restaurant.",
+        "source_page": 6,
+        "illustrative_time_only": true
+      },
+      {
+        "day": 1,
+        "period": "1:30 PM",
+        "suggestion": "Scheduled sampaguita farm visit in Barangay Baritao, if operating.",
+        "source_page": 6,
+        "illustrative_time_only": true
+      },
+      {
+        "day": 1,
+        "period": "3:30 PM",
+        "suggestion": "Eco-farm / countryside stop, subject to prior confirmation.",
+        "source_page": 6,
+        "illustrative_time_only": true
+      },
+      {
+        "day": 1,
+        "period": "5:00 PM",
+        "suggestion": "Manaoag Public Market for delicacies and pasalubong.",
+        "source_page": 6,
+        "illustrative_time_only": true
+      },
+      {
+        "day": 1,
+        "period": "6:00 PM",
+        "suggestion": "Dinner, then optional evening devotional visit if the Basilica schedule permits.",
+        "source_page": 6,
+        "illustrative_time_only": true
+      }
+    ],
+    "itinerary_attraction_order": [
+      "Minor Basilica of Our Lady of the Rosary of Manaoag",
+      "Basilica Museum & Sacred Spaces",
+      "Virgin's Well — Barangay Pugaro",
+      "Sampaguita Farms — Barangay Baritao",
+      "Baba's Eco Farm — Barangay Inamotan",
+      "Manaoag Public Market",
+      "AGTALON / Manaoag Organic Hub",
+      "Rizal Park",
+      "Manaoag Rural Landscape & Viewpoints"
+    ],
+    "practical_notes": " Basilica schedule: Mass times can change for feast days and special events. Check the Basilica's official website before travel.  Dress: Wear respectful clothing when entering the Basilica and follow church rules.  Peak periods: Saturdays, Sundays, Holy Week, Easter, May, October, and major Marian celebrations can be especially busy.  Farm visits: Sampaguita tours are schedule-dependent; arrange them in advance rather than arriving unannounced.  Souvenirs: Bring cash for small vendors and market purchases; keep receipts for larger purchases when available.  Traffic: Expect heavier vehicle and pedestrian activity around the Basilica during major pilgrimage dates.  Access: Some farms and private attractions have limited public hours or require prior coordination.",
+    "access_note": "Check current Basilica schedules and church rules. Sampaguita tours require advance arrangements; farms and private attractions may have limited access or require prior coordination.",
+    "operating_details_verified": false,
+    "source_pages": [
+      {
+        "page": 1,
+        "text": "Manaoag Tourism Guide    Page 1\n MANAOAG\n TOURISM GUIDE\n Attractions  Activities  Hotels  Local Food  Pilgrimage & Farm Tourism\n STRICT GEOGRAPHIC SCOPE\nThis guide covers Manaoag, Pangasinan only. Attractions, activities, hotels, resorts, restaurants, and\nfood experiences listed here are within the Municipality of Manaoag. Neighboring towns and cities are\nintentionally excluded.\nManaoag is one of Pangasinan's best-known pilgrimage destinations, centered on the Minor Basilica of Our Lady of the\nRosary of Manaoag. Beyond faith tourism, the municipality offers farm experiences, local food, handicrafts, and rural\nlandscapes.\nResearch basis: official municipal/provincial sources, the Basilica's official website, Philippine government tourism/news sources, and current\nlocal business listings checked in September 2026.\n"
+      },
+      {
+        "page": 2,
+        "text": "Manaoag Tourism Guide    Page 2\n1. MANAOAG AT A GLANCE\nManaoag is a historic municipality in Pangasinan widely known as a pilgrimage town. The Province of Pangasinan\nidentifies the Minor Basilica of Our Lady of the Holy Rosary of Manaoag as the town's defining attraction and notes the\nannual Galicayo Festival in honor of Our Lady of Manaoag.\nRecent municipal tourism reporting also shows that Manaoag is developing attractions beyond the Basilica, including the\nVirgin's Well, sampaguita farms in Barangay Baritao, eco-farm experiences, resorts, and local culinary offerings.\nBest for\n Pilgrimage: Basilica visits, Mass, prayer, candle lighting, religious articles, and sacred heritage.\n Farm tourism: Sampaguita farming and garland-making, eco-farm experiences, and rural landscapes.\n Food: Tupig, patupat, puto, native kakanin, Pangasinan-style Filipino dishes, and local market finds.\n Culture: Galicayo Festival, devotional crafts, rosaries, and local handicrafts.\n2. PLACES TO VISIT\n1. Minor Basilica of Our Lady of the Rosary of Manaoag\nThe spiritual heart of Manaoag and its best-known landmark. The Basilica houses the centuries-old image of Our Lady of\nthe Rosary of Manaoag, known locally as Apo Baket. Visitors can attend Mass, pray, light candles, and visit sacred\nspaces including the museum and rosary/candle areas.\n2. Basilica Museum & Sacred Spaces\nExplore the Basilica's religious heritage through its museum and devotional areas. The Department of Tourism specifically\nhighlights the rosary park, candle gallery, and museum as visitor experiences.\n3. Virgin's Well — Barangay Pugaro\nA pilgrimage site associated with a spring traditionally believed by devotees to have healing significance. Recent\nPhilippine News Agency reporting identifies it as one of Manaoag's other established visitor attractions.\n4. Sampaguita Farms — Barangay Baritao\nA small farming area where local growers cultivate sampaguita and make flower garlands. Municipal tourism has offered\nscheduled small-group tours; morning visits are useful for seeing flower harvesting and garland preparation.\n5. Baba's Eco Farm — Barangay Inamotan\nAn eco-farm destination identified by the municipal tourism office as one of Manaoag's visitor attractions. It is suited to\nvisitors interested in plants, flowers, rural scenery, and a quieter countryside experience.\n6. AGTALON / Manaoag Organic Hub\nAn agriculture and livelihood-oriented site connected with sustainable farming and organic production. Tourism-planning\ndocuments identified it as a potential farm-tourism and slow-food experience; confirm current visitor arrangements before\ngoing.\n7. Manaoag Public Market\nA practical stop for local produce, native delicacies, religious souvenirs, woven goods, and everyday town life. It is\nparticularly useful for food and pasalubong shopping.\n8. Rizal Park\nA small public park in the town area suitable for a short rest or stop during a town-center itinerary.\n"
+      },
+      {
+        "page": 3,
+        "text": "Manaoag Tourism Guide    Page 3\n9. Manaoag Rural Landscape & Viewpoints\nManaoag's agricultural setting provides quiet countryside scenery beyond the pilgrimage core. Treat informal viewpoints\nand private land respectfully and use established public access routes.\n3. THINGS TO DO\n1. Attend Mass at the Basilica\nCheck the Basilica's current schedule before your visit. Its official site lists weekday and weekend Masses, with schedules\nsubject to change.\n2. Light candles and visit the devotional areas\nSpend time in the Basilica complex for prayer, reflection, candle lighting, and religious-heritage viewing.\n3. Take a Basilica heritage walk\nExplore the church exterior and interior spaces, museum, rosary areas, and surrounding devotional shops at a respectful\npace.\n4. Visit the Virgin's Well\nAdd the Pugaro site to a pilgrimage itinerary and allow extra time for the rural approach.\n5. Schedule a sampaguita farm visit\nCoordinate ahead with the municipal tourism office when tours are operating. Early morning is the most useful period for\nobserving harvesting and garland-making.\n6. Explore an eco-farm\nVisit Baba's Eco Farm or another currently operating Manaoag farm attraction after confirming access, schedules, and\nany entrance requirements.\n7. Shop for devotional souvenirs\nLook for rosaries, Marian images, religious articles, shirts, keychains, and other pilgrimage keepsakes around the Basilica\nand town market.\n8. Taste local kakanin\nTry fresh tupig, patupat, puto, native rice cakes, and other Pangasinan delicacies from established local vendors.\n9. Experience Galicayo Festival\nPlan a December visit when the annual faith-and-culture celebration is taking place, subject to the municipality's current\ncalendar.\n10. Take a slow-food / countryside day\nCombine a farm visit, local lunch, public-market shopping, and a return to the Basilica for an evening devotional stop.\n4. GALICAYO FESTIVAL\nGalicayo is Manaoag's annual religious-cultural festival honoring Our Lady of the Rosary of Manaoag. The Province of\nPangasinan explains that “galicayo” is a Pangasinense expression meaning “come here,” connected with the local story of\nthe Virgin calling people to gather and build a church.\n"
+      },
+      {
+        "page": 4,
+        "text": "Manaoag Tourism Guide    Page 4\nPhilippine News Agency reporting describes the festival as a celebration of faith, culture, and arts, with activities centered\naround the town and Basilica. Recent reporting places the annual celebration in December; exact dates and programs\nshould be checked with the municipality for the year of travel.\n5. WHERE TO STAY — MANAOAG ONLY\n Property\nLocation\nType / note\nThe Manaoag Hotel\nTiong St., Poblacion\nCentral hotel near the Basilica; suitable for pilgrimage\nand town-center stays.\nTop Star Hotel Manaoag\nLlamido St.\nSmall hotel/bed-and-breakfast option close to the\npilgrimage area.\nApples&Pears; Hotel\nZone 1, Sta. Ines\nHotel option within Manaoag, useful for visitors\nseeking a quieter stay outside the immediate church\ncore.\nAmber's Paradise\nManaoag, Pangasinan\nHotel/resort attraction identified in municipal tourism\nreporting; confirm current accommodation availability.\nOne Alo Resort\nManaoag, Pangasinan\nResort identified in recent municipal tourism reporting;\nconfirm current room and facility availability.\nRoom rates, availability, and amenities can change. Confirm directly with the property before booking.\n6. WHAT TO EAT & TRY\nTupig\nA grilled sticky-rice and coconut delicacy commonly sold around the pilgrimage area and public market. Look for freshly\ngrilled batches.\nPatupat\nA traditional sticky-rice delicacy associated with Pangasinan and commonly available through local food vendors.\nPuto and native kakanin\nSteamed rice cakes and assorted native sweets make easy snacks or pasalubong.\nPangasinan-style Filipino dishes\nLook for local preparations of grilled meats, vegetables, rice dishes, and other everyday Filipino food.\nFresh local produce\nManaoag's agricultural setting makes its public market a useful place to browse fruits, vegetables, and other farm\nproducts.\nDevotional-market treats & pasalubong\nCombine food shopping with the purchase of rosaries, Marian images, shirts, keychains, woven goods, and other locally\nsold souvenirs.\nCurrent Manaoag food stops\n"
+      },
+      {
+        "page": 5,
+        "text": "Manaoag Tourism Guide    Page 5\nFood stop\nLocation\nUse in itinerary\nMANA Restaurant\nTiong St.\nConvenient meal stop near the central pilgrimage\narea.\nGerry's Grill Manaoag\nManaoag, Pangasinan\nCasual Filipino dining option.\nHapag Kainan sa Manaoag\nCabanbanan\nLocal dining option outside the immediate Basilica\ncore.\nHardin sa Paraiso Grill &\nRestaurant\nBrgy. Lelemaan\nGrill and Filipino dining in a more relaxed setting.\nDad Joe's Cafe\nPao\nCafe / casual food stop.\nKainan Sa Kubo Ningnangan Ed\nManaoag\nCaloocan\nCasual local dining option.\n"
+      },
+      {
+        "page": 6,
+        "text": "Manaoag Tourism Guide    Page 6\n7. SAMPLE 1-DAY MANAOAG ITINERARY\n Time\nPlan\n6:30 AM\nArrive early; breakfast or coffee near the Basilica.\n7:30 AM\nMinor Basilica of Our Lady of the Rosary of Manaoag — Mass, prayer, museum and devotional areas.\n9:30 AM\nBrowse religious articles, rosaries, local crafts, and kakanin around the Basilica area.\n10:30 AM\nVirgin's Well in Barangay Pugaro.\n12:00 NN\nLunch at a Manaoag restaurant.\n1:30 PM\nScheduled sampaguita farm visit in Barangay Baritao, if operating.\n3:30 PM\nEco-farm / countryside stop, subject to prior confirmation.\n5:00 PM\nManaoag Public Market for delicacies and pasalubong.\n6:00 PM\nDinner, then optional evening devotional visit if the Basilica schedule permits.\n8. PRACTICAL TRAVEL NOTES\n  Basilica schedule: Mass times can change for feast days and special events. Check the Basilica's official website before\n travel.\n Dress: Wear respectful clothing when entering the Basilica and follow church rules.\n  Peak periods: Saturdays, Sundays, Holy Week, Easter, May, October, and major Marian celebrations can be especially\n busy.\n Farm visits: Sampaguita tours are schedule-dependent; arrange them in advance rather than arriving unannounced.\n  Souvenirs: Bring cash for small vendors and market purchases; keep receipts for larger purchases when available.\n  Traffic: Expect heavier vehicle and pedestrian activity around the Basilica during major pilgrimage dates.\n  Access: Some farms and private attractions have limited public hours or require prior coordination.\n \n9. SOURCES & RESEARCH NOTES\n  Official eLGU News Portal of Manaoag — municipal overview and tourism identity.\n  Official Website of the Province of Pangasinan — Manaoag profile and Galicayo Festival information.\n  Minor Basilica of Our Lady of the Rosary of Manaoag — official Basilica history, visitor information, and Mass schedule.\n  Department of Tourism — Love the Philippines / Pangasinan destination information.\n  Philippine News Agency — Manaoag tourism reporting, including 2024 visitor data, Virgin's Well, resorts, Baba's Eco Farm,\n and sampaguita farm tours.\n Philippine News Agency — Pangasinan sampaguita-farm/agri-tourism reporting.\n  Department of Agriculture Regional Field Office 1 — Baritao sampaguita farming/agri-tourism development.\n  Current local business listings checked in September 2026 for Manaoag hotels, restaurants, and attractions.\n "
+      },
+      {
+        "page": 7,
+        "text": "Manaoag Tourism Guide    Page 7\nSTRICT SCOPE CHECK\nThis guide is limited to Manaoag, Pangasinan. Nearby Dagupan City, San Jacinto, Mangaldan,\nPozorrubio, Laoac, Urdaneta City, and other neighboring jurisdictions are excluded from the\nrecommendations.\n"
+      }
+    ],
+    "festivals": "Galicayo is Manaoag's annual religious-cultural festival honoring Our Lady of the Rosary of Manaoag. The Province of Pangasinan explains that “galicayo” is a Pangasinense expression meaning “come here,” connected with the local story of the Virgin calling people to gather and build a church. Philippine News Agency reporting describes the festival as a celebration of faith, culture, and arts, with activities centered around the town and Basilica. Recent reporting places the annual celebration in December; exact dates and programs should be checked with the municipality for the year of travel."
+  },
+  {
+    "entity_id": "CITY-GUIDE-SAN-CARLOS",
+    "area_id": "san-carlos",
+    "name": "San Carlos City",
+    "title": "San Carlos City Tourism Guide",
+    "source_file": "San_Carlos_City_Tourism_Guide.pdf",
+    "source_sha256": "46ee96d3ee3a7146301edd53acddd3f1399215ce587dff85a2f7e5e6673962da",
+    "source_date": null,
+    "source_date_note": "No guide publication date is stated. Historical events and cited article years are not the guide date.",
+    "source_url": "https://www.sancarlospangasinan.gov.ph/tourism",
+    "source_urls": [
+      "https://www.sancarlospangasinan.gov.ph/tourism",
+      "https://www.sancarlospangasinan.gov.ph/",
+      "https://www.pangasinan.gov.ph/city-municipalities/san-carlos-city/",
+      "https://www.pangasinan.gov.ph/gayaga-showcase-culture-traditions-heritage/",
+      "https://www.pna.gov.ph/articles/1200041"
+    ],
+    "city_only": true,
+    "attribution_note": "Source-attributed PDF extraction. Local listings are not individually linked. No live verification performed.",
+    "profile": "San Carlos City was historically known as Binalatongan and was associated with Caboloan. The present city was created from the former municipality of San Carlos under Republic Act No. 4487 in 1965. The Province of Pangasinan describes San Carlos as a major trading center for bamboo and a leading producer of carabao mangoes. The city government presents San Carlos as an agro-industrial, commercial, educational, and tourism center. Its tourism character is centered on heritage, agriculture, mangoes, bamboo crafts, food, parks, and inland resorts.",
+    "attractions": [
+      {
+        "name": "Minor Basilica of Saint Dominic de Guzman",
+        "category": "Religious",
+        "aliases": [
+          "Minor Basilica of Saint Dominic",
+          "Minor Basilica of St. Dominic"
+        ],
+        "description": "San Carlos City's major historic church. The city tourism site states that the church's history dates to the arrival of the Dominicans in Binalatongan in 1587. The present site was completed in 1773 after earlier locations and has experienced repeated earthquake damage and reconstruction. It was declared a Minor Basilica in 2022 and solemnly proclaimed in 2023.",
+        "source_page": 2
+      },
+      {
+        "name": "Speaker Eugenio Perez Memorial Building / Museum",
+        "category": "Culture and Heritage",
+        "aliases": [
+          "Speaker Eugenio Perez Memorial Building"
+        ],
+        "description": "A heritage and museum site honoring Eugenio Perez, the former Speaker of the Philippine House of Representatives from San Carlos. The memorial building is one of the city's principal cultural attractions.",
+        "source_page": 2
+      },
+      {
+        "name": "City Plaza",
+        "category": "Park",
+        "aliases": [],
+        "description": "The historic public plaza in the city center and a useful starting point for a heritage walk. It is close to the basilica and other central-city landmarks.",
+        "source_page": 2
+      },
+      {
+        "name": "Binalatongan Ruins",
+        "category": "Culture and Heritage",
+        "aliases": [],
+        "description": "A historical site in Barangay San Juan associated with the city's earlier Binalatongan identity and history.",
+        "source_page": 2
+      },
+      {
+        "name": "Quadricentennial Arch",
+        "category": "Culture and Heritage",
+        "aliases": [],
+        "description": "A commemorative landmark in Barangay Bolingit, identified by the city's tourism information as one of its attractions.",
+        "source_page": 2
+      },
+      {
+        "name": "Philippine Fruit Corporation / Mango-related Agri-Industry",
+        "category": "Farm and Nature",
+        "aliases": [
+          "Philippine Fruit Corporation"
+        ],
+        "description": "A mango-related agricultural and industrial site in Barangay Pagal, reflecting San Carlos City's long association with mango production.",
+        "source_page": 2
+      },
+      {
+        "name": "Bamboo Craft & Furniture Areas",
+        "category": "Culture and Heritage",
+        "aliases": [],
+        "description": "San Carlos has a strong bamboo industry. Local makers produce baskets, furniture, lampshades, cabinets, bamboo beds, nipa huts, and other products. Barangay Gamata is documented as a bamboo-producing community.",
+        "source_page": 2
+      },
+      {
+        "name": "Oltama / Rural Landscape Areas",
+        "category": "Farm and Nature",
+        "aliases": [],
+        "description": "San Carlos City's agricultural countryside provides opportunities for rural sightseeing and photography. Visitors should remain on public roads or obtain permission before entering private farms.",
+        "source_page": 2
+      },
+      {
+        "name": "City Parks & Public Spaces",
+        "category": "Park",
+        "aliases": [],
+        "description": "Central public spaces provide places for walking, community events, and local observation. Check current city schedules for public programs.",
+        "source_page": 2
+      }
+    ],
+    "hotels": [
+      {
+        "name": "Kabaleyan Cove Resort",
+        "location": "Magtaking Bridge, Malasiqui–San Carlos Road",
+        "description": "Resort hotel within San Carlos City.",
+        "source_page": 3,
+        "aliases": []
+      },
+      {
+        "name": "Golden Castle Resort",
+        "location": "San Carlos City",
+        "description": "Local resort accommodation.",
+        "source_page": 3,
+        "aliases": []
+      },
+      {
+        "name": "JRJ Lodge (formerly Mendoza Travelers Hotel)",
+        "location": "87 Bolingit",
+        "description": "Lodge accommodation in San Carlos City.",
+        "source_page": 3,
+        "aliases": [
+          "JRJ Lodge",
+          "Mendoza Travelers Hotel"
+        ]
+      },
+      {
+        "name": "Anthony's Private Resort",
+        "location": "Sitio Boquig",
+        "description": "Private resort option within the city.",
+        "source_page": 3,
+        "aliases": []
+      },
+      {
+        "name": "Kevin's Resort",
+        "location": "San Carlos City",
+        "description": "Local hotel/resort listing.",
+        "source_page": 3,
+        "aliases": []
+      }
+    ],
+    "local_foods": [
+      {
+        "name": "San Carlos Carabao Mangoes",
+        "description": "The city's signature agricultural product and one of the main products celebrated by the Mango-Bamboo Festival.",
+        "source_page": 3
+      },
+      {
+        "name": "Mango Pie",
+        "description": "Mango pie is strongly associated with the city's festival tradition. The 2011 giant mango pie was a notable city event.",
+        "source_page": 3
+      },
+      {
+        "name": "Mango-based treats",
+        "description": "During mango season and festival periods, look for fresh mangoes and locally prepared mango desserts and products.",
+        "source_page": 3
+      },
+      {
+        "name": "Pangasinan Rice Cakes & Delicacies",
+        "description": "Try local rice-based snacks such as suman and other Pangasinan-style delicacies when available in city markets and food stalls.",
+        "source_page": 3
+      },
+      {
+        "name": "Filipino grilled and comfort food",
+        "description": "San Carlos City restaurants offer Filipino meals, grilled dishes, rice meals, and family-style food.",
+        "source_page": 3
+      },
+      {
+        "name": "Fresh farm produce",
+        "description": "The city's agricultural economy makes seasonal fruits and vegetables a worthwhile market stop.",
+        "source_page": 4
+      }
+    ],
+    "dining": [
+      {
+        "name": "Roberto's Backyard",
+        "source_page": 4
+      },
+      {
+        "name": "Geo's Restaurant",
+        "source_page": 4
+      },
+      {
+        "name": "Raguz Grill and Restaurant",
+        "source_page": 4
+      },
+      {
+        "name": "Adela's Burgers",
+        "source_page": 4
+      },
+      {
+        "name": "Jem's Cuisine",
+        "source_page": 4
+      }
+    ],
+    "dining_note": "Current local listings include Roberto's Backyard in Estanquero, Geo's Restaurant on Perez Boulevard, Raguz Grill and Restaurant in San Juan, Adela's Burgers on Rizal Avenue, and other local eateries around the city center. Jem's Cuisine is also documented as a San Carlos City restaurant specializing in Filipino home-style dishes and food packages.",
+    "activities": [
+      {
+        "name": "Heritage walking tour",
+        "description": "Explore City Plaza, the Minor Basilica of Saint Dominic, the Eugenio Perez memorial/museum, and nearby historic streets.",
+        "source_page": 2,
+        "source_pages": [
+          2
+        ]
+      },
+      {
+        "name": "Museum visit",
+        "description": "Learn about San Carlos City's political, cultural, and local history at the Speaker Eugenio Perez Memorial Building / Museum.",
+        "source_page": 2,
+        "source_pages": [
+          2
+        ]
+      },
+      {
+        "name": "Mango food trip",
+        "description": "During mango season, look for fresh San Carlos carabao mangoes and mango-based products.",
+        "source_page": 2,
+        "source_pages": [
+          2,
+          3
+        ]
+      },
+      {
+        "name": "Bamboo craft shopping",
+        "description": "Look for locally made bamboo baskets, furniture, lampshades, cabinets, home décor, and traditional structures.",
+        "source_page": 3,
+        "source_pages": [
+          3
+        ]
+      },
+      {
+        "name": "Bamboo-industry visit",
+        "description": "If arrangements are available, visit local makers or barangay production areas to observe traditional bamboo working.",
+        "source_page": 3,
+        "source_pages": [
+          3
+        ]
+      },
+      {
+        "name": "Farm and countryside sightseeing",
+        "description": "Drive through appropriate public roads near agricultural areas and enjoy the city's rural landscapes.",
+        "source_page": 3,
+        "source_pages": [
+          3
+        ]
+      },
+      {
+        "name": "Resort day",
+        "description": "Spend a day swimming, relaxing, or staying overnight at a San Carlos City resort.",
+        "source_page": 3,
+        "source_pages": [
+          3
+        ]
+      },
+      {
+        "name": "Festival activities",
+        "description": "If visiting during the Mango-Bamboo Festival, join or watch street dancing, float parades, culinary activities, bamboo showcases, and other scheduled events.",
+        "source_page": 3,
+        "source_pages": [
+          3
+        ]
+      },
+      {
+        "name": "Local food crawl",
+        "description": "Try Filipino and Pangasinan-style dishes at San Carlos City restaurants and food establishments.",
+        "source_page": 3,
+        "source_pages": [
+          3
+        ]
+      }
+    ],
+    "sample_itinerary": [
+      {
+        "period": "Morning",
+        "suggestion": "Breakfast in the city → City Plaza → Minor Basilica of Saint Dominic → Speaker Eugenio Perez Memorial Building / Museum.",
+        "source_page": 4
+      },
+      {
+        "period": "Late morning",
+        "suggestion": "Walk through central San Carlos → explore local shops and bamboo products.",
+        "source_page": 4
+      },
+      {
+        "period": "Lunch",
+        "suggestion": "Try a San Carlos City restaurant and look for local mango or Pangasinan-inspired dishes.",
+        "source_page": 4
+      },
+      {
+        "period": "Afternoon",
+        "suggestion": "Visit a bamboo craft/production area if arranged → countryside drive through public roads and agricultural landscapes.",
+        "source_page": 4
+      },
+      {
+        "period": "Late afternoon",
+        "suggestion": "Relax at a San Carlos City resort or visit another public city attraction.",
+        "source_page": 4
+      },
+      {
+        "period": "Evening",
+        "suggestion": "Dinner at a local restaurant → return to your San Carlos City hotel or resort.",
+        "source_page": 4
+      }
+    ],
+    "itinerary_attraction_order": [
+      "City Plaza",
+      "Minor Basilica of Saint Dominic de Guzman",
+      "Speaker Eugenio Perez Memorial Building / Museum",
+      "Bamboo Craft & Furniture Areas",
+      "Binalatongan Ruins",
+      "Quadricentennial Arch",
+      "Philippine Fruit Corporation / Mango-related Agri-Industry",
+      "Oltama / Rural Landscape Areas",
+      "City Parks & Public Spaces"
+    ],
+    "festivals": "The Mango-Bamboo Festival is San Carlos City's signature celebration. The city tourism site says it is held annually around the last Saturday of April and promotes the city's mangoes and bamboo products while recognizing farmers and producers. Festival activities have included float parades, street dancing, mango culinary contests, bamboo-craft competitions, variety shows, and Laro ng Lahi. Exact dates and activities can change each year, so check the City Government's announcements before traveling. San Carlos City also became known for a giant mango pie made for the 2011 festival. The city tourism site records the event as a 100-square-meter mango pie prepared using about 2,000 kilograms of ripe mangoes and shared after public viewing.",
+    "practical_notes": "Best for Heritage walks, food trips, mango season, bamboo crafts, agricultural sightseeing, festivals, and inland resort stays. Mango season Availability of fresh carabao mangoes and mango products is seasonal. Festival periods are particularly useful for experiencing the city's mango culture. Bamboo shopping Ask local producers about baskets, furniture, lampshades, cabinets, home décor, and other bamboo products. Farm visits Many agricultural areas are private working farms. Stay on public roads or arrange permission before entering or photographing private property. Festival schedules The Mango-Bamboo Festival is traditionally held in April, but exact schedules and program details can change. Business hours Restaurants, museums, resorts, and other attractions may have changing schedules. Confirm before traveling.",
+    "access_note": "Many agricultural areas are private working farms. Stay on public roads or arrange permission before entering or photographing private property.",
+    "operating_details_verified": false,
+    "source_pages": [
+      {
+        "page": 1,
+        "text": "San Carlos City Tourism Guide    Page 1\n SAN CARLOS CITY\n TOURISM GUIDE\n Attractions  Activities  Hotels  Local Food  Mango & Bamboo\n A city-only guide to San Carlos City, Pangasinan\nSan Carlos City is known for its historic Binalatongan heritage, Minor Basilica of Saint Dominic, carabao\nmangoes, bamboo industry, agricultural landscapes, and Mango-Bamboo Festival.\nPrepared from San Carlos City and Pangasinan tourism information plus current local listings.\n"
+      },
+      {
+        "page": 2,
+        "text": "San Carlos City Tourism Guide    Page 2\nWELCOME TO SAN CARLOS CITY\nSan Carlos City was historically known as Binalatongan and was associated with Caboloan. The present city was created\nfrom the former municipality of San Carlos under Republic Act No. 4487 in 1965. The Province of Pangasinan describes\nSan Carlos as a major trading center for bamboo and a leading producer of carabao mangoes.\nThe city government presents San Carlos as an agro-industrial, commercial, educational, and tourism center. Its tourism\ncharacter is centered on heritage, agriculture, mangoes, bamboo crafts, food, parks, and inland resorts.\nPLACES TO VISIT & ATTRACTIONS\nMinor Basilica of Saint Dominic de Guzman\nSan Carlos City's major historic church. The city tourism site states that the church's history dates to the arrival of the\nDominicans in Binalatongan in 1587. The present site was completed in 1773 after earlier locations and has experienced\nrepeated earthquake damage and reconstruction. It was declared a Minor Basilica in 2022 and solemnly proclaimed in\n2023.\nSpeaker Eugenio Perez Memorial Building / Museum\nA heritage and museum site honoring Eugenio Perez, the former Speaker of the Philippine House of Representatives from\nSan Carlos. The memorial building is one of the city's principal cultural attractions.\nCity Plaza\nThe historic public plaza in the city center and a useful starting point for a heritage walk. It is close to the basilica and other\ncentral-city landmarks.\nBinalatongan Ruins\nA historical site in Barangay San Juan associated with the city's earlier Binalatongan identity and history.\nQuadricentennial Arch\nA commemorative landmark in Barangay Bolingit, identified by the city's tourism information as one of its attractions.\nPhilippine Fruit Corporation / Mango-related Agri-Industry\nA mango-related agricultural and industrial site in Barangay Pagal, reflecting San Carlos City's long association with mango\nproduction.\nBamboo Craft & Furniture Areas\nSan Carlos has a strong bamboo industry. Local makers produce baskets, furniture, lampshades, cabinets, bamboo beds,\nnipa huts, and other products. Barangay Gamata is documented as a bamboo-producing community.\nOltama / Rural Landscape Areas\nSan Carlos City's agricultural countryside provides opportunities for rural sightseeing and photography. Visitors should\nremain on public roads or obtain permission before entering private farms.\nCity Parks & Public Spaces\nCentral public spaces provide places for walking, community events, and local observation. Check current city schedules for\npublic programs.\nACTIVITIES TO DO\nHeritage walking tour\nExplore City Plaza, the Minor Basilica of Saint Dominic, the Eugenio Perez memorial/museum, and nearby historic streets.\nMuseum visit\nLearn about San Carlos City's political, cultural, and local history at the Speaker Eugenio Perez Memorial Building /\nMuseum.\nMango food trip\n"
+      },
+      {
+        "page": 3,
+        "text": "San Carlos City Tourism Guide    Page 3\nDuring mango season, look for fresh San Carlos carabao mangoes and mango-based products.\nBamboo craft shopping\nLook for locally made bamboo baskets, furniture, lampshades, cabinets, home décor, and traditional structures.\nBamboo-industry visit\nIf arrangements are available, visit local makers or barangay production areas to observe traditional bamboo working.\nFarm and countryside sightseeing\nDrive through appropriate public roads near agricultural areas and enjoy the city's rural landscapes.\nResort day\nSpend a day swimming, relaxing, or staying overnight at a San Carlos City resort.\nFestival activities\nIf visiting during the Mango-Bamboo Festival, join or watch street dancing, float parades, culinary activities, bamboo\nshowcases, and other scheduled events.\nLocal food crawl\nTry Filipino and Pangasinan-style dishes at San Carlos City restaurants and food establishments.\nMANGO-BAMBOO FESTIVAL\nThe Mango-Bamboo Festival is San Carlos City's signature celebration. The city tourism site says it is held annually around\nthe last Saturday of April and promotes the city's mangoes and bamboo products while recognizing farmers and producers.\nFestival activities have included float parades, street dancing, mango culinary contests, bamboo-craft competitions, variety\nshows, and Laro ng Lahi. Exact dates and activities can change each year, so check the City Government's announcements\nbefore traveling.\nSan Carlos City also became known for a giant mango pie made for the 2011 festival. The city tourism site records the event\nas a 100-square-meter mango pie prepared using about 2,000 kilograms of ripe mangoes and shared after public viewing.\nHOTELS & RESORTS — SAN CARLOS CITY ONLY\n Hotel / Resort\nLocation\nNotes\nKabaleyan Cove Resort\nMagtaking Bridge, Malasiqui–San Carlos Road\nResort hotel within San Carlos City.\nGolden Castle Resort\nSan Carlos City\nLocal resort accommodation.\nJRJ Lodge (formerly Mendoza Travelers Hotel)\n87 Bolingit\nLodge accommodation in San Carlos City.\nAnthony's Private Resort\nSitio Boquig\nPrivate resort option within the city.\nKevin's Resort\nSan Carlos City\nLocal hotel/resort listing.\nHotel and resort availability, room rates, amenities, and operating hours can change. Confirm directly with the property before booking.\nLOCAL FOODS & PRODUCTS TO TRY\n Food / Product\nWhat to try\nSan Carlos Carabao Mangoes\nThe city's signature agricultural product and one of the main products celebrated by the Mango-Bamboo Festival.\nMango Pie\nMango pie is strongly associated with the city's festival tradition. The 2011 giant mango pie was a notable city event.\nMango-based treats\nDuring mango season and festival periods, look for fresh mangoes and locally prepared mango desserts and products.\nPangasinan Rice Cakes & Delicacies\nTry local rice-based snacks such as suman and other Pangasinan-style delicacies when available in city markets and food stalls.\nFilipino grilled and comfort food\nSan Carlos City restaurants offer Filipino meals, grilled dishes, rice meals, and family-style food.\n"
+      },
+      {
+        "page": 4,
+        "text": "San Carlos City Tourism Guide    Page 4\nFood / Product\nWhat to try\nFresh farm produce\nThe city's agricultural economy makes seasonal fruits and vegetables a worthwhile market stop.\nRESTAURANTS & FOOD STOPS\nCurrent local listings include Roberto's Backyard in Estanquero, Geo's Restaurant on Perez Boulevard, Raguz Grill and\nRestaurant in San Juan, Adela's Burgers on Rizal Avenue, and other local eateries around the city center. Jem's Cuisine is\nalso documented as a San Carlos City restaurant specializing in Filipino home-style dishes and food packages.\nSAMPLE 1-DAY SAN CARLOS CITY ITINERARY\n Time\nPlan\nMorning\nBreakfast in the city → City Plaza → Minor Basilica of Saint Dominic → Speaker Eugenio Perez Memorial Building / Museum.\nLate morning\nWalk through central San Carlos → explore local shops and bamboo products.\nLunch\nTry a San Carlos City restaurant and look for local mango or Pangasinan-inspired dishes.\nAfternoon\nVisit a bamboo craft/production area if arranged → countryside drive through public roads and agricultural landscapes.\nLate afternoon\nRelax at a San Carlos City resort or visit another public city attraction.\nEvening\nDinner at a local restaurant → return to your San Carlos City hotel or resort.\n"
+      },
+      {
+        "page": 5,
+        "text": "San Carlos City Tourism Guide    Page 5\nPRACTICAL TRAVEL NOTES\nBest for\nHeritage walks, food trips, mango season, bamboo crafts, agricultural sightseeing, festivals, and inland resort stays.\nMango season\nAvailability of fresh carabao mangoes and mango products is seasonal. Festival periods are particularly useful for\nexperiencing the city's mango culture.\nBamboo shopping\nAsk local producers about baskets, furniture, lampshades, cabinets, home décor, and other bamboo products.\nFarm visits\nMany agricultural areas are private working farms. Stay on public roads or arrange permission before entering or\nphotographing private property.\nFestival schedules\nThe Mango-Bamboo Festival is traditionally held in April, but exact schedules and program details can change.\nBusiness hours\nRestaurants, museums, resorts, and other attractions may have changing schedules. Confirm before traveling.\nSOURCES\n City Government of San Carlos, Pangasinan — Tourism: https://www.sancarlospangasinan.gov.ph/tourism\n City Government of San Carlos, Pangasinan — Main portal: https://www.sancarlospangasinan.gov.ph/\n Province of Pangasinan — San Carlos City: https://www.pangasinan.gov.ph/city-municipalities/san-carlos-city/\n Province of Pangasinan — Gayaga Pangasinan Festival coverage (2025): https://www.pangasinan.gov.ph/gayaga-showcase-culture-traditions-heritage/\n Philippine News Agency — Mango-Bamboo Festival coverage: https://www.pna.gov.ph/articles/1200041\n Aghamtao — Bamboo knowledge and industry in Barangay Gamata, San Carlos City.\n Current local business listings checked for San Carlos City hotels, resorts, restaurants, and attractions.\nSTRICT SCOPE: This guide is limited to San Carlos City, Pangasinan. Destinations, hotels, restaurants,\nand activities in neighboring cities or municipalities were intentionally excluded.\n"
+      }
+    ]
+  },
+  {
+    "entity_id": "CITY-GUIDE-URDANETA",
+    "area_id": "urdaneta",
+    "name": "Urdaneta City",
+    "title": "Urdaneta City Tourism Guide",
+    "source_file": "Urdaneta_City_Tourism_Guide.pdf",
+    "source_sha256": "821af9eb7f7f32611009c4dcc2b97fe0d963005963778e722de92781fc352326",
+    "source_date": null,
+    "source_date_note": "No guide publication date is stated. The cited 2022 articles are not the guide date.",
+    "source_url": "https://www.urdaneta-city.gov.ph/tourism",
+    "source_urls": [
+      "https://www.urdaneta-city.gov.ph/tourism",
+      "https://www.urdaneta-city.gov.ph/the-city",
+      "https://www.pangasinan.gov.ph/city-municipalities/urdaneta-city/",
+      "https://www.pna.gov.ph/articles/1184874"
+    ],
+    "city_only": true,
+    "attribution_note": "Source-attributed PDF extraction. Local listings are not individually linked. No live verification performed.",
+    "profile": "Urdaneta City is a component city of Pangasinan with 34 barangays. Its strategic location has made it a major trading and agricultural hub. The provincial government identifies rice, vegetables, and noodles among products associated with the city, while the City Government highlights its markets, rice fields, cultural spaces, parks, and resorts as visitor experiences. Unlike Pangasinan's coastal destinations, Urdaneta's tourism character is centered on city life, agriculture, food, culture, faith, commerce, and inland leisure.",
+    "attractions": [
+      {
+        "name": "Museo de Urdaneta / Urdaneta City New Museum",
+        "category": "Culture and Heritage",
+        "aliases": [
+          "Museo de Urdaneta",
+          "Urdaneta City New Museum"
+        ],
+        "description": "A city heritage and cultural stop. The museum is located on Alexander Street and is listed among Urdaneta's attractions by the Provincial Government. Current local listings identify the New Museum as a tourist attraction.",
+        "source_page": 2
+      },
+      {
+        "name": "Cathedral of Our Lady of the Immaculate Conception",
+        "category": "Religious",
+        "aliases": [
+          "Our Lady of Immaculate Conception Cathedral"
+        ],
+        "description": "A major religious landmark in the city center and a continuation of Urdaneta's long church history. The City Government specifically highlights Our Lady of the Immaculate Conception as part of the city's heritage.",
+        "source_page": 2
+      },
+      {
+        "name": "Urdaneta City People's Park",
+        "category": "Park",
+        "aliases": [],
+        "description": "An urban green space for walking, relaxation, recreation, and community activities. The City Government describes it as a tranquil urban oasis with greenery and ponds.",
+        "source_page": 2
+      },
+      {
+        "name": "Urdaneta City Cultural Center",
+        "category": "Culture and Heritage",
+        "aliases": [],
+        "description": "A venue for cultural and artistic events and community gatherings. It provides a place to experience local programs and cultural activities when events are scheduled.",
+        "source_page": 2
+      },
+      {
+        "name": "Urdaneta City Public Market",
+        "category": "Market",
+        "aliases": [],
+        "description": "A lively market where visitors can see the city's trading culture, buy fresh produce, discover local delicacies, and experience everyday Urdaneta life.",
+        "source_page": 2
+      },
+      {
+        "name": "Urdaneta Farmer's Market / Agricultural Trading Areas",
+        "category": "Market",
+        "aliases": [],
+        "description": "A good place to explore the city's agricultural identity through locally produced vegetables, rice, fruits, and other farm products.",
+        "source_page": 2
+      },
+      {
+        "name": "Rice Fields of Urdaneta",
+        "category": "Farm and Nature",
+        "aliases": [],
+        "description": "Scenic agricultural landscapes that reflect the city's farming heritage. The City Government specifically features Urdaneta's rice fields as a tourism experience.",
+        "source_page": 2
+      },
+      {
+        "name": "Cattle Market / Livestock Area",
+        "category": "Farm and Nature",
+        "aliases": [],
+        "description": "A distinctive part of Urdaneta's agricultural and trading character. The City Government features its cattle market/farm among places to discover.",
+        "source_page": 2
+      },
+      {
+        "name": "Cabaruan",
+        "category": "Farm and Nature",
+        "aliases": [],
+        "description": "Cabaruan is identified by the Provincial Government as one of Urdaneta City's attractions. It is also one of the city's 34 barangays.",
+        "source_page": 2
+      },
+      {
+        "name": "Sugcong",
+        "category": "Farm and Nature",
+        "aliases": [],
+        "description": "Sugcong is identified by the Provincial Government as an attraction in Urdaneta City and is one of the city's barangays.",
+        "source_page": 2
+      },
+      {
+        "name": "Oltama Rolling Hills",
+        "category": "Farm and Nature",
+        "aliases": [],
+        "description": "A countryside landscape attraction identified by the Provincial Government as one of Urdaneta City's notable attractions.",
+        "source_page": 2
+      }
+    ],
+    "hotels": [
+      {
+        "name": "Levo Hotel",
+        "location": "Barangay San Vicente",
+        "description": "City hotel along the San Vicente road.",
+        "source_page": 3
+      },
+      {
+        "name": "Lisland Rainforest Resort",
+        "location": "182 MacArthur Highway",
+        "description": "Resort hotel with a leisure-oriented setting.",
+        "source_page": 3
+      },
+      {
+        "name": "Goldland Spring Resort and Hotel",
+        "location": "Cayambanan Road",
+        "description": "Resort and hotel within Urdaneta City.",
+        "source_page": 3
+      },
+      {
+        "name": "Saroju's Farmview Hotel",
+        "location": "Nancamaliran East",
+        "description": "Hotel with a countryside/farm-view setting.",
+        "source_page": 3
+      },
+      {
+        "name": "Mini Heart Resort",
+        "location": "Zone 2",
+        "description": "Local resort option within Urdaneta City.",
+        "source_page": 3
+      }
+    ],
+    "local_foods": [
+      {
+        "name": "Tinapang Manok",
+        "description": "Smoked chicken is one of Urdaneta's recognized local food products. The City Tourism Office has promoted it as a signature product of Barangay Bayaoas.",
+        "source_page": 3
+      },
+      {
+        "name": "Tinapa / Smoked Fish",
+        "description": "Urdaneta has a long-established tinapa industry in Barangay Bayaoas. Look for smoked fish and related products in local markets.",
+        "source_page": 3
+      },
+      {
+        "name": "Smoked & Marinated Bangus",
+        "description": "A product featured in Urdaneta's local food festivals and barangay product showcases.",
+        "source_page": 3
+      },
+      {
+        "name": "Rabbit Meat Products",
+        "description": "Urdaneta food producers have developed rabbit-meat products including longganisa, hotdogs, embutido, and lechon. Availability can vary.",
+        "source_page": 3
+      },
+      {
+        "name": "Kamoteng Biko",
+        "description": "A native rice-and-root-crop delicacy featured in Urdaneta's Tourism Month food activities.",
+        "source_page": 3
+      },
+      {
+        "name": "Hopia",
+        "description": "A local product featured in the city's One Barangay, One Product food exhibition.",
+        "source_page": 3
+      },
+      {
+        "name": "Peanut Butter",
+        "description": "Another product showcased by Urdaneta communities during the city's food tourism activities.",
+        "source_page": 3
+      },
+      {
+        "name": "Pansit / Local Noodles",
+        "description": "Urdaneta is identified by the Provincial Government as a producer of noodles, and local food exhibitions have included pansit.",
+        "source_page": 3
+      },
+      {
+        "name": "Buko Pie",
+        "description": "Featured among Urdaneta's locally showcased delicacies.",
+        "source_page": 3
+      },
+      {
+        "name": "Papaya Pickles",
+        "description": "A local product featured in the city's food exhibition and barangay product showcase.",
+        "source_page": 3
+      }
+    ],
+    "dining": [
+      {
+        "name": "Matutina–Gerry's Seafood House",
+        "source_page": 4
+      },
+      {
+        "name": "BountiFULL restaurant",
+        "source_page": 4
+      },
+      {
+        "name": "Primo's Bistro & Café",
+        "source_page": 4
+      },
+      {
+        "name": "Janchi Korean Restaurant",
+        "source_page": 4
+      },
+      {
+        "name": "Kuya J",
+        "source_page": 4
+      }
+    ],
+    "dining_note": "For visitors who want named dining stops inside Urdaneta City, current local listings include Matutina–Gerry's Seafood House in Nancayasan, BountiFULL restaurant on MacArthur Highway, Primo's Bistro & Café at Wheels & Wonders Center, Janchi Korean Restaurant in Nancayasan, Kuya J at SM City Urdaneta Central, and local eateries around the public market. For a distinctly Urdaneta food experience, prioritize the public market and local products described above.",
+    "activities": [
+      {
+        "name": "City heritage tour",
+        "description": "Visit the museum, cathedral, cultural spaces, and other central-city landmarks.",
+        "source_page": 2
+      },
+      {
+        "name": "Market and food tour",
+        "description": "Explore the public market, local stalls, street food, and products made by Urdaneta communities.",
+        "source_page": 3
+      },
+      {
+        "name": "Agricultural sightseeing",
+        "description": "Take a countryside drive or walk through appropriate public areas near the city's rice-growing landscapes.",
+        "source_page": 3
+      },
+      {
+        "name": "Photography at rice fields",
+        "description": "Capture rural scenery, especially during planting or harvest seasons, while respecting private farmland.",
+        "source_page": 3
+      },
+      {
+        "name": "Relax at People's Park",
+        "description": "Spend time walking, taking photographs, or enjoying the park's landscaped environment.",
+        "source_page": 3
+      },
+      {
+        "name": "Resort day",
+        "description": "Book a day-use or overnight stay at an Urdaneta City resort for swimming and leisure.",
+        "source_page": 3
+      },
+      {
+        "name": "Food tourism",
+        "description": "Seek out Urdaneta-made products such as tinapang manok, smoked or marinated bangus, rabbit-meat products, native delicacies, and other barangay products.",
+        "source_page": 3
+      },
+      {
+        "name": "Festival and cultural events",
+        "description": "Check the City Government's announcements for Pinaglakwan Festival, Christmas Festival, cultural performances, and other scheduled events.",
+        "source_page": 3
+      }
+    ],
+    "sample_itinerary": [
+      {
+        "period": "Morning",
+        "suggestion": "Start at the Urdaneta City Public Market → breakfast and local-product shopping → visit the Cathedral of Our Lady of the Immaculate Conception.",
+        "source_page": 4
+      },
+      {
+        "period": "Late morning",
+        "suggestion": "Visit Museo de Urdaneta / Urdaneta City New Museum → continue to nearby central-city cultural sites.",
+        "source_page": 4
+      },
+      {
+        "period": "Lunch",
+        "suggestion": "Try local food, including smoked products or other Urdaneta-made specialties.",
+        "source_page": 4
+      },
+      {
+        "period": "Afternoon",
+        "suggestion": "People's Park → Urdaneta City Cultural Center if an event is scheduled → countryside drive toward rice-field areas.",
+        "source_page": 4
+      },
+      {
+        "period": "Late afternoon",
+        "suggestion": "Visit an Urdaneta City resort for swimming/leisure, or explore a suitable rural viewpoint around Oltama/Cabaruan/Sugcong.",
+        "source_page": 4
+      },
+      {
+        "period": "Evening",
+        "suggestion": "Dinner at a local restaurant → evening market/food stop if operating → return to your Urdaneta City hotel.",
+        "source_page": 4
+      }
+    ],
+    "itinerary_attraction_order": [
+      "Urdaneta City Public Market",
+      "Cathedral of Our Lady of the Immaculate Conception",
+      "Museo de Urdaneta / Urdaneta City New Museum",
+      "Urdaneta City People's Park",
+      "Urdaneta City Cultural Center",
+      "Urdaneta Farmer's Market / Agricultural Trading Areas",
+      "Rice Fields of Urdaneta",
+      "Cattle Market / Livestock Area",
+      "Oltama Rolling Hills",
+      "Cabaruan",
+      "Sugcong"
+    ],
+    "festivals": "Pinaglakwan Festival is identified by the City Government as a celebration of Urdaneta's agricultural heritage and the work of its farmers, with activities such as parades, street dancing, and cultural performances. The city also holds seasonal and community events such as its Christmas Festival and farmer's market activities. Event dates can change from year to year, so check the City Government's current announcements before planning around a festival.",
+    "practical_notes": "Getting around Urdaneta is a busy inland commercial city. Tricycles and road-based transport are useful for moving between the city center, barangays, markets, and resorts. Best for Food trips, market exploration, cultural visits, inland countryside scenery, family resort stays, and experiencing everyday city life. Respect private farmland Rice fields and agricultural areas are often working/private properties. Stay on public roads or obtain permission before entering fields. Check event schedules Cultural-center programs, festivals, market events, and special tourism activities are scheduled periodically. Confirm businesses Hotel amenities, restaurant hours, and resort access can change. Contact establishments before traveling.",
+    "access_note": "Rice fields and agricultural areas are often working/private properties. Stay on public roads or obtain permission before entering fields.",
+    "operating_details_verified": false,
+    "source_pages": [
+      {
+        "page": 1,
+        "text": "Urdaneta City Tourism Guide    Page 1\n URDANETA CITY\n TOURISM GUIDE\n Attractions  Activities  Hotels  Local Food  Markets\n A city-only guide to Urdaneta City, Pangasinan\nUrdaneta is a commercial and agricultural center in Pangasinan, known for its public market, rice fields,\ncultural sites, parks, resorts, and locally developed food products.\nPrepared using current City Government of Urdaneta information and current local listings.\n"
+      },
+      {
+        "page": 2,
+        "text": "Urdaneta City Tourism Guide    Page 2\nWELCOME TO URDANETA CITY\nUrdaneta City is a component city of Pangasinan with 34 barangays. Its strategic location has made it a major trading and\nagricultural hub. The provincial government identifies rice, vegetables, and noodles among products associated with the\ncity, while the City Government highlights its markets, rice fields, cultural spaces, parks, and resorts as visitor experiences.\nUnlike Pangasinan's coastal destinations, Urdaneta's tourism character is centered on city life, agriculture, food, culture,\nfaith, commerce, and inland leisure.\nPLACES TO VISIT & ATTRACTIONS\nMuseo de Urdaneta / Urdaneta City New Museum\nA city heritage and cultural stop. The museum is located on Alexander Street and is listed among Urdaneta's attractions by\nthe Provincial Government. Current local listings identify the New Museum as a tourist attraction.\nCathedral of Our Lady of the Immaculate Conception\nA major religious landmark in the city center and a continuation of Urdaneta's long church history. The City Government\nspecifically highlights Our Lady of the Immaculate Conception as part of the city's heritage.\nUrdaneta City People's Park\nAn urban green space for walking, relaxation, recreation, and community activities. The City Government describes it as a\ntranquil urban oasis with greenery and ponds.\nUrdaneta City Cultural Center\nA venue for cultural and artistic events and community gatherings. It provides a place to experience local programs and\ncultural activities when events are scheduled.\nUrdaneta City Public Market\nA lively market where visitors can see the city's trading culture, buy fresh produce, discover local delicacies, and experience\neveryday Urdaneta life.\nUrdaneta Farmer's Market / Agricultural Trading Areas\nA good place to explore the city's agricultural identity through locally produced vegetables, rice, fruits, and other farm\nproducts.\nRice Fields of Urdaneta\nScenic agricultural landscapes that reflect the city's farming heritage. The City Government specifically features Urdaneta's\nrice fields as a tourism experience.\nCattle Market / Livestock Area\nA distinctive part of Urdaneta's agricultural and trading character. The City Government features its cattle market/farm\namong places to discover.\nCabaruan\nCabaruan is identified by the Provincial Government as one of Urdaneta City's attractions. It is also one of the city's 34\nbarangays.\nSugcong\nSugcong is identified by the Provincial Government as an attraction in Urdaneta City and is one of the city's barangays.\nOltama Rolling Hills\nA countryside landscape attraction identified by the Provincial Government as one of Urdaneta City's notable attractions.\nACTIVITIES TO DO\nCity heritage tour\nVisit the museum, cathedral, cultural spaces, and other central-city landmarks.\n"
+      },
+      {
+        "page": 3,
+        "text": "Urdaneta City Tourism Guide    Page 3\nMarket and food tour\nExplore the public market, local stalls, street food, and products made by Urdaneta communities.\nAgricultural sightseeing\nTake a countryside drive or walk through appropriate public areas near the city's rice-growing landscapes.\nPhotography at rice fields\nCapture rural scenery, especially during planting or harvest seasons, while respecting private farmland.\nRelax at People's Park\nSpend time walking, taking photographs, or enjoying the park's landscaped environment.\nResort day\nBook a day-use or overnight stay at an Urdaneta City resort for swimming and leisure.\nFood tourism\nSeek out Urdaneta-made products such as tinapang manok, smoked or marinated bangus, rabbit-meat products, native\ndelicacies, and other barangay products.\nFestival and cultural events\nCheck the City Government's announcements for Pinaglakwan Festival, Christmas Festival, cultural performances, and\nother scheduled events.\nHOTELS & RESORTS — URDANETA CITY ONLY\n Hotel / Resort\nLocation\nNotes\nLevo Hotel\nBarangay San Vicente\nCity hotel along the San Vicente road.\nLisland Rainforest Resort\n182 MacArthur Highway\nResort hotel with a leisure-oriented setting.\nGoldland Spring Resort and Hotel\nCayambanan Road\nResort and hotel within Urdaneta City.\nSaroju's Farmview Hotel\nNancamaliran East\nHotel with a countryside/farm-view setting.\nMini Heart Resort\nZone 2\nLocal resort option within Urdaneta City.\nHotel names and locations above are current local listings checked for Urdaneta City. Room rates, amenities, and availability change; confirm directly before\nbooking.\nLOCAL FOODS & PRODUCTS TO TRY\n Food / Product\nWhat to try\nTinapang Manok\nSmoked chicken is one of Urdaneta's recognized local food products. The City Tourism Office has promoted it as a signature product of Barangay Bayaoas.\nTinapa / Smoked Fish\nUrdaneta has a long-established tinapa industry in Barangay Bayaoas. Look for smoked fish and related products in local markets.\nSmoked & Marinated Bangus\nA product featured in Urdaneta's local food festivals and barangay product showcases.\nRabbit Meat Products\nUrdaneta food producers have developed rabbit-meat products including longganisa, hotdogs, embutido, and lechon. Availability can vary.\nKamoteng Biko\nA native rice-and-root-crop delicacy featured in Urdaneta's Tourism Month food activities.\nHopia\nA local product featured in the city's One Barangay, One Product food exhibition.\nPeanut Butter\nAnother product showcased by Urdaneta communities during the city's food tourism activities.\nPansit / Local Noodles\nUrdaneta is identified by the Provincial Government as a producer of noodles, and local food exhibitions have included pansit.\nBuko Pie\nFeatured among Urdaneta's locally showcased delicacies.\nPapaya Pickles\nA local product featured in the city's food exhibition and barangay product showcase.\n"
+      },
+      {
+        "page": 4,
+        "text": "Urdaneta City Tourism Guide    Page 4\nRESTAURANTS & FOOD STOPS\nFor visitors who want named dining stops inside Urdaneta City, current local listings include Matutina–Gerry's Seafood\nHouse in Nancayasan, BountiFULL restaurant on MacArthur Highway, Primo's Bistro & Café at Wheels & Wonders Center,\nJanchi Korean Restaurant in Nancayasan, Kuya J at SM City Urdaneta Central, and local eateries around the public market.\nFor a distinctly Urdaneta food experience, prioritize the public market and local products described above.\nSAMPLE 1-DAY URDANETA CITY ITINERARY\n Time\nPlan\nMorning\nStart at the Urdaneta City Public Market → breakfast and local-product shopping → visit the Cathedral of Our Lady of the Immaculate Conception.\nLate morning\nVisit Museo de Urdaneta / Urdaneta City New Museum → continue to nearby central-city cultural sites.\nLunch\nTry local food, including smoked products or other Urdaneta-made specialties.\nAfternoon\nPeople's Park → Urdaneta City Cultural Center if an event is scheduled → countryside drive toward rice-field areas.\nLate afternoon\nVisit an Urdaneta City resort for swimming/leisure, or explore a suitable rural viewpoint around Oltama/Cabaruan/Sugcong.\nEvening\nDinner at a local restaurant → evening market/food stop if operating → return to your Urdaneta City hotel.\nFESTIVALS & EVENTS\nPinaglakwan Festival is identified by the City Government as a celebration of Urdaneta's agricultural heritage and the work\nof its farmers, with activities such as parades, street dancing, and cultural performances. The city also holds seasonal and\ncommunity events such as its Christmas Festival and farmer's market activities. Event dates can change from year to year,\nso check the City Government's current announcements before planning around a festival.\n"
+      },
+      {
+        "page": 5,
+        "text": "Urdaneta City Tourism Guide    Page 5\nPRACTICAL TRAVEL NOTES\nGetting around\nUrdaneta is a busy inland commercial city. Tricycles and road-based transport are useful for moving between the city center,\nbarangays, markets, and resorts.\nBest for\nFood trips, market exploration, cultural visits, inland countryside scenery, family resort stays, and experiencing everyday city\nlife.\nRespect private farmland\nRice fields and agricultural areas are often working/private properties. Stay on public roads or obtain permission before\nentering fields.\nCheck event schedules\nCultural-center programs, festivals, market events, and special tourism activities are scheduled periodically.\nConfirm businesses\nHotel amenities, restaurant hours, and resort access can change. Contact establishments before traveling.\nSOURCES\n City Government of Urdaneta — Tourism: https://www.urdaneta-city.gov.ph/tourism\n City Government of Urdaneta — The City: https://www.urdaneta-city.gov.ph/the-city\n Province of Pangasinan — Urdaneta City: https://www.pangasinan.gov.ph/city-municipalities/urdaneta-city/\n Philippine News Agency — Urdaneta City promotes food tourism (Sept. 29, 2022): https://www.pna.gov.ph/articles/1184874\n Philippine Information Agency — Urdaneta food festival and local products (Sept. 22–23, 2022)\n Current local business listings checked for Urdaneta City hotels, restaurants, museum, cathedral, and People's Park.\nSTRICT SCOPE: This guide is limited to Urdaneta City, Pangasinan. Attractions, hotels, restaurants, and\nactivities in neighboring municipalities/cities were intentionally excluded.\n"
+      }
+    ]
+  }
+]

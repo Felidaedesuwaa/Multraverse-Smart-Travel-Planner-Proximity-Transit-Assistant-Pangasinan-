@@ -1,3 +1,4 @@
+import { hardenSchema } from './_hardening'
 import { model, models, Schema } from 'mongoose'
 import { apiSchemaOptions } from './_helpers'
 import { moderationFields } from './_moderation'
@@ -10,4 +11,5 @@ const routePriceSchema = new Schema({
   durationMinutes: { type: Number, min: 1 }, fareBasis: { type: String, enum: ['person', 'vehicle'] },
   capacity: { type: Number, min: 1 }, verifiedAt: Date, sourceUrl: String,
 }, { ...apiSchemaOptions, timestamps: { createdAt: true, updatedAt: false } })
+hardenSchema(routePriceSchema, 'RoutePrice')
 export const RoutePrice = models.RoutePrice || model('RoutePrice', routePriceSchema)
