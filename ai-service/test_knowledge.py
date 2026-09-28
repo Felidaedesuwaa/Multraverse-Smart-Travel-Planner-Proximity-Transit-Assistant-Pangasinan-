@@ -16,7 +16,7 @@ class KnowledgeTests(unittest.TestCase):
         self.assertEqual(len(records), len(provenance))
         self.assertEqual(len(records), manifest['records'])
         self.assertEqual(manifest['sha256'], hashlib.sha256((ROOT / 'data/combined_training_data.jsonl').read_text(encoding='utf-8').encode('utf-8')).hexdigest())
-        self.assertEqual({r['source'] for r in provenance}, {'server/prisma/seedPhrasebookV2.ts', 'Pangasinan_Fares_and_Hundred_Islands_Rates.pdf', *[g['source_file'] for g in source_city_guides()]})
+        self.assertEqual({r['source'] for r in provenance}, {'server/prisma/seedPhrasebookV2.ts', 'Dagupan_City_Hotels_and_Lodging_Guide.pdf', 'Alaminos_City_Hotels_and_Lodging_Guide.pdf', 'San_Carlos_City_Hotels_and_Lodging_Guide.pdf', 'Urdaneta_City_Hotels_and_Lodging_Guide.pdf', 'Pangasinan_Fares_and_Hundred_Islands_Rates.pdf', *[g['source_file'] for g in source_city_guides()]})
         self.assertEqual(len({r['instruction'] for r in records}), len(records))
 
     def test_phrasebook_all_directions_and_unknown(self):

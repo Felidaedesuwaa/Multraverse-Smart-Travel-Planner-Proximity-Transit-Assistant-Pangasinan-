@@ -21,6 +21,7 @@ dist-ssr
 /test.txt
 /text1.txt
 /.tmp/
+/.tmp-itinerary-web-check/
 
 # Editor directories and files
 .vscode/*

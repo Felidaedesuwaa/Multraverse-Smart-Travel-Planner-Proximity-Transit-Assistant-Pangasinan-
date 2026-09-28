@@ -7,5 +7,6 @@ const schema = new Schema({
   plan: { type: planSchema, required: true },
   expiresAt: { type: Date, required: true, expires: 0 },
 }, apiSchemaOptions)
+schema.set('minimize', false)
 hardenSchema(schema, 'PlannerDraft')
 export const PlannerDraft = models.PlannerDraft || model('PlannerDraft', schema)

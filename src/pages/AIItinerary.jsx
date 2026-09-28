@@ -1,13 +1,19 @@
 import { useEffect, useRef, useState } from "react";
-import { useWindowDimensions } from "react-native";
+import { Image as NativeImage, useWindowDimensions } from "react-native";
 import AIToolHeader from "../components/AIToolHeader";
-import fareReference from "../../server/src/data/pangasinanFares.json";
+import { api } from "../lib/api";
+import { dagupanPhotos } from "../lib/dagupanPhotos";
+import { alaminosPhotos } from "../lib/alaminosPhotos";
+import { sanCarlosPhotos } from "../lib/sanCarlosPhotos";
+import { urdanetaPhotos } from "../lib/urdanetaPhotos";
+import ItineraryResults from "../components/ItineraryResults";
+import ItineraryFareInputs from "../components/ItineraryFareInputs";
 import {
-  Home, MapPin, Download as DownloadIcon,
+  Home,
   Sparkles, ChevronDown, ChevronRight, Check,
   Clock, Activity, Zap, User, Users, Star, Globe, Bus, Wifi, Wind, Waves,
-  Eye, BedDouble, Camera, Utensils, Compass, ShoppingBag,
-  BookmarkPlus, Share2,
+  Eye, BedDouble, Utensils, Compass, ShoppingBag,
+  MapPin, Phone, Info, Building2, Receipt, LogIn, LogOut, Wallet, TrendingUp, PiggyBank,
 } from "lucide-react-native";
 
 /* ------------------------------------------------------------------ */
@@ -36,15 +42,6 @@ const fonts = {
 /* ------------------------------------------------------------------ */
 /*  Static reference data (would come from the catalog API)            */
 /* ------------------------------------------------------------------ */
-const AREAS = [
-  { id: "dagupan", name: "Dagupan", group: "Cities" },
-  { id: "alaminos", name: "Alaminos", group: "Cities" },
-  { id: "urdaneta", name: "Urdaneta", group: "Cities" },
-  { id: "sancarlos", name: "San Carlos", group: "Cities" },
-  { id: "bolinao", name: "Bolinao", group: "Municipalities" },
-  { id: "lingayen", name: "Lingayen", group: "Municipalities" },
-  { id: "manaoag", name: "Manaoag", group: "Municipalities" },
-];
 
 const TRIP_TYPES = [
   "Beach & Sea", "Nature", "Waterfalls", "Adventure", "Relaxing", "Pilgrimage",
@@ -73,35 +70,8 @@ const TRAVEL_STYLES = [
 ];
 
 const TRANSPORT_MODES = ["Bus", "Jeepney", "Tricycle", "Van", "Own Vehicle"];
-const PREFERENCES = ["Budget-friendly", "Island hopping", "Accessible routes", "Photography spots", "Cultural sites"];
-
-const DESTINATION_INFO = {
-  alaminos: {
-    famousPlaces: ["Hundred Islands NP", "Governor Island", "Children's Island", "Isdaan Floating Restaurant"],
-    foods: ["Fresh seafood", "Sinanglay na tilapia", "Buko pie", "Salted egg"],
-  },
-  dagupan: { famousPlaces: ["Bonuan Beach", "Dagupan Public Market"], foods: ["Bangus", "Pigar-pigar"] },
-  urdaneta: { famousPlaces: ["Robinsons Place Urdaneta", "St. William Cathedral"], foods: ["Urdaneta longganisa"] },
-  sancarlos: { famousPlaces: ["Baguio-Pangasinan lookout"], foods: ["Fresh produce"] },
-  bolinao: { famousPlaces: ["Patar Beach", "Cape Bolinao Lighthouse"], foods: ["Grilled seafood"] },
-  lingayen: { famousPlaces: ["Lingayen Gulf", "Capitol Building"], foods: ["Boneless bangus"] },
-  manaoag: { famousPlaces: ["Our Lady of Manaoag Church"], foods: ["Puto", "Kalamay"] },
-};
-
-const LODGING_OPTIONS = {
-  alaminos: [
-    { id: "starview", name: "Star View Hotel", tier: "Budget", amenities: ["Wi-Fi", "A/C", "Restaurant"], price: 900 },
-    { id: "hundredislands", name: "Hundred Islands Hotel", tier: "Mid-range", amenities: ["Wi-Fi", "A/C", "Pool", "Sea View"], price: 1500 },
-    { id: "pensionpanamica", name: "Pension Panamica", tier: "Budget", amenities: ["Wi-Fi", "Fan room"], price: 600 },
-  ],
-};
-const defaultLodging = (areaId) => LODGING_OPTIONS[areaId] || [
-  { id: "generic1", name: "Local Inn", tier: "Budget", amenities: ["Wi-Fi", "Fan room"], price: 700 },
-  { id: "generic2", name: "Town Hotel", tier: "Mid-range", amenities: ["Wi-Fi", "A/C"], price: 1300 },
-];
 
 const AMENITY_ICON = { "Wi-Fi": Wifi, "A/C": Wind, "Restaurant": Utensils, "Pool": Waves, "Sea View": Eye, "Fan room": BedDouble };
-const TAG_COLOR = { Transit: colors.oceanBlue, Attraction: colors.sunsetCoral, Food: colors.palmGreen, Shopping: colors.golden, Lodging: colors.seafoam };
 
 const toggleValue = (values, value) => values.includes(value) ? values.filter((v) => v !== value) : [...values, value];
 const peso = (n) => `₱${Number(n).toLocaleString()}`;
@@ -109,6 +79,103 @@ const peso = (n) => `₱${Number(n).toLocaleString()}`;
 /* ------------------------------------------------------------------ */
 /*  Small building blocks                                              */
 /* ------------------------------------------------------------------ */
+function DestinationCard({ name, photo, Icon }) {
+  const [failed, setFailed] = useState(false);
+  return <article className="aip-discovery-card">
+    <div className="aip-discovery-image">
+      {photo && !failed ? <NativeImage source={photo.asset} accessibilityLabel={photo.alt} resizeMode="cover" style={{ width: "100%", height: "100%" }} onError={() => setFailed(true)} /> : <div className="aip-photo-placeholder"><Icon size={28} /><span>{failed ? "Photo unavailable" : "Photo coming soon"}</span></div>}
+    </div>
+    <div className="aip-discovery-caption"><Icon size={16} /><h4>{name}</h4></div>
+  </article>;
+}
+
+const destinationPhotoGuides = {
+  dagupan: { photos: dagupanPhotos, filePrefix: 'Dagupan' },
+  alaminos: { photos: alaminosPhotos, filePrefix: 'Alaminos' },
+  'san-carlos': { photos: sanCarlosPhotos, filePrefix: 'San_Carlos' },
+  urdaneta: { photos: urdanetaPhotos, filePrefix: 'Urdaneta' },
+};
+
+function DestinationGallery({ title, names, Icon, photos }) {
+  const illustrated = names.filter((name) => photos[name]);
+  const remaining = names.filter((name) => !photos[name]);
+  return <section className="aip-discovery-section">
+    <h3 className="aip-heading-sm">{title}</h3>
+    <div className="aip-discovery-grid">{illustrated.map((name) => <DestinationCard key={name} name={name} Icon={Icon} photo={photos[name]} />)}</div>
+    {remaining.length > 0 && <details className="aip-more-discoveries"><summary>More to explore ({remaining.length})</summary><p>Photos are not yet verified for these entries.</p><div className="aip-chip-row">{remaining.map((name) => <span key={name} className="aip-summary-chip">{name}</span>)}</div></details>}
+  </section>;
+}
+
+function hotelBudget(lodging, budget, days, rooms) {
+  const rate = lodging?.lodgingDetails?.reference_rate;
+  const nights = Math.max(0, Number(days) - 1);
+  if (!nights) return { status: 'day-trip', nights, blocked: false };
+  if (!rate || rate.period !== "night" || rate.min == null || rate.max == null || /flat rate|group basis|per.head|per.person/i.test(rate.basis)) return { status: "unknown", nights, blocked: false };
+  const min = Number(rate.min) * nights * rooms;
+  const max = Number(rate.max) * nights * rooms;
+  if (!Number.isFinite(min) || !Number.isFinite(max)) return { status: "unknown", nights, blocked: false };
+  const knownBasis = /^(per[ _-])?room\b/i.test(rate.basis || "");
+  const status = min > Number(budget) ? "over" : max > Number(budget) ? "possible" : "within";
+  return { min, max, nights, status, knownBasis, blocked: status === "over" && knownBasis };
+}
+
+function LodgingCard({ lodging: l, selected, onSelect, comparison }) {
+  const d = l.lodgingDetails;
+  const rate = d?.reference_rate;
+  const unavailable = d?.overnight_supported === false;
+  const facts = d ? [
+    [BedDouble, "Room types", d.room_types],
+    [Users, "Capacity", d.capacity_note],
+    [Building2, "Facilities", d.amenities_description],
+    [Receipt, "Additional fees", d.additional_fees],
+    [Info, "Rate details", d.rate_note],
+    [Bus, "Getting there", d.transport_access],
+    [MapPin, "Nearby", d.nearby_attractions],
+    [Phone, "Contact", d.contact],
+    [Globe, "Booking", d.booking_url],
+  ].filter(([, , value]) => value) : [];
+
+  return (
+    <article className={`aip-stay-card ${selected ? "is-selected" : ""}`}>
+      <button type="button" className="aip-stay-select" disabled={unavailable} aria-pressed={selected} aria-label={`Select ${l.name}`} onClick={onSelect}>
+        <span className="aip-stay-icon"><Building2 size={22} /></span>
+        <span className="aip-stay-title"><strong>{l.name}</strong>{l.tier && <span className="aip-stay-tier"><Star size={12} />{l.tier}</span>}</span>
+        <span className={`aip-stay-radio ${selected ? "is-selected" : ""}`} aria-hidden="true">{selected && <Check size={14} color="#fff" />}</span>
+      </button>
+      <div className="aip-stay-body">
+        {d?.address && <div className="aip-stay-location"><MapPin size={15} /><span>{d.address}</span></div>}
+        <div className="aip-stay-amenities">
+          {(l.amenities || []).map((a) => { const Icon = AMENITY_ICON[a] || Check; return <span key={a} className="aip-stay-amenity"><Icon size={16} /><span>{a}</span></span>; })}
+        </div>
+        <div className="aip-stay-bottom">
+          <div className="aip-stay-rate">
+            <strong>{rate ? `${peso(rate.min)}${rate.max !== rate.min ? `–${peso(rate.max)}` : ""}` : l.price == null ? "Rate unconfirmed" : peso(l.price)}</strong>
+            {(rate || l.price != null) && <span> / {rate?.period || "night"}{rate ? " · Approx." : ""}</span>}
+          </div>
+          {selected && <span className="aip-stay-selected"><Check size={14} />Selected</span>}
+        </div>
+        {unavailable && <p className="aip-stay-note">Day-use / events only · Overnight stay unavailable</p>}
+        {!unavailable && comparison && comparison.status !== 'day-trip' && <p className={`aip-hotel-budget ${comparison.status}`}>
+          <Info size={15} />
+          <span>{comparison.status === "unknown" ? "Confirm hotel cost" : `${comparison.status === "over" ? "Over budget" : comparison.status === "possible" ? "May exceed budget" : "Within hotel allowance"} · Estimated ${peso(comparison.min)}–${peso(comparison.max)} total`}
+          {comparison.min != null && !comparison.knownBasis && " · Confirm price basis and room capacity"}</span>
+        </p>}
+      </div>
+      {d && <details className="aip-stay-details">
+        <summary><Info size={15} /><span className="aip-stay-show">View details</span><span className="aip-stay-hide">Hide details</span><ChevronDown size={16} /></summary>
+        <div className="aip-stay-facts">
+          {(d.check_in || d.check_out) && <div className="aip-stay-times">
+            {[[LogIn, "Check-in", d.check_in], [LogOut, "Check-out", d.check_out]].filter(([, , value]) => value).map(([Icon, label, value]) => (
+              <div className="aip-stay-fact" key={label}><Icon size={17} /><div><span>{label}</span><p>{value}</p></div></div>
+            ))}
+          </div>}
+          {facts.map(([Icon, label, value]) => <div className="aip-stay-fact" key={label}><Icon size={17} /><div><span>{label}</span><p>{value}</p></div></div>)}
+        </div>
+      </details>}
+    </article>
+  );
+}
+
 function Chip({ selected, onClick, children }) {
   return (
     <button type="button" className={`aip-chip ${selected ? "is-selected" : ""}`} onClick={onClick}>
@@ -150,21 +217,30 @@ function MultiSelectField({ label, placeholder, options, values, onChange }) {
 /* ------------------------------------------------------------------ */
 /*  Main component                                                     */
 /* ------------------------------------------------------------------ */
+const todayInManila = () => new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10);
+const BUDGET_PACKAGES = [
+  { id: "economy", min: 200, max: 500, rate: 500, label: "Economy", Icon: PiggyBank, color: "#246B73" },
+  { id: "budget", min: 500, max: 1000, rate: 1000, label: "Budget", Icon: Wallet, color: colors.palmGreen },
+  { id: "standard", min: 1000, max: 2000, rate: 2000, label: "Standard", Icon: Star, color: colors.oceanBlue },
+  { id: "comfortable", min: 2000, max: 4000, rate: 4000, label: "Comfortable", Icon: TrendingUp, color: "#946516" },
+  { id: "premium", min: 4000, max: null, rate: 4000, label: "Premium", Icon: Zap, color: "#B7472B" },
+];
 const initialForm = () => ({
   areaId: "",
   tripTypes: [],
   activities: [],
   travelerType: "couple",
   travelStyle: "balanced",
-  date: new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10),
+  date: todayInManila(),
   travelers: 2,
-  budget: "3000",
+  budget: "2000",
   days: 1,
   lodgingId: null,
   startTime: "07:00",
   mealBudget: "300",
+  fareInputs: [],
   transportModes: ["Bus", "Jeepney"],
-  preferences: ["Island hopping"],
+  preferences: [],
   returnToOrigin: true,
 });
 
@@ -173,6 +249,11 @@ export default function AIItinerary() {
   const contentWidth = width >= 768 ? width - 280 : width;
   const [step, setStep] = useState(1);
   const [form, setForm] = useState(initialForm);
+  const [budgetTier, setBudgetTier] = useState("budget");
+  const [hotelRooms, setHotelRooms] = useState(1);
+  const selectedBudget = BUDGET_PACKAGES.find((tier) => tier.id === budgetTier);
+  const budgetRate = selectedBudget.rate;
+  const [today, setToday] = useState(todayInManila);
   const [showAdvanced, setShowAdvanced] = useState(true);
   const [attemptedNext, setAttemptedNext] = useState(false);
   const [phase, setPhase] = useState("");
@@ -181,12 +262,65 @@ export default function AIItinerary() {
   const [showForm, setShowForm] = useState(true);
   const [saved, setSaved] = useState(false);
   const timerRef = useRef(null);
+  const generationRef = useRef(false);
+  const [catalog, setCatalog] = useState([]);
+  const [fareTables, setFareTables] = useState([]);
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const AREAS = catalog;
+  useEffect(() => {
+    const controller = new AbortController();
+    api.getItineraryCatalog({ signal: controller.signal })
+      .then(data => { setCatalog(data.areas); setFareTables(data.fareTables || []); })
+      .catch(err => { if (!controller.signal.aborted) setError(err.message); });
+    return () => controller.abort();
+  }, []);
 
-  const set = (key, value) => setForm((f) => ({ ...f, [key]: value }));
+  useEffect(() => {
+    const timer = setInterval(() => setToday(todayInManila()), 30000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const set = (key, value) => setForm((f) => {
+    const next = { ...f, [key]: value, ...(key === "areaId" ? { lodgingId: null } : {}) };
+    if (key === 'areaId') next.fareInputs = [];
+    if (key === 'transportModes') next.fareInputs = f.fareInputs.filter(item => value.includes(item.mode));
+    if (key === 'travelers' && Number(value) === 1) next.travelerType = 'solo';
+    if (key === 'travelers' && Number(value) > 1 && f.travelerType === 'solo') next.travelerType = Number(value) === 2 ? 'couple' : 'group';
+    if (key === "travelerType" && ["solo", "couple"].includes(value)) next.travelers = value === "solo" ? 1 : 2;
+    if (["travelers", "days", "travelerType"].includes(key)) {
+      next.budget = String(budgetRate * Math.max(1, Number(next.travelers) || 1) * next.days);
+    }
+    return next;
+  });
+  const chooseBudget = ({ id, rate }) => {
+    setBudgetTier(id);
+    setForm((f) => ({ ...f, budget: String(rate * Math.max(1, Number(f.travelers) || 1) * f.days) }));
+  };
+  const dateError = !form.date ? "Choose a travel date." : form.date < today ? "Choose today or a future date." : "";
+  const validateTripDetails = () => {
+    if (!form.date || form.date < todayInManila()) {
+      setToday(todayInManila());
+      setAttemptedNext(true);
+      setStep(2);
+      return false;
+    }
+    if (stayBudget?.blocked) {
+      setAttemptedNext(true);
+      setStep(2);
+      return false;
+    }
+    return true;
+  };
   const area = AREAS.find((a) => a.id === form.areaId);
-  const info = DESTINATION_INFO[form.areaId];
-  const lodgingList = form.areaId ? defaultLodging(form.areaId) : [];
+  const info = area;
+  const lodgingList = area?.lodging || [];
   const lodging = lodgingList.find((l) => l.id === form.lodgingId);
+  const mealPerPerson = Number(form.mealBudget) * Number(form.days);
+  const mealTotal = mealPerPerson * Number(form.travelers);
+  const mealRemaining = Number(form.budget) - mealTotal;
+  const stayBudget = lodging ? hotelBudget(lodging, form.budget, form.days, hotelRooms) : null;
+  const higherBudget = stayBudget?.max != null ? BUDGET_PACKAGES.find((tier) => tier.rate * form.travelers * form.days >= stayBudget.max && tier.rate > budgetRate) : null;
 
   useEffect(() => {
     if (!phase) return;
@@ -199,63 +333,43 @@ export default function AIItinerary() {
 
   const goNext = () => {
     if (step === 1 && !form.areaId) { setAttemptedNext(true); return; }
+    if (step === 2 && !validateTripDetails()) return;
     setAttemptedNext(false);
     setStep((s) => Math.min(3, s + 1));
   };
   const goBack = () => setStep((s) => Math.max(1, s - 1));
 
-  /* ---------------- itinerary generation (mocked) ------------------ */
-  const buildAlaminosPlan = () => {
-    const stops = [
-      { time: "07:00", title: "Dagupan Bus Terminal", subtitle: "Bus to Alaminos", tag: "Transit", price: 95, Icon: Bus },
-      { time: "09:15 AM", title: "Alaminos — Arrival", subtitle: "Arrive and orient with local guide", tag: "Transit", price: 0, Icon: MapPin },
-      { time: "09:30 AM", title: "Hundred Islands NP", subtitle: "Morning exploration", tag: "Attraction", price: 80, Icon: Compass },
-      { time: "11:00 AM", title: "Governor Island", subtitle: "Mid-morning activity", tag: "Attraction", price: 50, Icon: Camera },
-      { time: "12:30 PM", title: "Local Restaurant", subtitle: "Fresh seafood · Sinanglay na tilapia", tag: "Food", price: 300, Icon: Utensils },
-      { time: "02:00 PM", title: "Children's Island", subtitle: "Afternoon highlight", tag: "Attraction", price: 60, Icon: Compass },
-      { time: "04:30 PM", title: "Pasalubong Center", subtitle: "Local products and souvenir shopping", tag: "Shopping", price: 200, Icon: ShoppingBag },
-      { time: "06:00 PM", title: "Star View Hotel", subtitle: "Budget · ₱900/night × 1 night · Wi-Fi, A/C, Restaurant", tag: "Lodging", price: 900, Icon: Home },
-      { time: "Next day", title: "Return Transit", subtitle: "Return bus to Dagupan", tag: "Transit", price: 95, Icon: Bus },
-    ];
-    const breakdown = { Transit: 190, Attraction: 190, Food: 300, Shopping: 200, Lodging: 900 };
-    const estimated = Object.values(breakdown).reduce((a, b) => a + b, 0);
-    return { stops, breakdown, estimated };
-  };
-
-  const buildGenericPlan = () => {
-    const infoLocal = info || { famousPlaces: [], foods: [] };
-    const stops = [
-      { time: "07:00", title: `${AREAS.find((a) => a.id === "dagupan")?.name} Bus Terminal`, subtitle: `Bus to ${area?.name}`, tag: "Transit", price: 90, Icon: Bus },
-      { time: "09:00 AM", title: `${area?.name} — Arrival`, subtitle: "Arrive and orient with local guide", tag: "Transit", price: 0, Icon: MapPin },
-      ...(infoLocal.famousPlaces.slice(0, 2).map((p, i) => ({
-        time: i === 0 ? "09:30 AM" : "11:00 AM", title: p, subtitle: i === 0 ? "Morning exploration" : "Mid-morning activity",
-        tag: "Attraction", price: 50 + i * 20, Icon: Compass,
-      }))),
-      { time: "12:30 PM", title: "Local Restaurant", subtitle: infoLocal.foods.slice(0, 2).join(" · ") || "Local specialties", tag: "Food", price: Number(form.mealBudget) || 300, Icon: Utensils },
-      ...(lodging ? [{ time: "06:00 PM", title: lodging.name, subtitle: `${lodging.tier} · ${peso(lodging.price)}/night × ${Math.max(1, form.days - 1) || 1} night · ${lodging.amenities.join(", ")}`, tag: "Lodging", price: lodging.price, Icon: Home }] : []),
-      ...(form.returnToOrigin ? [{ time: "Next day", title: "Return Transit", subtitle: "Return bus to Dagupan", tag: "Transit", price: 90, Icon: Bus }] : []),
-    ];
-    const breakdown = stops.reduce((acc, s) => { acc[s.tag] = (acc[s.tag] || 0) + s.price; return acc; }, {});
-    const estimated = Object.values(breakdown).reduce((a, b) => a + b, 0);
-    return { stops, breakdown, estimated };
-  };
-
-  const generate = () => {
-    setPhase("Planning your trip");
-    setTimeout(() => {
-      const built = form.areaId === "alaminos" ? buildAlaminosPlan() : buildGenericPlan();
-      // The preview has no billed route distances or confirmed attraction fees.
-      built.stops = built.stops.map(stop => ["Transit", "Attraction"].includes(stop.tag) ? { ...stop, price: null } : stop);
-      built.breakdown = built.stops.reduce((totals, stop) => {
-        if (stop.price != null) totals[stop.tag] = (totals[stop.tag] || 0) + stop.price;
-        return totals;
-      }, {});
-      built.estimated = Object.values(built.breakdown).reduce((sum, price) => sum + price, 0);
-      setPlan({ ...built, request: { ...form } });
-      setPhase("");
+  const generate = async () => {
+    if (generationRef.current) return;
+    if (!validateTripDetails()) return;
+    generationRef.current = true;
+    setError("");
+    setPhase("Planning from your area's catalog");
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 90000);
+    try {
+      const built = await api.generateGroundedItinerary({ ...form, hotelRooms }, { signal: controller.signal });
+      const icons = { Bus, Compass, Utensils, Home, ShoppingBag };
+      setPlan({ ...built, stops: built.stops.map(stop => ({ ...stop, Icon: icons[stop.iconKey] || Compass })) });
       setShowForm(false);
       setSaved(false);
-    }, 1400);
+    } catch (err) {
+      setError(controller.signal.aborted ? "Generation timed out. Please try again." : err.message || "Unable to generate your itinerary. Please try again.");
+    } finally {
+      clearTimeout(timeout);
+      setPhase("");
+      generationRef.current = false;
+    }
+  };
+  const savePlan = async () => {
+    if (saving || !plan?.id) return;
+    setSaving(true);
+    setError("");
+    try {
+      await api.saveItinerary(plan.id, true);
+      setSaved(true);
+    } catch (err) { setError(err.message); }
+    finally { setSaving(false); }
   };
 
   /* -------------------------- render -------------------------- */
@@ -277,6 +391,7 @@ export default function AIItinerary() {
               compact={contentWidth < 600}
             />
           </div>
+          {error && <p className="aip-error" role="alert">{error}</p>}
           {showForm && (
             <>
               <div className="aip-progress-header">
@@ -345,42 +460,70 @@ export default function AIItinerary() {
                     <h2 className="aip-heading">Trip details</h2>
                     <p className="aip-subtitle">Set your travel date, group size, and budget, then choose your stay.</p>
                     <div className="aip-field-row">
-                      <div className="aip-field"><label className="aip-label">Travel date</label><input type="date" className="aip-input" value={form.date} onChange={(e) => set("date", e.target.value)} /></div>
-                      <div className="aip-field"><label className="aip-label">Travelers</label><input type="number" min={1} className="aip-input" value={form.travelers} onChange={(e) => set("travelers", e.target.value)} /></div>
-                      <div className="aip-field"><label className="aip-label">Total trip budget (PHP)</label><input type="number" className="aip-input" value={form.budget} onChange={(e) => set("budget", e.target.value)} /></div>
+                      <div className="aip-field">
+                        <label className="aip-label" htmlFor="aip-travel-date">Travel date</label>
+                        <input id="aip-travel-date" type="date" required min={today} className="aip-input" value={form.date} aria-invalid={!!dateError && (attemptedNext || !!form.date)} aria-describedby={dateError ? "aip-date-error" : undefined} onFocus={() => setToday(todayInManila())} onChange={(e) => set("date", e.target.value)} />
+                        {dateError && (attemptedNext || form.date) && <p id="aip-date-error" className="aip-error" role="alert">{dateError}</p>}
+                      </div>
+                      <div className="aip-field"><label className="aip-label">Travelers</label><input type="number" min={1} step={1} className="aip-input" value={form.travelers} onChange={(e) => set("travelers", Math.max(1, Math.floor(Number(e.target.value) || 1)))} /></div>
+                      <div className="aip-field">
+                        <label className="aip-label" htmlFor="aip-trip-days">How many days?</label>
+                        <select id="aip-trip-days" className="aip-select" value={form.days} onChange={(e) => set("days", Number(e.target.value))}>
+                          {[1, 2, 3, 4, 5, 6, 7].map((n) => <option key={n} value={n}>{n} day{n === 1 ? "" : "s"}</option>)}
+                        </select>
+                      </div>
                     </div>
-                    <label className="aip-label">How many days?</label>
-                    <div className="aip-chip-row">
-                      {[1, 2, 3, 4, 5, 6, 7].map((n) => (
-                        <Chip key={n} selected={form.days === n} onClick={() => set("days", n)}>{n} day{n === 1 ? "" : "s"}</Chip>
-                      ))}
+                    <div className="aip-budget-heading">
+                      <span id="aip-budget-label">Total trip budget</span>
+                      <span>{form.travelers} traveler{Number(form.travelers) === 1 ? "" : "s"} × {form.days} day{form.days === 1 ? "" : "s"}</span>
+                    </div>
+                    <div className="aip-budget-grid" role="group" aria-labelledby="aip-budget-label">
+                      {BUDGET_PACKAGES.map((tier) => {
+                        const { Icon } = tier;
+                        const multiplier = form.travelers * form.days;
+                        return <button type="button" key={tier.id} aria-pressed={budgetTier === tier.id} className={`aip-budget-card ${budgetTier === tier.id ? "is-selected" : ""}`} style={{ "--tier-color": tier.color, "--tier-tint": `${tier.color}0D`, "--tier-border": `${tier.color}40`, "--tier-icon-bg": `${tier.color}18` }} onClick={() => chooseBudget(tier)}>
+                          <span className="aip-budget-icon"><Icon size={18} /></span>
+                          <strong>{tier.label}</strong>
+                          <span className="aip-budget-range">{peso(tier.min * multiplier)}{tier.max ? `–${peso(tier.max * multiplier)}` : "+"}</span>
+                          <span className="aip-budget-person">{peso(tier.min)}{tier.max ? `–${peso(tier.max)}` : "+"}<br />/ person / day</span>
+                        </button>;
+                      })}
+                    </div>
+                    <div className="aip-budget-summary" aria-live="polite">
+                      <span>Selected tier</span>
+                      <strong>{selectedBudget.label} <span>·</span> {selectedBudget.max ? "Budget cap" : "Starting budget"}: {peso(form.budget)}</strong>
                     </div>
                   </div>
 
                   <div className="aip-card">
                     <div className="aip-row-between">
                       <h2 className="aip-heading">Where will you stay?</h2>
-                      {lodging && <span className="aip-pill aip-pill-tan">{lodging.tier} · {peso(lodging.price)} total</span>}
+                      {lodging && <span className="aip-pill aip-pill-tan">{lodging.tier}</span>}
                     </div>
                     <p className="aip-subtitle">Hotels and accommodations in {area?.name || "your destination"}</p>
+                    <div className="aip-hotel-budget-panel">
+                      <label className="aip-label" htmlFor="aip-hotel-rooms">Rooms needed</label>
+                      <input id="aip-hotel-rooms" className="aip-input" type="number" min={1} step={1} value={hotelRooms} onChange={(e) => setHotelRooms(Math.max(1, Math.floor(Number(e.target.value) || 1)))} />
+                      <p>{form.days === 1 ? 'Day trip: no overnight stay is scheduled or charged. Choose 2 or more days to include a hotel.' : `Estimate: nightly rate × ${form.days - 1} nights × ${hotelRooms} rooms. Confirm room capacity with the hotel.`}</p>
+                      {stayBudget && <div aria-live="polite">
+                        {stayBudget.min != null && <p><strong>{lodging.name}: {peso(stayBudget.min)}–{peso(stayBudget.max)}</strong><br />Trip budget: {peso(form.budget)}. {stayBudget.min > Number(form.budget) ? `Minimum estimate exceeds it by ${peso(stayBudget.min - Number(form.budget))}.` : `Remaining after hotel: ${peso(Math.max(0, Number(form.budget) - stayBudget.max))}–${peso(Number(form.budget) - stayBudget.min)} for food, transport, and activities.`}</p>}
+                        {stayBudget.status !== 'day-trip' && (!stayBudget.knownBasis || stayBudget.status === "unknown") && <p>Confirm hotel cost: this estimate assumes a per-room nightly rate. Pricing and capacity are not confirmed.</p>}
+                        {stayBudget.blocked && <p className="aip-error" role="alert">The hotel alone exceeds your budget. Choose a cheaper hotel, increase your budget, or remove lodging before continuing.</p>}
+                        {["over", "possible"].includes(stayBudget.status) && <div className="aip-chip-row">
+                          {higherBudget && <button type="button" className="aip-btn aip-btn-outline aip-btn-sm" onClick={() => chooseBudget(higherBudget)}>Use {higherBudget.label} · {peso(higherBudget.rate * form.travelers * form.days)}</button>}
+                          <button type="button" className="aip-btn aip-btn-outline aip-btn-sm" onClick={() => set("lodgingId", null)}>Choose no lodging</button>
+                        </div>}
+                      </div>}
+                    </div>
 
                     <button type="button" className={`aip-lodging-row ${!form.lodgingId ? "is-selected" : ""}`} onClick={() => set("lodgingId", null)}>
                       <Bus size={18} />
-                      <div><strong>Day trip — no lodging</strong><div className="aip-muted aip-small">Return to Dagupan same day</div></div>
+                      <div><strong>Day trip — no lodging</strong><div className="aip-muted aip-small">No accommodation selected</div></div>
                     </button>
 
+                    {!lodgingList.length && <p>No verified accommodation on file for this area yet.</p>}
                     {lodgingList.map((l) => (
-                      <button type="button" key={l.id} className={`aip-lodging-row ${form.lodgingId === l.id ? "is-selected" : ""}`} onClick={() => set("lodgingId", l.id)}>
-                        <Home size={18} />
-                        <div className="aip-lodging-info">
-                          <div className="aip-row-between"><strong>{l.name}</strong><span className="aip-pill aip-pill-tan">{l.tier}</span></div>
-                          <div className="aip-amenities">
-                            {l.amenities.map((a) => { const AIcon = AMENITY_ICON[a] || Wifi; return <span key={a} className="aip-amenity"><AIcon size={12} /> {a}</span>; })}
-                          </div>
-                          <div className="aip-price">{peso(l.price)}/night</div>
-                        </div>
-                        {form.lodgingId === l.id && <Check size={18} className="aip-check" />}
-                      </button>
+                      <LodgingCard key={l.id} lodging={l} comparison={hotelBudget(l, form.budget, form.days, hotelRooms)} selected={form.lodgingId === l.id} onSelect={() => set("lodgingId", l.id)} />
                     ))}
                   </div>
 
@@ -398,19 +541,23 @@ export default function AIItinerary() {
                   <p className="aip-subtitle">Check what the AI knows about your destination, then fine-tune before generating.</p>
 
                   {info && (
-                    <div className="aip-info-box">
-                      <strong>Your selected place: {area?.name}</strong>
-                      <div className="aip-info-label">Famous places nearby</div>
-                      <div>{info.famousPlaces.join(" · ")}</div>
-                      <div className="aip-info-label">Foods to try</div>
-                      <div>{info.foods.join(" · ")}</div>
+                    <div className="aip-destination-review">
+                      <div className="aip-review-destination"><MapPin size={18} /><strong>{area?.name}</strong></div>
+                      {destinationPhotoGuides[area?.id] ? <>
+                        <DestinationGallery title="Famous places nearby" names={info.famousPlaces} Icon={MapPin} photos={destinationPhotoGuides[area.id].photos} />
+                        <DestinationGallery title="Foods to try" names={info.foods} Icon={Utensils} photos={destinationPhotoGuides[area.id].photos} />
+                        <details className="aip-photo-credits"><summary>Image source</summary><p>{destinationPhotoGuides[area.id].filePrefix}_City_PLACES TO VISIT &amp; FOODS_IMAGES.pdf - supplied for this trip guide. Images shown as labeled in the document; original photographer marks retained.</p></details>
+                      </> : <>
+                        <h3 className="aip-heading-sm">Famous places nearby</h3><p>{info.famousPlaces.join(" · ")}</p>
+                        <h3 className="aip-heading-sm">Foods to try</h3><p>{info.foods.join(" · ")}</p>
+                      </>}
                     </div>
                   )}
 
                   <div className="aip-chip-row aip-summary-chips">
                     {[area?.name, TRAVELER_TYPES.find((t) => t.id === form.travelerType)?.label, `${form.days} day${form.days === 1 ? "" : "s"}`,
                       `${form.travelers} travelers`, `${peso(form.budget)} budget`, TRAVEL_STYLES.find((t) => t.id === form.travelStyle)?.label,
-                      lodging ? `${lodging.name} (${peso(lodging.price)})` : null, ...form.tripTypes, ...form.activities]
+                      lodging ? `${lodging.name} (${lodging.lodgingDetails ? 'approximate rate; confirm booking' : 'rate unconfirmed'})` : null, ...form.tripTypes, ...form.activities]
                       .filter(Boolean).map((t, i) => <span key={i} className="aip-summary-chip">{t}</span>)}
                   </div>
 
@@ -422,24 +569,27 @@ export default function AIItinerary() {
                     <div className="aip-advanced">
                       <div className="aip-field-row">
                         <div className="aip-field"><label className="aip-label">Start time (HH:MM)</label><input type="time" className="aip-input" value={form.startTime} onChange={(e) => set("startTime", e.target.value)} /></div>
-                        <div className="aip-field"><label className="aip-label">Meals per person per day (PHP)</label><input type="number" className="aip-input" value={form.mealBudget} onChange={(e) => set("mealBudget", e.target.value)} /></div>
+                        <div className="aip-field"><label className="aip-label" htmlFor="aip-meals">Meals per person per day (PHP)</label><select id="aip-meals" className="aip-select" value={form.mealBudget} onChange={(e) => set("mealBudget", e.target.value)}>{[200, 300, 500, 750, 1000, 1500].map((amount) => <option key={amount} value={amount}>{peso(amount)} / person / day</option>)}</select></div>
                       </div>
+                      <div className="aip-meal-summary" aria-live="polite">
+                        <div><span>Per person · full trip</span><strong>{peso(mealPerPerson)}</strong><small>{peso(form.mealBudget)} × {form.days} day{form.days === 1 ? "" : "s"}</small></div>
+                        <div><span>All travelers · full trip</span><strong>{peso(mealTotal)}</strong><small>{peso(mealPerPerson)} × {form.travelers} traveler{Number(form.travelers) === 1 ? "" : "s"}</small></div>
+                        <div><span>{mealRemaining < 0 ? "Meals exceed trip budget" : "Budget after meals"}</span><strong className={mealRemaining < 0 ? "aip-error" : ""}>{peso(Math.abs(mealRemaining))}</strong><small>Meal allowance, not restaurant prices</small></div>
+                      </div>
+                      {stayBudget?.min != null && <p className="aip-meal-note">Meals + hotel estimate: {peso(mealTotal + stayBudget.min)}–{peso(mealTotal + stayBudget.max)}.{mealTotal + stayBudget.max > Number(form.budget) ? " May exceed your trip budget; lower the meal allowance or revise your stay or budget." : " Transport and activities still need to be covered."}</p>}
                       <label className="aip-label">Transport</label>
                       <div className="aip-chip-row">
                         {TRANSPORT_MODES.map((m) => <Chip key={m} selected={form.transportModes.includes(m)} onClick={() => set("transportModes", toggleValue(form.transportModes, m))}>{m}</Chip>)}
                       </div>
-                      <label className="aip-label">Additional preferences</label>
-                      <div className="aip-chip-row">
-                        {PREFERENCES.map((p) => <Chip key={p} selected={form.preferences.includes(p)} onClick={() => set("preferences", toggleValue(form.preferences, p))}>{p}</Chip>)}
-                        <Chip selected={form.returnToOrigin} onClick={() => set("returnToOrigin", !form.returnToOrigin)}>Include return trip</Chip>
-                      </div>
+                      <ItineraryFareInputs modes={form.transportModes} tables={fareTables} values={form.fareInputs} onChange={value => set('fareInputs', value)} areaId={form.areaId} />
                     </div>
                   )}
 
                   <div className="aip-step-actions">
                     <button className="aip-btn aip-btn-outline" onClick={goBack}>← Back</button>
-                    <button className="aip-btn aip-btn-gradient" onClick={generate}><Zap size={16} /> Generate my itinerary</button>
+                    <button className="aip-btn aip-btn-gradient" disabled={!!phase || !catalog.length} onClick={generate}><Zap size={16} />{phase ? `Generating… ${elapsed}s` : 'Generate my itinerary'}</button>
                   </div>
+                  {error && <p className="aip-error" role="alert" style={{ marginTop: 14 }}>{error}</p>}
                 </div>
               )}
             </>
@@ -452,93 +602,9 @@ export default function AIItinerary() {
             </div>
           )}
 
-          {!showForm && plan && (
-            <>
-              <div className="aip-row-between">
-                <button className="aip-btn aip-btn-outline" onClick={() => setShowForm(true)}>Edit trip details</button>
-                <button className="aip-btn aip-btn-outline"><DownloadIcon size={14} /> Export / Share</button>
-              </div>
-
-              <section className="aip-card" style={{ padding: 20, marginTop: 16 }}>
-                <strong>Pangasinan fare reference (PHP)</strong>
-                <p>Sample itinerary preview. Transport and attraction charges are unconfirmed and excluded from the subtotal. Budget remaining cannot be confirmed.</p>
-                <p>{fareReference.note}</p>
-                <p>Source: {fareReference.source_file}. Provincial bus NEW columns apply from September 28, 2026; older dates must not use those columns.</p>
-                {fareReference.sections.map(section => (
-                  <details key={section.id}>
-                    <summary>{section.scope} (pages {section.first_page}–{section.last_page})</summary>
-                    <pre style={{ whiteSpace: "pre-wrap", overflowX: "auto", fontSize: 12 }}>{section.text}</pre>
-                  </details>
-                ))}
-              </section>
-              <div className="aip-result-grid">
-                <div className="aip-timeline">
-                  {plan.stops.map((stop, i) => {
-                    const isNextDay = stop.time === "Next day";
-                    return (
-                      <div key={i}>
-                        {isNextDay && <div className="aip-day-divider">Next day</div>}
-                        <div className="aip-stop-row">
-                          <div className="aip-stop-time">{isNextDay ? "" : stop.time}</div>
-                          <div className="aip-stop-icon"><stop.Icon size={16} /></div>
-                          <div className="aip-stop-body">
-                            <strong>{stop.title}</strong>
-                            <div className="aip-muted aip-small">{stop.subtitle}</div>
-                          </div>
-                          <div className="aip-stop-tags">
-                            <span className="aip-pill" style={{ background: `${TAG_COLOR[stop.tag]}22`, color: TAG_COLOR[stop.tag] }}>{stop.tag}</span>
-                            {stop.price > 0 && <span className="aip-price">{peso(stop.price)}</span>}
-                            {stop.price == null && <span className="aip-price">Confirm fare / fee</span>}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div className="aip-side-col">
-                  <div className="aip-card">
-                    <h3 className="aip-heading-sm">Trip Summary</h3>
-                    <SummaryRow label="Destination" value={area?.name} />
-                    <SummaryRow label="Traveling as" value={TRAVELER_TYPES.find((t) => t.id === form.travelerType)?.label} />
-                    <SummaryRow label="Duration" value={`${form.days} day${form.days === 1 ? "" : "s"}`} />
-                    <SummaryRow label="Travelers" value={form.travelers} />
-                    <SummaryRow label="Trip type" value={form.tripTypes[0] || "—"} />
-                    <SummaryRow label="Travel style" value={TRAVEL_STYLES.find((t) => t.id === form.travelStyle)?.label} />
-                    <SummaryRow label="Lodging" value={lodging?.name || "None"} />
-                    <SummaryRow label="Estimated cost" value={peso(plan.estimated)} strong />
-                    <SummaryRow label="Budget left" value="Unconfirmed" strong />
-                    <button className="aip-btn aip-btn-gradient aip-btn-block" disabled={saved} onClick={() => setSaved(true)}>
-                      <BookmarkPlus size={16} /> {saved ? "Saved to My Trips" : "Save to My Trips"}
-                    </button>
-                    <button className="aip-btn aip-btn-outline aip-btn-block"><Share2 size={16} /> Share Plan</button>
-                  </div>
-
-                  <div className="aip-card">
-                    <h3 className="aip-heading-sm">Cost Breakdown</h3>
-                    {Object.entries(plan.breakdown).map(([k, v]) => (
-                      <div key={k} className="aip-breakdown-row">
-                        <div className="aip-row-between"><span>{k}</span><span className="aip-price">{peso(v)}</span></div>
-                        <div className="aip-progress"><div className="aip-progress-fill" style={{ width: `${(v / plan.estimated) * 100}%`, background: TAG_COLOR[k] }} /></div>
-                      </div>
-                    ))}
-                    <div className="aip-row-between aip-total-row"><strong>Total estimate</strong><strong className="aip-price">{peso(plan.estimated)}</strong></div>
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
+          {!showForm && plan && <ItineraryResults plan={plan} areaName={AREAS.find(a => a.id === plan.request.areaId)?.name} onEdit={() => setShowForm(true)} onSave={savePlan} saved={saved} saving={saving} />}
         </div>
       </main>
-    </div>
-  );
-}
-
-function SummaryRow({ label, value, strong }) {
-  return (
-    <div className="aip-row-between aip-summary-row">
-      <span className="aip-muted aip-small">{label}</span>
-      <span style={{ fontWeight: strong ? 700 : 500 }}>{value}</span>
     </div>
   );
 }
@@ -606,6 +672,23 @@ const CSS = `
 .aip-style-card.is-selected span { color: #C9D6E3; }
 
 .aip-error { color: ${colors.sunsetCoral}; font-size: 13px; margin: 4px 0 14px; }
+.aip-budget-heading { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #70868E; font-size: 14px; font-weight: 600; margin: 28px 0 14px; }
+.aip-budget-heading > span:last-child { font-size: 12px; font-weight: 400; }
+.aip-budget-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+.aip-budget-card { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; padding: 16px 12px; border: 1px solid var(--tier-border); border-radius: 20px; background: var(--tier-tint); color: ${colors.ink}; text-align: left; cursor: pointer; min-width: 0; transition: background .15s, border-color .15s; }
+.aip-budget-card:hover { border-color: var(--tier-color); background: var(--tier-icon-bg); }
+.aip-budget-card > strong { font-size: 13px; }
+.aip-budget-icon { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--tier-icon-bg); color: var(--tier-color); margin-bottom: 4px; }
+.aip-budget-range { font-family: ${fonts.mono}; font-size: 11px; font-weight: 600; color: var(--tier-color); }
+.aip-budget-person { font-size: 11px; line-height: 1.5; color: #70868E; }
+.aip-budget-card.is-selected { background: var(--tier-color); border-color: var(--tier-color); color: #fff; box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--tier-color); }
+.aip-budget-card.is-selected .aip-budget-icon { color: #fff; background: #FFFFFF20; }
+.aip-budget-card.is-selected .aip-budget-range, .aip-budget-card.is-selected .aip-budget-person { color: #fff; }
+.aip-budget-summary { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; padding: 12px 14px; margin-top: 14px; border-radius: 18px; background: #F7F9FA; font-size: 13px; }
+.aip-budget-summary > span { color: #70868E; }
+.aip-budget-summary strong > span { padding: 0 8px; color: #70868E; }
+@media (max-width: 1100px) { .aip-budget-grid { grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); } }
+@media (max-width: 480px) { .aip-budget-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
 .aip-btn { min-height: 48px; border-radius: 10px; padding: 14px 22px; font-size: 16px; font-weight: 600; cursor: pointer; border: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
 .aip-btn-block { width: 100%; margin-top: 6px; }
@@ -628,9 +711,70 @@ const CSS = `
 .aip-amenity { display: inline-flex; align-items: center; gap: 4px; }
 .aip-price { font-family: ${fonts.mono}; color: ${colors.sunsetCoral}; font-weight: 700; }
 .aip-check { color: ${colors.oceanBlue}; }
+.aip-hotel-budget-panel { background: ${colors.page}; border: 1px solid ${colors.border}; border-radius: 12px; padding: 16px; margin-bottom: 18px; }
+.aip-hotel-budget-panel input { max-width: 120px; }
+.aip-hotel-budget-panel p { font-size: 13px; line-height: 1.6; }
+.aip-hotel-budget { display: flex; align-items: flex-start; gap: 7px; font-size: 12px; padding: 10px; border-radius: 8px; background: #EDF3F4; margin: 12px 0 0; }
+.aip-hotel-budget.over { color: #A43724; background: #FFF0EB; }
+.aip-hotel-budget.possible { color: #795416; background: #FFF6E3; }
+.aip-hotel-budget.within { color: ${colors.palmGreen}; background: #EDF6F0; }
+.aip-stay-card { border: 1px solid ${colors.border}; border-radius: 14px; margin-bottom: 14px; background: #fff; overflow: hidden; }
+.aip-stay-card.is-selected { border-color: ${colors.oceanBlue}; background: #F5F9FA; box-shadow: inset 3px 0 ${colors.oceanBlue}; }
+.aip-stay-select { display: flex; align-items: center; gap: 14px; width: 100%; padding: 20px 20px 12px; border: 0; background: transparent; color: ${colors.ink}; text-align: left; cursor: pointer; }
+.aip-stay-select:disabled { cursor: not-allowed; opacity: .65; }
+.aip-stay-select:focus-visible { outline-offset: -4px; }
+.aip-stay-icon { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; flex-shrink: 0; background: #EDF3F4; color: ${colors.oceanBlue}; border-radius: 12px; }
+.aip-stay-title { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.aip-stay-title strong { font-size: 17px; }
+.aip-stay-tier { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 20px; background: ${colors.warmSand}; }
+.aip-stay-radio { width: 22px; height: 22px; flex-shrink: 0; border: 1.5px solid #A7B6C0; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.aip-stay-radio.is-selected { background: ${colors.oceanBlue}; border-color: ${colors.oceanBlue}; }
+.aip-stay-body { padding: 0 20px 16px; }
+.aip-stay-location { display: flex; align-items: flex-start; gap: 7px; color: #5C6D7A; font-size: 12px; overflow-wrap: anywhere; }
+.aip-stay-location svg { margin-top: 2px; }
+.aip-stay-amenities { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+.aip-stay-amenity { display: inline-flex; align-items: center; gap: 7px; padding: 6px 10px; border-radius: 7px; background: #F0F4F5; color: #3C5668; font-size: 12px; }
+.aip-stay-bottom { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
+.aip-stay-rate strong { font-size: 19px; font-weight: 700; color: ${colors.oceanBlue}; }
+.aip-stay-rate > span { color: #5C6D7A; font-size: 12px; }
+.aip-stay-selected { display: inline-flex; align-items: center; gap: 4px; color: ${colors.palmGreen}; font-size: 12px; font-weight: 600; }
+.aip-stay-note { font-size: 12px; color: #79542A; margin: 10px 0 0; }
+.aip-stay-details { border-top: 1px solid ${colors.border}; }
+.aip-stay-details summary { display: flex; align-items: center; gap: 7px; padding: 12px 20px; min-height: 44px; cursor: pointer; color: ${colors.oceanBlue}; font-size: 12px; font-weight: 600; list-style: none; }
+.aip-stay-details summary::-webkit-details-marker { display: none; }
+.aip-stay-details summary > svg:last-child { margin-left: auto; }
+.aip-stay-details summary:focus-visible { outline: 3px solid ${colors.seafoam}; outline-offset: -3px; }
+.aip-stay-hide, .aip-stay-details[open] .aip-stay-show { display: none; }
+.aip-stay-details[open] .aip-stay-hide { display: inline; }
+.aip-stay-details[open] summary > svg:last-child { transform: rotate(180deg); }
+.aip-stay-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 20px; padding: 8px 20px 20px; }
+.aip-stay-fact { display: flex; align-items: flex-start; gap: 10px; min-width: 0; color: #5C6D7A; }
+.aip-stay-fact > svg { margin-top: 3px; }
+.aip-stay-fact > div { min-width: 0; }
+.aip-stay-fact span { font-size: 11px; font-weight: 700; color: ${colors.oceanBlue}; }
+.aip-stay-fact p { font-size: 13px; margin: 3px 0 0; overflow-wrap: anywhere; }
+.aip-stay-times { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 
 .aip-info-box { background: ${colors.warmSand}; border-radius: 12px; padding: 24px; margin-bottom: 24px; font-size: 16px; overflow-wrap: anywhere; }
 .aip-info-label { font-size: 13px; letter-spacing: .04em; color: ${colors.muted}; margin: 10px 0 4px; }
+.aip-review-destination { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; color: ${colors.oceanBlue}; }
+.aip-discovery-section { margin-bottom: 28px; }
+.aip-more-discoveries { margin-top: 14px; font-size: 12px; color: #5C6D7A; }
+.aip-more-discoveries summary { cursor: pointer; padding: 8px 0; color: ${colors.oceanBlue}; }
+.aip-discovery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr)); gap: 16px; }
+.aip-discovery-card { border: 1px solid ${colors.border}; border-radius: 14px; overflow: hidden; background: #fff; }
+.aip-discovery-image { height: 155px; background: ${colors.warmSand}; }
+.aip-discovery-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.aip-photo-placeholder { height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 8px; color: #657B88; font-size: 12px; }
+.aip-discovery-caption { display: flex; gap: 8px; padding: 14px; height: 88px; align-items: flex-start; }
+.aip-discovery-caption h4 { margin: 0; font-size: 13px; line-height: 1.5; }
+.aip-photo-credits { font-size: 11px; color: #5C6D7A; margin-bottom: 24px; }
+.aip-photo-credits summary { cursor: pointer; padding: 8px 0; }
+.aip-photo-credits a { color: ${colors.oceanBlue}; }
+.aip-meal-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: 16px; background: #F3F7F7; padding: 20px; border-radius: 12px; margin-bottom: 24px; }
+.aip-meal-summary > div { display: flex; flex-direction: column; gap: 6px; }
+.aip-meal-summary span, .aip-meal-summary small, .aip-meal-note { font-size: 12px; color: #5C6D7A; }
+.aip-meal-summary strong { font-size: 21px; }
 .aip-summary-chips { margin-bottom: 18px; }
 .aip-summary-chip { background: ${colors.warmSand}; border-radius: 16px; padding: 10px 14px; font-size: 14px; max-width: 100%; overflow-wrap: anywhere; }
 

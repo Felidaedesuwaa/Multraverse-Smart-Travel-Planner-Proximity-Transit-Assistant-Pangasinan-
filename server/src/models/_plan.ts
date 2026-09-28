@@ -1,6 +1,7 @@
 import { Schema } from 'mongoose'
 import { hardenSchema } from './_hardening'
 import areas from '../data/plannerAreas.json'
+import { guidedPlanSchema } from './_guidedPlan'
 
 // Plans are bounded, immutable-in-meaning snapshots of the catalog at planning time.
 // IDs in snapshots are provenance strings, not live foreign keys: catalog deletion
@@ -51,6 +52,7 @@ const costs = document({
   unknownCosts: integer(0, 1000, true), complete: { type: Boolean, required: true }, status: choice(['over-budget', 'empty', 'incomplete', 'within-budget'], true),
 })
 export const planSchema = document({
+  guided: { type: guidedPlanSchema, default: undefined },
   version: choice([1], true), generatedAt: { type: Date, required: true }, mode: choice(['database', 'hybrid'], true), narrativeStatus: text(120, true),
   request: { type: request, required: true }, days: list(day, 7), returnLeg: { type: leg, default: undefined }, localFoods: list(food, 6), fareGuide: list(fare, 12),
   allocation: { type: allocation, required: true }, costs: { type: costs, required: true }, warnings: list(text(2000), 100),

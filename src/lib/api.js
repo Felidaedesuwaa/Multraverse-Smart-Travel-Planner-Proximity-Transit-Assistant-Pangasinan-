@@ -101,6 +101,8 @@ async function requestCatalog(options = {}) {
 }
 
 export const api = {
+  getItineraryCatalog: (options = {}) => request('/api/ai/itinerary/catalog', options),
+  generateGroundedItinerary: (data, options = {}) => request('/api/ai/itinerary/grounded', { ...options, method: 'POST', body: JSON.stringify(data) }),
   getManagedAccounts: (type = 'lgu') => requestList(`/api/users/${type}-accounts`),
   createManagedAccount: (type, data) => request(`/api/users/${type}-accounts`, { method: 'POST', body: JSON.stringify(data) }),
   getAuditLogs: ({ page = 1, action = '', actor = '' } = {}) => request(`/api/audit-logs?page=${page}&limit=25${action ? `&action=${encodeURIComponent(action)}` : ''}${actor ? `&actor=${encodeURIComponent(actor)}` : ''}`),

@@ -3,6 +3,7 @@ import express, { Router, Response } from 'express'
 import { authenticate, AuthRequest } from '../middleware/auth'
 import { Phrasebook } from '../models'
 import plannerRoutes from './planner'
+import groundedItineraryRoutes from './groundedItinerary'
 import { AISettings } from '../models/AISettings'
 import phrasebookV2 from '../data/phrasebookV2.json'
 
@@ -10,6 +11,7 @@ const router = Router()
 router.param('id', validateId)
 router.use(sanitizeRequest, validateRouter('ai'))
 router.use(authenticate)
+router.use(groundedItineraryRoutes)
 router.use(plannerRoutes)
 const expressJsonAudio = express.json({ limit: '12mb' })
 

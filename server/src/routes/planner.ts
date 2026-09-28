@@ -145,7 +145,7 @@ router.post('/planner/:id/save', async (req: AuthRequest<{ id: string }>, res) =
   if (!draft) return res.status(404).json({ error: 'Plan expired. Generate again before saving.' })
   const plan = draft.plan.toObject ? draft.plan.toObject() : draft.plan
   const stops = plan.days.flatMap((day: any) => day.stops.map((stop: any) => ({ ...stop, day: day.day, date: day.date })))
-  if (!stops.length || plan.costs.status === 'over-budget') return res.status(400).json({ error: 'Add stops and resolve the known budget overrun before saving.' })
+  if (!(plan.guided?.chosenIds?.length || stops.length) || plan.costs.status === 'over-budget') return res.status(400).json({ error: 'Add stops and resolve the known budget overrun before saving.' })
   if (plan.costs.status === 'incomplete' && req.body?.acceptIncomplete !== true) return res.status(400).json({ error: 'Acknowledge unpriced items before saving this provisional plan.' })
   try {
     // The complete bounded itinerary is one atomic document write.

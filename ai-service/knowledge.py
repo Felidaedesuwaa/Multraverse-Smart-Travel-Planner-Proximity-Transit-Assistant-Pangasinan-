@@ -6,6 +6,15 @@ import re
 ROOT = Path(__file__).resolve().parent
 
 
+def source_dagupan_lodging():
+    return json.loads((ROOT.parent / 'server/src/data/dagupanLodging.json').read_text(encoding='utf-8'))
+
+
+def source_lodging_guides():
+    return [json.loads((ROOT.parent / f'server/src/data/{area}Lodging.json').read_text(encoding='utf-8'))
+            for area in ('dagupan', 'alaminos', 'san-carlos', 'urdaneta')]
+
+
 def source_phrases():
     literal = r'''('(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*")'''
     pattern = r'\{\s*filipino:\s*' + literal + r',\s*pangasinan:\s*' + literal + r',\s*english:\s*' + literal + r',\s*category:\s*' + literal + r'\s*\}'
@@ -24,6 +33,11 @@ def source_city_guides():
     guides = json.loads((ROOT.parent / 'server/src/data/cityGuides.json').read_text(encoding='utf-8'))
     if len({g['area_id'] for g in guides}) != len(guides):
         raise ValueError('Duplicate city guide area')
+    for guide in guides:
+        for lodging in source_lodging_guides():
+            if guide['area_id'] == lodging['area_id']:
+                guide['hotels'] = lodging['hotels']
+                guide['lodging_source_note'] = lodging['note']
     return guides
 
 
@@ -34,7 +48,7 @@ def matching_city_guides(destination, guides):
     if cities:
         return cities
     return [g for g in guides if any(re.search(r'\b' + re.escape(normalize(name)) + r'\b', needle)
-            for name in [g['name'], *[n for a in g['attractions'] for n in [a['name'], *a['aliases']]]])]
+            for name in [g['name'], *[h['name'] for h in g['hotels']], *[n for a in g['attractions'] for n in [a['name'], *a['aliases']]]])]
 
 
 def public_guide(guide):

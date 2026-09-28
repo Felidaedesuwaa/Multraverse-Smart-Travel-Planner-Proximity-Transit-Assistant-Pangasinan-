@@ -2,7 +2,7 @@
 import hashlib
 import itertools
 import json
-from knowledge import ROOT, source_phrases, source_city_guides
+from knowledge import ROOT, source_phrases, source_city_guides, source_lodging_guides
 from fares import fare_reference
 
 
@@ -27,6 +27,15 @@ def main():
         for line in path.read_text(encoding='utf-8').splitlines():
             chunk = json.loads(line)
             add(chunk['instruction'], chunk['response'], guide['source_file'], guide['entity_id'])
+    lodging_guides = source_lodging_guides()
+    for lodging in lodging_guides:
+        lodging_records = []
+        for hotel in lodging['hotels']:
+            add(f"What accommodation details are supplied for {hotel['name']} in {lodging['area_id'].replace('-', ' ').title()} City?",
+                lodging['note'] + '\n' + json.dumps(hotel, ensure_ascii=False), lodging['source_file'],
+                lodging['area_id'].upper() + '-LODGING:' + hotel['accommodation_id'])
+            lodging_records.append(records[-1])
+        (ROOT / f"data/{lodging['area_id']}_lodging.jsonl").write_text(''.join(json.dumps(row, ensure_ascii=False) + '\n' for row in lodging_records), encoding='utf-8')
     reference = fare_reference()
     fare_records = []
     for section in reference['sections']:
@@ -47,7 +56,8 @@ def main():
         'records': len(records), 'phrases': len(phrases), 'lgus': len(guides),
         'city_guides': len(guides),
         'fare_sections': len(reference['sections']),
-        'sources': ['server/prisma/seedPhrasebookV2.ts', 'server/src/data/cityGuides.json', 'server/src/data/pangasinanFares.json']}, indent=2) + '\n', encoding='utf-8')
+        'lodging_properties': sum(len(lodging['hotels']) for lodging in lodging_guides),
+        'sources': ['server/prisma/seedPhrasebookV2.ts', 'server/src/data/cityGuides.json', 'server/src/data/pangasinanFares.json', 'server/src/data/dagupanLodging.json', 'server/src/data/alaminosLodging.json', 'server/src/data/san-carlosLodging.json', 'server/src/data/urdanetaLodging.json']}, indent=2) + '\n', encoding='utf-8')
     print(f'Built {len(records)} records from {len(phrases)} V2 phrases and {len(guides)} selected guides.')
 
 
