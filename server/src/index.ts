@@ -20,6 +20,19 @@ import { AuthLimit } from './lib/authLimits'
 
 const app = express()
 const PORT = process.env.PORT || 3001
+// Vercel overwrites X-Forwarded-For with the client IP. Trust its immediate
+// proxy only on Vercel so authentication limits don't group every visitor.
+if (process.env.VERCEL === '1') app.set('trust proxy', 1)
+
+let indexesReady: Promise<unknown> | undefined
+async function prepareDatabase() {
+  await connectDatabase()
+  // Share initialization between concurrent cold-start requests. Retry a
+  // failed attempt instead of leaving this function instance unusable.
+  indexesReady ??= Promise.all([User.init(), PendingRegistration.init(), AuthLimit.init()])
+    .catch((error) => { indexesReady = undefined; throw error })
+  await indexesReady
+}
 const configuredOrigins = (process.env.CORS_ORIGINS || '')
   .split(',')
   .map((origin) => origin.trim())
@@ -37,6 +50,14 @@ app.use(cors({
   },
   credentials: true,
 }))
+app.use(async (_req, res, next) => {
+  try {
+    await prepareDatabase()
+    next()
+  } catch {
+    res.status(503).json({ error: 'Database is temporarily unavailable. Please try again.' })
+  }
+})
 // Profile photos are resized on-device and capped at 512 KB by the route.
 app.use('/api/users/me', express.json({ limit: '1mb' }))
 app.use('/api/auth', express.json({ limit: '16kb' }))
@@ -64,13 +85,15 @@ app.use((error: { status?: number }, _req: express.Request, res: express.Respons
   res.status(status).json({ error: status === 413 ? 'Photo is too large. Choose a smaller image.' : status === 400 ? 'Invalid request' : 'Unable to complete the request. Please try again.' })
 })
 
-connectDatabase()
-  .then(async () => {
-    // Unique/TTL indexes must exist before accepting concurrent signup requests.
-    await Promise.all([User.init(), PendingRegistration.init(), AuthLimit.init()])
+// Vercel imports the app; local development and Node hosts start a listener.
+export default app
+
+if (require.main === module && process.env.VERCEL !== '1') {
+  prepareDatabase().then(() => {
     app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`))
   })
-  .catch((error) => {
-    console.error('Unable to start server:', error)
+  .catch(() => {
+    console.error('Unable to start server. Check database configuration and network access.')
     process.exit(1)
   })
+}
