@@ -8,6 +8,7 @@ The dataset currently contains deliberately unreviewed source material.  Pass
 """
 
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -53,6 +54,11 @@ def parse_args():
 
 def verify_review_status(allow_unreviewed: bool) -> None:
     provenance = json.loads(PROVENANCE_FILE.read_text(encoding="utf-8"))
+    manifest = json.loads((ROOT / 'data/knowledge_manifest.json').read_text(encoding='utf-8'))
+    if manifest['sha256'] != hashlib.sha256(DATA_FILE.read_text(encoding='utf-8').encode('utf-8')).hexdigest():
+        raise ValueError('Training data differs from its source manifest; run prepare_data.py')
+    if len(provenance) != manifest['records']:
+        raise ValueError('Training provenance count does not match the corpus')
     unreviewed = [record for record in provenance if record["review_status"] != "reviewed"]
     if unreviewed and not allow_unreviewed:
         raise SystemExit(
@@ -111,6 +117,9 @@ def main() -> None:
     dataset = load_data(DATA_FILE)
 
     def tokenize(examples):
+        for prompt, response in zip(examples['prompt'], examples['response']):
+            if len(tokenizer(prompt + response)['input_ids']) > MAX_LENGTH:
+                raise ValueError('Training record exceeds token limit; split it rather than silently truncating source facts')
         # Mask the prompt so loss is computed only for the desired assistant reply.
         prompts = tokenizer(examples["prompt"], add_special_tokens=False)["input_ids"]
         encoded = tokenizer(
@@ -155,6 +164,7 @@ def main() -> None:
     print("Saving model...")
     model.save_pretrained(OUTPUT_DIR)
     tokenizer.save_pretrained(OUTPUT_DIR)
+    (OUTPUT_DIR / 'knowledge_manifest.json').write_bytes((ROOT / 'data/knowledge_manifest.json').read_bytes())
     print(f"Model saved to {OUTPUT_DIR}")
 
 

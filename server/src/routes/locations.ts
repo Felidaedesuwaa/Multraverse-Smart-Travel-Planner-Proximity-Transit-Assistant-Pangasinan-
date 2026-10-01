@@ -1,8 +1,11 @@
+import { sanitizeRequest, validateRouter, pagination, validateId } from '../middleware/input'
 import { Router } from 'express'
 import { authenticate } from '../middleware/auth'
 import { searchLocations } from '../lib/locations'
 
 const router = Router()
+router.param('id', validateId)
+router.use(sanitizeRequest, validateRouter('locations'))
 router.use(authenticate)
 router.get('/search', async (req, res) => {
   const query = typeof req.query.q === 'string' ? req.query.q.trim() : ''

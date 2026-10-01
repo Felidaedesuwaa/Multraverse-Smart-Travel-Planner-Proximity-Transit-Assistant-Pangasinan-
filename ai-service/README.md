@@ -1,120 +1,66 @@
-# Multraverse local AI service
+# Multraverse AI service
 
-This service provides the project's custom local AI model. Express forwards AI
-requests to its FastAPI endpoints through `AI_SERVICE_URL`; no hosted AI provider
-API key is required. It loads verified phrases, places, fares, and local foods
-from MongoDB Atlas at startup. It also supports local Whisper transcription and
-offline WAV text-to-speech when their optional dependencies are installed.
+Knowledge comes from Phrasebook V2 (95 entries) and seven uploaded guides:
+Dagupan, Alaminos, Urdaneta, San Carlos, Lingayen, Manaoag and Bolinao.
+`db.py` reads only `phrasebooks` from MongoDB, with a local fallback.
+Tourism retrieval uses `server/src/data/cityGuides.json`; unsupported areas have
+no provincial fallback. The retired provincial collection is not read or recreated.
 
-## Windows setup
-
-Python 3.11 or 3.12 (64-bit) can use these dependency versions. This workspace was
-set up with its existing Python 3.12.4 installation. The requirements preserve the
-requested versions except PyTorch: 2.4.1 fixes the Windows `fbgemm.dll` import failure
-encountered with 2.4.0. NumPy is pinned to 1.26.4 for PyTorch 2.4 compatibility.
-`requirements-lock.txt` records all installed package versions for this Windows
-Python 3.12 environment; install from it to reproduce the tested dependency set.
-
-Run from the project root in PowerShell:
+From `ai-service/`:
 
 ```powershell
-cd ai-service
-python -m venv venv
-.\venv\Scripts\python.exe -m pip install -r requirements.txt
-# On a fresh checkout only; do not overwrite an existing configuration:
-Copy-Item .env.example .env
 .\venv\Scripts\python.exe prepare_data.py
-.\venv\Scripts\python.exe -m pip check
-```
-
-Set `MONGODB_URI` in `ai-service/.env` to the same valid Atlas connection used
-by `server/.env`. The FastAPI startup log reports the number of cached phrases,
-places, routes, and foods; restart the service after changing data in Compass.
-
-Directly invoking the virtual environment's interpreter avoids PowerShell activation
-policy problems. `.env`, virtual environments, caches, and model weights are ignored
-by Git. `.env` contains paths only and needs no Groq key.
-Run future Python entry points from `ai-service` and load `.env` before importing
-Transformers so Hugging Face caches remain inside the project.
-
-## Dataset
-
-- `data/examples.jsonl`: the 12 supplied examples, preserved as source material.
-- `data/pangasinan_itinerary.jsonl`: 98 records, each with `instruction` and `response`.
-- `data/provenance.json`: source, group, and review status for each output line.
-- `prepare_data.py`: combines the examples with English ↔ Pangasinan translations
-  from all 43 entries in `server/seeds/seedPhrasebook.ts`; validates fields and rejects
-  duplicate instructions. Rebuilding replaces the generated dataset and provenance.
-  Make edits in the source examples or phrasebook before rebuilding.
-
-These are unreviewed starter examples, not independently verified training labels.
-Have a fluent Pangasinan speaker review translations. Confirm travel fares, schedules,
-fees, accessibility, and food claims with local sources before training for real users.
-The two-day Bolinao example's listed costs add up to ₱1,790, but its supplied total is
-₱1,690; it also omits some transport costs. It is preserved for review rather than
-silently treated as a correct label. The Hundred Islands example's timing conflicts
-with the seed route's two-hour Dagupan–Alaminos duration.
-
-This dataset is mostly translations, not 98 independent itinerary examples. Expand
-with reviewed itineraries and different budgets/durations before expecting useful
-itinerary generation. More rows alone do not establish model quality.
-
-## Training and model integration
-
-1. Choose a small pretrained model and check its license, language performance,
-   hardware requirements, and compatibility with these pinned libraries. Fine-tuning
-   produces your custom derivative/adapter, not a model trained from scratch.
-2. Review and correct the examples. Keep equivalent phrases and reverse translations
-   together when making train/validation/test splits. The supplied examples overlap
-   with phrasebook entries too, so merge semantic groups before splitting; randomly
-   splitting lines would overestimate performance.
-3. Match training examples to the serving prompt and output format. The current
-   Express itinerary endpoint requires JSON `{days: [{day, stops: [{time, place,
-activity, estimatedCost}]}]}`, whereas these supplied examples use prose.
-4. Keep changing travel facts in the existing database and provide them as model
-   context. Train on how to use those facts rather than relying on memorized prices.
-5. Train and evaluate on held-out reviewed examples before relying on generated
-   itineraries in production. Express already forwards text-model requests to this
-   FastAPI service through `AI_SERVICE_URL`.
-
-## Phase 3: LoRA fine-tuning
-
-`train.py` fine-tunes a LoRA adapter for
-`TinyLlama/TinyLlama-1.1B-Chat-v1.0` on CPU and writes it to
-`model/pangasinan-travel-model`. It uses float32, a batch size of two, gradient
-accumulation, and three epochs. On a CPU this can take 30–60 minutes (or longer,
-depending on the machine); a compatible GPU is substantially faster.
-
-The script refuses to train while `data/provenance.json` contains records other
-than `reviewed`. After correcting and reviewing the source material, update those
-statuses and run:
-
-```powershell
-cd ai-service
-.\venv\Scripts\python.exe train.py
-```
-
-For an explicitly experimental run on the current unreviewed starter dataset:
-
-```powershell
-.\venv\Scripts\python.exe train.py --allow-unreviewed
-```
-
-The first training run downloads the TinyLlama base model into the project cache.
-The output is a LoRA adapter plus tokenizer, which the FastAPI service loads with
-the same TinyLlama base model.
-
-## Phase 4: FastAPI service
-
-`main.py` provides `/health`, `/itinerary`, `/translate`, `/transcribe`, `/speech`, and `/generate` on port 8000. It starts before an adapter exists; `/health` reports `model_unavailable` and
-generation endpoints return HTTP 503 until Phase 3 produces
-`model/pangasinan-travel-model/adapter_config.json`.
-
-```powershell
-cd ai-service
+.\venv\Scripts\python.exe -m unittest test_knowledge test_narrative test_city_guides
 .\venv\Scripts\python.exe main.py
 ```
 
-Once an adapter exists, the first generation request loads TinyLlama and the LoRA
-adapter into CPU memory. Keep this service running alongside Express; the Express
-AI routes proxy `/itinerary` and `/translate` requests to it.
+MongoDB uses `MONGODB_URI` from `server/.env` (or the process environment).
+There is no separate AI database credential to keep synchronized. Restart the service
+after changing sources. `prepare_data.py` rebuilds the corpus, per-row provenance,
+V2 phrase export for Express and a SHA-256 knowledge manifest. It does not connect
+to MongoDB or train weights. Include all retained source files when deploying.
+
+From `server/`, the knowledge commands are:
+
+```powershell
+npm.cmd run seed:phrases
+npm.cmd run seed:city-guides
+```
+
+All accept `-- --dry-run`. They preserve existing catalog data. V2 upserts its
+95 entries; runtime source filters exclude legacy phrases without deleting other
+application data. Account/database administration remains separate.
+
+For an existing database containing the retired provincial import, run
+`node scripts/remove-retired-tourism.cjs` from `server/` to inspect counts, then
+add `--apply` to replace overlapping source content with selected guide content,
+remove remaining retired catalog rows and drop `tourismknowledge`. The migration
+uses exact importer IDs and source markers, and never recreates that collection.
+
+`/generate` returns source records for a named LGU or listed attraction, including
+verification flags and provenance. `/translate` uses exact V2 translations in all
+six language directions; an unknown phrase returns 404. `/phrasebook/all` serves
+V2. `/itinerary` returns up to four source-listed attractions per day, with unknown
+times/costs set to null and no claim that a budget has been verified. This is a
+suggestion list; the Express deterministic planner still handles actual trip plans.
+These knowledge endpoints work without model weights. Speech endpoints are unchanged.
+
+City-specific guides retain attractions, hotels, foods, dining, festivals and sample
+itinerary suggestions with PDF provenance. The Dagupan PDF does not state a date,
+so its source date is null. Missing operating hours, fares and prices remain unknown.
+See `../server/data/CITY-GUIDES.md` for extraction, precedence and future city imports.
+The Alaminos PDF is dated September 2026 (month precision). Its published boat
+and activity rates are explicitly reference-only and never treated as verified
+current costs. Training includes only the selected guides and Phrasebook V2.
+
+Optional TinyLlama generation is used for the planner's extractive `/narrative`
+endpoint. Existing weights without a matching knowledge manifest are considered
+stale. `/health` reports knowledge source and adapter status separately.
+
+To train new weights, review `data/provenance.json`, mark reviewed entries, then run
+`train.py` (or explicitly use `--allow-unreviewed` for an experimental run).
+Training uses only `data/combined_training_data.jsonl`, refuses stale provenance
+and refuses oversized examples instead of silently truncating facts. Successful
+training saves the knowledge manifest beside the adapter. Preparing data does not
+claim that TinyLlama has been retrained. Keep equivalent translations and records
+from the same LGU together when building evaluation splits.

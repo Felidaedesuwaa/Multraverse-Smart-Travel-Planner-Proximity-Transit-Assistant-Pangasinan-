@@ -1,3 +1,4 @@
+import { sanitizeRequest, validateRouter, pagination, validateId } from '../middleware/input'
 ﻿import { Router, Response } from 'express'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
@@ -7,10 +8,12 @@ import { AuthError, authLimit } from '../lib/authLimits'
 import { beginRegistration, resendRegistration, verifyRegistration } from '../lib/registrationVerification'
 
 const router = Router()
+router.param('id', validateId)
+router.use(sanitizeRequest, validateRouter('auth'))
 function authResponse(user: any) {
   return {
     token: jwt.sign({ userId: user._id.toString(), role: user.role }, process.env.JWT_SECRET!, { expiresIn: '7d' }),
-    user: { id: user._id.toString(), name: user.name, firstName: user.firstName, middleName: user.middleName, surname: user.surname, email: user.email, role: user.role, location: user.location, photo: user.photo },
+    user: { id: user._id.toString(), name: user.name, firstName: user.firstName, middleName: user.middleName, surname: user.surname, email: user.email, role: user.role, municipality: user.municipality, location: user.location, photo: user.photo },
   }
 }
 function authFailure(error: unknown, res: Response) {
@@ -44,7 +47,7 @@ router.post('/login', async (req, res) => {
     if (typeof email !== 'string' || typeof password !== 'string' || !email.trim() || !password || password.length > 256)
       return res.status(400).json({ error: 'Email and password are required' })
     await authLimit('login-ip', req.ip || 'unknown', 30, 15 * 60 * 1000)
-    const user = await User.findOne({ email: email.trim().toLowerCase() })
+    const user = await User.findOne({ email: email.trim().toLowerCase() }).select('+passwordHash')
     if (!user || !await bcrypt.compare(password, user.passwordHash)) return res.status(401).json({ error: 'Invalid credentials' })
     res.json(authResponse(user))
   } catch (error) { authFailure(error, res) }

@@ -27,9 +27,16 @@ let server;
     if (unavailable) throw new Error('private connection details');
   };
   let indexCalls = 0;
+  let layoutCalls = 0;
+  let failLayout = true;
+  db.verifyDatabaseLayout = async () => {
+    layoutCalls++;
+    if (failLayout) throw new Error('Database setup is incomplete');
+  };
   let failIndexes = true;
   const models = [
     require('../dist/models').User,
+    require('../dist/models').AuditLog,
     require('../dist/models/PendingRegistration').PendingRegistration,
     require('../dist/lib/authLimits').AuthLimit,
   ];
@@ -51,6 +58,10 @@ let server;
   assert.deepEqual(await response.json(), { error: 'Database is temporarily unavailable. Please try again.' });
   unavailable = false;
   response = await fetch(`${base}/api/health`);
+  assert.equal(response.status, 503, 'Health must wait for database layout validation');
+  assert.equal(indexCalls, 0, 'Models must not initialize before layout validation');
+  failLayout = false;
+  response = await fetch(`${base}/api/health`);
   assert.equal(response.status, 503, 'Health must wait for indexes');
   failIndexes = false;
   const results = await Promise.all(Array.from({ length: 4 }, () => fetch(`${base}/api/health`)));
@@ -58,7 +69,8 @@ let server;
     assert.equal(result.status, 200);
     assert.deepEqual(await result.json(), { status: 'ok' });
   }
-  assert.equal(indexCalls, 6, 'Concurrent requests should share the index retry');
+  assert.equal(indexCalls, 8, 'Concurrent requests should share the model initialization retry');
+  assert.equal(layoutCalls, 3, 'Retry failed setup and share successful layout validation');
   response = await fetch(`${base}/api/health`, { headers: { Origin: 'https://web.test' } });
   assert.equal(response.headers.get('access-control-allow-origin'), 'https://web.test');
   response = await fetch(`${base}/test-client-ip`, { headers: { 'X-Forwarded-For': '203.0.113.10' } });

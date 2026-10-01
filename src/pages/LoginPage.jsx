@@ -32,7 +32,7 @@ export default function LoginPage() {
       const success = await login(email.trim(), password);
       if (success) {
         const role = useAuthStore.getState().user?.role;
-        navigation.reset({ index: 0, routes: [{ name: role === "ADMIN" ? "Admin" : "User" }] });
+        navigation.reset({ index: 0, routes: [{ name: role === "SUPERADMIN" ? "SuperAdmin" : role === "ADMIN" ? "Admin" : role === "LGU" ? "LGU" : "User" }] });
       } else setFormError(useAuthStore.getState().error);
     } finally { submitting.current = false; }
   };

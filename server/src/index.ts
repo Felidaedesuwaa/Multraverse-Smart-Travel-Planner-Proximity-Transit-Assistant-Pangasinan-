@@ -1,7 +1,11 @@
 import './lib/environment'
+import { sanitizeRequest } from './middleware/input'
+import auditLogRoutes from './routes/auditLogs'
 import express from 'express'
 import cors from 'cors'
 
+import lguRoutes from './routes/lgu'
+import approvalRoutes from './routes/approvals'
 import authRoutes from './routes/auth'
 import tripRoutes from './routes/trips'
 import budgetRoutes from './routes/budget'
@@ -13,8 +17,8 @@ import locationRoutes from './routes/locations'
 import aiRoutes from './routes/ai'
 import knowledgeRoutes from './routes/knowledge'
 import analyticsRoutes from './routes/analytics'
-import { connectDatabase } from './lib/db'
-import { User } from './models'
+import { connectDatabase, verifyDatabaseLayout } from './lib/db'
+import { User, AuditLog } from './models'
 import { PendingRegistration } from './models/PendingRegistration'
 import { AuthLimit } from './lib/authLimits'
 
@@ -29,7 +33,10 @@ async function prepareDatabase() {
   await connectDatabase()
   // Share initialization between concurrent cold-start requests. Retry a
   // failed attempt instead of leaving this function instance unusable.
-  indexesReady ??= Promise.all([User.init(), PendingRegistration.init(), AuthLimit.init()])
+  // Keep the database-layout check from the latest application startup.
+  // Index creation is handled by db:harden, not by these model initializers.
+  indexesReady ??= verifyDatabaseLayout()
+    .then(() => Promise.all([User.init(), AuditLog.init(), PendingRegistration.init(), AuthLimit.init()]))
     .catch((error) => { indexesReady = undefined; throw error })
   await indexesReady
 }
@@ -66,6 +73,10 @@ app.use('/api/auth', express.json({ limit: '16kb' }))
 // usable while still bounding request memory.
 app.use(express.json({ limit: '12mb' }))
 
+app.use(sanitizeRequest)
+
+app.use('/api/lgu', lguRoutes)
+app.use('/api/admin/approvals', approvalRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/trips', tripRoutes)
 app.use('/api/budget', budgetRoutes)
@@ -73,6 +84,7 @@ app.use('/api/places', placesRoutes)
 app.use('/api/transit-routes', transitRoutes)
 app.use('/api/geofences', geofenceRoutes)
 app.use('/api/users', userRoutes)
+app.use('/api/audit-logs', auditLogRoutes)
 app.use('/api/locations', locationRoutes)
 app.use('/api/ai', aiRoutes)
 app.use('/api/knowledge', knowledgeRoutes)
@@ -80,8 +92,8 @@ app.use('/api/analytics', analyticsRoutes)
 
 app.get('/api/health', (_, res) => res.json({ status: 'ok' }))
 
-app.use((error: { status?: number }, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  const status = error.status || 500
+app.use((error: { status?: number; name?: string; code?: number }, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  const status = error.status || (['ValidationError', 'CastError', 'StrictModeError'].includes(error.name || '') || error.code === 121 ? 400 : error.code === 11000 ? 409 : 500)
   res.status(status).json({ error: status === 413 ? 'Photo is too large. Choose a smaller image.' : status === 400 ? 'Invalid request' : 'Unable to complete the request. Please try again.' })
 })
 

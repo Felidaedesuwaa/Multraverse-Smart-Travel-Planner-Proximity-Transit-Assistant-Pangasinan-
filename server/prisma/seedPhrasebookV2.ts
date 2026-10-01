@@ -1,8 +1,8 @@
-import mongoose from 'mongoose'
+import { connectDatabase, disconnectDatabase } from '../src/lib/db'
 import { Phrasebook } from '../src/models/Phrasebook'
 import 'dotenv/config'
 
-const phrases = [
+export const phrases = [
   // Greetings
   { filipino: 'Magandang umaga', pangasinan: 'Masantos a kabwasan', english: 'Good morning', category: 'Greetings' },
   { filipino: 'Magandang tanghali', pangasinan: 'Masantos ya ngetmavan', english: 'Good noon', category: 'Greetings' },
@@ -112,17 +112,13 @@ const phrases = [
 ]
 
 async function main() {
-  await mongoose.connect(process.env.MONGODB_URI!)
-  console.log('Connected to MongoDB')
-
-  await Phrasebook.deleteMany({})
-  console.log('Cleared existing phrasebook')
-
-  await Phrasebook.insertMany(phrases)
-  console.log(`Seeded ${phrases.length} accurate phrases`)
-
-  await mongoose.disconnect()
-  console.log('Done!')
+  for (const phrase of phrases) await new Phrasebook(phrase).validate()
+  if (process.argv.includes('--dry-run')) { console.log(`Validated ${phrases.length} V2 phrases`); return }
+  await connectDatabase()
+  for (const phrase of phrases) {
+    await Phrasebook.updateOne({ filipino: phrase.filipino, category: phrase.category }, { $set: phrase }, { upsert: true })
+  }
+  console.log(`Synced ${phrases.length} Phrasebook V2 records`)
 }
 
-main().catch(console.error)
+if (require.main === module) main().catch(error => { console.error(error); process.exitCode = 1 }).finally(disconnectDatabase)

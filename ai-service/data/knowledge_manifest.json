@@ -1,0 +1,18 @@
+{
+  "sha256": "eeda768885be59cef28780816510780317e4cac1f5e0563b25584689dd6cd2f2",
+  "records": 1022,
+  "phrases": 95,
+  "lgus": 7,
+  "city_guides": 7,
+  "fare_sections": 11,
+  "lodging_properties": 28,
+  "sources": [
+    "server/prisma/seedPhrasebookV2.ts",
+    "server/src/data/cityGuides.json",
+    "server/src/data/pangasinanFares.json",
+    "server/src/data/dagupanLodging.json",
+    "server/src/data/alaminosLodging.json",
+    "server/src/data/san-carlosLodging.json",
+    "server/src/data/urdanetaLodging.json"
+  ]
+}

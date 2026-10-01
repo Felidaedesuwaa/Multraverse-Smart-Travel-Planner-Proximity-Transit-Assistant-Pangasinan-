@@ -1,191 +1,818 @@
-import { validatePlannerForm, plannerFieldSteps } from "../utils/plannerValidation";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, Modal, Platform, ScrollView, Share, Text, View } from "react-native";
-import { useNavigation, useRoute } from "@react-navigation/native";
-import { BookmarkPlus, Download, RefreshCw, Sparkles, X } from "lucide-react-native";
-import { api } from "../lib/api";
-import { storage } from "../lib/storage";
-import { useAuthStore } from "../store/authStore";
-import { useAppTheme } from "../theme/useAppTheme";
-import { useCurrency } from "../hooks/useCurrency";
-import { colors } from "../theme/colors";
-import ItineraryResult from "../components/ItineraryResult";
-import DestinationPicker from "../components/planner/DestinationPicker";
-import { PlannerButton as Button, PlannerField as Field, plannerStyles as s } from "../components/planner/PlannerUI";
+import { useEffect, useRef, useState } from "react";
+import { Image as NativeImage, useWindowDimensions } from "react-native";
 import AIToolHeader from "../components/AIToolHeader";
+import { api } from "../lib/api";
+import { dagupanPhotos } from "../lib/dagupanPhotos";
+import { alaminosPhotos } from "../lib/alaminosPhotos";
+import { sanCarlosPhotos } from "../lib/sanCarlosPhotos";
+import { urdanetaPhotos } from "../lib/urdanetaPhotos";
+import ItineraryResults from "../components/ItineraryResults";
+import ItineraryFareInputs from "../components/ItineraryFareInputs";
+import {
+  Home,
+  Sparkles, ChevronDown, ChevronRight, Check,
+  Clock, Activity, Zap, User, Users, Star, Globe, Bus, Wifi, Wind, Waves,
+  Eye, BedDouble, Utensils, Compass, ShoppingBag,
+  MapPin, Phone, Info, Building2, Receipt, LogIn, LogOut, Wallet, TrendingUp, PiggyBank,
+} from "lucide-react-native";
 
-const preferences = ["Budget-friendly", "Island hopping", "Cultural sites", "Food stops", "Photography spots", "Accessible routes"];
-const transportModes = ["bus", "jeepney", "tricycle", "van", "own-vehicle"];
-// The server replaces this with the user's saved Settings location. Keeping a
-// valid fallback makes planning work during a server restart or with an older
-// server process that still requires an origin in the request.
-const initialForm = () => ({ origin: { areaId: "dagupan" }, destinations: [], dates: { start: new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10) }, startTime: "08:00", days: 1, budget: "3000", travelers: 1, preferences: ["Food stops"], transportModes: ["bus", "jeepney", "tricycle"], pace: "balanced", lodging: { preference: "none", nightlyBudget: "1000", rooms: 1 }, foodPerPersonPerDay: "300", useSavedPlaces: true, returnToOrigin: true, excludedPlaceIds: [] });
-const toggleValue = (values, value) => values.includes(value) ? values.filter(v => v !== value) : [...values, value];
+/* ------------------------------------------------------------------ */
+/*  Design tokens — pulled from the Figma "DESIGN TOKENS" footer       */
+/* ------------------------------------------------------------------ */
+const colors = {
+  oceanBlue: "#123A5E",
+  oceanBlueDark: "#0C2740",
+  sunsetCoral: "#E8613F",
+  palmGreen: "#2E7D5B",
+  warmSand: "#F6F1E7",
+  seafoam: "#8FD1C7",
+  golden: "#E7A93E",
+  ink: "#16324A",
+  border: "#E4E1D8",
+  muted: "#8A8F98",
+  page: "#FAF9F5",
+};
+
+const fonts = {
+  display: '"Playfair Display", Georgia, serif',
+  body: '"DM Sans", -apple-system, sans-serif',
+  mono: '"JetBrains Mono", ui-monospace, monospace',
+};
+
+/* ------------------------------------------------------------------ */
+/*  Static reference data (would come from the catalog API)            */
+/* ------------------------------------------------------------------ */
+
+const TRIP_TYPES = [
+  "Beach & Sea", "Nature", "Waterfalls", "Adventure", "Relaxing", "Pilgrimage",
+  "History & Culture", "Food Trip", "Farm Experience", "Scenic / Photography",
+  "Family Trip", "Couple Trip", "Barkada Trip", "Shopping & Pasalubong", "Festivals & Events",
+];
+
+const ACTIVITIES = [
+  "Swimming", "Boating", "Kayaking", "Bamboo / Craft Experience", "Farm Visit",
+  "Beach Relaxation", "Outdoor Exploration", "Photography", "Local Food",
+  "Church / Pilgrimage", "Resort / Staycation",
+];
+
+const TRAVELER_TYPES = [
+  { id: "solo", label: "Solo", Icon: User },
+  { id: "couple", label: "Couple", Icon: Users },
+  { id: "family", label: "Family", Icon: Home },
+  { id: "barkada", label: "Barkada", Icon: Star },
+  { id: "group", label: "Group", Icon: Globe },
+];
+
+const TRAVEL_STYLES = [
+  { id: "relaxed", label: "Relaxed", desc: "Slow pace, lots of breaks", Icon: Clock },
+  { id: "balanced", label: "Balanced", desc: "Mix of rest & activity", Icon: Activity },
+  { id: "adventurous", label: "Adventurous", desc: "Full day, max experiences", Icon: Zap },
+];
+
+const TRANSPORT_MODES = ["Bus", "Jeepney", "Tricycle", "Van", "Own Vehicle"];
+
+const AMENITY_ICON = { "Wi-Fi": Wifi, "A/C": Wind, "Restaurant": Utensils, "Pool": Waves, "Sea View": Eye, "Fan room": BedDouble };
+
+const toggleValue = (values, value) => values.includes(value) ? values.filter((v) => v !== value) : [...values, value];
+const peso = (n) => `₱${Number(n).toLocaleString()}`;
+
+/* ------------------------------------------------------------------ */
+/*  Small building blocks                                              */
+/* ------------------------------------------------------------------ */
+function DestinationCard({ name, photo, Icon }) {
+  const [failed, setFailed] = useState(false);
+  return <article className="aip-discovery-card">
+    <div className="aip-discovery-image">
+      {photo && !failed ? <NativeImage source={photo.asset} accessibilityLabel={photo.alt} resizeMode="cover" style={{ width: "100%", height: "100%" }} onError={() => setFailed(true)} /> : <div className="aip-photo-placeholder"><Icon size={28} /><span>{failed ? "Photo unavailable" : "Photo coming soon"}</span></div>}
+    </div>
+    <div className="aip-discovery-caption"><Icon size={16} /><h4>{name}</h4></div>
+  </article>;
+}
+
+const destinationPhotoGuides = {
+  dagupan: { photos: dagupanPhotos, filePrefix: 'Dagupan' },
+  alaminos: { photos: alaminosPhotos, filePrefix: 'Alaminos' },
+  'san-carlos': { photos: sanCarlosPhotos, filePrefix: 'San_Carlos' },
+  urdaneta: { photos: urdanetaPhotos, filePrefix: 'Urdaneta' },
+};
+
+function DestinationGallery({ title, names, Icon, photos }) {
+  const illustrated = names.filter((name) => photos[name]);
+  const remaining = names.filter((name) => !photos[name]);
+  return <section className="aip-discovery-section">
+    <h3 className="aip-heading-sm">{title}</h3>
+    <div className="aip-discovery-grid">{illustrated.map((name) => <DestinationCard key={name} name={name} Icon={Icon} photo={photos[name]} />)}</div>
+    {remaining.length > 0 && <details className="aip-more-discoveries"><summary>More to explore ({remaining.length})</summary><p>Photos are not yet verified for these entries.</p><div className="aip-chip-row">{remaining.map((name) => <span key={name} className="aip-summary-chip">{name}</span>)}</div></details>}
+  </section>;
+}
+
+function hotelBudget(lodging, budget, days, rooms) {
+  const rate = lodging?.lodgingDetails?.reference_rate;
+  const nights = Math.max(0, Number(days) - 1);
+  if (!nights) return { status: 'day-trip', nights, blocked: false };
+  if (!rate || rate.period !== "night" || rate.min == null || rate.max == null || /flat rate|group basis|per.head|per.person/i.test(rate.basis)) return { status: "unknown", nights, blocked: false };
+  const min = Number(rate.min) * nights * rooms;
+  const max = Number(rate.max) * nights * rooms;
+  if (!Number.isFinite(min) || !Number.isFinite(max)) return { status: "unknown", nights, blocked: false };
+  const knownBasis = /^(per[ _-])?room\b/i.test(rate.basis || "");
+  const status = min > Number(budget) ? "over" : max > Number(budget) ? "possible" : "within";
+  return { min, max, nights, status, knownBasis, blocked: status === "over" && knownBasis };
+}
+
+function LodgingCard({ lodging: l, selected, onSelect, comparison }) {
+  const d = l.lodgingDetails;
+  const rate = d?.reference_rate;
+  const unavailable = d?.overnight_supported === false;
+  const facts = d ? [
+    [BedDouble, "Room types", d.room_types],
+    [Users, "Capacity", d.capacity_note],
+    [Building2, "Facilities", d.amenities_description],
+    [Receipt, "Additional fees", d.additional_fees],
+    [Info, "Rate details", d.rate_note],
+    [Bus, "Getting there", d.transport_access],
+    [MapPin, "Nearby", d.nearby_attractions],
+    [Phone, "Contact", d.contact],
+    [Globe, "Booking", d.booking_url],
+  ].filter(([, , value]) => value) : [];
+
+  return (
+    <article className={`aip-stay-card ${selected ? "is-selected" : ""}`}>
+      <button type="button" className="aip-stay-select" disabled={unavailable} aria-pressed={selected} aria-label={`Select ${l.name}`} onClick={onSelect}>
+        <span className="aip-stay-icon"><Building2 size={22} /></span>
+        <span className="aip-stay-title"><strong>{l.name}</strong>{l.tier && <span className="aip-stay-tier"><Star size={12} />{l.tier}</span>}</span>
+        <span className={`aip-stay-radio ${selected ? "is-selected" : ""}`} aria-hidden="true">{selected && <Check size={14} color="#fff" />}</span>
+      </button>
+      <div className="aip-stay-body">
+        {d?.address && <div className="aip-stay-location"><MapPin size={15} /><span>{d.address}</span></div>}
+        <div className="aip-stay-amenities">
+          {(l.amenities || []).map((a) => { const Icon = AMENITY_ICON[a] || Check; return <span key={a} className="aip-stay-amenity"><Icon size={16} /><span>{a}</span></span>; })}
+        </div>
+        <div className="aip-stay-bottom">
+          <div className="aip-stay-rate">
+            <strong>{rate ? `${peso(rate.min)}${rate.max !== rate.min ? `–${peso(rate.max)}` : ""}` : l.price == null ? "Rate unconfirmed" : peso(l.price)}</strong>
+            {(rate || l.price != null) && <span> / {rate?.period || "night"}{rate ? " · Approx." : ""}</span>}
+          </div>
+          {selected && <span className="aip-stay-selected"><Check size={14} />Selected</span>}
+        </div>
+        {unavailable && <p className="aip-stay-note">Day-use / events only · Overnight stay unavailable</p>}
+        {!unavailable && comparison && comparison.status !== 'day-trip' && <p className={`aip-hotel-budget ${comparison.status}`}>
+          <Info size={15} />
+          <span>{comparison.status === "unknown" ? "Confirm hotel cost" : `${comparison.status === "over" ? "Over budget" : comparison.status === "possible" ? "May exceed budget" : "Within hotel allowance"} · Estimated ${peso(comparison.min)}–${peso(comparison.max)} total`}
+          {comparison.min != null && !comparison.knownBasis && " · Confirm price basis and room capacity"}</span>
+        </p>}
+      </div>
+      {d && <details className="aip-stay-details">
+        <summary><Info size={15} /><span className="aip-stay-show">View details</span><span className="aip-stay-hide">Hide details</span><ChevronDown size={16} /></summary>
+        <div className="aip-stay-facts">
+          {(d.check_in || d.check_out) && <div className="aip-stay-times">
+            {[[LogIn, "Check-in", d.check_in], [LogOut, "Check-out", d.check_out]].filter(([, , value]) => value).map(([Icon, label, value]) => (
+              <div className="aip-stay-fact" key={label}><Icon size={17} /><div><span>{label}</span><p>{value}</p></div></div>
+            ))}
+          </div>}
+          {facts.map(([Icon, label, value]) => <div className="aip-stay-fact" key={label}><Icon size={17} /><div><span>{label}</span><p>{value}</p></div></div>)}
+        </div>
+      </details>}
+    </article>
+  );
+}
+
+function Chip({ selected, onClick, children }) {
+  return (
+    <button type="button" className={`aip-chip ${selected ? "is-selected" : ""}`} onClick={onClick}>
+      {children}
+    </button>
+  );
+}
+
+function MultiSelectField({ label, placeholder, options, values, onChange }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="aip-field">
+      <label className="aip-label">{label}</label>
+      <button type="button" className="aip-select-trigger" onClick={() => setOpen((v) => !v)}>
+        <span className={values.length ? "" : "aip-placeholder"}>
+          {values.length ? values.join(", ") : placeholder}
+        </span>
+        <ChevronRight size={16} style={{ transform: open ? "rotate(90deg)" : "none", transition: "transform .15s" }} />
+      </button>
+      {open && (
+        <div className="aip-multiselect-panel">
+          <div className="aip-chip-row">
+            {options.map((opt) => (
+              <Chip key={opt} selected={values.includes(opt)} onClick={() => onChange(toggleValue(values, opt))}>
+                {opt}
+              </Chip>
+            ))}
+          </div>
+          <div className="aip-multiselect-footer">
+            <span className="aip-muted">{values.length} selected</span>
+            <button type="button" className="aip-btn aip-btn-dark aip-btn-sm" onClick={() => setOpen(false)}>Done</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Main component                                                     */
+/* ------------------------------------------------------------------ */
+const todayInManila = () => new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10);
+const BUDGET_PACKAGES = [
+  { id: "economy", min: 200, max: 500, rate: 500, label: "Economy", Icon: PiggyBank, color: "#246B73" },
+  { id: "budget", min: 500, max: 1000, rate: 1000, label: "Budget", Icon: Wallet, color: colors.palmGreen },
+  { id: "standard", min: 1000, max: 2000, rate: 2000, label: "Standard", Icon: Star, color: colors.oceanBlue },
+  { id: "comfortable", min: 2000, max: 4000, rate: 4000, label: "Comfortable", Icon: TrendingUp, color: "#946516" },
+  { id: "premium", min: 4000, max: null, rate: 4000, label: "Premium", Icon: Zap, color: "#B7472B" },
+];
+const initialForm = () => ({
+  areaId: "",
+  tripTypes: [],
+  activities: [],
+  travelerType: "couple",
+  travelStyle: "balanced",
+  date: todayInManila(),
+  travelers: 2,
+  budget: "2000",
+  days: 1,
+  lodgingId: null,
+  startTime: "07:00",
+  mealBudget: "300",
+  fareInputs: [],
+  transportModes: ["Bus", "Jeepney"],
+  preferences: [],
+  returnToOrigin: true,
+});
 
 export default function AIItinerary() {
-  const { themeStyle, themeColor } = useAppTheme(), { currency } = useCurrency();
-  const navigation = useNavigation(), route = useRoute(), userId = useAuthStore(state => state.user?.id);
-  const [form, setForm] = useState(initialForm), [catalog, setCatalog] = useState(null);
-  const [showForm, setShowForm] = useState(true), [advanced, setAdvanced] = useState(false), [step, setStep] = useState(1), [mapSelection, setMapSelection] = useState(null);
-  const scroll = useRef(null);
-  const [checkedFields, setCheckedFields] = useState({});
-  const [invalidAttempt, setInvalidAttempt] = useState({ count: 0, keys: [], first: null });
-  const validationErrors = validatePlannerForm(form);
-  const fieldError = key => checkedFields[key] ? validationErrors[key] : undefined;
-  const checkField = key => setCheckedFields(current => ({ ...current, [key]: true }));
-  const editField = (key, update) => value => { checkField(key); update(value); };
-  const invalidFieldProps = key => ({
-    highlight: invalidAttempt.keys.includes(key),
-    focusAttempt: invalidAttempt.first === key ? invalidAttempt.count : 0,
-    onInvalidFocus: input => {
-      if (Platform.OS === "web") input?.scrollIntoView?.({ block: "center", inline: "nearest" });
-      else {
-        const content = scroll.current?.getInnerViewRef?.();
-        if (content) input?.measureLayout(content, (_x, y) => scroll.current?.scrollTo({ y: Math.max(0, y - 42), animated: false }), () => {});
-      }
-    },
+  const { width } = useWindowDimensions();
+  const contentWidth = width >= 768 ? width - 280 : width;
+  const [step, setStep] = useState(1);
+  const [form, setForm] = useState(initialForm);
+  const [budgetTier, setBudgetTier] = useState("budget");
+  const [hotelRooms, setHotelRooms] = useState(1);
+  const selectedBudget = BUDGET_PACKAGES.find((tier) => tier.id === budgetTier);
+  const budgetRate = selectedBudget.rate;
+  const [today, setToday] = useState(todayInManila);
+  const [showAdvanced, setShowAdvanced] = useState(true);
+  const [attemptedNext, setAttemptedNext] = useState(false);
+  const [phase, setPhase] = useState("");
+  const [elapsed, setElapsed] = useState(0);
+  const [plan, setPlan] = useState(null);
+  const [showForm, setShowForm] = useState(true);
+  const [saved, setSaved] = useState(false);
+  const timerRef = useRef(null);
+  const generationRef = useRef(false);
+  const [catalog, setCatalog] = useState([]);
+  const [fareTables, setFareTables] = useState([]);
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const AREAS = catalog;
+  useEffect(() => {
+    const controller = new AbortController();
+    api.getItineraryCatalog({ signal: controller.signal })
+      .then(data => { setCatalog(data.areas); setFareTables(data.fareTables || []); })
+      .catch(err => { if (!controller.signal.aborted) setError(err.message); });
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => setToday(todayInManila()), 30000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const set = (key, value) => setForm((f) => {
+    const next = { ...f, [key]: value, ...(key === "areaId" ? { lodgingId: null } : {}) };
+    if (key === 'areaId') next.fareInputs = [];
+    if (key === 'transportModes') next.fareInputs = f.fareInputs.filter(item => value.includes(item.mode));
+    if (key === 'travelers' && Number(value) === 1) next.travelerType = 'solo';
+    if (key === 'travelers' && Number(value) > 1 && f.travelerType === 'solo') next.travelerType = Number(value) === 2 ? 'couple' : 'group';
+    if (key === "travelerType" && ["solo", "couple"].includes(value)) next.travelers = value === "solo" ? 1 : 2;
+    if (["travelers", "days", "travelerType"].includes(key)) {
+      next.budget = String(budgetRate * Math.max(1, Number(next.travelers) || 1) * next.days);
+    }
+    return next;
   });
-  const validateStep = (targetStep, input = form) => {
-    const errors = validatePlannerForm(input);
-    const keys = Object.keys(plannerFieldSteps).filter(key => !targetStep || plannerFieldSteps[key] === targetStep);
-    setCheckedFields(current => ({ ...current, ...Object.fromEntries(keys.map(key => [key, true])) }));
-    const invalid = keys.filter(key => errors[key]);
-    if (!invalid.length) { setInvalidAttempt(current => ({ ...current, keys: [], first: null })); return true; }
-    const firstStep = Math.min(...invalid.map(key => plannerFieldSteps[key]));
-    setStep(firstStep); setShowForm(true);
-    if (firstStep === 3) setAdvanced(true);
-    const firstInput = invalid.find(key => plannerFieldSteps[key] === firstStep && !["destinations", "days", "transportModes"].includes(key));
-    setInvalidAttempt(current => ({ count: current.count + 1, keys: invalid, first: firstInput || null }));
-    if (!firstInput) scroll.current?.scrollTo({ y: 0, animated: true });
-    return false;
+  const chooseBudget = ({ id, rate }) => {
+    setBudgetTier(id);
+    setForm((f) => ({ ...f, budget: String(rate * Math.max(1, Number(f.travelers) || 1) * f.days) }));
   };
-  const nextStep = () => { if (validateStep(step)) { setStep(step + 1); setError(""); scroll.current?.scrollTo({ y: 0, animated: true }); } };
-  const inlineError = key => fieldError(key) ? <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={themeStyle({ ...s.body, color: colors.sunsetCoral })}>{fieldError(key)}</Text> : null;
-  const [catalogLoading, setCatalogLoading] = useState(true), [offline, setOffline] = useState(false);
-  const [plan, setPlan] = useState(null), [cachedPlan, setCachedPlan] = useState(null);
-  const [phase, setPhase] = useState(""), [elapsed, setElapsed] = useState(0), [error, setError] = useState("");
-  const [saving, setSaving] = useState(false), [saved, setSaved] = useState(false), [acceptIncomplete, setAcceptIncomplete] = useState(false);
-  const [editing, setEditing] = useState(null), [attempt, setAttempt] = useState(0);
-  const active = useRef(null), epoch = useRef(0), busy = useRef(false);
-  const cacheKey = `planner:v1:${userId}`;
-  const areas = catalog?.areas || [], places = catalog?.places || areas.flatMap(area => area.attractions || []);
-  const destinationPlaces = useMemo(() => form.destinations.flatMap(destination => destination.placeIds.map(id => places.find(place => place.id === id)).filter(Boolean)), [form.destinations, places]);
-  const selectedAreaIds = useMemo(() => [...new Set(destinationPlaces.map(place => place.areaId))], [destinationPlaces]);
-  const featuredPlaces = useMemo(() => places.filter(place => selectedAreaIds.includes(place.areaId) && !destinationPlaces.some(selected => selected.id === place.id)).slice(0, 6), [places, selectedAreaIds, destinationPlaces]);
-  const destinationNames = useMemo(() => destinationPlaces.map(place => [place.municipality, place.location, areas.find(area => area.id === place.areaId)?.name].filter(Boolean).join(" ")).join(" ").toLowerCase(), [destinationPlaces, areas]);
-  const relatedFares = useMemo(() => (catalog?.fares || []).filter(fare => `${fare.from || ""} ${fare.to || ""}`.toLowerCase().split(" ").some(word => word.length > 3 && destinationNames.includes(word))).slice(0, 5), [catalog, destinationNames]);
-  const relatedFoods = useMemo(() => (catalog?.foods || []).filter(food => !food.where || `${food.where}`.toLowerCase().split(" ").some(word => word.length > 3 && destinationNames.includes(word))).slice(0, 5), [catalog, destinationNames]);
-  const set = (key, value) => setForm(current => ({ ...current, [key]: value }));
-  const body = themeStyle(s.body), heading = themeStyle(s.heading);
+  const dateError = !form.date ? "Choose a travel date." : form.date < today ? "Choose today or a future date." : "";
+  const validateTripDetails = () => {
+    if (!form.date || form.date < todayInManila()) {
+      setToday(todayInManila());
+      setAttemptedNext(true);
+      setStep(2);
+      return false;
+    }
+    if (stayBudget?.blocked) {
+      setAttemptedNext(true);
+      setStep(2);
+      return false;
+    }
+    return true;
+  };
+  const area = AREAS.find((a) => a.id === form.areaId);
+  const info = area;
+  const lodgingList = area?.lodging || [];
+  const lodging = lodgingList.find((l) => l.id === form.lodgingId);
+  const mealPerPerson = Number(form.mealBudget) * Number(form.days);
+  const mealTotal = mealPerPerson * Number(form.travelers);
+  const mealRemaining = Number(form.budget) - mealTotal;
+  const stayBudget = lodging ? hotelBudget(lodging, form.budget, form.days, hotelRooms) : null;
+  const higherBudget = stayBudget?.max != null ? BUDGET_PACKAGES.find((tier) => tier.rate * form.travelers * form.days >= stayBudget.max && tier.rate > budgetRate) : null;
 
   useEffect(() => {
-    let alive = true;
-    const controller = new AbortController(), timeout = setTimeout(() => controller.abort(), 12000);
-    setCatalogLoading(true); setError("");
-    api.getPlannerCatalog({ signal: controller.signal }).then(async data => {
-      if (!alive) return;
-      setCatalog(data); setOffline(false);
-      await storage.setItem(`${cacheKey}:catalog`, JSON.stringify(data)).catch(() => {});
-    }).catch(async () => {
-      const cached = await storage.getItem(`${cacheKey}:catalog`).catch(() => null);
-      if (!alive) return;
-      try { if (cached) setCatalog(JSON.parse(cached)); } catch { /* Ignore damaged cache. */ }
-      setOffline(true); setError("Catalog unavailable. Cached plans remain viewable; reconnect to generate or save.");
-    }).finally(() => { clearTimeout(timeout); if (alive) setCatalogLoading(false); });
-    storage.getItem(`${cacheKey}:plan`).then(value => { if (alive && value) { try { setCachedPlan(JSON.parse(value)); } catch { /* Ignore damaged cache. */ } } }).catch(() => {});
-    return () => { alive = false; clearTimeout(timeout); controller.abort(); };
-  }, [cacheKey, attempt]);
-  useEffect(() => () => { epoch.current++; active.current?.abort(); }, []);
-  useEffect(() => {
-    if (!catalog || !route.params?.areaId) return;
-    const areaPlaces = places.filter(place => place.areaId === route.params.areaId);
-    if (!areaPlaces.length) return;
-    const chosen = areaPlaces[0];
-    setForm(current => current.destinations.some(destination => destination.placeIds.includes(chosen.id)) ? current : { ...current, destinations: [...current.destinations, { areaId: chosen.areaId, placeIds: [chosen.id] }] });
-    setMapSelection(route.params.placeName || areas.find(area => area.id === chosen.areaId)?.name || chosen.name);
-    setStep(1); setShowForm(true);
-  }, [catalog, route.params?.areaId]);
-  useEffect(() => { if (!phase) return; setElapsed(0); const timer = setInterval(() => setElapsed(n => n + 1), 1000); return () => clearInterval(timer); }, [phase]);
-  const remember = async result => { setPlan(result); setCachedPlan(result); await storage.setItem(`${cacheKey}:plan`, JSON.stringify(result)).catch(() => {}); };
+    if (!phase) return;
+    setElapsed(0);
+    timerRef.current = setInterval(() => setElapsed((n) => n + 1), 1000);
+    return () => clearInterval(timerRef.current);
+  }, [phase]);
 
-  const enrich = async (result, version) => {
-    const controller = new AbortController(); active.current = controller;
-    const timeout = setTimeout(() => controller.abort(), 28000);
-    setPhase("Adding travel tips");
-    try {
-      const enriched = await api.enrichItinerary(result.id, { signal: controller.signal });
-      if (version === epoch.current) await remember(enriched);
-    } catch { if (version === epoch.current) setError("Local descriptions unavailable. Your database plan is still ready to use."); }
-    finally { clearTimeout(timeout); }
+  const stepLabel = { 1: "Destination & preferences", 2: "Trip details & lodging", 3: "Review & personalize" }[step];
+
+  const goNext = () => {
+    if (step === 1 && !form.areaId) { setAttemptedNext(true); return; }
+    if (step === 2 && !validateTripDetails()) return;
+    setAttemptedNext(false);
+    setStep((s) => Math.min(3, s + 1));
   };
-  const generate = async (input = form) => {
-    if (busy.current) return;
-    if (!validateStep(null, input)) return;
-    const request = { ...input, origin: input.origin?.areaId ? input.origin : { areaId: "dagupan" }, days: Number(input.days), travelers: Number(input.travelers), budget: Number(input.budget), foodPerPersonPerDay: Number(input.foodPerPersonPerDay), lodging: Number(input.days) > 1 && input.lodging.preference !== "none" ? { ...input.lodging, nightlyBudget: Number(input.lodging.nightlyBudget), rooms: Number(input.lodging.rooms) } : { preference: "none", nightlyBudget: 0, rooms: 1 } };
-    const version = ++epoch.current, controller = new AbortController(); active.current = controller; busy.current = true;
-    const timeout = setTimeout(() => controller.abort(), 20000);
-    setPhase("Planning your trip"); setError(""); setSaved(false); setAcceptIncomplete(false);
+  const goBack = () => setStep((s) => Math.max(1, s - 1));
+
+  const generate = async () => {
+    if (generationRef.current) return;
+    if (!validateTripDetails()) return;
+    generationRef.current = true;
+    setError("");
+    setPhase("Planning from your area's catalog");
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 90000);
     try {
-      const result = await api.generateItinerary(request, { signal: controller.signal });
+      const built = await api.generateGroundedItinerary({ ...form, hotelRooms }, { signal: controller.signal });
+      const icons = { Bus, Compass, Utensils, Home, ShoppingBag };
+      setPlan({ ...built, stops: built.stops.map(stop => ({ ...stop, Icon: icons[stop.iconKey] || Compass })) });
+      setShowForm(false);
+      setSaved(false);
+    } catch (err) {
+      setError(controller.signal.aborted ? "Generation timed out. Please try again." : err.message || "Unable to generate your itinerary. Please try again.");
+    } finally {
       clearTimeout(timeout);
-      if (version !== epoch.current) return;
-      await remember(result);
-      setShowForm(false); scroll.current?.scrollTo({ y: 0, animated: true });
-      if (version === epoch.current && result.days.some(day => day.stops.length)) await enrich(result, version);
-    } catch (cause) { if (version === epoch.current) setError(controller.signal.aborted ? "Planning timed out. Check the backend connection and retry. Your previous preview is preserved." : cause.message); }
-    finally { clearTimeout(timeout); if (version === epoch.current) { setPhase(""); busy.current = false; } }
+      setPhase("");
+      generationRef.current = false;
+    }
   };
-  const save = async () => {
-    setSaving(true); setError("");
-    try { await api.saveItinerary(plan.id, acceptIncomplete); setSaved(true); }
-    catch (cause) { setError(cause.message); } finally { setSaving(false); }
-  };
-  const share = async () => {
+  const savePlan = async () => {
+    if (saving || !plan?.id) return;
+    setSaving(true);
+    setError("");
     try {
-      const content = JSON.stringify(plan, null, 2);
-      if (Platform.OS === "web") {
-        const href = URL.createObjectURL(new Blob([content], { type: "application/json" }));
-        const anchor = document.createElement("a"); anchor.href = href; anchor.download = `multraverse-${plan.request.dates.start}.json`; anchor.click(); setTimeout(() => URL.revokeObjectURL(href), 1000);
-      } else await Share.share({ title: "Multraverse itinerary", message: content });
-    } catch { setError("Could not share this itinerary. Try again."); }
+      await api.saveItinerary(plan.id, true);
+      setSaved(true);
+    } catch (err) { setError(err.message); }
+    finally { setSaving(false); }
   };
-  const applyEdit = replacement => {
-    const original = plan.request;
-    const areaStops = plan.days.flatMap(d => d.stops).filter(stop => stop.areaId === editing.areaId).map(stop => stop.placeId);
-    const edited = { ...original, excludedPlaceIds: [...new Set([...original.excludedPlaceIds.filter(id => id !== replacement), editing.placeId])], destinations: original.destinations.map(d => d.areaId === editing.areaId ? { ...d, placeIds: [...areaStops.filter(id => id !== editing.placeId), ...(replacement ? [replacement] : [])] } : d) };
-    if (!replacement && areaStops.length === 1) edited.destinations = edited.destinations.filter(d => d.areaId !== editing.areaId);
-    if (!edited.destinations.length) { setError("Keep at least one destination. Replace the last stop instead of removing it."); setEditing(null); return; }
-    setForm(edited); setEditing(null); generate(edited);
-  };
-  const guide = destinationPlaces.length ? <View style={themeStyle({ ...s.card, gap: 12, backgroundColor: colors.warmSand })}>
-    <Text style={heading}>{mapSelection ? `${mapSelection} trip guide` : "Before you generate"}</Text>
-    <Text style={body}>Your selected place{destinationPlaces.length > 1 ? "s" : ""}: {destinationPlaces.map(place => place.name).join(", ")}.</Text>
-    {!!featuredPlaces.length && <View style={{ gap: 6 }}><Text style={themeStyle({ ...s.body, fontWeight: "700" })}>Famous places nearby</Text><Text style={body}>{featuredPlaces.map(place => place.name).join(" · ")}</Text></View>}
-    {!!relatedFares.length && <View style={{ gap: 6 }}><Text style={themeStyle({ ...s.body, fontWeight: "700" })}>Known fares</Text>{relatedFares.map(fare => <Text key={fare.id} style={body}>{fare.from} → {fare.to}: {fare.vehicle || "transport"} {fare.price ? `· ₱${fare.price}` : "· check current fare"}</Text>)}</View>}
-    {!!relatedFoods.length && <View style={{ gap: 6 }}><Text style={themeStyle({ ...s.body, fontWeight: "700" })}>Foods to try</Text><Text style={body}>{relatedFoods.map(food => food.name).join(" · ")}</Text></View>}
-    {!featuredPlaces.length && !relatedFares.length && !relatedFoods.length && <Text style={body}>The generator will use the current verified places, transport, and food records for your selections.</Text>}
-  </View> : null;
-  return <ScrollView ref={scroll} keyboardShouldPersistTaps="handled" contentContainerStyle={themeStyle(s.page)}>
-    <AIToolHeader eyebrow="PANGASINAN TRIP PLANNER" title="AI Itinerary" subtitle="Build a practical trip plan using verified places, transport fares, and local food guides." badges={[{ label: "Verified local data" }, { label: "Budget-aware planning" }, { label: "Custom AI model", color: "#A78BFA" }]} Icon={Sparkles} />
-    {showForm && <View style={themeStyle(s.card)}>
-      <Text style={heading}>Plan step {step} of 3</Text><View style={{ flexDirection: "row", gap: 6 }}>{[1, 2, 3].map(number => <View key={number} style={{ height: 6, flex: 1, borderRadius: 8, backgroundColor: number <= step ? colors.sunsetCoral : colors.border }} />)}</View>
-      {invalidAttempt.keys.some(key => plannerFieldSteps[key] === step && validationErrors[key]) && <Text key={invalidAttempt.count} accessibilityRole="alert" accessibilityLiveRegion="assertive" style={themeStyle({ ...s.body, color: colors.sunsetCoral })}>Please correct the highlighted fields before continuing.</Text>}
-      {step === 1 && <><Text style={heading}>Choose your places</Text>{catalogLoading ? <ActivityIndicator accessibilityLabel="Loading places" color={themeColor(colors.oceanBlue)} /> : <DestinationPicker places={places} form={form} setForm={setForm} />}{inlineError("destinations")}<Button selected disabled={catalogLoading} onPress={nextStep}>Next: trip details</Button></>}
-      {step === 2 && <><Text style={heading}>Trip details</Text><View style={s.fieldRow}><Field label="Travel date (YYYY-MM-DD)" placeholder="e.g. 2027-01-15" error={fieldError("date")} {...invalidFieldProps("date")} onBlur={() => checkField("date")} value={form.dates.start} onChange={editField("date", start => set("dates", { start }))} /><Field label="Travelers" placeholder="e.g. 2" error={fieldError("travelers")} {...invalidFieldProps("travelers")} onBlur={() => checkField("travelers")} value={form.travelers} numeric onChange={editField("travelers", value => set("travelers", value))} /><Field label={`Total trip budget (${currency})`} placeholder="e.g. 3000" error={fieldError("budget")} {...invalidFieldProps("budget")} onBlur={() => checkField("budget")} value={form.budget} money onChange={editField("budget", value => set("budget", value))} /></View><Text style={body}>How many days?</Text>{inlineError("days")}<View style={s.row}>{[1, 2, 3, 4, 5, 6, 7].map(n => <Button key={n} selected={form.days === n} onPress={() => set("days", n)}>{n} day{n === 1 ? "" : "s"}</Button>)}</View><View style={s.row}><Button onPress={() => setStep(1)}>Back</Button><Button selected onPress={nextStep}>Next: review trip</Button></View></>}
-      {step === 3 && <><Text style={heading}>Review and personalize</Text>{guide}<Button onPress={() => setAdvanced(value => !value)}>{advanced ? "Hide extra options" : "Adjust time, transport and meal budget"}</Button>{advanced && <View style={{ gap: 14 }}><View style={s.fieldRow}><Field label="Start time (HH:mm)" placeholder="e.g. 08:00" error={fieldError("startTime")} {...invalidFieldProps("startTime")} onBlur={() => checkField("startTime")} value={form.startTime} onChange={editField("startTime", value => set("startTime", value))} /><Field label={`Meals per person per day (${currency})`} placeholder="e.g. 300" error={fieldError("foodPerPersonPerDay")} {...invalidFieldProps("foodPerPersonPerDay")} onBlur={() => checkField("foodPerPersonPerDay")} value={form.foodPerPersonPerDay} money onChange={editField("foodPerPersonPerDay", value => set("foodPerPersonPerDay", value))} /></View><Text style={body}>Transport</Text><View style={s.row}>{transportModes.map(mode => <Button key={mode} selected={form.transportModes.includes(mode)} onPress={() => set("transportModes", toggleValue(form.transportModes, mode))}>{mode === "own-vehicle" ? "Own vehicle" : mode}</Button>)}</View>{inlineError("transportModes")}<Text style={body}>Travel pace</Text><View style={s.row}>{["relaxed", "balanced", "packed"].map(pace => <Button key={pace} selected={form.pace === pace} onPress={() => set("pace", pace)}>{pace}</Button>)}</View><View style={s.row}><Button selected={form.returnToOrigin} onPress={() => set("returnToOrigin", !form.returnToOrigin)}>Include return trip</Button>{preferences.filter(p => p !== "Food stops").map(pref => <Button key={pref} selected={form.preferences.includes(pref)} onPress={() => set("preferences", toggleValue(form.preferences, pref))}>{pref}</Button>)}</View></View>}{form.days > 1 && <View style={{ gap: 10 }}><Text style={body}>Overnight stay</Text><View style={s.row}>{["none", "budget"].map(p => <Button key={p} selected={form.lodging.preference === p} onPress={() => set("lodging", { ...form.lodging, preference: p })}>{p === "none" ? "Already arranged" : "Include lodging allowance"}</Button>)}</View>{form.lodging.preference !== "none" && <View style={s.fieldRow}><Field label={`Room budget per night (${currency})`} placeholder="e.g. 1000" error={fieldError("nightlyBudget")} {...invalidFieldProps("nightlyBudget")} onBlur={() => checkField("nightlyBudget")} value={form.lodging.nightlyBudget} money onChange={editField("nightlyBudget", value => set("lodging", { ...form.lodging, nightlyBudget: value }))} /><Field label="Rooms" placeholder="e.g. 1" error={fieldError("rooms")} {...invalidFieldProps("rooms")} onBlur={() => checkField("rooms")} value={form.lodging.rooms} numeric onChange={editField("rooms", value => set("lodging", { ...form.lodging, rooms: value }))} /></View>}</View>}<View style={s.row}><Button onPress={() => setStep(2)}>Back</Button><Button selected icon={RefreshCw} disabled={!!phase || saving || offline || catalogLoading} onPress={() => generate()}>Generate my itinerary</Button></View></>}
-      {plan && <Button onPress={() => setShowForm(false)}>Back to my trip plan</Button>}
-    </View>}
-    {!!phase && <View style={themeStyle(s.card)}><ActivityIndicator color={themeColor(colors.oceanBlue)} /><Text accessibilityLiveRegion="polite" style={body}>{phase} ? {elapsed}s{plan && !showForm ? ". Your trip plan is ready below." : ""}</Text><Button onPress={() => { epoch.current++; active.current?.abort(); busy.current = false; setPhase(""); }}>{plan && !showForm ? "Use this plan now" : "Cancel"}</Button></View>}
-    {!!error && <View style={themeStyle(s.card)}><Text accessibilityRole="alert" style={themeStyle({ ...s.body, color: colors.sunsetCoral })}>{error}</Text>{offline && <Button onPress={() => setAttempt(n => n + 1)}>Retry connection</Button>}</View>}
-    {!plan && cachedPlan && <Button onPress={() => { setPlan(cachedPlan); setForm(cachedPlan.request); setShowForm(false); setSaved(false); setAcceptIncomplete(false); }}>Open my last trip plan</Button>}
-    {!showForm && plan && <View style={themeStyle(s.card)}>
-      <View style={s.row}><Button onPress={() => setShowForm(true)}>Edit trip details</Button><Button icon={Download} onPress={share}>Export / Share</Button></View>
-      <ItineraryResult plan={plan} onEditStop={setEditing} disabled={!!phase || offline || saving} />
-      {plan.mode !== "hybrid" && <Text style={body}>Built from the travel guide. AI tips are optional; your trip plan is ready without them.</Text>}
-      {plan.costs.status === "incomplete" && <Button selected={acceptIncomplete} onPress={() => setAcceptIncomplete(value => !value)}>I?ll confirm the remaining fares before traveling</Button>}
-      <View style={s.row}><Button selected icon={BookmarkPlus} disabled={saved || saving || !!phase || offline || !plan.days.some(d => d.stops.length) || plan.costs.status === "over-budget" || (plan.costs.status === "incomplete" && !acceptIncomplete)} onPress={save}>{saved ? "Saved to My Trips" : saving ? "Saving..." : "Save to My Trips"}</Button><Button onPress={() => navigation.navigate("MyTrips")}>My Trips</Button><Button onPress={() => navigation.navigate("Budget")}>Budget</Button></View>
-      {saved && <Text accessibilityLiveRegion="polite" style={body}>Your trip and stops are saved. Add actual purchases in Budget as you travel.</Text>}
-    </View>}
-    {editing && <Modal transparent animationType="fade" onRequestClose={() => setEditing(null)}><View style={themeStyle({ flex: 1, padding: 24, justifyContent: "center", backgroundColor: colors.oceanBlueDark })}><View style={themeStyle({ ...s.card, maxHeight: "85%" })}><Text style={heading}>Edit {editing.place}</Text><Text style={body}>Replace this stop with an attraction in the same area. Times and costs will be recalculated.</Text><ScrollView contentContainerStyle={{ gap: 8 }}>{areas.find(a => a.id === editing.areaId)?.attractions.filter(p => !plan.days.some(d => d.stops.some(stop => stop.placeId === p.id))).map(p => <Button key={p.id} onPress={() => applyEdit(p.id)}>Replace with {p.name}</Button>)}</ScrollView><View style={s.row}><Button onPress={() => applyEdit(null)}>Remove stop and replan</Button><Button icon={X} onPress={() => setEditing(null)}>Cancel edit</Button></View></View></View></Modal>}
-  </ScrollView>;
+
+  /* -------------------------- render -------------------------- */
+  return (
+    <div className="aip-shell">
+      <style>{CSS}</style>
+
+      {/* Navigation is provided by the shared UserSidebar in App.jsx. */}
+      {/* ---------------- Main ---------------- */}
+      <main className="aip-main">
+        <div className="aip-content">
+          <div className="aip-tool-header">
+            <AIToolHeader
+              eyebrow="PANGASINAN TRIP PLANNER"
+              title="AI Itinerary"
+              subtitle="Build a practical trip plan using verified places, transport fares, and local food guides."
+              badges={[{ label: "Verified local data" }, { label: "Budget-aware planning" }, { label: "Custom AI model", color: "#A78BFA" }]}
+              Icon={Sparkles}
+              compact={contentWidth < 600}
+            />
+          </div>
+          {error && <p className="aip-error" role="alert">{error}</p>}
+          {showForm && (
+            <>
+              <div className="aip-progress-header">
+                <span className="aip-step-title">Plan step {step} of 3</span>
+                <span className="aip-muted">{stepLabel}</span>
+              </div>
+              <div className="aip-progress-bars">
+                {[1, 2, 3].map((n) => <div key={n} className={`aip-progress-bar ${n <= step ? "is-active" : ""}`} />)}
+              </div>
+
+              {/* ---------- STEP 1 ---------- */}
+              {step === 1 && (
+                <div className="aip-card">
+                  <h2 className="aip-heading">Choose your destination</h2>
+                  <p className="aip-subtitle">Select an area and tell the AI what kind of experience you want.</p>
+
+                  <div className="aip-field">
+                    <label className="aip-label">Where in Pangasinan?</label>
+                    <select className="aip-select" value={form.areaId} onChange={(e) => set("areaId", e.target.value)}>
+                      <option value="">— Pick a city or municipality —</option>
+                      <optgroup label="Cities">
+                        {AREAS.filter((a) => a.group === "Cities").map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+                      </optgroup>
+                      <optgroup label="Municipalities">
+                        {AREAS.filter((a) => a.group === "Municipalities").map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+                      </optgroup>
+                    </select>
+                  </div>
+
+                  <MultiSelectField label="What kind of trip do you want?" placeholder="Select trip type(s)..." options={TRIP_TYPES} values={form.tripTypes} onChange={(v) => set("tripTypes", v)} />
+                  <MultiSelectField label="What activities do you want?" placeholder="Select activities..." options={ACTIVITIES} values={form.activities} onChange={(v) => set("activities", v)} />
+
+                  <div className="aip-field">
+                    <label className="aip-label">Who are you traveling with?</label>
+                    <div className="aip-icon-grid">
+                      {TRAVELER_TYPES.map(({ id, label, Icon }) => (
+                        <button type="button" key={id} className={`aip-icon-card ${form.travelerType === id ? "is-selected" : ""}`} onClick={() => set("travelerType", id)}>
+                          <Icon size={20} /><span>{label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="aip-field">
+                    <label className="aip-label">What's your travel style?</label>
+                    <div className="aip-style-grid">
+                      {TRAVEL_STYLES.map(({ id, label, desc, Icon }) => (
+                        <button type="button" key={id} className={`aip-style-card ${form.travelStyle === id ? "is-selected" : ""}`} onClick={() => set("travelStyle", id)}>
+                          <Icon size={18} /><strong>{label}</strong><span>{desc}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {attemptedNext && !form.areaId && <p className="aip-error">Please select at least a destination to continue.</p>}
+                  <button className={`aip-btn aip-btn-block ${form.areaId ? "aip-btn-dark" : "aip-btn-disabled"}`} onClick={goNext}>
+                    Next: trip details →
+                  </button>
+                </div>
+              )}
+
+              {/* ---------- STEP 2 ---------- */}
+              {step === 2 && (
+                <>
+                  <div className="aip-card">
+                    <h2 className="aip-heading">Trip details</h2>
+                    <p className="aip-subtitle">Set your travel date, group size, and budget, then choose your stay.</p>
+                    <div className="aip-field-row">
+                      <div className="aip-field">
+                        <label className="aip-label" htmlFor="aip-travel-date">Travel date</label>
+                        <input id="aip-travel-date" type="date" required min={today} className="aip-input" value={form.date} aria-invalid={!!dateError && (attemptedNext || !!form.date)} aria-describedby={dateError ? "aip-date-error" : undefined} onFocus={() => setToday(todayInManila())} onChange={(e) => set("date", e.target.value)} />
+                        {dateError && (attemptedNext || form.date) && <p id="aip-date-error" className="aip-error" role="alert">{dateError}</p>}
+                      </div>
+                      <div className="aip-field"><label className="aip-label">Travelers</label><input type="number" min={1} step={1} className="aip-input" value={form.travelers} onChange={(e) => set("travelers", Math.max(1, Math.floor(Number(e.target.value) || 1)))} /></div>
+                      <div className="aip-field">
+                        <label className="aip-label" htmlFor="aip-trip-days">How many days?</label>
+                        <select id="aip-trip-days" className="aip-select" value={form.days} onChange={(e) => set("days", Number(e.target.value))}>
+                          {[1, 2, 3, 4, 5, 6, 7].map((n) => <option key={n} value={n}>{n} day{n === 1 ? "" : "s"}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="aip-budget-heading">
+                      <span id="aip-budget-label">Total trip budget</span>
+                      <span>{form.travelers} traveler{Number(form.travelers) === 1 ? "" : "s"} × {form.days} day{form.days === 1 ? "" : "s"}</span>
+                    </div>
+                    <div className="aip-budget-grid" role="group" aria-labelledby="aip-budget-label">
+                      {BUDGET_PACKAGES.map((tier) => {
+                        const { Icon } = tier;
+                        const multiplier = form.travelers * form.days;
+                        return <button type="button" key={tier.id} aria-pressed={budgetTier === tier.id} className={`aip-budget-card ${budgetTier === tier.id ? "is-selected" : ""}`} style={{ "--tier-color": tier.color, "--tier-tint": `${tier.color}0D`, "--tier-border": `${tier.color}40`, "--tier-icon-bg": `${tier.color}18` }} onClick={() => chooseBudget(tier)}>
+                          <span className="aip-budget-icon"><Icon size={18} /></span>
+                          <strong>{tier.label}</strong>
+                          <span className="aip-budget-range">{peso(tier.min * multiplier)}{tier.max ? `–${peso(tier.max * multiplier)}` : "+"}</span>
+                          <span className="aip-budget-person">{peso(tier.min)}{tier.max ? `–${peso(tier.max)}` : "+"}<br />/ person / day</span>
+                        </button>;
+                      })}
+                    </div>
+                    <div className="aip-budget-summary" aria-live="polite">
+                      <span>Selected tier</span>
+                      <strong>{selectedBudget.label} <span>·</span> {selectedBudget.max ? "Budget cap" : "Starting budget"}: {peso(form.budget)}</strong>
+                    </div>
+                  </div>
+
+                  <div className="aip-card">
+                    <div className="aip-row-between">
+                      <h2 className="aip-heading">Where will you stay?</h2>
+                      {lodging && <span className="aip-pill aip-pill-tan">{lodging.tier}</span>}
+                    </div>
+                    <p className="aip-subtitle">Hotels and accommodations in {area?.name || "your destination"}</p>
+                    <div className="aip-hotel-budget-panel">
+                      <label className="aip-label" htmlFor="aip-hotel-rooms">Rooms needed</label>
+                      <input id="aip-hotel-rooms" className="aip-input" type="number" min={1} step={1} value={hotelRooms} onChange={(e) => setHotelRooms(Math.max(1, Math.floor(Number(e.target.value) || 1)))} />
+                      <p>{form.days === 1 ? 'Day trip: no overnight stay is scheduled or charged. Choose 2 or more days to include a hotel.' : `Estimate: nightly rate × ${form.days - 1} nights × ${hotelRooms} rooms. Confirm room capacity with the hotel.`}</p>
+                      {stayBudget && <div aria-live="polite">
+                        {stayBudget.min != null && <p><strong>{lodging.name}: {peso(stayBudget.min)}–{peso(stayBudget.max)}</strong><br />Trip budget: {peso(form.budget)}. {stayBudget.min > Number(form.budget) ? `Minimum estimate exceeds it by ${peso(stayBudget.min - Number(form.budget))}.` : `Remaining after hotel: ${peso(Math.max(0, Number(form.budget) - stayBudget.max))}–${peso(Number(form.budget) - stayBudget.min)} for food, transport, and activities.`}</p>}
+                        {stayBudget.status !== 'day-trip' && (!stayBudget.knownBasis || stayBudget.status === "unknown") && <p>Confirm hotel cost: this estimate assumes a per-room nightly rate. Pricing and capacity are not confirmed.</p>}
+                        {stayBudget.blocked && <p className="aip-error" role="alert">The hotel alone exceeds your budget. Choose a cheaper hotel, increase your budget, or remove lodging before continuing.</p>}
+                        {["over", "possible"].includes(stayBudget.status) && <div className="aip-chip-row">
+                          {higherBudget && <button type="button" className="aip-btn aip-btn-outline aip-btn-sm" onClick={() => chooseBudget(higherBudget)}>Use {higherBudget.label} · {peso(higherBudget.rate * form.travelers * form.days)}</button>}
+                          <button type="button" className="aip-btn aip-btn-outline aip-btn-sm" onClick={() => set("lodgingId", null)}>Choose no lodging</button>
+                        </div>}
+                      </div>}
+                    </div>
+
+                    <button type="button" className={`aip-lodging-row ${!form.lodgingId ? "is-selected" : ""}`} onClick={() => set("lodgingId", null)}>
+                      <Bus size={18} />
+                      <div><strong>Day trip — no lodging</strong><div className="aip-muted aip-small">No accommodation selected</div></div>
+                    </button>
+
+                    {!lodgingList.length && <p>No verified accommodation on file for this area yet.</p>}
+                    {lodgingList.map((l) => (
+                      <LodgingCard key={l.id} lodging={l} comparison={hotelBudget(l, form.budget, form.days, hotelRooms)} selected={form.lodgingId === l.id} onSelect={() => set("lodgingId", l.id)} />
+                    ))}
+                  </div>
+
+                  <div className="aip-step-actions">
+                    <button className="aip-btn aip-btn-outline" onClick={goBack}>← Back</button>
+                    <button className="aip-btn aip-btn-dark" onClick={goNext}>Next: review trip →</button>
+                  </div>
+                </>
+              )}
+
+              {/* ---------- STEP 3 ---------- */}
+              {step === 3 && (
+                <div className="aip-card">
+                  <h2 className="aip-heading">Review and personalize</h2>
+                  <p className="aip-subtitle">Check what the AI knows about your destination, then fine-tune before generating.</p>
+
+                  {info && (
+                    <div className="aip-destination-review">
+                      <div className="aip-review-destination"><MapPin size={18} /><strong>{area?.name}</strong></div>
+                      {destinationPhotoGuides[area?.id] ? <>
+                        <DestinationGallery title="Famous places nearby" names={info.famousPlaces} Icon={MapPin} photos={destinationPhotoGuides[area.id].photos} />
+                        <DestinationGallery title="Foods to try" names={info.foods} Icon={Utensils} photos={destinationPhotoGuides[area.id].photos} />
+                        <details className="aip-photo-credits"><summary>Image source</summary><p>{destinationPhotoGuides[area.id].filePrefix}_City_PLACES TO VISIT &amp; FOODS_IMAGES.pdf - supplied for this trip guide. Images shown as labeled in the document; original photographer marks retained.</p></details>
+                      </> : <>
+                        <h3 className="aip-heading-sm">Famous places nearby</h3><p>{info.famousPlaces.join(" · ")}</p>
+                        <h3 className="aip-heading-sm">Foods to try</h3><p>{info.foods.join(" · ")}</p>
+                      </>}
+                    </div>
+                  )}
+
+                  <div className="aip-chip-row aip-summary-chips">
+                    {[area?.name, TRAVELER_TYPES.find((t) => t.id === form.travelerType)?.label, `${form.days} day${form.days === 1 ? "" : "s"}`,
+                      `${form.travelers} travelers`, `${peso(form.budget)} budget`, TRAVEL_STYLES.find((t) => t.id === form.travelStyle)?.label,
+                      lodging ? `${lodging.name} (${lodging.lodgingDetails ? 'approximate rate; confirm booking' : 'rate unconfirmed'})` : null, ...form.tripTypes, ...form.activities]
+                      .filter(Boolean).map((t, i) => <span key={i} className="aip-summary-chip">{t}</span>)}
+                  </div>
+
+                  <button type="button" className="aip-btn aip-btn-outline-coral aip-btn-block" onClick={() => setShowAdvanced((v) => !v)}>
+                    {showAdvanced ? "Hide extra options" : "Show extra options"} <ChevronDown size={14} style={{ transform: showAdvanced ? "rotate(180deg)" : "none" }} />
+                  </button>
+
+                  {showAdvanced && (
+                    <div className="aip-advanced">
+                      <div className="aip-field-row">
+                        <div className="aip-field"><label className="aip-label">Start time (HH:MM)</label><input type="time" className="aip-input" value={form.startTime} onChange={(e) => set("startTime", e.target.value)} /></div>
+                        <div className="aip-field"><label className="aip-label" htmlFor="aip-meals">Meals per person per day (PHP)</label><select id="aip-meals" className="aip-select" value={form.mealBudget} onChange={(e) => set("mealBudget", e.target.value)}>{[200, 300, 500, 750, 1000, 1500].map((amount) => <option key={amount} value={amount}>{peso(amount)} / person / day</option>)}</select></div>
+                      </div>
+                      <div className="aip-meal-summary" aria-live="polite">
+                        <div><span>Per person · full trip</span><strong>{peso(mealPerPerson)}</strong><small>{peso(form.mealBudget)} × {form.days} day{form.days === 1 ? "" : "s"}</small></div>
+                        <div><span>All travelers · full trip</span><strong>{peso(mealTotal)}</strong><small>{peso(mealPerPerson)} × {form.travelers} traveler{Number(form.travelers) === 1 ? "" : "s"}</small></div>
+                        <div><span>{mealRemaining < 0 ? "Meals exceed trip budget" : "Budget after meals"}</span><strong className={mealRemaining < 0 ? "aip-error" : ""}>{peso(Math.abs(mealRemaining))}</strong><small>Meal allowance, not restaurant prices</small></div>
+                      </div>
+                      {stayBudget?.min != null && <p className="aip-meal-note">Meals + hotel estimate: {peso(mealTotal + stayBudget.min)}–{peso(mealTotal + stayBudget.max)}.{mealTotal + stayBudget.max > Number(form.budget) ? " May exceed your trip budget; lower the meal allowance or revise your stay or budget." : " Transport and activities still need to be covered."}</p>}
+                      <label className="aip-label">Transport</label>
+                      <div className="aip-chip-row">
+                        {TRANSPORT_MODES.map((m) => <Chip key={m} selected={form.transportModes.includes(m)} onClick={() => set("transportModes", toggleValue(form.transportModes, m))}>{m}</Chip>)}
+                      </div>
+                      <ItineraryFareInputs modes={form.transportModes} tables={fareTables} values={form.fareInputs} onChange={value => set('fareInputs', value)} areaId={form.areaId} />
+                    </div>
+                  )}
+
+                  <div className="aip-step-actions">
+                    <button className="aip-btn aip-btn-outline" onClick={goBack}>← Back</button>
+                    <button className="aip-btn aip-btn-gradient" disabled={!!phase || !catalog.length} onClick={generate}><Zap size={16} />{phase ? `Generating… ${elapsed}s` : 'Generate my itinerary'}</button>
+                  </div>
+                  {error && <p className="aip-error" role="alert" style={{ marginTop: 14 }}>{error}</p>}
+                </div>
+              )}
+            </>
+          )}
+
+          {!!phase && (
+            <div className="aip-card aip-generating">
+              <div className="aip-spinner" />
+              <span>{phase} · {elapsed}s</span>
+            </div>
+          )}
+
+          {!showForm && plan && <ItineraryResults plan={plan} areaName={AREAS.find(a => a.id === plan.request.areaId)?.name} onEdit={() => setShowForm(true)} onSave={savePlan} saved={saved} saving={saving} />}
+        </div>
+      </main>
+    </div>
+  );
 }
+
+/* ------------------------------------------------------------------ */
+/*  Stylesheet — mirrors the Figma tokens (Ocean Blue / Sunset Coral /  */
+/*  Palm Green / Warm Sand / Seafoam / Golden, Playfair + DM Sans +     */
+/*  JetBrains Mono)                                                     */
+/* ------------------------------------------------------------------ */
+const CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+.aip-shell, .aip-shell * { box-sizing: border-box; }
+.aip-shell { display: flex; flex: 1; min-height: 0; overflow-y: auto; background: ${colors.page}; font-family: ${fonts.body}; font-size: 16px; line-height: 1.5; color: ${colors.ink}; }
+.aip-shell svg { flex-shrink: 0; }
+.aip-shell button, .aip-shell input, .aip-shell select { font-family: inherit; }
+.aip-shell button { overflow-wrap: anywhere; }
+.aip-shell button:focus-visible, .aip-shell input:focus-visible, .aip-shell select:focus-visible { outline: 3px solid ${colors.seafoam}; outline-offset: 3px; }
+
+.aip-main { flex: 1; width: 100%; display: flex; flex-direction: column; min-width: 0; }
+.aip-tool-header { margin-bottom: 32px; }
+
+.aip-content { max-width: 1200px; width: 100%; margin: 0 auto; padding: clamp(16px, 3vw, 36px) clamp(16px, 3vw, 40px) 60px; }
+.aip-progress-header { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px 20px; margin-bottom: 12px; }
+.aip-step-title { font-family: ${fonts.display}; font-size: 20px; font-weight: 700; color: ${colors.oceanBlue}; }
+.aip-progress-bars { display: flex; gap: 8px; margin-bottom: 28px; }
+.aip-progress-bar { flex: 1; height: 6px; border-radius: 8px; background: ${colors.border}; }
+.aip-progress-bar.is-active { background: ${colors.sunsetCoral}; }
+
+.aip-card { background: #fff; border: 1px solid ${colors.border}; border-radius: 16px; padding: clamp(20px, 3vw, 36px); margin-bottom: 24px; min-width: 0; }
+.aip-heading { font-family: ${fonts.display}; font-size: clamp(22px, 2.5vw, 28px); margin: 0 0 10px; color: ${colors.oceanBlue}; }
+.aip-heading-sm { font-family: ${fonts.display}; font-size: 18px; margin: 0 0 12px; color: ${colors.oceanBlue}; }
+.aip-subtitle { color: ${colors.muted}; font-size: 16px; line-height: 1.6; margin: 0 0 28px; }
+
+.aip-field { min-width: 0; margin-bottom: 28px; }
+.aip-field-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 24px; margin-bottom: 28px; }
+.aip-field-row .aip-field { margin-bottom: 0; }
+.aip-label { display: block; font-size: 15px; font-weight: 600; color: ${colors.oceanBlue}; margin-bottom: 10px; }
+.aip-input, .aip-select, .aip-select-trigger {
+  width: 100%; min-width: 0; max-width: 100%; min-height: 52px; padding: 14px 16px; border-radius: 10px; border: 1px solid ${colors.border};
+  font-family: ${fonts.body}; font-size: 16px; background: #fff; color: ${colors.ink};
+}
+.aip-select-trigger { gap: 12px; text-align: left; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+.aip-select-trigger > span { min-width: 0; overflow-wrap: anywhere; }
+.aip-placeholder { color: ${colors.muted}; }
+
+.aip-multiselect-panel { border: 1px solid ${colors.border}; border-radius: 12px; padding: 20px; margin-top: 12px; }
+.aip-multiselect-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+.aip-chip-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.aip-chip {
+  border: 1px solid ${colors.border}; background: #fff; border-radius: 22px; min-height: 44px; max-width: 100%; padding: 10px 16px;
+  font-size: 15px; cursor: pointer; color: ${colors.ink};
+}
+.aip-chip.is-selected { background: ${colors.oceanBlue}; border-color: ${colors.oceanBlue}; color: #fff; }
+
+.aip-icon-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 110px), 1fr)); gap: 14px; }
+.aip-icon-card { display: flex; flex-direction: column; align-items: center; gap: 12px; min-height: 100px; padding: 20px 12px; border-radius: 12px; border: 1px solid ${colors.border}; background: #fff; cursor: pointer; font-size: 16px; font-weight: 600; }
+.aip-icon-card.is-selected { border-color: ${colors.oceanBlue}; background: ${colors.warmSand}; }
+
+.aip-style-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: 16px; }
+.aip-style-card { text-align: left; display: flex; flex-direction: column; gap: 10px; min-height: 136px; padding: 22px; border-radius: 12px; border: 1px solid ${colors.border}; background: #fff; cursor: pointer; }
+.aip-style-card strong { font-size: 17px; }
+.aip-style-card span { font-size: 14px; color: ${colors.muted}; }
+.aip-style-card.is-selected { background: ${colors.oceanBlue}; border-color: ${colors.oceanBlue}; color: #fff; }
+.aip-style-card.is-selected span { color: #C9D6E3; }
+
+.aip-error { color: ${colors.sunsetCoral}; font-size: 13px; margin: 4px 0 14px; }
+.aip-budget-heading { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #70868E; font-size: 14px; font-weight: 600; margin: 28px 0 14px; }
+.aip-budget-heading > span:last-child { font-size: 12px; font-weight: 400; }
+.aip-budget-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+.aip-budget-card { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; padding: 16px 12px; border: 1px solid var(--tier-border); border-radius: 20px; background: var(--tier-tint); color: ${colors.ink}; text-align: left; cursor: pointer; min-width: 0; transition: background .15s, border-color .15s; }
+.aip-budget-card:hover { border-color: var(--tier-color); background: var(--tier-icon-bg); }
+.aip-budget-card > strong { font-size: 13px; }
+.aip-budget-icon { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--tier-icon-bg); color: var(--tier-color); margin-bottom: 4px; }
+.aip-budget-range { font-family: ${fonts.mono}; font-size: 11px; font-weight: 600; color: var(--tier-color); }
+.aip-budget-person { font-size: 11px; line-height: 1.5; color: #70868E; }
+.aip-budget-card.is-selected { background: var(--tier-color); border-color: var(--tier-color); color: #fff; box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--tier-color); }
+.aip-budget-card.is-selected .aip-budget-icon { color: #fff; background: #FFFFFF20; }
+.aip-budget-card.is-selected .aip-budget-range, .aip-budget-card.is-selected .aip-budget-person { color: #fff; }
+.aip-budget-summary { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; padding: 12px 14px; margin-top: 14px; border-radius: 18px; background: #F7F9FA; font-size: 13px; }
+.aip-budget-summary > span { color: #70868E; }
+.aip-budget-summary strong > span { padding: 0 8px; color: #70868E; }
+@media (max-width: 1100px) { .aip-budget-grid { grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); } }
+@media (max-width: 480px) { .aip-budget-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.aip-btn { min-height: 48px; border-radius: 10px; padding: 14px 22px; font-size: 16px; font-weight: 600; cursor: pointer; border: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.aip-btn-block { width: 100%; margin-top: 6px; }
+.aip-btn-sm { padding: 6px 14px; font-size: 13px; }
+.aip-btn-dark { background: ${colors.oceanBlue}; color: #fff; }
+.aip-btn-disabled { background: ${colors.border}; color: ${colors.muted}; cursor: not-allowed; }
+.aip-btn-outline { background: #fff; border: 1px solid ${colors.border}; color: ${colors.ink}; }
+.aip-btn-outline-coral { background: #fff; border: 1px solid ${colors.sunsetCoral}; color: ${colors.sunsetCoral}; }
+.aip-btn-primary { background: #3450E0; color: #fff; }
+.aip-btn-gradient { background: linear-gradient(90deg, ${colors.oceanBlueDark}, ${colors.sunsetCoral}); color: #fff; }
+
+.aip-step-actions { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; margin-top: 28px; }
+.aip-step-actions .aip-btn { flex: 1 1 220px; }
+.aip-row-between { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 10px; }
+
+.aip-lodging-row { width: 100%; display: flex; gap: 12px; align-items: flex-start; font-size: 16px; line-height: 1.5; color: ${colors.ink}; text-align: left; padding: 20px; border-radius: 12px; border: 1px solid ${colors.border}; background: #fff; margin-bottom: 10px; cursor: pointer; }
+.aip-lodging-row.is-selected { border-color: ${colors.oceanBlue}; background: ${colors.warmSand}; }
+.aip-lodging-info { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.aip-amenities { display: flex; gap: 10px; flex-wrap: wrap; font-size: 14px; color: ${colors.muted}; margin: 10px 0; }
+.aip-amenity { display: inline-flex; align-items: center; gap: 4px; }
+.aip-price { font-family: ${fonts.mono}; color: ${colors.sunsetCoral}; font-weight: 700; }
+.aip-check { color: ${colors.oceanBlue}; }
+.aip-hotel-budget-panel { background: ${colors.page}; border: 1px solid ${colors.border}; border-radius: 12px; padding: 16px; margin-bottom: 18px; }
+.aip-hotel-budget-panel input { max-width: 120px; }
+.aip-hotel-budget-panel p { font-size: 13px; line-height: 1.6; }
+.aip-hotel-budget { display: flex; align-items: flex-start; gap: 7px; font-size: 12px; padding: 10px; border-radius: 8px; background: #EDF3F4; margin: 12px 0 0; }
+.aip-hotel-budget.over { color: #A43724; background: #FFF0EB; }
+.aip-hotel-budget.possible { color: #795416; background: #FFF6E3; }
+.aip-hotel-budget.within { color: ${colors.palmGreen}; background: #EDF6F0; }
+.aip-stay-card { border: 1px solid ${colors.border}; border-radius: 14px; margin-bottom: 14px; background: #fff; overflow: hidden; }
+.aip-stay-card.is-selected { border-color: ${colors.oceanBlue}; background: #F5F9FA; box-shadow: inset 3px 0 ${colors.oceanBlue}; }
+.aip-stay-select { display: flex; align-items: center; gap: 14px; width: 100%; padding: 20px 20px 12px; border: 0; background: transparent; color: ${colors.ink}; text-align: left; cursor: pointer; }
+.aip-stay-select:disabled { cursor: not-allowed; opacity: .65; }
+.aip-stay-select:focus-visible { outline-offset: -4px; }
+.aip-stay-icon { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; flex-shrink: 0; background: #EDF3F4; color: ${colors.oceanBlue}; border-radius: 12px; }
+.aip-stay-title { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.aip-stay-title strong { font-size: 17px; }
+.aip-stay-tier { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 20px; background: ${colors.warmSand}; }
+.aip-stay-radio { width: 22px; height: 22px; flex-shrink: 0; border: 1.5px solid #A7B6C0; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.aip-stay-radio.is-selected { background: ${colors.oceanBlue}; border-color: ${colors.oceanBlue}; }
+.aip-stay-body { padding: 0 20px 16px; }
+.aip-stay-location { display: flex; align-items: flex-start; gap: 7px; color: #5C6D7A; font-size: 12px; overflow-wrap: anywhere; }
+.aip-stay-location svg { margin-top: 2px; }
+.aip-stay-amenities { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+.aip-stay-amenity { display: inline-flex; align-items: center; gap: 7px; padding: 6px 10px; border-radius: 7px; background: #F0F4F5; color: #3C5668; font-size: 12px; }
+.aip-stay-bottom { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
+.aip-stay-rate strong { font-size: 19px; font-weight: 700; color: ${colors.oceanBlue}; }
+.aip-stay-rate > span { color: #5C6D7A; font-size: 12px; }
+.aip-stay-selected { display: inline-flex; align-items: center; gap: 4px; color: ${colors.palmGreen}; font-size: 12px; font-weight: 600; }
+.aip-stay-note { font-size: 12px; color: #79542A; margin: 10px 0 0; }
+.aip-stay-details { border-top: 1px solid ${colors.border}; }
+.aip-stay-details summary { display: flex; align-items: center; gap: 7px; padding: 12px 20px; min-height: 44px; cursor: pointer; color: ${colors.oceanBlue}; font-size: 12px; font-weight: 600; list-style: none; }
+.aip-stay-details summary::-webkit-details-marker { display: none; }
+.aip-stay-details summary > svg:last-child { margin-left: auto; }
+.aip-stay-details summary:focus-visible { outline: 3px solid ${colors.seafoam}; outline-offset: -3px; }
+.aip-stay-hide, .aip-stay-details[open] .aip-stay-show { display: none; }
+.aip-stay-details[open] .aip-stay-hide { display: inline; }
+.aip-stay-details[open] summary > svg:last-child { transform: rotate(180deg); }
+.aip-stay-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 20px; padding: 8px 20px 20px; }
+.aip-stay-fact { display: flex; align-items: flex-start; gap: 10px; min-width: 0; color: #5C6D7A; }
+.aip-stay-fact > svg { margin-top: 3px; }
+.aip-stay-fact > div { min-width: 0; }
+.aip-stay-fact span { font-size: 11px; font-weight: 700; color: ${colors.oceanBlue}; }
+.aip-stay-fact p { font-size: 13px; margin: 3px 0 0; overflow-wrap: anywhere; }
+.aip-stay-times { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+
+.aip-info-box { background: ${colors.warmSand}; border-radius: 12px; padding: 24px; margin-bottom: 24px; font-size: 16px; overflow-wrap: anywhere; }
+.aip-info-label { font-size: 13px; letter-spacing: .04em; color: ${colors.muted}; margin: 10px 0 4px; }
+.aip-review-destination { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; color: ${colors.oceanBlue}; }
+.aip-discovery-section { margin-bottom: 28px; }
+.aip-more-discoveries { margin-top: 14px; font-size: 12px; color: #5C6D7A; }
+.aip-more-discoveries summary { cursor: pointer; padding: 8px 0; color: ${colors.oceanBlue}; }
+.aip-discovery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr)); gap: 16px; }
+.aip-discovery-card { border: 1px solid ${colors.border}; border-radius: 14px; overflow: hidden; background: #fff; }
+.aip-discovery-image { height: 155px; background: ${colors.warmSand}; }
+.aip-discovery-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.aip-photo-placeholder { height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 8px; color: #657B88; font-size: 12px; }
+.aip-discovery-caption { display: flex; gap: 8px; padding: 14px; height: 88px; align-items: flex-start; }
+.aip-discovery-caption h4 { margin: 0; font-size: 13px; line-height: 1.5; }
+.aip-photo-credits { font-size: 11px; color: #5C6D7A; margin-bottom: 24px; }
+.aip-photo-credits summary { cursor: pointer; padding: 8px 0; }
+.aip-photo-credits a { color: ${colors.oceanBlue}; }
+.aip-meal-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: 16px; background: #F3F7F7; padding: 20px; border-radius: 12px; margin-bottom: 24px; }
+.aip-meal-summary > div { display: flex; flex-direction: column; gap: 6px; }
+.aip-meal-summary span, .aip-meal-summary small, .aip-meal-note { font-size: 12px; color: #5C6D7A; }
+.aip-meal-summary strong { font-size: 21px; }
+.aip-summary-chips { margin-bottom: 18px; }
+.aip-summary-chip { background: ${colors.warmSand}; border-radius: 16px; padding: 10px 14px; font-size: 14px; max-width: 100%; overflow-wrap: anywhere; }
+
+.aip-advanced { border-top: 1px solid ${colors.border}; padding-top: 28px; margin-top: 24px; margin-bottom: 28px; }
+.aip-advanced > .aip-chip-row { margin-bottom: 28px; }
+
+.aip-generating { display: flex; align-items: center; gap: 12px; }
+.aip-spinner { width: 18px; height: 18px; border: 2px solid ${colors.border}; border-top-color: ${colors.sunsetCoral}; border-radius: 50%; animation: aip-spin 0.8s linear infinite; }
+@keyframes aip-spin { to { transform: rotate(360deg); } }
+
+.aip-result-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 20px; }
+.aip-timeline { display: flex; flex-direction: column; gap: 12px; }
+.aip-stop-row { display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid ${colors.border}; border-radius: 12px; padding: 12px 16px; }
+.aip-stop-time { width: 70px; font-family: ${fonts.mono}; font-size: 12px; color: ${colors.muted}; flex-shrink: 0; }
+.aip-stop-icon { width: 34px; height: 34px; border-radius: 50%; background: ${colors.warmSand}; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.aip-stop-body { flex: 1; min-width: 0; }
+.aip-stop-tags { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.aip-day-divider { font-size: 14px; color: ${colors.muted}; margin: 10px 0; }
+.aip-pill { border-radius: 20px; padding: 4px 10px; font-size: 12px; font-weight: 600; }
+.aip-pill-dark { background: ${colors.oceanBlueDark}; color: #fff; }
+.aip-pill-green { background: rgba(46,125,91,0.15); color: ${colors.palmGreen}; }
+.aip-pill-tan { background: ${colors.warmSand}; color: ${colors.ink}; }
+
+.aip-side-col { display: flex; flex-direction: column; gap: 16px; }
+.aip-summary-row { padding: 6px 0; border-bottom: 1px solid ${colors.border}; }
+.aip-breakdown-row { margin-bottom: 12px; }
+.aip-progress { height: 6px; border-radius: 6px; background: ${colors.border}; overflow: hidden; margin-top: 4px; }
+.aip-progress-fill { height: 100%; background: ${colors.sunsetCoral}; border-radius: 6px; }
+.aip-total-row { border-top: 1px solid ${colors.border}; padding-top: 10px; margin-top: 4px; }
+
+.aip-muted { color: ${colors.muted}; }
+.aip-small { font-size: 12px; }
+@media (max-width: 480px) {
+  .aip-content { padding: 16px 12px 40px; }
+  .aip-card { padding: 20px 16px; }
+  .aip-tool-header { margin-bottom: 24px; }
+  .aip-info-box, .aip-multiselect-panel { padding: 16px; }
+  .aip-lodging-row { padding: 16px 12px; }
+  .aip-stop-row { flex-wrap: wrap; }
+}
+`;

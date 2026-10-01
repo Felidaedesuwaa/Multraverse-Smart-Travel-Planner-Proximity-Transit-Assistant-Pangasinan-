@@ -275,10 +275,10 @@ function BudgetSettingsModal({ visible, settings, onClose, onSaved }) {
   const [monthlyBudget, setMonthlyBudget] = useState("");
   const [savingsTarget, setSavingsTarget] = useState("");
   const [saving, setSaving] = useState(false), [error, setError] = useState(null);
-  useEffect(() => { if (visible) { setMonthlyBudget(String(settings.monthlyBudget ?? "")); setSavingsTarget(String(settings.savingsTarget ?? "20")); setError(null); } }, [visible, settings]);
+  useEffect(() => { if (visible) { setMonthlyBudget(String(settings.monthlyBudget ?? "")); setSavingsTarget(String(settings.savingsTarget ?? "")); setError(null); } }, [visible, settings]);
   const save = async () => {
     const budget = Number(monthlyBudget), target = Number(savingsTarget);
-    if (!Number.isFinite(budget) || budget < 0 || !Number.isFinite(target) || target < 0 || target > 100) { setError("Enter a valid budget and a savings target from 0 to 100%."); return; }
+    if (!monthlyBudget.trim() || !savingsTarget.trim() || !Number.isFinite(budget) || budget < 0 || !Number.isFinite(target) || target < 0 || target > 100) { setError("Enter a valid budget and a savings target from 0 to 100%."); return; }
     setSaving(true); try { onSaved(await api.updateBudgetSettings({ monthlyBudget: budget, savingsTarget: target })); onClose(); } catch (cause) { setError(cause instanceof Error ? cause.message : "Could not save budget settings."); } finally { setSaving(false); }
   };
   return <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}><Pressable style={themeStyle(styles.overlay)} onPress={onClose}><Pressable style={themeStyle(styles.modalBox)} onPress={() => {}}><View style={themeStyle(styles.modalHeader)}><View><Text style={themeStyle(styles.modalTitle)}>Budget settings</Text><Text style={themeStyle(styles.modalSub)}>Set your own monthly limit and savings goal.</Text></View><FeedbackPressable onPress={onClose} style={themeStyle(styles.closeBtn)}><X size={18} color={themeColor("#6B8CA8", "color")} /></FeedbackPressable></View><View style={themeStyle(styles.formGroup)}><Text style={themeStyle(styles.formLabel)}>Monthly budget</Text><MoneyInput value={monthlyBudget} onChangeText={setMonthlyBudget} keyboardType="numeric" placeholder="0" style={themeStyle(styles.formInput)} /></View><View style={themeStyle(styles.formGroup)}><Text style={themeStyle(styles.formLabel)}>Savings target (%)</Text><TextInput value={savingsTarget} onChangeText={setSavingsTarget} keyboardType="numeric" placeholder="20" style={themeStyle(styles.formInput)} /></View><Text style={themeStyle(styles.settingsNote)}>Amount spent and remaining are calculated from your recorded expenses, so your balance always stays accurate.</Text>{error && <View style={themeStyle(styles.errorBox)}><Text style={themeStyle(styles.errorText)}>{error}</Text></View>}<View style={themeStyle(styles.modalActions)}><FeedbackPressable onPress={onClose} style={themeStyle(styles.cancelBtn)}><Text style={themeStyle(styles.cancelText)}>Cancel</Text></FeedbackPressable><FeedbackPressable onPress={save} disabled={saving} style={themeStyle(styles.addBtn)}>{saving && <ActivityIndicator size="small" color="#fff" style={{ marginRight: 6 }} />}<Text style={themeStyle(styles.addBtnText)}>{saving ? "Saving..." : "Save settings"}</Text></FeedbackPressable></View></Pressable></Pressable></Modal>;
@@ -378,7 +378,7 @@ export default function Budget() {
 
   const [entries, setEntries] = useState([]);
   const [trips, setTrips] = useState([]);
-  const [settings, setSettings] = useState({ monthlyBudget: 8000, savingsTarget: 20 });
+  const [settings, setSettings] = useState({ monthlyBudget: null, savingsTarget: null });
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -390,7 +390,7 @@ export default function Budget() {
         if (!alive) return;
         setEntries(budget);
         setTrips(tripList);
-        setSettings(budgetSettings || { monthlyBudget: 8000, savingsTarget: 20 });
+        setSettings(budgetSettings || { monthlyBudget: null, savingsTarget: null });
       })
       .catch(() => {})
       .finally(() => { if (alive) setLoading(false); });
@@ -410,6 +410,7 @@ export default function Budget() {
     }
   };
 
+  const hasBudget = settings.monthlyBudget != null;
   const monthlyBudget = Number(settings.monthlyBudget) || 0;
   const spent = entries.reduce((sum, e) => sum + Number(e.amount || 0), 0);
   const remaining = monthlyBudget - spent;
@@ -459,7 +460,7 @@ export default function Budget() {
           <View style={themeStyle(styles.statsRow)}>
             <StatCard
               label="Monthly Budget"
-              value={<MoneyAmount value={monthlyBudget} />}
+              value={hasBudget ? <MoneyAmount value={monthlyBudget} /> : "Not set"}
               sub="Tap to set your limit"
               icon={<Wallet size={18} color={themeColor(colors.oceanBlue, "color")} />}
               iconBg={colors.oceanBlueLight}
@@ -475,16 +476,16 @@ export default function Budget() {
             />
             <StatCard
               label="Remaining"
-              value={<MoneyAmount value={Math.abs(remaining)} />}
-              sub={remaining < 0 ? "Over budget" : "Available"}
+              value={hasBudget ? <MoneyAmount value={Math.abs(remaining)} /> : "Not set"}
+              sub={!hasBudget ? "Set your monthly budget" : remaining < 0 ? "Over budget" : "Available"}
               icon={<PiggyBank size={18} color={themeColor(colors.palmGreen, "color")} />}
               iconBg={colors.palmGreenLight}
               valueColor={remaining < 0 ? colors.sunsetCoral : colors.palmGreen}
             />
             <StatCard
               label="Savings Rate"
-              value={`${savingsRate}%`}
-              sub={`${settings.savingsTarget ?? 20}% target · ${savingsRate >= (settings.savingsTarget ?? 20) ? "On track" : "Below target"}`}
+              value={hasBudget ? `${savingsRate}%` : "Not set"}
+              sub={settings.savingsTarget == null ? "Set your savings goal" : `${settings.savingsTarget}% target`}
               icon={<Zap size={18} color={themeColor(colors.gold ?? "#C89B3C", "color")} />}
               iconBg={colors.goldLight ?? "#FFF8E1"}
             />
@@ -519,7 +520,7 @@ export default function Budget() {
                 <MoneyAmount value={spent} suffix=" spent" />
               </Text>
               <Text style={themeStyle(styles.overallSub)}>
-                <MoneyAmount value={monthlyBudget} suffix=" total" />
+                {hasBudget ? <MoneyAmount value={monthlyBudget} suffix=" total" /> : "Budget not set"}
               </Text>
             </View>
           </View>

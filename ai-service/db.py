@@ -1,101 +1,93 @@
-"""Read-only MongoDB knowledge cache for the local AI service.
-
-The Express API remains the owner of writes. This module loads verified content
-at service startup so model requests do not repeatedly call Atlas.
-"""
-
+"""Read retained V2 phrases and the seven selected local guides."""
 import os
-import re
-from threading import Lock
-from typing import Any
-
-from dotenv import load_dotenv
 from pymongo import MongoClient
-from pymongo.database import Database
+from dotenv import load_dotenv
+from knowledge import (ROOT, source_phrases,
+                       source_city_guides, matching_city_guides, public_guide)
+import json
+from fares import fare_reference, is_fare_query
 
-load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
+# Share Express's working connection instead of maintaining a second credential.
+load_dotenv(ROOT.parent / 'server/.env')
 
-_client: MongoClient | None = None
-_database: Database | None = None
-_cache: dict[str, list[dict[str, Any]]] = {"phrases": [], "places": [], "routes": [], "foods": []}
-_lock = Lock()
-_fields = {"Filipino": "filipino", "Pangasinan": "pangasinan", "English": "english"}
-
-
-def get_db() -> Database:
-    global _client, _database
-    if _database is None:
-        uri = os.getenv("MONGODB_URI")
-        if not uri:
-            raise RuntimeError("MONGODB_URI is required for the AI knowledge cache")
-        try:
-            _client = MongoClient(uri, serverSelectionTimeoutMS=8_000, connectTimeoutMS=8_000)
-            _client.admin.command("ping")
-            _database = _client.get_database("multraverse")
-        except Exception:
-            if _client is not None:
-                _client.close()
-            _client = None
-            raise
-        print("Connected to MongoDB Atlas knowledge cache")
-    return _database
+_client = None
+_cache = {'phrases': source_phrases()}
+_status = 'local-sources'
+_city_guides = source_city_guides()
+_city_status = 'local-sources'
 
 
-def load_knowledge() -> dict[str, int]:
-    """Refresh every verified source once. Call this during FastAPI startup."""
-    with _lock:
-        database = get_db()
-        _cache["phrases"] = list(database.phrasebooks.find({}, {"_id": 0}))
-        _cache["places"] = list(database.places.find({}, {"_id": 0}))
-        _cache["routes"] = list(database.routeprices.find({}, {"_id": 0}))
-        _cache["foods"] = list(database.localfoods.find({}, {"_id": 0}))
-        counts = {name: len(items) for name, items in _cache.items()}
-        print(f"Loaded MongoDB AI knowledge: {counts}")
-        return counts
+def load_knowledge():
+    global _client, _cache, _status, _city_guides, _city_status
+    if not os.getenv('MONGODB_URI'):
+        return knowledge_counts()
+    try:
+        _client = MongoClient(os.environ['MONGODB_URI'], serverSelectionTimeoutMS=8000, connectTimeoutMS=8000)
+        database = _client.get_default_database(default='multraverse')
+        fields = ('filipino', 'pangasinan', 'english', 'category')
+        allowed = {tuple(row[k] for k in fields) for row in source_phrases()}
+        phrases = [{k: row[k] for k in fields} for row in database.phrasebooks.find({})
+                   if tuple(row.get(k) for k in fields) in allowed]
+        if {tuple(r[k] for k in fields) for r in phrases} != allowed:
+            raise ValueError('MongoDB phrasebook is incomplete')
+        _cache = {'phrases': phrases}
+        _status = 'mongodb'
+        _city_guides, _city_status = source_city_guides(), 'local-sources'
+    except Exception:
+        close_db()
+        _cache = {'phrases': source_phrases()}
+        _status = 'local-sources'
+        _city_guides, _city_status = source_city_guides(), 'local-sources'
+        print('Using retained local knowledge sources; Atlas cache unavailable or out of sync.')
+    return knowledge_counts()
 
 
-def knowledge_counts() -> dict[str, int]:
-    return {name: len(items) for name, items in _cache.items()}
+def knowledge_counts():
+    return {'phrases': len(_cache['phrases']), 'lgus': len(_city_guides), 'shared_updates': 0, 'source': _status,
+            'city_guides': len(_city_guides), 'city_guide_source': _city_status}
 
 
-def get_phrasebook(from_lang: str, to_lang: str, text: str) -> str | None:
-    from_field, to_field = _fields.get(from_lang), _fields.get(to_lang)
-    if not from_field or not to_field:
+def get_phrasebook(from_lang, to_lang, text):
+    if from_lang.casefold() not in ('english', 'filipino', 'pangasinan') or to_lang.casefold() not in ('english', 'filipino', 'pangasinan'):
         return None
-    needle = text.strip().casefold()
-    for phrase in _cache["phrases"]:
-        value = phrase.get(from_field)
-        translated = phrase.get(to_field)
-        if isinstance(value, str) and isinstance(translated, str) and value.strip().casefold() == needle:
-            return translated
+    for phrase in _cache['phrases']:
+        if phrase[from_lang.casefold()].strip().casefold() == text.strip().casefold():
+            return phrase[to_lang.casefold()]
     return None
 
 
-def get_places_by_destination(destination: str) -> list[dict[str, Any]]:
-    needle = destination.casefold().strip()
-    matches = [place for place in _cache["places"] if needle and any(needle in str(place.get(field, "")).casefold() for field in ("municipality", "location", "name", "areaId"))]
-    # Hundred Islands is in Alaminos, so retain a useful contextual fallback.
-    if not matches and "hundred island" in needle:
-        matches = [place for place in _cache["places"] if "alaminos" in f"{place.get('municipality', '')} {place.get('location', '')}".casefold()]
-    return matches or _cache["places"][:6]
+def get_places_by_destination(destination):
+    guides = matching_city_guides(destination, _city_guides)
+    guide_places = []
+    for guide in guides:
+        ordered = sorted(guide['attractions'], key=lambda a: guide['itinerary_attraction_order'].index(a['name']))
+        guide_places.extend(dict(name=a['name'], aliases=a['aliases'], description=a['description'], municipality=guide['name'],
+                                 location=guide['name'], category=a['category'], sourceUrl=guide['source_url'],
+                                 source_file=guide['source_file'], source_page=a['source_page'], snapshot_date=guide['source_date'])
+                            for a in ordered)
+    return guide_places
 
 
-def get_routes_by_destination(destination: str) -> list[dict[str, Any]]:
-    needle = destination.casefold().strip()
-    matches = [route for route in _cache["routes"] if needle and any(needle in str(route.get(field, "")).casefold() for field in ("from", "to"))]
-    return matches or _cache["routes"][:8]
+def get_city_guides(destination):
+    return [public_guide(g) for g in matching_city_guides(destination, _city_guides)]
 
 
-def get_local_foods() -> list[dict[str, Any]]:
-    return _cache["foods"]
+def answer_knowledge(prompt):
+    if is_fare_query(prompt):
+        return json.dumps({'fare_reference': fare_reference(prompt)}, ensure_ascii=False)
+    guides = get_city_guides(prompt)
+    if guides:
+        return json.dumps({'city_guides': guides}, ensure_ascii=False)
+    return ('No matching destination was found in the selected guides. Supported areas: '
+            'Dagupan, Alaminos, Urdaneta, San Carlos, Lingayen, Manaoag and Bolinao.')
 
 
-def get_all_phrases_by_category(category: str | None = None) -> list[dict[str, Any]]:
-    return [phrase for phrase in _cache["phrases"] if not category or phrase.get("category") == category]
+def get_all_phrases_by_category(category=None):
+    return [p for p in _cache['phrases'] if not category or p['category'] == category]
 
 
-def close_db() -> None:
-    global _client, _database
+def close_db():
+    global _client
     if _client is not None:
         _client.close()
-    _client = _database = None
+    _client = None

@@ -54,13 +54,16 @@ branch. Push the backend changes in this checkout before importing it.
 | Root Directory | `server` |
 | Framework Preset | **Express** |
 | Install Command | `npm ci --include=dev` (set by `server/vercel.json`) |
-| Build Command | Leave the Express default; no override |
+| Build Command | `npm run build` (set by `server/vercel.json`) |
 | Output Directory | Leave the Express default; no override (do not enter `dist`) |
 | Node.js version | `22.x` |
 
 Vercel compiles the TypeScript Express entry point `server/src/index.ts`.
-The backend exports the application, initializes MongoDB/indexes before serving
-requests, and retries failed initialization. Local `npm run dev` and `npm start`
+The backend exports the application, connects to MongoDB and validates the
+database layout before serving requests, and retries failed initialization.
+It preserves the existing requirement to provision database collections and
+indexes separately; deployment does not seed or rebuild the database.
+Local `npm run dev` and `npm start`
 still launch a listening server. The root `vercel.json` belongs to the website;
 do not copy its static-site rewrite into the backend.
 

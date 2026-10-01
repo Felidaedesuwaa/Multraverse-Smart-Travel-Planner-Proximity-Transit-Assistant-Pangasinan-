@@ -1,12 +1,6 @@
 import { createHmac } from 'node:crypto'
-import { model, models, Schema } from 'mongoose'
-
-const schema = new Schema({
-  _id: String,
-  count: { type: Number, default: 0 },
-  expiresAt: { type: Date, required: true, expires: 0 },
-})
-export const AuthLimit = models.AuthLimit || model('AuthLimit', schema)
+import { AuthLimit } from '../models/AuthLimit'
+export { AuthLimit } from '../models/AuthLimit'
 
 export class AuthError extends Error {
   constructor(message: string, public status = 400) { super(message) }

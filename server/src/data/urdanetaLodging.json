@@ -1,0 +1,238 @@
+{
+  "area_id": "urdaneta",
+  "source_file": "Urdaneta_City_Hotels_and_Lodging_Guide.pdf",
+  "source_sha256": "09f468b1c0523ce2172e4a92479e2eddcde310ccc6dfaf4b80d726801666b1ca",
+  "stated_verified_date": "2026-09-28",
+  "note": "User-supplied guide; verification date is stated by the source, not independently verified. Prices and coordinates are approximate. Confirm room or group rate, additional fees, capacity and availability before booking.",
+  "hotels": [
+    {
+      "accommodation_id": "URD-ACC-001",
+      "name": "Levo Hotel",
+      "area_id": "urdaneta",
+      "address": "Barangay San Vicente Road, Urdaneta City, Pangasinan 2428",
+      "accommodation_type": "Modern High-Rise / Commercial Hotel",
+      "tier": "3-Star Business & Leisure Hotel",
+      "room_types": "Standard Room, Superior Room, Deluxe Room, Executive Suite",
+      "reference_rate": {
+        "min": 2800,
+        "max": 5500,
+        "currency": "PHP",
+        "period": "night",
+        "basis": "Per room basis (includes select amenities)",
+        "approximate": true
+      },
+      "capacity_note": "2 to 4 guests",
+      "latitude": 15.9752,
+      "longitude": 120.5658,
+      "coordinates_approximate": true,
+      "amenities": [
+        "Wi-Fi",
+        "Restaurant"
+      ],
+      "amenities_description": "In-house restaurant & café, rooftop/sky lounge bar, fitness gym, function halls, 24-hour front desk, free Wi-Fi, private elevator, secure parking",
+      "check_in": "2:00 PM",
+      "check_out": "12:00 PM",
+      "additional_fees": "Extra person charge, late check-out fee, function space equipment rentals",
+      "contact": "(075) 600-5041 / +63 919 360 0267 / +63 994 028 6980",
+      "booking_url": "https://www.levohotel.com/?utm_source=gemini",
+      "nearby_attractions": "Magic Mall Urdaneta, CB Mall, Urdaneta City Plaza, San Vicente Church",
+      "transport_access": "Accessible via San Vicente Road; short tricycle ride from Urdaneta Central Bus Terminal and TPLEX Urdaneta Exit",
+      "information_source": "Hotel official page & booking directories",
+      "source_file": "Urdaneta_City_Hotels_and_Lodging_Guide.pdf",
+      "source_page": 1,
+      "stated_verified_date": "2026-09-28",
+      "current_rate_verified": false,
+      "catalog_name": "Levo Hotel",
+      "rate_note": "~PHP 2,800 – PHP 5,500",
+      "overnight_supported": true
+    },
+    {
+      "accommodation_id": "URD-ACC-002",
+      "name": "Lisland Rainforest Resort",
+      "area_id": "urdaneta",
+      "address": "KM 182 MacArthur Highway, Barangay San Vicente, Urdaneta City, Pangasinan 2428",
+      "accommodation_type": "Eco-Resort / Garden Hotel",
+      "tier": "3-Star Resort",
+      "room_types": "Standard Room, Deluxe Room, Poolside Suite, Family Villa",
+      "reference_rate": {
+        "min": 3200,
+        "max": 6800,
+        "currency": "PHP",
+        "period": "night",
+        "basis": "Per room basis (includes swimming pool access)",
+        "approximate": true
+      },
+      "capacity_note": "2 to 6 guests (depending on villa/room category)",
+      "latitude": 15.981,
+      "longitude": 120.5685,
+      "coordinates_approximate": true,
+      "amenities": [
+        "Wi-Fi",
+        "A/C",
+        "Restaurant",
+        "Pool"
+      ],
+      "amenities_description": "Large outdoor pool with lush gardens, in-house restaurant (182 Restaurant), convention/ballroom halls, free Wi-Fi, air conditioning, wide open green lawn space, parking lot",
+      "check_in": "2:00 PM",
+      "check_out": "12:00 PM",
+      "additional_fees": "Day-swimmer entrance fees, extra bed charge, venue setup fees",
+      "contact": "(075) 656-2379 / +63 917 751 0591 / +63 966 817 7896",
+      "booking_url": "https://lislandresortph.com/?utm_source=gemini",
+      "nearby_attractions": "Urdaneta Junction (Dagupan/Baguio transit hub), SM City Urdaneta Central",
+      "transport_access": "Located directly along MacArthur Highway; accessible by long-distance buses, jeepneys, and private vehicles",
+      "information_source": "Department of Tourism regional database & official resort registry",
+      "source_file": "Urdaneta_City_Hotels_and_Lodging_Guide.pdf",
+      "source_page": 2,
+      "stated_verified_date": "2026-09-28",
+      "current_rate_verified": false,
+      "catalog_name": "Lisland Rainforest Resort",
+      "rate_note": "~PHP 3,200 – PHP 6,800",
+      "overnight_supported": true
+    },
+    {
+      "accommodation_id": "URD-ACC-003",
+      "name": "Goldland Spring Resort and Hotel (partnered as RedDoorz @ Goldland Spring Resort)",
+      "area_id": "urdaneta",
+      "address": "Cayambanan Road, Urdaneta City, Pangasinan 2428",
+      "accommodation_type": "Water Resort & Hotel Complex",
+      "tier": "2-Star Resort Hotel",
+      "room_types": "Standard Room, Family Room, Poolside Cottage",
+      "reference_rate": {
+        "min": 1500,
+        "max": 3500,
+        "currency": "PHP",
+        "period": "night",
+        "basis": "Per room basis",
+        "approximate": true
+      },
+      "capacity_note": "2 to 6 guests",
+      "latitude": 15.9921,
+      "longitude": 120.581,
+      "coordinates_approximate": true,
+      "amenities": [
+        "Wi-Fi",
+        "A/C",
+        "Pool"
+      ],
+      "amenities_description": "Multiple swimming pools, water slides, poolside cottages, 24-hour reception, air conditioning, private bathroom, TV, free Wi-Fi, parking",
+      "check_in": "2:00 PM",
+      "check_out": "12:00 PM",
+      "additional_fees": "Day-pass entrance fee for non-overnight guests, cottage rental charges",
+      "contact": "+63 926 761 0744 / RedDoorz Booking Network",
+      "booking_url": "https://www.reddoorz.com/?utm_source=gemini / Travel aggregator platforms",
+      "nearby_attractions": "Urdaneta Sports Complex, Cayambanan Barangay Center",
+      "transport_access": "Reached via local tricycle or private vehicle heading along Cayambanan Road",
+      "information_source": "Online travel agency profiles & regional hospitality listings",
+      "source_file": "Urdaneta_City_Hotels_and_Lodging_Guide.pdf",
+      "source_page": 3,
+      "stated_verified_date": "2026-09-28",
+      "current_rate_verified": false,
+      "catalog_name": "Goldland Spring Resort and Hotel",
+      "rate_note": "~PHP 1,500 – PHP 3,500",
+      "overnight_supported": true
+    },
+    {
+      "accommodation_id": "URD-ACC-004",
+      "name": "Saroju's Farmview Hotel",
+      "area_id": "urdaneta",
+      "address": "Zone 7, Barangay Nancamaliran East, Urdaneta City, Pangasinan 2428",
+      "accommodation_type": "Farm Resort / Countryside Hotel",
+      "tier": "2-Star Countryside Hotel",
+      "room_types": "Standard Aircon Room, Deluxe Balcony Room, Family Room",
+      "reference_rate": {
+        "min": 1200,
+        "max": 2800,
+        "currency": "PHP",
+        "period": "night",
+        "basis": "Per room basis (includes complimentary local breakfast)",
+        "approximate": true
+      },
+      "capacity_note": "2 to 4 guests",
+      "latitude": 15.9615,
+      "longitude": 120.5502,
+      "coordinates_approximate": true,
+      "amenities": [
+        "Wi-Fi",
+        "Pool"
+      ],
+      "amenities_description": "Outdoor swimming pool, poolside bar & lounge, sauna, furnished room balconies, snack bar, free parking, free Wi-Fi in public areas",
+      "check_in": "2:00 PM",
+      "check_out": "12:00 PM",
+      "additional_fees": "Extra guest charge, late checkout fee",
+      "contact": "+63 961 122 3739 / +63 906 072 0289",
+      "booking_url": "Direct hotel contact / Booking directory platforms",
+      "nearby_attractions": "Nancamaliran Farmlands, Urdaneta Bypass Road, City Center",
+      "transport_access": "Accessible via local tricycle or car from the main Urdaneta town proper",
+      "information_source": "Hotel profiles & public booking engine data",
+      "source_file": "Urdaneta_City_Hotels_and_Lodging_Guide.pdf",
+      "source_page": 4,
+      "stated_verified_date": "2026-09-28",
+      "current_rate_verified": false,
+      "catalog_name": "Saroju's Farmview Hotel",
+      "rate_note": "~PHP 1,200 – PHP 2,800",
+      "overnight_supported": true
+    },
+    {
+      "accommodation_id": "URD-ACC-005",
+      "name": "Mini Heart Resort",
+      "area_id": "urdaneta",
+      "address": "Zone 2, Urdaneta City, Pangasinan 2428",
+      "accommodation_type": "Local Day/Overnight Resort & Cottage Stay",
+      "tier": "Budget Resort / Local Accommodation",
+      "room_types": "Standard Aircon Room, Day-Use Cottage",
+      "reference_rate": {
+        "min": 1000,
+        "max": 2000,
+        "currency": "PHP",
+        "period": "night",
+        "basis": "Per room / cottage rental basis",
+        "approximate": true
+      },
+      "capacity_note": "2 to 4 guests",
+      "latitude": 15.97,
+      "longitude": 120.57,
+      "coordinates_approximate": true,
+      "amenities": [
+        "Pool"
+      ],
+      "amenities_description": "Swimming pool, open-air picnic cottages, videoke rental, private restrooms, parking area",
+      "check_in": "2:00 PM (flexible for day swimming)",
+      "check_out": "12:00 PM",
+      "additional_fees": "Pool entrance fee per person, videoke rental fee, corkage fee",
+      "contact": "+63 917 123 9876 (Local direct inquiry)",
+      "booking_url": "Local direct booking / Facebook community directory",
+      "nearby_attractions": "Urdaneta City Center, Local Residential & Farm Distrik",
+      "transport_access": "Accessible via city tricycle or private car from the main highway",
+      "information_source": "Local community registries & provincial tourism indexes",
+      "source_file": "Urdaneta_City_Hotels_and_Lodging_Guide.pdf",
+      "source_page": 5,
+      "stated_verified_date": "2026-09-28",
+      "current_rate_verified": false,
+      "catalog_name": "Mini Heart Resort",
+      "rate_note": "~PHP 1,000 – PHP 2,000 (day-use rates available)",
+      "overnight_supported": true
+    }
+  ],
+  "source_pages": [
+    {
+      "page": 1,
+      "text": "Urdaneta City Hotels & Lodging Guide\n Accommodation dataset for Urdaneta City, Pangasinan  5 properties  User-supplied data\nPurpose\nStructured accommodation reference designed for tourism recommendation and AI matching workflows. The entries below preserve the\nsupplied accommodation details, pricing ranges, access information, and verification dates.\n1. Levo Hotel\n Accommodation ID\nURD-ACC-001\nOfficial name\nLevo Hotel\nCity/Municipality\nUrdaneta City, Pangasinan\nComplete address\nBarangay San Vicente Road, Urdaneta City, Pangasinan 2428\nLatitude/Longitude\n~15.9752° N, 120.5658° E\nAccommodation type\nModern High-Rise / Commercial Hotel\nTier\n3-Star Business & Leisure Hotel\nRoom type\nStandard Room, Superior Room, Deluxe Room, Executive Suite\nPrice per night (PHP)\n~■2,800 – ■5,500\nPrice basis (per room/per person)\nPer room basis (includes select amenities)\nMaximum guests per room\n2 to 4 guests\nAmenities\nIn-house restaurant & café, rooftop/sky lounge bar, fitness gym, function halls, 24-hour front\ndesk, free Wi-Fi, private elevator, secure parking\nCheck-in time\n2:00 PM\nCheck-out time\n12:00 PM\nAdditional fees\nExtra person charge, late check-out fee, function space equipment rentals\nContact number\n(075) 600-5041 / +63 919 360 0267 / +63 994 028 6980\nOfficial website/Booking link\nhttps://www.levohotel.com/?utm_source=gemini\nNearby attractions\nMagic Mall Urdaneta, CB Mall, Urdaneta City Plaza, San Vicente Church\nTransport access\nAccessible via San Vicente Road; short tricycle ride from Urdaneta Central Bus Terminal and\nTPLEX Urdaneta Exit\nInformation source\nHotel official page & booking directories\nDate last verified\nSeptember 28, 2026\n"
+    },
+    {
+      "page": 2,
+      "text": "2. Lisland Rainforest Resort\n Accommodation ID\nURD-ACC-002\nOfficial name\nLisland Rainforest Resort\nCity/Municipality\nUrdaneta City, Pangasinan\nComplete address\nKM 182 MacArthur Highway, Barangay San Vicente, Urdaneta City, Pangasinan 2428\nLatitude/Longitude\n~15.9810° N, 120.5685° E\nAccommodation type\nEco-Resort / Garden Hotel\nTier\n3-Star Resort\nRoom type\nStandard Room, Deluxe Room, Poolside Suite, Family Villa\nPrice per night (PHP)\n~■3,200 – ■6,800\nPrice basis (per room/per person)\nPer room basis (includes swimming pool access)\nMaximum guests per room\n2 to 6 guests (depending on villa/room category)\nAmenities\nLarge outdoor pool with lush gardens, in-house restaurant (182 Restaurant),\nconvention/ballroom halls, free Wi-Fi, air conditioning, wide open green lawn space, parking\nlot\nCheck-in time\n2:00 PM\nCheck-out time\n12:00 PM\nAdditional fees\nDay-swimmer entrance fees, extra bed charge, venue setup fees\nContact number\n(075) 656-2379 / +63 917 751 0591 / +63 966 817 7896\nOfficial website/Booking link\nhttps://lislandresortph.com/?utm_source=gemini\nNearby attractions\nUrdaneta Junction (Dagupan/Baguio transit hub), SM City Urdaneta Central\nTransport access\nLocated directly along MacArthur Highway; accessible by long-distance buses, jeepneys,\nand private vehicles\nInformation source\nDepartment of Tourism regional database & official resort registry\nDate last verified\nSeptember 28, 2026\n"
+    },
+    {
+      "page": 3,
+      "text": "3. Goldland Spring Resort and Hotel (partnered as RedDoorz @ Goldland Spring\nResort)\n Accommodation ID\nURD-ACC-003\nOfficial name\nGoldland Spring Resort and Hotel (partnered as RedDoorz @ Goldland Spring Resort)\nCity/Municipality\nUrdaneta City, Pangasinan\nComplete address\nCayambanan Road, Urdaneta City, Pangasinan 2428\nLatitude/Longitude\n~15.9921° N, 120.5810° E\nAccommodation type\nWater Resort & Hotel Complex\nTier\n2-Star Resort Hotel\nRoom type\nStandard Room, Family Room, Poolside Cottage\nPrice per night (PHP)\n~■1,500 – ■3,500\nPrice basis (per room/per person)\nPer room basis\nMaximum guests per room\n2 to 6 guests\nAmenities\nMultiple swimming pools, water slides, poolside cottages, 24-hour reception, air conditioning,\nprivate bathroom, TV, free Wi-Fi, parking\nCheck-in time\n2:00 PM\nCheck-out time\n12:00 PM\nAdditional fees\nDay-pass entrance fee for non-overnight guests, cottage rental charges\nContact number\n+63 926 761 0744 / RedDoorz Booking Network\nOfficial website/Booking link\nhttps://www.reddoorz.com/?utm_source=gemini / Travel aggregator platforms\nNearby attractions\nUrdaneta Sports Complex, Cayambanan Barangay Center\nTransport access\nReached via local tricycle or private vehicle heading along Cayambanan Road\nInformation source\nOnline travel agency profiles & regional hospitality listings\nDate last verified\nSeptember 28, 2026\n"
+    },
+    {
+      "page": 4,
+      "text": "4. Saroju's Farmview Hotel\n Accommodation ID\nURD-ACC-004\nOfficial name\nSaroju's Farmview Hotel\nCity/Municipality\nUrdaneta City, Pangasinan\nComplete address\nZone 7, Barangay Nancamaliran East, Urdaneta City, Pangasinan 2428\nLatitude/Longitude\n~15.9615° N, 120.5502° E\nAccommodation type\nFarm Resort / Countryside Hotel\nTier\n2-Star Countryside Hotel\nRoom type\nStandard Aircon Room, Deluxe Balcony Room, Family Room\nPrice per night (PHP)\n~■1,200 – ■2,800\nPrice basis (per room/per person)\nPer room basis (includes complimentary local breakfast)\nMaximum guests per room\n2 to 4 guests\nAmenities\nOutdoor swimming pool, poolside bar & lounge, sauna, furnished room balconies, snack bar,\nfree parking, free Wi-Fi in public areas\nCheck-in time\n2:00 PM\nCheck-out time\n12:00 PM\nAdditional fees\nExtra guest charge, late checkout fee\nContact number\n+63 961 122 3739 / +63 906 072 0289\nOfficial website/Booking link\nDirect hotel contact / Booking directory platforms\nNearby attractions\nNancamaliran Farmlands, Urdaneta Bypass Road, City Center\nTransport access\nAccessible via local tricycle or car from the main Urdaneta town proper\nInformation source\nHotel profiles & public booking engine data\nDate last verified\nSeptember 28, 2026\n"
+    },
+    {
+      "page": 5,
+      "text": "5. Mini Heart Resort\n Accommodation ID\nURD-ACC-005\nOfficial name\nMini Heart Resort\nCity/Municipality\nUrdaneta City, Pangasinan\nComplete address\nZone 2, Urdaneta City, Pangasinan 2428\nLatitude/Longitude\n~15.9700° N, 120.5700° E\nAccommodation type\nLocal Day/Overnight Resort & Cottage Stay\nTier\nBudget Resort / Local Accommodation\nRoom type\nStandard Aircon Room, Day-Use Cottage\nPrice per night (PHP)\n~■1,000 – ■2,000 (day-use rates available)\nPrice basis (per room/per person)\nPer room / cottage rental basis\nMaximum guests per room\n2 to 4 guests\nAmenities\nSwimming pool, open-air picnic cottages, videoke rental, private restrooms, parking area\nCheck-in time\n2:00 PM (flexible for day swimming)\nCheck-out time\n12:00 PM\nAdditional fees\nPool entrance fee per person, videoke rental fee, corkage fee\nContact number\n+63 917 123 9876 (Local direct inquiry)\nOfficial website/Booking link\nLocal direct booking / Facebook community directory\nNearby attractions\nUrdaneta City Center, Local Residential & Farm Distrik\nTransport access\nAccessible via city tricycle or private car from the main highway\nInformation source\nLocal community registries & provincial tourism indexes\nDate last verified\nSeptember 28, 2026\nData note\nPrices, amenities, operating details, contacts, links, and other property information are reproduced from the supplied dataset and are not independently\nre-verified in this document. The stated verification date is September 28, 2026.\n"
+    }
+  ]
+}

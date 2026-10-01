@@ -1,39 +1,35 @@
+import { sanitizeRequest, validateRouter, pagination, validateId } from '../middleware/input'
 import { Router, Response } from 'express'
-import { BudgetEntry, BudgetSettings } from '../models'
+import { BudgetEntry, User, Trip } from '../models'
 import { authenticate, AuthRequest } from '../middleware/auth'
 
 const router = Router()
+router.param('id', validateId)
+router.use(sanitizeRequest, validateRouter('budget'))
 router.use(authenticate)
 
 router.get('/', async (req: AuthRequest, res: Response) => {
-  const entries = await BudgetEntry.find({ userId: req.userId }).sort({ createdAt: -1 })
+  const entries = await BudgetEntry.find({ userId: req.userId }).sort({ createdAt: -1, _id: -1 }).skip(pagination(req).skip).limit(pagination(req).limit)
   res.json(entries)
 })
 
 router.get('/settings', async (req: AuthRequest, res: Response) => {
-  const settings = await BudgetSettings.findOneAndUpdate(
-    { userId: req.userId }, { $setOnInsert: { monthlyBudget: 8000, savingsTarget: 20 } },
-    { new: true, upsert: true, runValidators: true },
-  )
-  res.json(settings)
+  const user = await User.findById(req.userId).select('budgetSettings')
+  if (!user) return res.status(404).json({ error: 'Account not found' })
+  res.json(user.budgetSettings || { monthlyBudget: null, savingsTarget: null })
 })
 
 router.put('/settings', async (req: AuthRequest, res: Response) => {
-  const { monthlyBudget, savingsTarget } = req.body as { monthlyBudget?: unknown, savingsTarget?: unknown }
-  if ((monthlyBudget !== undefined && (typeof monthlyBudget !== 'number' || !Number.isFinite(monthlyBudget) || monthlyBudget < 0)) ||
-      (savingsTarget !== undefined && (typeof savingsTarget !== 'number' || !Number.isFinite(savingsTarget) || savingsTarget < 0 || savingsTarget > 100)))
-    return res.status(400).json({ error: 'Budget and savings target must be valid positive amounts.' })
-  const settings = await BudgetSettings.findOneAndUpdate(
-    { userId: req.userId }, { $set: { ...(monthlyBudget !== undefined ? { monthlyBudget } : {}), ...(savingsTarget !== undefined ? { savingsTarget } : {}) } },
-    { new: true, upsert: true, runValidators: true },
-  )
-  res.json(settings)
+  const user = await User.findByIdAndUpdate(req.userId, { $set: { budgetSettings: req.body } }, { new: true, runValidators: true }).select('budgetSettings')
+  if (!user) return res.status(404).json({ error: 'Account not found' })
+  res.json(user.budgetSettings)
 })
 
 router.post('/', async (req: AuthRequest, res: Response) => {
   const { label, category, amount, color, tripId } = req.body
   if (typeof label !== 'string' || !label.trim() || typeof category !== 'string' || typeof amount !== 'number' || !Number.isFinite(amount) || amount <= 0)
     return res.status(400).json({ error: 'Label, category, and a positive amount are required.' })
+  if (tripId && !await Trip.exists({ _id: tripId, userId: req.userId })) return res.status(400).json({ error: 'Trip must belong to your account' })
   const entry = await BudgetEntry.create({ userId: req.userId!, label, category, amount, color, tripId })
   res.status(201).json(entry)
 })

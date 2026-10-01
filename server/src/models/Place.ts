@@ -1,6 +1,9 @@
+import { hardenSchema } from './_hardening'
 import { model, models, Schema } from 'mongoose'
 import { apiSchemaOptions } from './_helpers'
+import { moderationFields } from './_moderation'
 const placeSchema = new Schema({
+  ...moderationFields,
   name: { type: String, required: true }, description: { type: String, required: true }, location: { type: String, required: true },
   municipality: { type: String, required: true }, category: { type: String, required: true }, entryFee: { type: Number, min: 0, default: null },
   areaId: { type: String, index: true },
@@ -13,4 +16,5 @@ const placeSchema = new Schema({
   closedWeekdays: [{ type: Number, min: 0, max: 6 }],
   openHours: String, tips: String, highlights: String,
 }, { ...apiSchemaOptions, timestamps: { createdAt: true, updatedAt: false } })
+hardenSchema(placeSchema, 'Place')
 export const Place = models.Place || model('Place', placeSchema)

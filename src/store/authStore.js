@@ -2,8 +2,14 @@ import { create } from 'zustand'
 import { api } from '../lib/api'
 import { storage } from '../lib/storage'
 
+// Includes SUPERADMIN, ADMIN, LGU and EXPLORER roles without dropping account fields.
+// Keep role and municipality in the persisted user profile, including refreshes.
+const accountState = user => ({ user, role: user?.role || null, municipality: user?.municipality || null })
+
 export const useAuthStore = create((set, get) => ({
   user: null,
+  role: null,
+  municipality: null,
   isAuthenticated: false,
   isLoading: false,
   error: null,
@@ -13,7 +19,7 @@ export const useAuthStore = create((set, get) => ({
     const token = await storage.getItem('token')
     const user = await storage.getItem('user')
     if (token && user) {
-      set({ user: JSON.parse(user), isAuthenticated: true })
+      set({ ...accountState(JSON.parse(user)), isAuthenticated: true })
       // Refresh account details without preventing cached/offline startup.
       get().refreshProfile()
     }
@@ -25,7 +31,7 @@ export const useAuthStore = create((set, get) => ({
     try {
       const user = await api.getMe()
       if (!user?.id || get().user !== previous) return
-      set({ user })
+      set(accountState(user))
       await storage.setItem('user', JSON.stringify(user))
     } catch (error) {
       if (error.status === 401 && get().user === previous) await get().logout()
@@ -38,7 +44,7 @@ export const useAuthStore = create((set, get) => ({
     const user = await api.updateMe(changes)
     if (!user?.id) throw new Error('Could not save your profile. Please try again.')
     if (!get().isAuthenticated || get().user?.id !== previous?.id) return
-    set({ user })
+    set(accountState(user))
     await storage.setItem('user', JSON.stringify(user))
     return user
   },
@@ -49,7 +55,7 @@ export const useAuthStore = create((set, get) => ({
       const data = await api.login(email, password)
       await storage.setItem('token', data.token)
       await storage.setItem('user', JSON.stringify(data.user))
-      set({ user: data.user, isAuthenticated: true, isLoading: false })
+      set({ ...accountState(data.user), isAuthenticated: true, isLoading: false })
       return true
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Login failed', isLoading: false })
@@ -75,7 +81,7 @@ export const useAuthStore = create((set, get) => ({
       const data = await api.verifyRegistration(challengeId, code)
       await storage.setItem('token', data.token)
       await storage.setItem('user', JSON.stringify(data.user))
-      set({ user: data.user, isAuthenticated: true, isLoading: false })
+      set({ ...accountState(data.user), isAuthenticated: true, isLoading: false })
       return true
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Verification failed', fieldErrors: error.fieldErrors || {}, isLoading: false })
@@ -90,7 +96,7 @@ export const useAuthStore = create((set, get) => ({
     try {
       await get().logout()
     } finally {
-      set({ user: null, isAuthenticated: false, error: null, fieldErrors: {} })
+      set({ ...accountState(null), isAuthenticated: false, error: null, fieldErrors: {} })
       await Promise.all([
         storage.removeItem(`planner:v1:${userId}:plan`),
         storage.removeItem(`planner:v1:${userId}:catalog`),
@@ -102,7 +108,7 @@ export const useAuthStore = create((set, get) => ({
     try {
       await Promise.all([storage.removeItem('token'), storage.removeItem('user')])
     } finally {
-      set({ user: null, isAuthenticated: false, isLoading: false, error: null, fieldErrors: {} })
+      set({ ...accountState(null), isAuthenticated: false, isLoading: false, error: null, fieldErrors: {} })
     }
   },
 }))

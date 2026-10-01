@@ -1,4 +1,5 @@
 import areas from '../data/plannerAreas.json'
+import fareReference from '../data/pangasinanFares.json'
 
 export const modes = ['bus', 'jeepney', 'tricycle', 'van', 'own-vehicle']
 export const preferences = ['Budget-friendly', 'Island hopping', 'Cultural sites', 'Food stops', 'Photography spots', 'Accessible routes']
@@ -109,7 +110,8 @@ export function buildPlan(request: PlannerRequest, data: Data) {
     while (candidates.length) {
       candidates.sort((a, b) => rank(b) - rank(a) ||
         (hasPoint(previous) && hasPoint(a.coordinates) && hasPoint(b.coordinates) ? distance(previous, a.coordinates) - distance(previous, b.coordinates) : 0) ||
-        (request.preferences.includes('Budget-friendly') ? (a.entryFee ?? Infinity) - (b.entryFee ?? Infinity) : 0) || String(a._id).localeCompare(String(b._id)))
+        (request.preferences.includes('Budget-friendly') ? (a.entryFee ?? Infinity) - (b.entryFee ?? Infinity) : 0) ||
+        (a.guideOrder ?? 0) - (b.guideOrder ?? 0) || String(a._id).localeCompare(String(b._id)))
       const place = candidates.shift()!, placeId = String(place._id)
       if (!dest.placeIds.length && areaStops >= perDay * Math.ceil(request.days / request.destinations.length)) break
       if (request.preferences.includes('Accessible routes') && place.accessibility !== 'verified') { omitted.push({ placeId, reason: `${place.name}: accessibility is not verified.` }); continue }
@@ -131,6 +133,7 @@ export function buildPlan(request: PlannerRequest, data: Data) {
       if (candidateDay >= days.length) { omitted.push({ placeId, reason: `${place.name}: does not fit the available dates/opening window.` }); continue }
       dayIndex = candidateDay
       const notes: string[] = []
+      if (place.guideSourceNote) notes.push(place.guideSourceNote)
       if (entry === null) notes.push('Entry fee unverified; excluded from known subtotal.')
       if (!place.visitMinutes) notes.push('Visit duration uses a 90-minute planning allowance.')
       if (transfer.minutes === null) notes.push('Transfer uses a 30-minute placeholder; actual journey may be much longer.')
@@ -146,6 +149,12 @@ export function buildPlan(request: PlannerRequest, data: Data) {
     }
   }
   const stops = days.flatMap(d => d.stops)
+  warnings.add(`${fareReference.source_file}: ${fareReference.note}`)
+  for (const section of fareReference.sections) {
+    if (request.transportModes.some(mode => section.id.startsWith(mode === 'jeepney' ? 'jeepney' : mode))) {
+      warnings.add(`Fare reference pages ${section.first_page}-${section.last_page}: ${section.scope}`)
+    }
+  }
   const returnLeg = request.returnToOrigin && stops.length ? transit(area, request.origin.areaId, request, data) : null
   if (returnLeg?.cost != null) { spent = money(spent + returnLeg.cost); transportTotal = money(transportTotal + returnLeg.cost) }
   const unknownCosts = stops.filter(s => s.entryCost === null || s.transit.cost === null).length + (returnLeg?.cost === null ? 1 : 0)

@@ -21,6 +21,11 @@ class NarrativeTests(unittest.TestCase):
         with patch.object(main, '_generate_response', return_value='Take a bus for 25 pesos.'):
             self.assertEqual(main.narrate(self.request())['days'][0]['stops'], [])
 
+    def test_empty_approved_snapshot_does_not_use_cached_content(self):
+        request = main.ItineraryRequest(destination='Dagupan', budget='1000', days=1, places=[], routes=[], foods=[])
+        result = main.itinerary(request)
+        self.assertEqual(result['days'][0]['stops'], [])
+
     def test_busy_does_not_queue_inference(self):
         main.GENERATION_LOCK.acquire()
         try:
