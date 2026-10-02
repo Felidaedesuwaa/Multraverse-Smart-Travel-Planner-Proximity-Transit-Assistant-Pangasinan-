@@ -38,7 +38,6 @@ export default function UserSidebar({ activeScreen = "Dashboard", onNavigate, co
   const [trips, setTrips] = useState([]);
 
   useEffect(() => {
-    if (compact) return;
     Promise.all([api.getBudget(), api.getTrips()])
       .then(([budgetEntries, userTrips]) => {
         setEntries(budgetEntries);
@@ -104,6 +103,12 @@ export default function UserSidebar({ activeScreen = "Dashboard", onNavigate, co
         <SidebarLogoutButton />
       </View>
 
+      {/* Budget Overview */}
+      <View>
+        <Text style={themeStyle(styles.sectionTitle)}>BUDGET OVERVIEW</Text>
+        <BudgetOverview entries={entries} />
+      </View>
+
       {/* Main Nav */}
       <View style={themeStyle(styles.navSection)}>
         {navigationItems.map((item) => renderNavItem(item, false))}
@@ -116,12 +121,6 @@ export default function UserSidebar({ activeScreen = "Dashboard", onNavigate, co
       </View>
 
       {!compact && <>
-      {/* Budget Overview */}
-      <View>
-        <Text style={themeStyle(styles.sectionTitle)}>BUDGET OVERVIEW</Text>
-        <BudgetOverview entries={entries} />
-      </View>
-
       {/* Saved Trips */}
       <View>
         <Text style={themeStyle(styles.sectionTitle)}>SAVED TRIPS</Text>
