@@ -5,6 +5,7 @@ import SuperAdminSelect from './SuperAdminSelect'
 import { lguMunicipalities } from '../data/lguMunicipalities'
 import { useAppTheme } from '../theme/useAppTheme'
 import { api } from '../lib/api'
+import { Pencil, Trash2 } from 'lucide-react-native'
 
 export default function SuperAdminAccountAction({ account, type, mode, onClose, onSaved }) {
   const { palette: p } = useAppTheme()
@@ -26,14 +27,14 @@ export default function SuperAdminAccountAction({ account, type, mode, onClose, 
     <View style={{ flex: 1, justifyContent: 'center', padding: 20, backgroundColor: 'rgba(0,0,0,0.5)' }}>
       <View accessibilityViewIsModal style={{ width: '100%', maxWidth: 560, maxHeight: '90%', alignSelf: 'center', borderRadius: 16, backgroundColor: p.surface }}>
         <ScrollView contentContainerStyle={{ padding: 24, gap: 20 }} keyboardShouldPersistTaps="handled">
-          <Text style={[ui.heading, { color: p.ink }]}>{deleting ? 'Delete account?' : 'Edit account'}</Text>
+          <Text accessibilityRole="header" style={[ui.heading, { color: p.ink }]}>{deleting ? 'Delete account?' : 'Edit information'}</Text>
           <Text style={[ui.body, { color: p.muted }]}>{deleting ? `Permanently delete ${account.email}? Sign-in access and personal account data will be removed. Shared municipal content and audit history will remain. This cannot be undone.` : 'Update the account email and assigned access. The existing password stays unchanged.'}</Text>
           {!deleting && <>
             <View style={{ gap: 8 }}><Text style={[ui.buttonText, { color: p.ink }]}>Email address</Text><TextInput accessibilityLabel="Account email" value={email} onChangeText={setEmail} editable={!busy} autoCapitalize="none" autoCorrect={false} keyboardType="email-address" style={[ui.input, { color: p.ink, borderColor: p.line, backgroundColor: p.background }]} /></View>
             {type === 'lgu' && <SuperAdminSelect label="Municipality" value={municipality} onChange={setMunicipality} disabled={busy} options={lguMunicipalities.map(area => ({ value: area.name, label: area.name }))} />}
           </>}
           {error ? <Text accessibilityRole="alert" style={[ui.body, { color: p.accent }]}>{error}</Text> : null}
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'flex-end' }}><WorkspaceButton label="Cancel" disabled={busy} onPress={onClose} /><WorkspaceButton primary label={deleting ? 'Delete account' : 'Save changes'} loading={busy} disabled={!deleting && (!email.trim() || (type === 'lgu' && !municipality))} onPress={submit} /></View>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'flex-end' }}><WorkspaceButton label="Cancel" disabled={busy} onPress={onClose} /><WorkspaceButton primary tone={deleting ? "danger" : "edit"} icon={deleting ? Trash2 : Pencil} label={deleting ? 'Delete account' : 'Save changes'} loading={busy} disabled={!deleting && (!email.trim() || (type === 'lgu' && !municipality))} onPress={submit} /></View>
         </ScrollView>
       </View>
     </View>

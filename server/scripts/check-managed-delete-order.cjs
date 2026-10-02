@@ -6,6 +6,7 @@ const { User, AuditLog, Trip, BudgetEntry, SavedPlace } = require('../dist/model
 const { PlannerDraft } = require('../dist/models/PlannerDraft')
 const { PasswordReset } = require('../dist/models/PasswordReset')
 const { PendingRegistration } = require('../dist/models/PendingRegistration')
+const { GeofenceMonitor } = require('../dist/models/GeofenceMonitor')
 const router = require('../dist/routes/users').default
 const actor = new mongoose.Types.ObjectId()
 const target = new mongoose.Types.ObjectId()
@@ -13,7 +14,7 @@ const originals = []
 function replace(object, key, value) { originals.push(() => { object[key] = value }); object[key] = value }
 ;(async () => {
   try {
-    for (const role of ['ADMIN', 'LGU']) {
+    for (const role of ['ADMIN', 'LGU', 'EXPLORER']) {
       let exists = true
       let audited = false
       const user = { _id: target, email: 'managed@multraverse.ph', role, ...(role === 'LGU' ? { municipality: 'Dagupan' } : {}) }
@@ -26,8 +27,8 @@ function replace(object, key, value) { originals.push(() => { object[key] = valu
         audited = true
       })
       replace(User, 'findOneAndDelete', async () => { assert.ok(audited, 'Audit must validate before removal'); exists = false; return user })
-      for (const model of [Trip, BudgetEntry, SavedPlace, PlannerDraft, PasswordReset, PendingRegistration]) replace(model, 'deleteMany', async () => ({}))
-      const route = router.stack.find(layer => layer.route?.path === `/${role.toLowerCase()}-accounts/:id` && layer.route.methods.delete).route
+      for (const model of [Trip, BudgetEntry, SavedPlace, PlannerDraft, PasswordReset, PendingRegistration, GeofenceMonitor]) replace(model, 'deleteMany', async () => ({}))
+      const route = router.stack.find(layer => layer.route?.path === (role === 'EXPLORER' ? '/explorers/:id' : `/${role.toLowerCase()}-accounts/:id`) && layer.route.methods.delete).route
       const handler = route.stack.at(-1).handle
       let response
       const res = { status(code) { this.statusCode = code; return this }, json(body) { response = body } }
@@ -37,6 +38,6 @@ function replace(object, key, value) { originals.push(() => { object[key] = valu
       assert.equal(exists, false)
       while (originals.length) originals.pop()()
     }
-    console.log('PASS ADMIN and LGU deletion validates audit references before removing the account')
+    console.log('PASS ADMIN, LGU and Explorer deletion validates audit references before removing the account')
   } finally { while (originals.length) originals.pop()() }
 })().catch(error => { console.error(error); process.exitCode = 1 })

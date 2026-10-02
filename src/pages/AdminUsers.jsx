@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
-import { Eye, Mail, RefreshCw, Search, ShieldCheck, Users, UserPlus, Route, X } from 'lucide-react-native';
+import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
+import { Mail, RefreshCw, Search, ShieldCheck, Users, UserPlus, Route } from 'lucide-react-native';
 import AdminPage from '../components/AdminPage';
 import Card from '../components/Card';
 import WovenDivider from '../components/WovenDivider';
 import { useAppTheme } from '../theme/useAppTheme';
 import { api } from '../lib/api';
 import { colors } from '../theme/colors';
+import { useAuthStore } from '../store/authStore';
+import AccountActionButton from '../components/AccountActionButton';
+import ExplorerAccountAction from '../components/ExplorerAccountAction';
 
-const columns = [['USER', 0.23], ['EMAIL', 0.25], ['ROLE', 0.10], ['TRIPS', 0.07], ['EMAIL STATUS', 0.14], ['JOINED', 0.11], ['ACTIONS', 0.10]];
+const columns = [['USER', 0.22], ['EMAIL', 0.23], ['ROLE', 0.10], ['TRIPS', 0.07], ['EMAIL STATUS', 0.14], ['JOINED', 0.10], ['ACTIONS', 0.14]];
 const number = value => Number.isFinite(value) ? value.toLocaleString('en-PH') : '—';
 const date = (value, full = false) => value && Number.isFinite(Date.parse(value)) ? new Date(value).toLocaleDateString('en-PH', { timeZone: 'Asia/Manila', month: full ? 'long' : 'short', ...(full ? { day: 'numeric' } : {}), year: 'numeric' }) : 'Not recorded';
 const initials = name => (name || '').trim().split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase();
@@ -17,9 +20,11 @@ const avatarColor = id => [colors.sunsetCoral, colors.oceanBlue, colors.palmGree
 export default function AdminUsers() {
   const { themeStyle: t, themeColor } = useAppTheme();
   const { width } = useWindowDimensions();
+  const canDelete = useAuthStore(state => state.user?.role === 'SUPERADMIN');
   const [users, setUsers] = useState([]), [summary, setSummary] = useState(null), [total, setTotal] = useState(0);
   const [query, setQuery] = useState(''), [search, setSearch] = useState(''), [page, setPage] = useState(1), [refresh, setRefresh] = useState(0);
-  const [loading, setLoading] = useState(true), [error, setError] = useState(''), [selected, setSelected] = useState(null);
+  const [loading, setLoading] = useState(true), [error, setError] = useState(''), [accountAction, setAccountAction] = useState(null);
+  const [notice, setNotice] = useState('');
   useEffect(() => { const timer = setTimeout(() => { setPage(1); setSearch(query.trim()); }, 250); return () => clearTimeout(timer); }, [query]);
   useEffect(() => {
     const controller = new AbortController();
@@ -31,9 +36,8 @@ export default function AdminUsers() {
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
   }, [page, search, refresh]);
-  const tableWidth = Math.max(1000, width - (width >= 768 ? 356 : 96));
+  const tableWidth = Math.max(1100, width - (width >= 768 ? 356 : 96));
   const pages = Math.max(1, Math.ceil(total / 20));
-  const selectedUser = selected && (users.find(user => user.id === selected.id) || selected);
   const growth = summary ? summary.newLastWeek ? ((summary.newThisWeek - summary.newLastWeek) / summary.newLastWeek * 100).toFixed(0) + '% vs last week' : 'No new accounts last week' : '';
   const metrics = [
     { label: 'Total Explorers', value: summary?.total, detail: summary ? summary.newThisWeek + ' joined this week' : '', Icon: Users, color: colors.oceanBlue, tint: colors.oceanBlueLight },
@@ -49,6 +53,7 @@ export default function AdminUsers() {
     catch { setError('Unable to open your email application. Email address: ' + user.email); }
   }
   return <AdminPage title="User Management" subtitle="Explorer accounts and their recorded travel activity" actions={action('Refresh Explorer accounts', RefreshCw, () => setRefresh(v => v + 1))}>
+    {!!notice && <Text accessibilityRole="alert" style={[t(styles.muted), { marginBottom: 16 }]}>{notice}</Text>}
     <View style={styles.stats}>{metrics.map(({ label, value, detail, Icon, color, tint }) => <Card key={label} style={t(styles.stat)}>
       <WovenDivider color={themeColor(color, 'color')} count={20} />
       <View style={styles.statRow}><View><Text style={t(styles.statLabel)}>{label.toUpperCase()}</Text>{!summary && loading ? <ActivityIndicator style={{ alignSelf: 'flex-start', marginVertical: 10 }} color={themeColor(colors.oceanBlue, 'color')} /> : <Text style={t(styles.statValue)}>{number(value)}</Text>}</View><View style={[styles.statIcon, t({ backgroundColor: tint })]}><Icon size={20} color={themeColor(color, 'color')} /></View></View>
@@ -70,7 +75,7 @@ export default function AdminUsers() {
             <Text style={[t(styles.tripCount), { width: (tableWidth - 48) * columns[3][1] }]}>{number(user.tripCount)}</Text>
             <View style={{ width: (tableWidth - 48) * columns[4][1] }}><Text style={t([styles.badge, user.emailVerifiedAt ? styles.verified : styles.unverified])}>{user.emailVerifiedAt ? 'Verified' : 'Not verified'}</Text></View>
             <Text style={[t(styles.joined), { width: (tableWidth - 48) * columns[5][1] }]}>{date(user.createdAt)}</Text>
-            <View style={[styles.actions, { width: (tableWidth - 48) * columns[6][1] }]}>{action('View ' + user.name, Eye, () => setSelected(user))}{action('Compose email to ' + user.name, Mail, () => email(user), colors.goldLight, colors.gold)}</View>
+            <View style={[styles.actions, { width: (tableWidth - 48) * columns[6][1] }]}><AccountActionButton mode="edit" label={'Edit information for ' + user.name} onPress={() => { setNotice(''); setAccountAction({ account: user, mode: 'edit' }); }} />{canDelete && <AccountActionButton mode="delete" label={'Delete account ' + user.name} onPress={() => { setNotice(''); setAccountAction({ account: user, mode: 'delete' }); }} />}{action('Compose email to ' + user.name, Mail, () => email(user), colors.goldLight, colors.gold)}</View>
           </View>)}
         </View></ScrollView>
         {!users.length && <View style={styles.empty}><Users size={28} color={themeColor(colors.slate, 'color')} /><Text style={t(styles.userName)}>{search ? 'No matching Explorers' : 'No Explorer accounts yet'}</Text><Text style={t(styles.muted)}>{search ? 'Try a different name or email.' : 'Registered Explorer accounts will appear here.'}</Text></View>}
@@ -78,13 +83,8 @@ export default function AdminUsers() {
       </>}
     </Card>
     <Text style={[t(styles.muted), { marginTop: 12, fontSize: 11 }]}>Status reflects recorded email verification. Weekly totals use Monday to Sunday in Philippine time.</Text>
-    <Modal visible={!!selectedUser} transparent animationType="fade" onRequestClose={() => setSelected(null)}><View style={styles.overlay}><View accessibilityViewIsModal style={t(styles.dialog)}>
-      <View style={styles.dialogHeading}><Text style={t(styles.dialogTitle)}>Explorer details</Text>{action('Close Explorer details', X, () => setSelected(null))}</View>
-      {selectedUser && <><View style={styles.dialogUser}><View style={[styles.avatar, { backgroundColor: avatarColor(selectedUser.id) }]}><Text style={styles.avatarText}>{initials(selectedUser.name)}</Text></View><Text style={t(styles.userName)}>{selectedUser.name}</Text></View>
-        {[['Email', selectedUser.email], ['Role', 'Explorer'], ['Trips', number(selectedUser.tripCount)], ['Email status', selectedUser.emailVerifiedAt ? 'Verified on ' + date(selectedUser.emailVerifiedAt, true) : 'Not verified'], ['Joined', date(selectedUser.createdAt, true)], ...(selectedUser.location ? [['Location', selectedUser.location]] : [])].map(([label, value]) => <View key={label} style={t(styles.detailRow)}><Text style={[t(styles.muted), { width: 100 }]}>{label}</Text><Text selectable style={[t(styles.detailValue), { flex: 1 }]}>{value}</Text></View>)}
-        <Pressable accessibilityRole="button" onPress={() => email(selectedUser)} style={t(styles.compose)}><Mail size={16} color={themeColor(colors.oceanBlue, 'color')} /><Text style={t(styles.pageText)}>Compose email</Text></Pressable>
-      </>}
-    </View></View></Modal>
+    {accountAction && <ExplorerAccountAction key={accountAction.account.id + accountAction.mode} {...accountAction} onClose={() => setAccountAction(null)} onSaved={message => { setAccountAction(null); setNotice(message); setPage(1); setRefresh(v => v + 1); }} />}
+
   </AdminPage>;
 }
 const styles = StyleSheet.create({

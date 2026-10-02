@@ -201,6 +201,8 @@ export const api = {
   // Admin
   getAllUsers: () => requestList('/api/users'),
   getExplorerDashboard: ({ page = 1, search = '', signal } = {}) => request(`/api/users/explorers?page=${page}&limit=20&search=${encodeURIComponent(search)}`, { signal }),
+  updateExplorerAccount: (id, data) => request(`/api/users/explorers/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteExplorerAccount: id => request(`/api/users/explorers/${id}`, { method: 'DELETE', body: JSON.stringify({ confirmation: true }) }),
   getAnalytics: () => request('/api/analytics'),
   getDashboardAnalytics: () => request('/api/analytics/dashboard'),
 }

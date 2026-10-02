@@ -115,7 +115,7 @@ export function validateRouter(scope: string): RequestHandler {
         const keys = req.path === '/password/forgot' ? ['email'] : req.path === '/password/reset' ? ['challengeId', 'code', 'newPassword'] : req.path === '/password/change' ? ['currentPassword', 'newPassword'] : req.path === '/login' ? ['email', 'password'] : req.path === '/register' ? ['firstName', 'middleName', 'surname', 'email', 'password'] : req.path === '/register/resend' ? ['challengeId'] : ['challengeId', 'code']
         fields(body, Object.fromEntries(keys.map(k => [k, rules[k]])), keys.filter(k => k !== 'middleName'))
       } else if (scope === 'users') {
-        const rules: Record<string, Rule> = req.path === '/me' ? { name: string, firstName: string, middleName: string, surname: string, location: string, photo: (v: any) => v === null || (typeof v === 'string' && v.length <= 700000) } : { email: string, password: string, municipality: string }
+        const rules: Record<string, Rule> = /^\/explorers\//.test(req.path) ? { name: string, location: string } : req.path === '/me' ? { name: string, firstName: string, middleName: string, surname: string, location: string, photo: (v: any) => v === null || (typeof v === 'string' && v.length <= 700000) } : { email: string, password: string, municipality: string }
         fields(body, rules)
       } else if (scope === 'trips') {
         const errors = tripFieldErrors(body, create)

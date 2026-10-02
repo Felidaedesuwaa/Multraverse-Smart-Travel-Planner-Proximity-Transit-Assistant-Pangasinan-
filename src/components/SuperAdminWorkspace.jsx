@@ -2,10 +2,11 @@ import { ActivityIndicator, ScrollView, StyleSheet, Text, View, useWindowDimensi
 import { FeedbackPressable } from './WorkspaceMotion'
 import { useAppTheme } from '../theme/useAppTheme'
 
-export function WorkspaceButton({ label, icon: Icon, onPress, disabled, loading, primary }) {
+export function WorkspaceButton({ label, icon: Icon, onPress, disabled, loading, primary, tone }) {
   const { palette: p } = useAppTheme()
-  const color = primary ? p.onPrimary : p.ink
-  return <FeedbackPressable accessibilityRole="button" accessibilityState={{ disabled: !!(disabled || loading), busy: !!loading }} disabled={disabled || loading} onPress={onPress} style={({ hovered, pressed }) => [ui.button, { backgroundColor: primary ? p.primary : (hovered || pressed) ? p.tint : p.surface, borderColor: primary ? p.primary : p.line, opacity: disabled || loading ? 0.6 : 1 }]}>
+  const background = tone === 'danger' ? '#DC2626' : tone === 'edit' ? '#2563EB' : primary ? p.primary : null
+  const color = background ? '#FFFFFF' : p.ink
+  return <FeedbackPressable accessibilityRole="button" accessibilityState={{ disabled: !!(disabled || loading), busy: !!loading }} disabled={disabled || loading} onPress={onPress} style={({ hovered, pressed }) => [ui.button, { backgroundColor: background || ((hovered || pressed) ? p.tint : p.surface), borderColor: background || p.line, opacity: disabled || loading ? 0.6 : 1 }]}>
     {loading ? <ActivityIndicator size="small" color={color} /> : Icon ? <Icon size={17} color={color} /> : null}<Text style={[ui.buttonText, { color }]}>{label}</Text>
   </FeedbackPressable>
 }

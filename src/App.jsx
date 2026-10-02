@@ -71,7 +71,7 @@ const linking = {
           Translator: "translator",
         },
       },
-      SuperAdmin: { screens: { SuperAdminDashboard: 'superadmin', SuperAdminUsers: 'superadmin/lgu-accounts', SuperAdminCreateLGU: 'superadmin/lgu-accounts/new', SuperAdminCreateAdmin: 'superadmin/admin-accounts', SuperAdminAuditLog: 'superadmin/audit-log' } },
+      SuperAdmin: { screens: { SuperAdminDashboard: 'superadmin', SuperAdminUsers: 'superadmin/lgu-accounts', SuperAdminCreateLGU: 'superadmin/lgu-accounts/new', SuperAdminCreateAdmin: 'superadmin/admin-accounts', SuperAdminUserAccounts: 'superadmin/user-accounts', SuperAdminAuditLog: 'superadmin/audit-log' } },
       LGU: "lgu",
       Admin: {
         screens: {

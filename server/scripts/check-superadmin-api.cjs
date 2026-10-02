@@ -11,7 +11,11 @@ process.env.JWT_SECRET = randomBytes(32).toString('hex')
 const uri = process.env.SUPERADMIN_TEST_MONGODB_URI || process.env.MONGODB_URI
 if (!uri) throw new Error('Configure SUPERADMIN_TEST_MONGODB_URI or MONGODB_URI')
 const dbName = `multraverse_sa_test_${randomBytes(8).toString('hex')}`
-const { User, AuditLog } = require('../dist/models')
+const { User, AuditLog, Trip, BudgetEntry, SavedPlace } = require('../dist/models')
+const { PlannerDraft } = require('../dist/models/PlannerDraft')
+const { PasswordReset } = require('../dist/models/PasswordReset')
+const { PendingRegistration } = require('../dist/models/PendingRegistration')
+const { GeofenceMonitor } = require('../dist/models/GeofenceMonitor')
 const { bootstrapSuperAdmin } = require('../dist/lib/bootstrapSuperAdmin')
 const { lguResources } = require('../dist/lib/lguResources')
 const app = express()
@@ -123,7 +127,7 @@ let server
     console.log('PASS managed account edits, deletes, permissions, validation, session revocation and audit rollback')
     const fixtures = {
       places: { name: 'Beach', description: 'Description', location: 'Alaminos', category: 'Beach' },
-      geofences: { location: 'Alaminos', zone: 'Park', radius: '100 m' },
+      geofences: { location: 'Alaminos', zone: 'Park', radius: '100 m', coordinates: { lat: 16.155, lng: 119.98 }, radiusMeters: 100 },
       foods: { name: 'Food', description: 'Local food', avgPrice: 100, where: 'Market', category: 'Snack' },
       'route-prices': { from: 'Alaminos', to: 'Bolinao', vehicle: 'BUS', price: 100, duration: '1h' },
       'transit-routes': { name: 'Route', type: 'BUS', frequency: '30 min' },
@@ -154,6 +158,50 @@ let server
     assert.equal(accountLog.body.items[0].actor.passwordHash, undefined)
     assert.equal(accountLog.body.items[0].actor.name, undefined)
     assert.ok(!JSON.stringify(accountLog.body).includes(lguInput.password))
+    const explorer = accounts.find(account => account.role === 'EXPLORER')
+    const explorerRoute = `users/explorers/${explorer._id}`
+    for (const auth of [undefined, ...accounts.map(token)]) {
+      assert.equal((await call(explorerRoute, auth, 'DELETE', { confirmation: true })).status, auth ? 403 : 401)
+    }
+    for (const account of accounts.filter(account => !['ADMIN', 'EXPLORER'].includes(account.role))) {
+      assert.equal((await call(explorerRoute, token(account), 'PUT', { name: 'Valid Name' })).status, 403)
+    }
+    for (const body of [{ name: 'Name123' }, { name: '' }, { name: { $ne: '' } }, { role: 'SUPERADMIN' }, { email: 'edited@multraverse.ph' }, { location: 'x'.repeat(121) }, {}]) {
+      assert.equal((await call(explorerRoute, superToken, 'PUT', body)).status, 400)
+    }
+    assert.equal((await call(`users/explorers/${admin._id}`, superToken, 'PUT', { name: 'Valid Name' })).status, 404)
+    const explorerEdit = await call(explorerRoute, token(admin), 'PUT', { name: 'Traveler R. Santos', location: 'Dagupan' })
+    assert.equal(explorerEdit.status, 200); assert.equal(explorerEdit.body.name, 'Traveler R. Santos'); assert.equal(explorerEdit.body.passwordHash, undefined)
+    assert.equal((await User.findById(explorer._id)).email, explorer.email)
+    assert.equal(await AuditLog.countDocuments({ action: 'update_explorer_account', targetUser: explorer._id }), 1)
+    assert.equal((await call(explorerRoute, superToken, 'DELETE', {})).status, 400)
+    assert.equal((await call(explorerRoute, superToken, 'DELETE', { confirmation: true, role: 'ADMIN' })).status, 400)
+    for (const account of accounts.filter(account => account.role !== 'EXPLORER').concat(superadmin)) {
+      assert.equal((await call(`users/explorers/${account._id}`, superToken, 'DELETE', { confirmation: true })).status, 404)
+    }
+    // Seed personal records only in the random isolated database to verify complete cleanup.
+    const personalModels = [Trip, BudgetEntry, SavedPlace, PlannerDraft, PasswordReset]
+    for (const model of personalModels) await model.collection.insertOne({ userId: explorer._id })
+    await PendingRegistration.collection.insertOne({ email: explorer.email })
+    await GeofenceMonitor.create({ userId: String(explorer._id), states: { fixture: true } })
+    const sharedBefore = await lguResources.places.model.countDocuments()
+    const originalCleanup = BudgetEntry.deleteMany
+    BudgetEntry.deleteMany = async () => { throw new Error('Simulated personal-data cleanup outage') }
+    try {
+      assert.equal((await call(explorerRoute, superToken, 'DELETE', { confirmation: true })).status, 500)
+      assert.ok(await User.findById(explorer._id)); assert.equal(await Trip.countDocuments({ userId: explorer._id }), 1)
+      assert.equal(await AuditLog.countDocuments({ action: 'delete_explorer_account', targetUser: explorer._id }), 0)
+    } finally { BudgetEntry.deleteMany = originalCleanup }
+    assert.equal((await call(explorerRoute, superToken, 'DELETE', { confirmation: true })).status, 200)
+    assert.equal(await User.findById(explorer._id), null)
+    for (const model of personalModels) assert.equal(await model.countDocuments({ userId: explorer._id }), 0)
+    assert.equal(await PendingRegistration.countDocuments({ email: explorer.email }), 0)
+    assert.equal(await GeofenceMonitor.countDocuments({ userId: String(explorer._id) }), 0)
+    assert.equal(await lguResources.places.model.countDocuments(), sharedBefore)
+    assert.equal((await call('users/me', token(explorer))).status, 401)
+    assert.equal((await call(explorerRoute, superToken, 'DELETE', { confirmation: true })).status, 404)
+    assert.equal(await AuditLog.countDocuments({ action: 'delete_explorer_account', targetUser: explorer._id }), 1)
+    console.log('PASS Explorer edits, Super Admin-only permanent deletion, injection/role guards, complete personal-data cleanup, rollback and revoked access')
     await User.updateOne({ _id: superadmin._id }, { $set: { role: 'EXPLORER' } })
     assert.equal((await call('audit-logs', superToken)).status, 403)
     console.log('PASS ten approval/rejection actions, deletion audit, no failed-decision events, audit filtering/pagination/population and stale role revocation')

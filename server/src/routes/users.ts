@@ -12,6 +12,7 @@ import { RegistrationError } from '../lib/registration'
 import { deleteAccount } from '../lib/deleteAccount'
 import { AuthError, authLimit } from '../lib/authLimits'
 import { explorerDashboard } from '../lib/explorerUsers'
+import { GeofenceMonitor } from '../models/GeofenceMonitor'
 
 const router = Router()
 router.param('id', validateId)
@@ -25,6 +26,56 @@ router.get('/explorers', requireRole(['ADMIN', 'SUPERADMIN']), async (req, res) 
   const { skip, limit } = pagination(req)
   res.json(await explorerDashboard(search, skip, limit))
 })
+
+router.put('/explorers/:id', requireRole(['ADMIN', 'SUPERADMIN']), async (req: AuthRequest, res, next) => {
+  let input
+  try {
+    if (Object.keys(req.body).some(key => !['name', 'location'].includes(key))) throw new Error('Only name and location can be edited here.')
+    input = profileUpdate(req.body)
+  } catch (error) { return res.status(400).json({ error: error instanceof Error ? error.message : 'Invalid profile details' }) }
+  try {
+    const user = await mongoose.connection.transaction(async session => {
+      const updated = await User.findOneAndUpdate({ _id: req.params.id, role: 'EXPLORER' }, { $set: input }, { new: true, runValidators: true, session }).select(PROFILE_FIELDS)
+      if (!updated) throw new AuthError('Account not found.', 404)
+      await AuditLog.create([{ actor: req.userId, action: 'update_explorer_account', targetUser: updated._id, metadata: { fields: Object.keys(req.body) } }], { session })
+      return updated
+    })
+    res.json(user)
+  } catch (error) {
+    if (error instanceof AuthError) return res.status(error.status).json({ error: error.message })
+    next(error)
+  }
+})
+
+function permanentAccountDeletion(role: 'EXPLORER' | 'ADMIN' | 'LGU') {
+  return async (req: AuthRequest, res: Response, next: (error?: unknown) => void) => {
+    if (req.body?.confirmation !== true || Object.keys(req.body).some(key => key !== 'confirmation')) return res.status(400).json({ error: 'Confirm account deletion.' })
+    try {
+      await mongoose.connection.transaction(async session => {
+        const user = await User.findOne({ _id: req.params.id, role }).session(session)
+        if (!user) throw new AuthError('Account not found.', 404)
+        // Validate attribution before removal; any cleanup failure rolls back the whole transaction.
+        await AuditLog.create([{ actor: req.userId, action: `delete_${role.toLowerCase()}_account`, targetUser: user._id, metadata: { email: user.email, municipality: user.municipality } }], { session })
+        const removed = await User.findOneAndDelete({ _id: user._id, role }, { session })
+        if (!removed) throw new AuthError('Account changed. Refresh and try again.', 409)
+        const userId = user._id
+        await Trip.deleteMany({ userId }, { session })
+        await BudgetEntry.deleteMany({ userId }, { session })
+        await SavedPlace.deleteMany({ userId }, { session })
+        await PlannerDraft.deleteMany({ userId }, { session })
+        await PasswordReset.deleteMany({ userId }, { session })
+        await PendingRegistration.deleteMany({ email: user.email }, { session })
+        await GeofenceMonitor.deleteMany({ userId: String(userId) }, { session })
+      })
+      res.json({ message: 'Account deleted.' })
+    } catch (error) {
+      if (error instanceof AuthError) return res.status(error.status).json({ error: error.message })
+      next(error)
+    }
+  }
+}
+
+router.delete('/explorers/:id', requireSuperAdmin, permanentAccountDeletion('EXPLORER'))
 
 for (const [path, role] of [['lgu-accounts', 'LGU'], ['admin-accounts', 'ADMIN']] as const) {
   router.put(`/${path}/:id`, requireSuperAdmin, async (req: AuthRequest, res, next) => {
@@ -45,31 +96,7 @@ for (const [path, role] of [['lgu-accounts', 'LGU'], ['admin-accounts', 'ADMIN']
       next(error)
     }
   })
-  router.delete(`/${path}/:id`, requireSuperAdmin, async (req: AuthRequest, res, next) => {
-    if (req.body?.confirmation !== true) return res.status(400).json({ error: 'Confirm account deletion.' })
-    try {
-      await mongoose.connection.transaction(async session => {
-        const user = await User.findOne({ _id: req.params.id, role }).session(session)
-        if (!user) throw new AuthError('Account not found.', 404)
-        // Validate historical attribution while the target still exists. Both
-        // writes remain in this transaction, so deletion failures roll back the log.
-        await AuditLog.create([{ actor: req.userId, action: `delete_${role.toLowerCase()}_account`, targetUser: user._id, metadata: { email: user.email, municipality: user.municipality } }], { session })
-        const removed = await User.findOneAndDelete({ _id: user._id, role }, { session })
-        if (!removed) throw new AuthError('Account changed. Refresh and try again.', 409)
-        const userId = user._id
-        await Trip.deleteMany({ userId }, { session })
-        await BudgetEntry.deleteMany({ userId }, { session })
-        await SavedPlace.deleteMany({ userId }, { session })
-        await PlannerDraft.deleteMany({ userId }, { session })
-        await PasswordReset.deleteMany({ userId }, { session })
-        await PendingRegistration.deleteMany({ email: user.email }, { session })
-      })
-      res.json({ message: 'Account deleted.' })
-    } catch (error) {
-      if (error instanceof AuthError) return res.status(error.status).json({ error: error.message })
-      next(error)
-    }
-  })
+  router.delete(`/${path}/:id`, requireSuperAdmin, permanentAccountDeletion(role))
   router.get(`/${path}`, requireSuperAdmin, async (req, res) => {
     res.json(await User.find({ role }).select(MANAGED_USER_FIELDS).populate('createdBy', 'email role').sort({ createdAt: -1, _id: -1 }).skip(pagination(req).skip).limit(pagination(req).limit))
   })
