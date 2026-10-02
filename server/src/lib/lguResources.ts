@@ -6,7 +6,7 @@ export const lguResources: Record<string, { model: Model<any>; fields: string[] 
   geofences: { model: Geofence, fields: ['location', 'zone', 'radius', 'coord', 'coordinates', 'radiusMeters', 'advisory', 'x', 'y', 'active'] },
   foods: { model: LocalFood, fields: ['name', 'description', 'avgPrice', 'where', 'category'] },
   'route-prices': { model: RoutePrice, fields: ['from', 'to', 'vehicle', 'price', 'duration', 'notes', 'fromAreaId', 'toAreaId', 'transitRouteId', 'durationMinutes', 'fareBasis', 'capacity', 'sourceUrl'] },
-  'transit-routes': { model: TransitRoute, fields: ['name', 'type', 'stops', 'frequency', 'status', 'areaIds', 'stopNames', 'firstDeparture', 'lastDeparture', 'sourceUrl'] },
+  'transit-routes': { model: TransitRoute, fields: ['name', 'type', 'stops', 'frequency', 'status', 'areaIds', 'stopNames', 'stopLocations', 'firstDeparture', 'lastDeparture', 'sourceUrl'] },
 }
 
 export function resourceInput(body: unknown, fields: string[]) {

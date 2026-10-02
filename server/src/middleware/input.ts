@@ -133,7 +133,7 @@ export function validateRouter(scope: string): RequestHandler {
         if (resource) modelInput(resource.model.schema, body, resource.fields, create)
       } else if (scope === 'knowledge' || scope === 'geofences' || scope === 'transitRoutes') {
         const model = scope === 'knowledge' ? catalog[parts[0]] : scope === 'geofences' ? Geofence : TransitRoute
-        if (model) modelInput(model.schema, body, [...new Set(Object.keys(model.schema.paths).map(p => p.split('.')[0]))].filter(k => !serverFields.includes(k)), create)
+        if (model) modelInput(model.schema, body, [...new Set(Object.keys(model.schema.paths).map(p => p.split('.')[0]))].filter(k => !serverFields.includes(k) && !(model === Geofence && k === 'alerts')), create)
       } else if (scope === 'planner' || scope === 'ai') {
         if (req.path === '/settings') fields(body, { itineraryNarrative: bool, translation: bool })
         else if (req.path === '/itinerary') {

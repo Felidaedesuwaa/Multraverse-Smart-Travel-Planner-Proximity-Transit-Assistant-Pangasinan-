@@ -1,23 +1,45 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native'
-import { Compass, MapPin, Utensils, Wallet, Radio, Route, LogOut, Building2, ShieldCheck } from 'lucide-react-native'
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Compass, MapPin, Utensils, Wallet, Radio, Route, LogOut, Building2, ShieldCheck, LayoutDashboard } from 'lucide-react-native'
 import { getLGUMunicipality } from '../data/lguMunicipalities'
 import { useAuthStore } from '../store/authStore'
 import { lguResources } from '../data/lguResources'
-import { colors } from '../theme/colors'
+import { useAppTheme } from '../theme/useAppTheme'
+const resourceIcons = { dashboard: LayoutDashboard, places: MapPin, foods: Utensils, 'route-prices': Wallet, geofences: Radio, 'transit-routes': Route }
 
 export default function LGUSidebar({ activeResource, onNavigate, compact }) {
   const { palette } = useAppTheme()
   const user = useAuthStore(state => state.user)
   const logout = useAuthStore(state => state.logout)
-  return <ScrollView horizontal={compact} style={compact ? styles.compact : styles.sidebar} contentContainerStyle={{ padding: 16, gap: 12 }}>
-    {!compact && <><Text style={styles.brand}>Multraverse LGU</Text><Text style={styles.text}>{getLGUMunicipality(user?.municipality)?.name || 'Unassigned municipality'}</Text></>}
-    {Object.entries(lguResources).map(([key, value]) => <Pressable key={key} accessibilityRole="button" accessibilityState={{ selected: activeResource === key }} onPress={() => onNavigate(key)} style={[styles.item, activeResource === key && styles.active]}><Text style={styles.text}>{value.label}</Text></Pressable>)}
-    <Pressable accessibilityRole="button" onPress={logout} style={styles.item}><Text style={styles.text}>Log out</Text></Pressable>
-  </ScrollView>
+  const foreground = { color: palette.onPrimary }
+  const navigation = Object.entries({ dashboard: { label: 'Dashboard' }, ...lguResources }).map(([key, value]) => {
+    const active = activeResource === key
+    const Icon = resourceIcons[key]
+    return <Pressable key={key} accessibilityRole="button" accessibilityState={{ selected: active }} onPress={() => onNavigate(key)} style={({ pressed, hovered }) => [styles.item, active && { backgroundColor: palette.deep }, (pressed || hovered) && !active && styles.hover]}>
+      <Icon size={18} color={active ? palette.button : palette.onPrimary} />
+      <Text style={[styles.label, foreground, active && styles.activeLabel, active && { color: palette.button }]}>{value.label}</Text>
+    </Pressable>
+  })
+  return <View style={[compact ? styles.compact : styles.sidebar, { backgroundColor: palette.dark ? palette.deep : palette.primary }]}>
+    <View style={styles.brand}>
+      <View style={[styles.brandIcon, { backgroundColor: palette.brand }]}><Compass size={22} color={palette.onPrimary} /></View>
+      <View style={styles.grow}><Text style={[styles.brandName, foreground]}>Multraverse</Text><Text style={[styles.caption, foreground]}>LGU Admin Console</Text></View>
+      {compact && <Pressable accessibilityRole="button" accessibilityLabel="Log out" onPress={logout} style={({ pressed, hovered }) => [styles.logoutIcon, (pressed || hovered) && styles.hover]}><LogOut size={20} color={palette.onPrimary} /></Pressable>}
+    </View>
+    <View style={styles.municipality}>
+      <Building2 size={19} color={palette.onPrimary} />
+      <View style={styles.grow}><Text style={[styles.caption, foreground]}>Municipal workspace</Text><Text style={[styles.municipalityName, foreground]}>{getLGUMunicipality(user?.municipality)?.name || 'Unassigned municipality'}</Text></View>
+    </View>
+    {!compact && <Text style={[styles.section, foreground]}>MANAGE LOCAL INFORMATION</Text>}
+    <ScrollView horizontal={compact} showsHorizontalScrollIndicator={false} showsVerticalScrollIndicator={false} style={compact ? styles.mobileScroll : styles.grow} contentContainerStyle={compact ? styles.mobileNavigation : styles.navigation}>{navigation}</ScrollView>
+    {!compact && <View style={styles.footer}>
+      <View style={styles.review}><ShieldCheck size={20} color={palette.onPrimary} /><Text style={[styles.caption, styles.grow, foreground]}>Submissions require Admin approval before publication.</Text></View>
+      <Pressable accessibilityRole="button" onPress={logout} style={({ pressed, hovered }) => [styles.logout, (pressed || hovered) && styles.hover]}><LogOut size={18} color={palette.onPrimary} /><Text style={[styles.label, foreground]}>Log out</Text></Pressable>
+    </View>}
+  </View>
 }
 
 const styles = StyleSheet.create({
-  sidebar: { width: 260, padding: 18, gap: 20 }, compact: { width: '100%', padding: 16, gap: 14 },
+  sidebar: { width: 260, flexShrink: 0, padding: 18, gap: 20 }, compact: { width: '100%', flexShrink: 0, padding: 16, gap: 14 },
   grow: { flex: 1, minWidth: 0 }, brand: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 6 },
   brandIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   brandName: { fontFamily: 'Poppins', fontSize: 16, fontWeight: '700' }, caption: { fontFamily: 'DMSans', fontSize: 11, opacity: 0.72, lineHeight: 18 },

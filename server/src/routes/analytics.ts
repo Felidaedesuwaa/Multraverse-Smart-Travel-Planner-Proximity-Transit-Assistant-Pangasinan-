@@ -1,6 +1,9 @@
 import { Router } from 'express'
 import { BudgetEntry, Geofence, TransitRoute, Trip, User } from '../models'
 import { authenticate, requireAdmin } from '../middleware/auth'
+import { GeofenceMonitor } from '../models/GeofenceMonitor'
+import { validateFence } from '../lib/geofence'
+import { publishedFilter } from '../models/_moderation'
 
 const router = Router()
 router.use(authenticate, requireAdmin)
@@ -26,6 +29,10 @@ router.get('/dashboard', async (_req, res) => {
     Geofence.aggregate([{ $group: { _id: null, active: { $sum: { $cond: ['$active', 1, 0] } }, alerts: { $sum: '$alerts' } } }]),
   ])
   const zone = zones[0] || { active: 0, alerts: 0 }
+  const counts = await GeofenceMonitor.aggregate([{ $project: { counts: { $objectToArray: '$counts' } } }, { $unwind: '$counts' }, { $group: { _id: null, total: { $sum: '$counts.v' } } }])
+  zone.alerts = counts[0]?.total || 0
+  const fences = await Geofence.find({ $and: [publishedFilter], active: true }).lean()
+  zone.active = fences.filter(fence => { try { validateFence(fence); return true } catch { return false } }).length
   res.json({ totalUsers: u.total, userGrowthRate: change(u.current, u.previous), activeRoutes, routesUpdatedThisMonth: updated, geofenceAlerts: zone.alerts, activeGeofences: zone.active, totalRevenue: t.revenue, revenueGrowthRate: change(t.currentRevenue, t.previousRevenue), routes, activity: [
     { label: 'Registered users', value: u.total, detail: 'All user accounts' }, { label: 'Trips created', value: t.total, detail: 'All recorded trips' },
     { label: 'Active geofences', value: zone.active, detail: 'Enabled alert zones' }, { label: 'Geofence alerts', value: zone.alerts, detail: 'Recorded across all zones' },

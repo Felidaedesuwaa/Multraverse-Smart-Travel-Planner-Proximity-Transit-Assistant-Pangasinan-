@@ -1,17 +1,19 @@
 import { useNavigation } from '@react-navigation/native'
 import { useEffect, useState } from 'react'
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native'
-import AdminPage from '../components/AdminPage'
-import Card from '../components/Card'
-import StatusBadge from '../components/StatusBadge'
-import GradientButton from '../components/GradientButton'
+import { ActivityIndicator, Text, TextInput, View } from 'react-native'
+import { Plus, RefreshCw, Search, Pencil, Trash2 } from 'lucide-react-native'
+import { WorkspaceButton, WorkspacePage, WorkspacePanel, WorkspaceTable, ui } from '../components/SuperAdminWorkspace'
+import SuperAdminAccountAction from '../components/SuperAdminAccountAction'
 import { api } from '../lib/api'
 import { useAppTheme } from '../theme/useAppTheme'
 
 export function SuperAdminAccountList({ type = 'lgu', refreshKey = 0 }) {
-  const { text } = useAppTheme()
+  const { palette: p } = useAppTheme()
+  const [accountAction, setAccountAction] = useState(null)
+  const [notice, setNotice] = useState('')
   const [rows, setRows] = useState(null)
   const [error, setError] = useState('')
+  const [search, setSearch] = useState('')
   const [refresh, setRefresh] = useState(0)
   const navigation = useNavigation()
   useEffect(() => navigation.addListener('focus', () => setRefresh(value => value + 1)), [navigation])
@@ -21,25 +23,15 @@ export function SuperAdminAccountList({ type = 'lgu', refreshKey = 0 }) {
     api.getManagedAccounts(type).then(data => { if (active) setRows(data) }).catch(err => { if (active) setError(err.message) })
     return () => { active = false }
   }, [type, refresh, refreshKey])
-  return <Card style={{ gap: 12 }}>
-    <Pressable accessibilityRole="button" onPress={() => setRefresh(value => value + 1)}><Text style={{ color: text }}>Refresh accounts</Text></Pressable>
-    {error ? <Text accessibilityRole="alert" style={{ color: text }}>{error}</Text> : !rows ? <ActivityIndicator /> : <ScrollView horizontal>
-      <View style={{ gap: 12 }}>
-        <View style={{ flexDirection: 'row' }}>{['Email', 'Role', 'Municipality', 'Created', 'Created by'].map(label => <Text key={label} style={{ color: text, width: 200, fontWeight: 'bold' }}>{label}</Text>)}</View>
-        {rows.map(row => <View key={row.id} style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Text selectable style={{ color: text, width: 200 }}>{row.email}</Text>
-          <View style={{ width: 200 }}><StatusBadge status={row.role.toLowerCase()} /></View>
-          <Text style={{ color: text, width: 200 }}>{row.municipality || '-'}</Text>
-          <Text style={{ color: text, width: 200 }}>{new Date(row.createdAt).toLocaleString()}</Text>
-          <Text style={{ color: text, width: 200 }}>{row.createdBy?.email || 'Seed / legacy account'}</Text>
-        </View>)}
-        {!rows.length && <Text style={{ color: text }}>No accounts yet.</Text>}
-      </View>
-    </ScrollView>}
-  </Card>
+  const visible = (rows || []).filter(row => [row.email, row.municipality, row.createdBy?.email].some(value => value?.toLowerCase().includes(search.trim().toLowerCase())))
+  return <WorkspacePanel>
+    {accountAction && <SuperAdminAccountAction key={accountAction.account.id + accountAction.mode} {...accountAction} type={type} onClose={() => setAccountAction(null)} onSaved={message => { setAccountAction(null); setNotice(message); setRefresh(value => value + 1) }} />}
+    {notice ? <Text accessibilityRole="alert" style={[ui.body, { color: p.ink }]}>{notice}</Text> : null}
+    <View style={ui.toolbar}><View style={{ gap: 4 }}><Text style={[ui.heading, { color: p.ink }]}>{type === 'lgu' ? 'Municipal officers' : 'Administrators'}</Text><Text style={[ui.caption, { color: p.muted }]}>{rows ? `${rows.length} accounts � ${visible.length} shown` : 'Account directory'}</Text></View><WorkspaceButton label="Refresh" icon={RefreshCw} loading={!rows && !error} onPress={() => setRefresh(value => value + 1)} /></View>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderColor: p.line, borderRadius: 12, paddingHorizontal: 14 }}><Search size={18} color={p.muted} /><TextInput accessibilityLabel="Search accounts" placeholder="Search email, municipality or creator..." placeholderTextColor={p.muted} value={search} onChangeText={setSearch} style={[ui.body, { flex: 1, minWidth: 0, paddingVertical: 14, color: p.ink }]} /></View>
+    {error ? <Text accessibilityRole="alert" style={[ui.body, { color: p.accent }]}>{error}</Text> : !rows ? <View style={ui.empty}><ActivityIndicator color={p.ink} /><Text style={[ui.caption, { color: p.muted }]}>Loading accounts...</Text></View> : <WorkspaceTable renderActions={row => <View style={{ flexDirection: 'row', gap: 8 }}><WorkspaceButton label="Edit" icon={Pencil} onPress={() => { setNotice(''); setAccountAction({ account: row.account, mode: 'edit' }) }} /><WorkspaceButton label="Delete" icon={Trash2} onPress={() => { setNotice(''); setAccountAction({ account: row.account, mode: 'delete' }) }} /></View>} columns={['Email', 'Role', ...(type === 'lgu' ? ['Municipality'] : []), 'Created', 'Created by']} rows={visible.map(row => ({ id: row.id, account: row, cells: [row.email, row.role === 'LGU' ? 'LGU officer' : 'Administrator', ...(type === 'lgu' ? [row.municipality || 'Unassigned'] : []), new Date(row.createdAt).toLocaleString(), row.createdBy?.email || 'Seed / legacy account'] }))} empty={search.trim() ? 'No matching accounts. Try a different search.' : 'No accounts yet. Create an account to get started.'} />}
+  </WorkspacePanel>
 }
 export default function SuperAdminUsers({ navigation }) {
-  return <AdminPage title="Manage LGU Accounts" subtitle="Municipal tourism officers across Pangasinan">
-    <View style={{ gap: 20 }}><GradientButton label="Create LGU account" onPress={() => navigation.navigate('SuperAdminCreateLGU')} /><SuperAdminAccountList /></View>
-  </AdminPage>
+  return <WorkspacePage title="Manage LGU Accounts" subtitle="Manage municipal tourism officers and their access across Pangasinan." actions={<WorkspaceButton primary label="Create LGU account" icon={Plus} onPress={() => navigation.navigate('SuperAdminCreateLGU')} />}><SuperAdminAccountList /></WorkspacePage>
 }

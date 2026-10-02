@@ -1,724 +1,158 @@
-import { FeedbackPressable } from "../components/WorkspaceMotion";
-import { useAppTheme } from "../theme/useAppTheme";
-import { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-  useWindowDimensions,
-} from "react-native";
-import {
-  Bell,
-  Bus,
-  Car,
-  CheckCircle2,
-  Clock,
-  MapPin,
-  RefreshCw,
-  Smartphone,
-  Users,
-  Vibrate,
-  Volume2,
-} from "lucide-react-native";
-import { api } from "../lib/api";
-import { colors } from "../theme/colors";
-import AIToolHeader from "../components/AIToolHeader";
+﻿import { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, AppState, Linking, Platform, ScrollView, StyleSheet, Text, Vibration, View, useWindowDimensions } from 'react-native';
+import * as Location from 'expo-location';
+import { Bell, Bus, MapPin, Search, Vibrate, Volume2, Smartphone } from 'lucide-react-native';
+import { FeedbackPressable } from '../components/WorkspaceMotion';
+import AIToolHeader from '../components/AIToolHeader';
+import Select from '../components/SuperAdminSelect';
+import { useAppTheme } from '../theme/useAppTheme';
+import { api } from '../lib/api';
+import map from '../data/pangasinanMap.json';
+import { boundaryRings, containsLocation, projectLocation } from '../utils/lguMap';
 
-const RADIUS_OPTIONS = [100, 300, 500, 1000, 2000];
-
-const MODES = [
-  { key: "vibrate", label: "Vibrate", Icon: Vibrate },
-  { key: "sound", label: "Sound", Icon: Volume2 },
-  { key: "push", label: "Push", Icon: Smartphone },
-];
-
-const routeTypeStyle = {
-  BUS: { bg: colors.oceanBlueLight, color: colors.oceanBlue },
-  JEEPNEY: { bg: colors.palmGreenLight, color: colors.palmGreen },
-  TRICYCLE: { bg: colors.goldLight ?? "#FFF8E1", color: colors.gold ?? "#C07000" },
-};
+const boundaries = map.areas.map(a => ({ id: a.id, rings: boundaryRings(a.d) }));
+const municipality = c => boundaries.find(a => containsLocation(a.rings, projectLocation({ lat: c.latitude ?? c.lat, lng: c.longitude ?? c.lng })))?.id;
+export function distanceMeters(a, b) {
+  const rad = x => x * Math.PI / 180;
+  const x = Math.sin(rad(b.lat - a.latitude) / 2) ** 2 + Math.cos(rad(a.latitude)) * Math.cos(rad(b.lat)) * Math.sin(rad(b.lng - a.longitude) / 2) ** 2;
+  return 6371000 * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(Math.max(0, 1 - x)));
+}
+const modes = [{ key: 'vibrate', label: 'Vibrate', Icon: Vibrate }, { key: 'sound', label: 'Sound', Icon: Volume2 }, { key: 'push', label: 'Push', Icon: Smartphone }];
 
 export default function TransitAlarm() {
   const { width } = useWindowDimensions();
-  const compact = (width >= 768 ? width - 280 : width) < 720;
-  const { themeStyle, themeColor } = useAppTheme();
-
-  const [routes, setRoutes] = useState([]);
-  const [selectedRoute, setSelectedRoute] = useState(null);
-  const [radius, setRadius] = useState(500);
-  const [alarmOn, setAlarmOn] = useState(false);
-  const [mode, setMode] = useState("vibrate");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  const loadRoutes = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await api.getTransitRoutes();
-      const active = data.filter((r) => r.status === "ACTIVE");
-      setRoutes(active);
-      setSelectedRoute((cur) => cur ?? active[0] ?? null);
-    } catch (cause) {
-      setError(
-        cause instanceof Error ? cause.message : "Unable to load transit routes."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  const compact = width < 1100;
+  const { themeStyle: t, themeColor } = useAppTheme();
+  const [from, setFrom] = useState('dagupan'), [to, setTo] = useState('alaminos');
+  const [routes, setRoutes] = useState([]), [route, setRoute] = useState(null), [stopIndex, setStopIndex] = useState(0);
+  const [radius, setRadius] = useState(500), [mode, setMode] = useState('vibrate');
+  const [alarm, setAlarm] = useState(false), [tracking, setTracking] = useState(false), [busyGPS, setBusyGPS] = useState(false);
+  const [position, setPosition] = useState(null), [now, setNow] = useState(Date.now());
+  const [loading, setLoading] = useState(false), [searched, setSearched] = useState(false), [message, setMessage] = useState('');
+  const watcher = useRef(null), generation = useRef(0), requestId = useRef(0), audio = useRef(null);
+  const target = route?.stops[stopIndex];
+  const fresh = position && now - position.timestamp < 30000;
+  const accurate = fresh && position.coords.accuracy != null && position.coords.accuracy <= Math.min(100, radius / 2);
+  const options = map.areas.map(a => ({ value: a.id, label: a.name }));
+  const halt = () => { generation.current++; watcher.current?.remove(); watcher.current = null; setTracking(false); setAlarm(false); };
   useEffect(() => {
-    loadRoutes();
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    const subscription = AppState.addEventListener('change', state => { if (state !== 'active') { halt(); setMessage('Tracking paused. Keep this screen open and resume tracking for alerts.'); } });
+    return () => { clearInterval(timer); subscription.remove(); generation.current++; watcher.current?.remove(); audio.current?.close(); };
   }, []);
-
-  const getRouteIcon = (type) => (type === "BUS" ? Bus : Car);
-
-  return (
-    <ScrollView
-      style={themeStyle(styles.container)}
-      contentContainerStyle={themeStyle([styles.screen, compact && { padding: 16 }])}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* ── Header ── */}
-      <AIToolHeader eyebrow="PANGASINAN TRANSIT COMPANION" title="Transit Alarm" subtitle="Get proximity alerts for active Pangasinan transit routes." badges={[{ label: "Active route data" }, { label: "Location-aware alerts" }, { label: "Smart notifications", color: "#A78BFA" }]} Icon={Bell} />
-      <View style={themeStyle([styles.header, styles.toolActions, compact && { flexDirection: "column", alignItems: "stretch", gap: 12 }])}>
-        <FeedbackPressable
-          onPress={loadRoutes}
-          style={themeStyle(({ pressed }) => [
-            styles.refreshBtn,
-            compact && { alignSelf: "flex-start" },
-            pressed && { opacity: 0.8 },
-          ])}
-        >
-          <RefreshCw size={15} color={themeColor(colors.oceanBlue, "color")} />
-          <Text style={themeStyle(styles.refreshText)}>Refresh</Text>
-        </FeedbackPressable>
-      </View>
-
-      <View style={themeStyle([styles.columns, compact && { flexDirection: "column", alignItems: "stretch" }])}>
-        {/* ── Left: Route List ── */}
-        <View style={themeStyle(styles.leftCol)}>
-
-          {/* Info card */}
-          <View style={themeStyle(styles.infoCard)}>
-            <View style={themeStyle(styles.infoCardInner)}>
-              <View style={themeStyle(styles.infoIconBox)}>
-                <Bell size={20} color={themeColor(colors.oceanBlue, "color")} />
-              </View>
-              <View style={themeStyle({ flex: 1 })}>
-                <Text style={themeStyle(styles.infoCardTitle)}>How it works</Text>
-                <Text style={themeStyle(styles.infoCardDesc)}>
-                  Select a route below, set your alert radius, choose your
-                  notification mode, then enable the alarm. You'll be notified
-                  when your stop is approaching.
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Routes header */}
-          <View style={themeStyle(styles.sectionLabelRow)}>
-            <Text style={themeStyle(styles.sectionLabel)}>Active Routes</Text>
-            {!loading && (
-              <Text style={themeStyle(styles.sectionCount)}>{routes.length} available</Text>
-            )}
-          </View>
-
-          {/* Loading */}
-          {loading && (
-            <View style={themeStyle(styles.loadingBox)}>
-              <ActivityIndicator color={themeColor(colors.oceanBlue, "color")} size="small" />
-              <Text style={themeStyle(styles.loadingText)}>Loading routes...</Text>
-            </View>
-          )}
-
-          {/* Error */}
-          {error && (
-            <View style={themeStyle(styles.errorBox)}>
-              <Text style={themeStyle(styles.errorText)}>{error}</Text>
-            </View>
-          )}
-
-          {/* Empty */}
-          {!loading && !error && routes.length === 0 && (
-            <View style={themeStyle(styles.emptyBox)}>
-              <Text style={themeStyle(styles.emptyText)}>No active routes available.</Text>
-            </View>
-          )}
-
-          {/* Route cards */}
-          {routes.map((route) => {
-            const Icon = getRouteIcon(route.type);
-            const selected =
-              selectedRoute?._id === route._id ||
-              selectedRoute?.id === route.id;
-            const typeStyle =
-              routeTypeStyle[route.type] ?? routeTypeStyle.BUS;
-
-            return (
-              <View
-                key={route._id ?? route.id}
-                style={themeStyle([styles.routeCard, selected && styles.routeCardSelected])}
-              >
-                {/* Top row */}
-                <View style={themeStyle(styles.routeTop)}>
-                  <View
-                    style={themeStyle([
-                      styles.routeIconBox,
-                      { backgroundColor: typeStyle.bg },
-                    ])}
-                  >
-                    <Icon size={20} color={themeColor(typeStyle.color, "color")} />
-                  </View>
-                  <View style={themeStyle(styles.routeInfo)}>
-                    <Text style={themeStyle(styles.routeName)}>{route.name}</Text>
-                    <Text style={themeStyle(styles.routeMeta)}>
-                      {route.type} · {route.stops} stops · every{" "}
-                      {route.frequency}
-                    </Text>
-                  </View>
-                  {selected && (
-                    <CheckCircle2 size={20} color={themeColor(colors.sunsetCoral, "color")} />
-                  )}
-                </View>
-
-                {/* Stats row */}
-                <View style={themeStyle(styles.routeStats)}>
-                  <View style={themeStyle(styles.statChip)}>
-                    <Clock size={11} color={themeColor("#6B8CA8", "color")} />
-                    <Text style={themeStyle(styles.statText)}>{route.frequency}</Text>
-                  </View>
-                  <View style={themeStyle(styles.statChip)}>
-                    <MapPin size={11} color={themeColor("#6B8CA8", "color")} />
-                    <Text style={themeStyle(styles.statText)}>{route.stops} stops</Text>
-                  </View>
-                  <View style={themeStyle(styles.statChip)}>
-                    <Users size={11} color={themeColor("#6B8CA8", "color")} />
-                    <Text style={themeStyle(styles.statText)}>
-                      {route.passengers?.toLocaleString?.()} / wk
-                    </Text>
-                  </View>
-                </View>
-
-                {/* Select button */}
-                <FeedbackPressable
-                  onPress={() => {
-                    setSelectedRoute(route);
-                    setAlarmOn(false);
-                  }}
-                  style={themeStyle(({ pressed }) => [
-                    styles.selectBtn,
-                    selected && styles.selectBtnActive,
-                    pressed && { opacity: 0.85 },
-                  ])}
-                >
-                  <Text
-                    style={themeStyle([
-                      styles.selectBtnText,
-                      selected && styles.selectBtnTextActive,
-                    ])}
-                  >
-                    {selected ? "✓ Selected for alarm" : "Select this route"}
-                  </Text>
-                </FeedbackPressable>
-              </View>
-            );
-          })}
+  async function gps(useOrigin = false) {
+    const run = ++generation.current;
+    watcher.current?.remove(); watcher.current = null;
+    setAlarm(false); setTracking(false); setBusyGPS(true); setMessage('');
+    try {
+      const permission = await Location.requestForegroundPermissionsAsync();
+      if (!permission.granted) throw new Error('Allow location access to track your route.');
+      const update = p => {
+        if (generation.current !== run) return;
+        const area = municipality(p.coords);
+        if (!area) { halt(); setPosition(null); setMessage('Your GPS location is outside Pangasinan. Transit tracking is unavailable here.'); return; }
+        setPosition(p); setNow(Date.now());
+      };
+      const p = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+      if (generation.current !== run) return;
+      if (!municipality(p.coords)) throw new Error('Your GPS location is outside Pangasinan.');
+      update(p);
+      if (useOrigin) { changeEndpoint('from', municipality(p.coords)); return; }
+      const subscription = await Location.watchPositionAsync({ accuracy: Location.Accuracy.High, distanceInterval: 10, timeInterval: 3000 }, update, () => { halt(); setMessage('GPS tracking failed. Check location services and resume tracking.'); });
+      if (generation.current !== run) subscription.remove();
+      else { watcher.current = subscription; setTracking(true); }
+    } catch (e) { if (generation.current === run) { halt(); setMessage(e.message || 'Unable to obtain GPS location.'); } }
+    finally { setBusyGPS(false); }
+  }
+  function changeEndpoint(which, value) {
+    requestId.current++; halt(); setRoute(null); setRoutes([]); setSearched(false); setLoading(false);
+    (which === 'from' ? setFrom : setTo)(value);
+  }
+  async function findRoutes() {
+    const id = ++requestId.current;
+    halt(); setRoute(null); setRoutes([]); setLoading(true); setMessage(''); setSearched(true);
+    try {
+      if (from === to) throw new Error('Choose two different Pangasinan municipalities.');
+      const data = await api.searchTransitRoutes({ from, to });
+      if (id === requestId.current) setRoutes(data.routes.filter(r => r.stops.every(s => municipality(s) === s.areaId)));
+    } catch (e) { if (id === requestId.current) setMessage(e.message); }
+    finally { if (id === requestId.current) setLoading(false); }
+  }
+  function choose(r) { halt(); setRoute(r); setStopIndex(r.stops.length - 1); setMessage('Route selected. Choose a stop, then enable its alarm.'); }
+  async function enable() {
+    if (alarm) { setAlarm(false); return; }
+    if (!target || !tracking || !accurate) { setMessage('Track the route and wait for a fresh, accurate Pangasinan GPS fix before enabling the alarm.'); return; }
+    try {
+      if (mode === 'push') {
+        if (Platform.OS !== 'web' || !globalThis.Notification) throw new Error('Push alerts are available in supported web browsers. Choose Vibrate on mobile.');
+        if (await globalThis.Notification.requestPermission() !== 'granted') throw new Error('Notification permission was denied.');
+      }
+      if (mode === 'sound') {
+        const AudioContext = globalThis.AudioContext || globalThis.webkitAudioContext;
+        if (Platform.OS !== 'web' || !AudioContext) throw new Error('Sound alerts are available in supported web browsers. Choose Vibrate on mobile.');
+        audio.current ||= new AudioContext(); await audio.current.resume();
+      }
+      setAlarm(true); setMessage('Alarm enabled. Keep this screen open.');
+    } catch (e) { setMessage(e.message); }
+  }
+  useEffect(() => {
+    if (!alarm || !target || !tracking || !accurate) return;
+    const distance = distanceMeters(position.coords, target);
+    // Require the reported uncertainty circle to be inside the alert radius.
+    if (distance + position.coords.accuracy > radius) return;
+    setAlarm(false);
+    const text = `Approaching ${target.name}. Your stop is within ${radius} m.`;
+    setMessage(text);
+    if (mode === 'vibrate') Vibration.vibrate([0, 700, 250, 700]);
+    if (mode === 'push') new globalThis.Notification('Transit stop alert', { body: text });
+    if (mode === 'sound' && audio.current) {
+      const oscillator = audio.current.createOscillator(); oscillator.connect(audio.current.destination); oscillator.frequency.value = 880; oscillator.start(); oscillator.stop(audio.current.currentTime + 1.5);
+    }
+    Alert.alert('Your stop is approaching', text);
+  }, [alarm, target, tracking, accurate, position, radius, mode]);
+  function button(label, onPress, Icon = MapPin, secondary = false, disabled = false) {
+    return <FeedbackPressable accessibilityRole="button" disabled={disabled} onPress={onPress} style={t([styles.button, secondary && styles.secondary, disabled && { opacity: 0.45 }])}><Icon size={14} color={secondary ? themeColor('#103E53', 'color') : '#fff'} /><Text style={t([styles.buttonText, secondary && { color: '#103E53' }])}>{label}</Text></FeedbackPressable>;
+  }
+  return <ScrollView style={t(styles.container)} contentContainerStyle={t([styles.screen, compact && { padding: 16 }])}>
+    <AIToolHeader eyebrow="PANGASINAN TRANSIT COMPANION" title="Transit Alarm" subtitle="Get proximity alerts for active Pangasinan transit routes." badges={[{ label: 'Active route data' }, { label: 'Location-aware alerts' }, { label: 'Smart notifications', color: '#A78BFA' }]} Icon={Bell} />
+    <View style={t([styles.columns, compact && { flexDirection: 'column' }])}>
+      <View style={{ flex: 1, gap: 16, width: '100%' }}>
+        <View style={t(styles.card)}><Text style={t(styles.title)}>Plan Your Route</Text>
+          <View style={styles.row}><View style={{ flex: 1 }}><Select label="From" value={from} options={options} onChange={v => changeEndpoint('from', v)} /></View><View style={{ flex: 1 }}><Select label="To" value={to} options={options} onChange={v => changeEndpoint('to', v)} /></View></View>
+          {button(busyGPS ? 'Locating…' : 'Use my GPS location', () => gps(true), MapPin, true, busyGPS)}
+          {button(loading ? 'Finding routes…' : 'Find Routes', findRoutes, Search, false, loading)}
         </View>
-
-        {/* ── Right: Alarm Config ── */}
-        <View style={themeStyle([styles.rightCol, compact && { width: "100%" }])}>
-
-          {/* Selected route summary */}
-          <View style={themeStyle(styles.alarmCard)}>
-            <Text style={themeStyle(styles.alarmCardTitle)}>Alarm Configuration</Text>
-
-            <View
-              style={themeStyle([
-                styles.selectedRouteBadge,
-                !selectedRoute && styles.selectedRouteBadgeEmpty,
-              ])}
-            >
-              {selectedRoute ? (
-                <>
-                  <View style={themeStyle(styles.selectedRouteDot)} />
-                  <View style={themeStyle({ flex: 1 })}>
-                    <Text style={themeStyle(styles.selectedRouteName)}>
-                      {selectedRoute.name}
-                    </Text>
-                    <Text style={themeStyle(styles.selectedRouteMeta)}>
-                      {selectedRoute.stops} stops · {selectedRoute.frequency}
-                    </Text>
-                  </View>
-                </>
-              ) : (
-                <Text style={themeStyle(styles.noRouteText)}>
-                  Select a route from the list
-                </Text>
-              )}
-            </View>
-
-            {/* Alert radius */}
-            <Text style={themeStyle(styles.configLabel)}>Alert Radius</Text>
-            <View style={themeStyle(styles.radiusRow)}>
-              {RADIUS_OPTIONS.map((val) => (
-                <FeedbackPressable
-                  key={val}
-                  onPress={() => setRadius(val)}
-                  style={themeStyle([
-                    styles.radiusChip,
-                    radius === val && styles.radiusChipActive,
-                  ])}
-                >
-                  <Text
-                    style={themeStyle([
-                      styles.radiusText,
-                      radius === val && styles.radiusTextActive,
-                    ])}
-                  >
-                    {val >= 1000 ? `${val / 1000}km` : `${val}m`}
-                  </Text>
-                </FeedbackPressable>
-              ))}
-            </View>
-
-            {/* Alert mode */}
-            <Text style={themeStyle(styles.configLabel)}>Notification Mode</Text>
-            <View style={themeStyle(styles.modeRow)}>
-              {MODES.map(({ key, label, Icon }) => {
-                const active = mode === key;
-                return (
-                  <FeedbackPressable
-                    key={key}
-                    onPress={() => setMode(key)}
-                    style={themeStyle([styles.modeBtn, active && styles.modeBtnActive])}
-                  >
-                    <Icon
-                      size={16}
-                      color={themeColor(active ? colors.sunsetCoral : "#6B8CA8", "color")}
-                    />
-                    <Text
-                      style={themeStyle([
-                        styles.modeBtnText,
-                        active && styles.modeBtnTextActive,
-                      ])}
-                    >
-                      {label}
-                    </Text>
-                  </FeedbackPressable>
-                );
-              })}
-            </View>
-
-            {/* Summary */}
-            {selectedRoute && (
-              <View style={themeStyle(styles.summaryBox)}>
-                <Text style={themeStyle(styles.summaryTitle)}>Alarm Summary</Text>
-                <View style={themeStyle(styles.summaryRow)}>
-                  <Text style={themeStyle(styles.summaryKey)}>Route</Text>
-                  <Text style={themeStyle(styles.summaryVal)} numberOfLines={1}>
-                    {selectedRoute.name}
-                  </Text>
-                </View>
-                <View style={themeStyle(styles.summaryRow)}>
-                  <Text style={themeStyle(styles.summaryKey)}>Radius</Text>
-                  <Text style={themeStyle(styles.summaryVal)}>{radius} meters</Text>
-                </View>
-                <View style={themeStyle(styles.summaryRow)}>
-                  <Text style={themeStyle(styles.summaryKey)}>Mode</Text>
-                  <Text style={themeStyle(styles.summaryVal)}>
-                    {MODES.find((m) => m.key === mode)?.label}
-                  </Text>
-                </View>
-                <View style={themeStyle([styles.summaryRow, { borderBottomWidth: 0 }])}>
-                  <Text style={themeStyle(styles.summaryKey)}>Status</Text>
-                  <View
-                    style={themeStyle([
-                      styles.statusBadge,
-                      alarmOn
-                        ? styles.statusBadgeOn
-                        : styles.statusBadgeOff,
-                    ])}
-                  >
-                    <Text
-                      style={themeStyle([
-                        styles.statusBadgeText,
-                        alarmOn
-                          ? styles.statusBadgeTextOn
-                          : styles.statusBadgeTextOff,
-                      ])}
-                    >
-                      {alarmOn ? "Active" : "Inactive"}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            )}
-
-            {/* Enable/disable button */}
-            <FeedbackPressable
-              onPress={() => setAlarmOn((v) => !v)}
-              disabled={!selectedRoute}
-              style={themeStyle(({ pressed }) => [
-                styles.enableBtn,
-                alarmOn && styles.enableBtnOn,
-                !selectedRoute && styles.enableBtnDisabled,
-                pressed && { opacity: 0.85 },
-              ])}
-            >
-              <Bell size={16} color={themeColor("#fff", "color")} />
-              <Text style={themeStyle(styles.enableBtnText)}>
-                {alarmOn ? "Disable Alarm" : "Enable Alarm"}
-              </Text>
-            </FeedbackPressable>
-          </View>
-
-          {/* Tips card */}
-          <View style={themeStyle(styles.tipsCard)}>
-            <Text style={themeStyle(styles.tipsTitle)}>Tips</Text>
-            {[
-              "Keep the app open for proximity alerts to work.",
-              "Set a 300m radius for city stops, 1km for provincial routes.",
-              "Push notifications require notification permissions.",
-            ].map((tip, i) => (
-              <View key={i} style={themeStyle(styles.tipRow)}>
-                <View style={themeStyle(styles.tipDot)} />
-                <Text style={themeStyle(styles.tipText)}>{tip}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
+        <Text style={t(styles.title)}>Available Routes</Text>
+        {loading && <ActivityIndicator />}
+        {searched && !loading && !routes.length && <View style={t(styles.card)}><Text style={t(styles.muted)}>No sourced, coordinate-backed transit route is published for this journey. Try another pair or ask your LGU to publish stop locations.</Text></View>}
+        {!searched && <Text style={t(styles.muted)}>Choose your journey to search published Pangasinan transit routes.</Text>}
+        {routes.map(r => <View key={r.id} style={t([styles.card, route?.id === r.id && { borderColor: '#EE7058' }])}>
+          <View style={styles.row}><View style={t(styles.icon)}><Bus size={20} color={themeColor('#103E53', 'color')} /></View><View style={{ flex: 1 }}><Text style={t(styles.name)}>{r.name}</Text><Text style={t(styles.muted)}>{r.stops.length} stops · {r.type}</Text></View><Text style={t(styles.muted)}>Fare unconfirmed</Text></View>
+          <Text style={t(styles.muted)}>{r.frequency}{r.firstDeparture && r.lastDeparture ? ` · ${r.firstDeparture} – ${r.lastDeparture}` : ''}</Text>
+          {button('View route source', () => Linking.openURL(r.sourceUrl).catch(() => setMessage('Unable to open route source.')), MapPin, true)}
+          <View style={styles.row}><View style={{ flex: 1 }}>{button('Set Stop Alert', () => choose(r), Bell)}</View><View style={{ flex: 1 }}>{button('Track Route', () => { choose(r); gps(); }, MapPin, true, busyGPS)}</View></View>
+        </View>)}
       </View>
-    </ScrollView>
-  );
+      <View style={[styles.right, compact && { width: '100%' }]}>
+        <View style={t(styles.card)}><View style={styles.row}><Text style={t([styles.title, { flex: 1 }])}>Stop Alarm</Text><Text style={t(styles.muted)}>{alarm ? 'On' : 'Off'}</Text></View>
+          <Select label="Alert me at" disabled={!route} value={String(stopIndex)} options={(route?.stops || []).map((s, i) => ({ value: String(i), label: s.name }))} onChange={v => { setAlarm(false); setStopIndex(Number(v)); }} />
+          <Text style={t(styles.muted)}>Alert radius · {radius} m</Text><View style={[styles.row, { flexWrap: 'wrap' }]}>{[100, 300, 500, 1000, 2000].map(n => <FeedbackPressable key={n} accessibilityRole="button" accessibilityState={{ selected: radius === n }} onPress={() => { setAlarm(false); setRadius(n); }} style={t([styles.chip, radius === n && styles.active])}><Text style={t(styles.muted)}>{n} m</Text></FeedbackPressable>)}</View>
+          <View style={styles.row}>{modes.map(({ key, label, Icon }) => <FeedbackPressable key={key} accessibilityRole="button" accessibilityState={{ selected: mode === key }} onPress={() => { setAlarm(false); setMode(key); }} style={t([styles.mode, mode === key && styles.active])}><Icon size={16} color={themeColor('#103E53', 'color')} /><Text style={t(styles.muted)}>{label}</Text></FeedbackPressable>)}</View>
+          {button(alarm ? 'Disable Alarm' : 'Enable Alarm', enable, Bell, false, !target)}
+          {button(tracking ? 'Stop Tracking' : 'Resume GPS Tracking', tracking ? halt : () => gps(), MapPin, true, !route || busyGPS)}
+          <Text style={t(styles.muted)}>{tracking ? accurate ? `GPS active · accuracy ±${Math.round(position.coords.accuracy)} m` : 'Waiting for fresh, accurate GPS…' : 'GPS tracking off'}</Text>
+          <Text style={t(styles.muted)}>Keep this screen open for alerts. Distances are GPS proximity, not road distance or live vehicle arrival times.</Text>
+        </View>
+        <View style={t(styles.card)}><Text style={t(styles.title)}>Stop Progress</Text>{!route && <Text style={t(styles.muted)}>Select a route to see its stops.</Text>}{route?.stops.map((s, i) => <FeedbackPressable key={`${i}-${s.name}`} accessibilityRole="button" onPress={() => { setAlarm(false); setStopIndex(i); }} style={styles.row}><View style={t([styles.dot, i === stopIndex && { borderColor: '#EE7058', backgroundColor: '#EE7058' }])} /><View style={{ flex: 1 }}><Text style={t(styles.name)}>{s.name}</Text><Text style={t(styles.muted)}>{fresh ? `${(distanceMeters(position.coords, s) / 1000).toFixed(2)} km away` : 'Waiting for GPS'}{i === stopIndex ? ' · Alert stop' : ''}</Text></View></FeedbackPressable>)}</View>
+      </View>
+    </View>{!!message && <View accessibilityLiveRegion="polite" style={t([styles.card, { marginTop: 16 }])}><Text style={t(styles.name)}>{message}</Text></View>}
+  </ScrollView>;
 }
-
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F7F9FB" },
-  screen: { flexGrow: 1, padding: 32, paddingBottom: 48 },
-
-  // Header
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 28,
-  },
-  toolActions: { justifyContent: "flex-end", marginTop: -10, marginBottom: 18 },
-  title: { fontSize: 26, fontWeight: "700", color: "#1A2E40", marginBottom: 4 },
-  subtitle: { fontSize: 14, color: "#6B8CA8", maxWidth: 400 },
-  refreshBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: "#E2EBF3",
-    backgroundColor: "#fff",
-  },
-  refreshText: { fontSize: 13, fontWeight: "600", color: colors.oceanBlue },
-
-  // Layout
-  columns: { flexDirection: "row", gap: 20, alignItems: "flex-start" },
-  leftCol: { flex: 1, gap: 14 },
-  rightCol: { width: 300, gap: 16 },
-
-  // Info card
-  infoCard: {
-    backgroundColor: colors.oceanBlueLight,
-    borderRadius: 14,
-    padding: 16,
-  },
-  infoCardInner: { flexDirection: "row", gap: 12, alignItems: "flex-start" },
-  infoIconBox: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  infoCardTitle: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: colors.oceanBlue,
-    marginBottom: 4,
-  },
-  infoCardDesc: { fontSize: 12, color: "#4A6880", lineHeight: 18 },
-
-  // Section label
-  sectionLabelRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 2,
-  },
-  sectionLabel: { fontSize: 13, fontWeight: "700", color: "#1A2E40" },
-  sectionCount: { fontSize: 12, color: "#6B8CA8" },
-
-  // States
-  loadingBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    padding: 20,
-    backgroundColor: "#fff",
-    borderRadius: 14,
-  },
-  loadingText: { fontSize: 13, color: "#6B8CA8" },
-  errorBox: {
-    padding: 14,
-    borderRadius: 12,
-    backgroundColor: "#FFF1EE",
-  },
-  errorText: { fontSize: 13, color: colors.sunsetCoral },
-  emptyBox: {
-    padding: 24,
-    borderRadius: 14,
-    backgroundColor: "#fff",
-    alignItems: "center",
-  },
-  emptyText: { fontSize: 13, color: "#6B8CA8" },
-
-  // Route card
-  routeCard: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 20,
-    gap: 14,
-    borderWidth: 2,
-    borderColor: "transparent",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  routeCardSelected: {
-    borderColor: colors.oceanBlue,
-    backgroundColor: "#FAFCFF",
-  },
-  routeTop: { flexDirection: "row", alignItems: "center", gap: 12 },
-  routeIconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  routeInfo: { flex: 1 },
-  routeName: { fontSize: 15, fontWeight: "700", color: "#1A2E40", marginBottom: 2 },
-  routeMeta: { fontSize: 12, color: "#6B8CA8" },
-
-  // Stats
-  routeStats: { flexDirection: "row", gap: 8 },
-  statChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 20,
-    backgroundColor: "#F4F7FB",
-  },
-  statText: { fontSize: 11, color: "#6B8CA8", fontWeight: "500" },
-
-  // Select button
-  selectBtn: {
-    alignItems: "center",
-    paddingVertical: 11,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: "#E2EBF3",
-    backgroundColor: "#fff",
-  },
-  selectBtnActive: {
-    backgroundColor: colors.sunsetCoral,
-    borderColor: colors.sunsetCoral,
-  },
-  selectBtnText: { fontSize: 13, fontWeight: "600", color: "#4A6880" },
-  selectBtnTextActive: { color: "#fff" },
-
-  // Alarm card
-  alarmCard: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 22,
-    gap: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 10,
-    elevation: 3,
-  },
-  alarmCardTitle: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: "#1A2E40",
-  },
-
-  // Selected route badge
-  selectedRouteBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    padding: 12,
-    borderRadius: 10,
-    backgroundColor: colors.oceanBlueLight,
-  },
-  selectedRouteBadgeEmpty: { backgroundColor: "#F4F7FB" },
-  selectedRouteDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.palmGreen,
-    flexShrink: 0,
-  },
-  selectedRouteName: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: colors.oceanBlue,
-    marginBottom: 2,
-  },
-  selectedRouteMeta: { fontSize: 11, color: "#4A6880" },
-  noRouteText: { fontSize: 13, color: "#6B8CA8", fontStyle: "italic" },
-
-  // Config
-  configLabel: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#6B8CA8",
-    letterSpacing: 0.5,
-    marginBottom: -8,
-  },
-
-  // Radius
-  radiusRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  radiusChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    borderWidth: 1.5,
-    borderColor: "#E2EBF3",
-    backgroundColor: "#fff",
-  },
-  radiusChipActive: {
-    borderColor: colors.oceanBlue,
-    backgroundColor: colors.oceanBlueLight,
-  },
-  radiusText: { fontSize: 12, fontWeight: "600", color: "#4A6880" },
-  radiusTextActive: { color: colors.oceanBlue },
-
-  // Mode
-  modeRow: { flexDirection: "row", gap: 8 },
-  modeBtn: {
-    flex: 1,
-    alignItems: "center",
-    gap: 6,
-    paddingVertical: 12,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: "#E2EBF3",
-    backgroundColor: "#fff",
-  },
-  modeBtnActive: {
-    borderColor: colors.sunsetCoral,
-    backgroundColor: "#FFF1EE",
-  },
-  modeBtnText: { fontSize: 11, fontWeight: "600", color: "#6B8CA8" },
-  modeBtnTextActive: { color: colors.sunsetCoral },
-
-  // Summary
-  summaryBox: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#EEF2F7",
-    overflow: "hidden",
-  },
-  summaryTitle: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: "#6B8CA8",
-    letterSpacing: 0.5,
-    padding: 12,
-    paddingBottom: 8,
-    backgroundColor: "#F8FAFC",
-  },
-  summaryRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F0F4F8",
-  },
-  summaryKey: { fontSize: 12, color: "#6B8CA8" },
-  summaryVal: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#1A2E40",
-    maxWidth: 160,
-    textAlign: "right",
-  },
-  statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: 20,
-  },
-  statusBadgeOn: { backgroundColor: "#EDF7EE" },
-  statusBadgeOff: { backgroundColor: "#F4F7FB" },
-  statusBadgeText: { fontSize: 11, fontWeight: "700" },
-  statusBadgeTextOn: { color: "#22863A" },
-  statusBadgeTextOff: { color: "#6B8CA8" },
-
-  // Enable button
-  enableBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    padding: 14,
-    borderRadius: 12,
-    backgroundColor: colors.oceanBlue,
-  },
-  enableBtnOn: { backgroundColor: colors.sunsetCoral },
-  enableBtnDisabled: { backgroundColor: "#CBD5E0" },
-  enableBtnText: { fontSize: 14, fontWeight: "700", color: "#fff" },
-
-  // Tips
-  tipsCard: {
-    backgroundColor: "#fff",
-    borderRadius: 14,
-    padding: 18,
-    gap: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  tipsTitle: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: "#1A2E40",
-    marginBottom: 2,
-  },
-  tipRow: { flexDirection: "row", alignItems: "flex-start", gap: 8 },
-  tipDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: colors.sunsetCoral,
-    marginTop: 5,
-    flexShrink: 0,
-  },
-  tipText: { fontSize: 12, color: "#6B8CA8", lineHeight: 18, flex: 1 },
+  container: { flex: 1, backgroundColor: '#FAF9F6' }, screen: { padding: 32, paddingBottom: 48 },
+  columns: { flexDirection: 'row', alignItems: 'flex-start', gap: 20 }, right: { width: 310, gap: 16 },
+  card: { backgroundColor: '#fff', padding: 20, borderRadius: 18, borderWidth: 1, borderColor: '#E9E8E4', gap: 14, shadowColor: '#103E53', shadowOpacity: 0.04, shadowRadius: 8, shadowOffset: { width: 0, height: 2 } },
+  title: { fontSize: 18, fontWeight: '700', color: '#103E53' }, name: { fontSize: 13, fontWeight: '600', color: '#103E53' }, muted: { fontSize: 12, color: '#758994', lineHeight: 18 },
+  row: { flexDirection: 'row', gap: 10, alignItems: 'center' }, button: { backgroundColor: '#EE7058', padding: 12, borderRadius: 12, flexDirection: 'row', gap: 6, alignItems: 'center', justifyContent: 'center' }, secondary: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#E3E8EB' }, buttonText: { color: '#fff', fontSize: 12, fontWeight: '600' },
+  chip: { padding: 7, borderRadius: 8, borderWidth: 1, borderColor: '#E3E8EB' }, active: { backgroundColor: '#FFF0EB', borderColor: '#EE7058' }, mode: { flex: 1, gap: 6, alignItems: 'center', padding: 12, borderRadius: 12, borderWidth: 1, borderColor: '#E3E8EB' }, icon: { padding: 12, borderRadius: 22, backgroundColor: '#EDF2F5' }, dot: { width: 12, height: 12, borderRadius: 6, borderWidth: 2, borderColor: '#DEE6E9' },
 });

@@ -3,6 +3,7 @@ import { Router } from 'express'
 import { isValidObjectId } from 'mongoose'
 import { authenticate, AuthRequest, requireRole } from '../middleware/auth'
 import { lguResources, resourceInput } from '../lib/lguResources'
+import { validateFence } from '../lib/geofence'
 
 const router = Router()
 router.param('id', validateId)
@@ -40,6 +41,7 @@ router.post('/:resource', async (req: AuthRequest<{ resource: string }>, res, ne
   const { model, fields } = lguResources[req.params.resource]
   try {
     const input = resourceInput(req.body, fields)
+    if (req.params.resource === 'geofences' && validateFence(input) !== req.municipality) return res.status(400).json({ error: 'The geofence centre must be in your assigned Pangasinan municipality.' })
     if (input.transitRouteId) {
       const route = await lguResources['transit-routes'].model.findOne({ _id: input.transitRouteId, municipality: req.municipality })
       if (!route) return res.status(400).json({ error: 'Transit route must belong to your municipality' })
@@ -57,6 +59,11 @@ router.put('/:resource/:id', async (req: AuthRequest<{ resource: string; id: str
   const { model, fields } = lguResources[req.params.resource]
   try {
     const input = resourceInput(req.body, fields)
+    if (req.params.resource === 'geofences') {
+      const current = await model.findOne({ _id: req.params.id, municipality: req.municipality }).lean()
+      if (!current) return res.status(404).json({ error: 'Resource not found' })
+      if (validateFence({ ...current, ...input }) !== req.municipality) return res.status(400).json({ error: 'The geofence centre must be in your assigned Pangasinan municipality.' })
+    }
     if (input.transitRouteId) {
       const route = await lguResources['transit-routes'].model.findOne({ _id: input.transitRouteId, municipality: req.municipality })
       if (!route) return res.status(400).json({ error: 'Transit route must belong to your municipality' })

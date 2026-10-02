@@ -86,6 +86,41 @@ let server
       assert.ok(list.body.every(user => user.role === kind.toUpperCase() && user.passwordHash === undefined))
     }
     console.log('PASS bootstrap concurrency/idempotence, authorization, login, validation, creator attribution, duplicates, public fields and audit rollback')
+    // Managed edits and deletes are restricted, audited, and transactional.
+    const editRoute = `users/admin-accounts/${newAdmin.body.id}`
+    for (const auth of [undefined, ...accounts.map(token)]) {
+      assert.equal((await call(editRoute, auth, 'PUT', { email: 'edited@multraverse.ph' })).status, auth ? 403 : 401)
+      assert.equal((await call(editRoute, auth, 'DELETE', { confirmation: true })).status, auth ? 403 : 401)
+    }
+    assert.equal((await call(editRoute, superToken, 'PUT', { email: 'bad' })).status, 400)
+    assert.equal((await call(editRoute, superToken, 'PUT', { email: admin.email })).status, 409)
+    assert.equal((await call(editRoute, superToken, 'PUT', { email: 'edited@multraverse.ph', role: 'SUPERADMIN' })).status, 400)
+    assert.equal((await call(`users/lgu-accounts/${newAdmin.body.id}`, superToken, 'PUT', { email: 'edited@multraverse.ph', municipality: 'Alaminos' })).status, 404)
+    const edited = await call(editRoute, superToken, 'PUT', { email: 'edited@multraverse.ph' })
+    assert.equal(edited.status, 200); assert.equal(edited.body.email, 'edited@multraverse.ph'); assert.equal(edited.body.passwordHash, undefined)
+    const editedUser = await User.findById(newAdmin.body.id).select('+passwordHash')
+    assert.ok(await bcrypt.compare(adminInput.password, editedUser.passwordHash))
+    assert.equal(await AuditLog.countDocuments({ action: 'update_admin_account', targetUser: editedUser._id }), 1)
+    assert.equal((await call(editRoute, superToken, 'DELETE', {})).status, 400)
+    assert.equal((await call(`users/admin-accounts/${superadmin._id}`, superToken, 'DELETE', { confirmation: true })).status, 404)
+    const originalAuditCreate = AuditLog.create
+    AuditLog.create = async () => { throw new Error('Simulated audit outage') }
+    try {
+      assert.equal((await call(editRoute, superToken, 'PUT', { email: 'rollback-edit@multraverse.ph' })).status, 500)
+      assert.equal((await User.findById(editedUser._id)).email, 'edited@multraverse.ph')
+      assert.equal((await call(editRoute, superToken, 'DELETE', { confirmation: true })).status, 500)
+      assert.ok(await User.findById(editedUser._id))
+    } finally { AuditLog.create = originalAuditCreate }
+    assert.equal((await call(editRoute, superToken, 'DELETE', { confirmation: true })).status, 200)
+    assert.equal(await User.findById(editedUser._id), null)
+    assert.equal((await call('users/me', token(editedUser))).status, 401)
+    assert.equal((await AuditLog.findOne({ action: 'delete_admin_account', targetUser: editedUser._id })).metadata.email, 'edited@multraverse.ph')
+    assert.equal((await call(editRoute, superToken, 'DELETE', { confirmation: true })).status, 404)
+    const lguRoute = `users/lgu-accounts/${created.body.id}`
+    assert.equal((await call(lguRoute, superToken, 'PUT', { email: lguInput.email, municipality: 'Invalid municipality' })).status, 400)
+    assert.equal((await call(lguRoute, superToken, 'PUT', { email: lguInput.email, municipality: 'Dagupan' })).body.municipality, 'Dagupan')
+    assert.equal((await call(lguRoute, superToken, 'PUT', { email: lguInput.email, municipality: 'Alaminos' })).status, 200)
+    console.log('PASS managed account edits, deletes, permissions, validation, session revocation and audit rollback')
     const fixtures = {
       places: { name: 'Beach', description: 'Description', location: 'Alaminos', category: 'Beach' },
       geofences: { location: 'Alaminos', zone: 'Park', radius: '100 m' },

@@ -39,3 +39,14 @@ export async function createManagedAccount(input: ReturnType<typeof managedAccou
   } finally { await session.endSession() }
   return User.findById(userId).select(MANAGED_USER_FIELDS).populate('createdBy', 'email role')
 }
+
+export function managedAccountEditInput(body: unknown, role: 'LGU' | 'ADMIN') {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) throw new Error('Provide account details')
+  const input = body as Record<string, unknown>
+  const allowed = role === 'LGU' ? ['email', 'municipality'] : ['email']
+  if (Object.keys(input).some(key => !allowed.includes(key))) throw new Error('Unexpected account field')
+  const emailError = registrationEmailError(input.email)
+  if (emailError) throw new Error(emailError)
+  if (role === 'LGU' && !isLGUMunicipality(input.municipality)) throw new Error('Select a valid Pangasinan municipality')
+  return { email: (input.email as string).trim().toLowerCase(), ...(role === 'LGU' ? { municipality: input.municipality as string, location: `${input.municipality}, Pangasinan` } : {}) }
+}

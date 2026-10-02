@@ -14,7 +14,7 @@ Run `node scripts/check-preferences.cjs` to check currency precision, PHP conver
 
 **Settings → Edit Profile** saves your name and location to your account. **Change Photo** opens a photo preview: choose an image, then save or cancel. You can also remove your current photo. Saved names and photos update in Settings and the mobile/desktop sidebar, and are restored on sign-in. The sign-in email is displayed as read-only.
 
-The [Expo photo picker](https://docs.expo.dev/versions/v54.0.0/sdk/imagepicker/) and image manipulator support Android, iOS, and web. Photos are cropped to a square, resized to 512 × 512 JPEG, and stored with the user in MongoDB (maximum 512 KB). No separate image-hosting service is required. Rebuild installed native binaries after adding these dependencies; Expo Go can use the updated JavaScript bundle.
+The [Expo photo picker](https://docs.expo.dev/versions/v57.0.0/sdk/imagepicker/) and image manipulator support Android, iOS, and web. Photos are cropped to a square, resized to 512 × 512 JPEG, and stored with the user in MongoDB (maximum 512 KB). No separate image-hosting service is required. Rebuild installed native binaries after adding these dependencies; Expo Go can use the updated JavaScript bundle.
 
 Run `npm run build --prefix server` then `node server/scripts/check-profile.cjs` to check profile validation.
 
@@ -24,8 +24,8 @@ Frontend:
 
 - JavaScript
 - React 19
-- React Native 0.81
-- Expo SDK 54
+- React Native 0.86
+- Expo SDK 57 (57.0.26)
 - React Navigation
 - Zustand
 - Async Storage
@@ -121,7 +121,13 @@ backend from the emulator. An explicit `EXPO_PUBLIC_API_URL` overrides this addr
 If Metro's default port is already occupied, use
 `npm run android:emulator -- --port 8082`.
 
-For a physical device, connect the device and computer to the same Wi-Fi network. The client detects the Expo development host for native development. For a deployed API or a backend on another machine, set this before starting Expo:
+For an Android phone, install [Expo Go for SDK 57](https://expo.dev/go?platform=android&device=true&sdkVersion=57), and connect the phone and computer to the same Wi-Fi network. From the repository root, run:
+
+```powershell
+npm.cmd run dev:clear
+```
+
+Open Expo Go on the phone and scan the terminal's QR code. Keep the backend running in a separate terminal. The client detects the Expo development host for native development. For a deployed API or a backend on another machine, set this before starting Expo:
 
 ```env
 EXPO_PUBLIC_API_URL=http://YOUR_API_HOST:3001

@@ -31,6 +31,7 @@ import AdminApprovals from "./pages/AdminApprovals";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminRoutes from "./pages/AdminRoutes";
 import AdminGeofences from "./pages/AdminGeofences";
+import GeofenceTracking from "./components/GeofenceTracking";
 import AdminUsers from "./pages/AdminUsers";
 import AdminAIControls from "./pages/AdminAIControls";
 import AdminAnalytics from "./pages/AdminAnalytics";
@@ -116,6 +117,7 @@ function UserScreens() {
       )}
       <View style={themeStyle(styles.content)}>
         <UserStack.Navigator
+          layout={({ children }) => <View style={{ flex: 1 }}><GeofenceTracking />{children}</View>}
           screenLayout={({ children }) => <ScreenMotion>{children}</ScreenMotion>}
           screenListeners={({ route }) => ({ focus: () => setActiveScreen(route.name) })}
           screenOptions={{
@@ -202,9 +204,11 @@ function AdminScreens() {
         </View>
       )}
       <View style={themeStyle(styles.content)}>
-        {!isWide && <View style={themeStyle({ flexDirection: 'row', gap: 16, padding: 12, backgroundColor: colors.warmSand })}>
+        {!isWide && <View style={themeStyle({ flexDirection: 'row', flexWrap: 'wrap', gap: 16, padding: 12, backgroundColor: colors.warmSand })}>
           <Pressable accessibilityRole="button" onPress={() => handleNavigate('AdminDashboard')}><Text style={themeStyle({ color: colors.oceanBlue })}>Overview</Text></Pressable>
           <Pressable accessibilityRole="button" onPress={() => handleNavigate('AdminApprovals')}><Text style={themeStyle({ color: colors.oceanBlue })}>LGU approvals</Text></Pressable>
+          <Pressable accessibilityRole="button" onPress={() => handleNavigate('AdminGeofences')}><Text style={themeStyle({ color: colors.oceanBlue })}>Geofences</Text></Pressable>
+          <Pressable accessibilityRole="button" onPress={() => handleNavigate('AdminUsers')}><Text style={themeStyle({ color: colors.oceanBlue })}>Users</Text></Pressable>
         </View>}
         <AdminStack.Navigator screenLayout={({ children }) => <ScreenMotion>{children}</ScreenMotion>} screenOptions={{ headerShown: false }}>
           <AdminStack.Screen name="AdminDashboard" component={AdminDashboard} />

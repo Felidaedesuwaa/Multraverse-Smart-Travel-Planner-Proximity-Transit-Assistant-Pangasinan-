@@ -4,9 +4,11 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import SuperAdminSidebar from '../components/SuperAdminSidebar'
 import SuperAdminDashboard from '../pages/SuperAdminDashboard'
 import SuperAdminUsers from '../pages/SuperAdminUsers'
+import AdminUsers from '../pages/AdminUsers'
 import SuperAdminCreateLGU from '../pages/SuperAdminCreateLGU'
 import SuperAdminCreateAdmin from '../pages/SuperAdminCreateAdmin'
 import SuperAdminAuditLog from '../pages/SuperAdminAuditLog'
+import SuperAdminSettings from '../pages/SuperAdminSettings'
 const Stack = createNativeStackNavigator()
 export default function SuperAdminLayout({ navigation }) {
   const { width } = useWindowDimensions()
@@ -17,9 +19,11 @@ export default function SuperAdminLayout({ navigation }) {
       <Stack.Navigator screenOptions={{ headerShown: false }} screenListeners={({ route }) => ({ focus: () => setActiveScreen(route.name) })}>
         <Stack.Screen name="SuperAdminDashboard" component={SuperAdminDashboard} />
         <Stack.Screen name="SuperAdminUsers" component={SuperAdminUsers} />
+        <Stack.Screen name="SuperAdminUserAccounts" component={AdminUsers} />
         <Stack.Screen name="SuperAdminCreateLGU" component={SuperAdminCreateLGU} />
         <Stack.Screen name="SuperAdminCreateAdmin" component={SuperAdminCreateAdmin} />
         <Stack.Screen name="SuperAdminAuditLog" component={SuperAdminAuditLog} />
+        <Stack.Screen name="SuperAdminSettings" component={SuperAdminSettings} />
       </Stack.Navigator>
     </View>
   </View>

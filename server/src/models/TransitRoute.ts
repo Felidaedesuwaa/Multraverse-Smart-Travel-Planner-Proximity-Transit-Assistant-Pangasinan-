@@ -9,6 +9,7 @@ const transitRouteSchema = new Schema({
   stops: { type: Number, default: 0 }, frequency: { type: String, required: true }, passengers: { type: Number, default: 0 },
   status: { type: String, enum: ['ACTIVE', 'INACTIVE'], default: 'ACTIVE' },
   areaIds: [String], stopNames: [String], firstDeparture: String, lastDeparture: String,
+  stopLocations: [{ name: { type: String, required: true }, areaId: { type: String, required: true }, lat: { type: Number, required: true, min: -90, max: 90 }, lng: { type: Number, required: true, min: -180, max: 180 } }],
   verifiedAt: Date, sourceUrl: String,
 }, apiSchemaOptions)
 hardenSchema(transitRouteSchema, 'TransitRoute')

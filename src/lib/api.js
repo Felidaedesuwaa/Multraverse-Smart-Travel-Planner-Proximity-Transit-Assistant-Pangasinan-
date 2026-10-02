@@ -107,6 +107,8 @@ async function requestCatalog(options = {}) {
 export const api = {
   getItineraryCatalog: (options = {}) => request('/api/ai/itinerary/catalog', options),
   generateGroundedItinerary: (data, options = {}) => request('/api/ai/itinerary/grounded', { ...options, method: 'POST', body: JSON.stringify(data) }),
+  updateManagedAccount: (type, id, data) => request('/api/users/' + type + '-accounts/' + id, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteManagedAccount: (type, id) => request('/api/users/' + type + '-accounts/' + id, { method: 'DELETE', body: JSON.stringify({ confirmation: true }) }),
   getManagedAccounts: (type = 'lgu') => requestList(`/api/users/${type}-accounts`),
   createManagedAccount: (type, data) => request(`/api/users/${type}-accounts`, { method: 'POST', body: JSON.stringify(data) }),
   getAuditLogs: ({ page = 1, action = '', actor = '' } = {}) => request(`/api/audit-logs?page=${page}&limit=25${action ? `&action=${encodeURIComponent(action)}` : ''}${actor ? `&actor=${encodeURIComponent(actor)}` : ''}`),
@@ -164,10 +166,15 @@ export const api = {
   getPublicPlaces: (options = {}) => requestList('/api/places/public', options),
 
   // Transit Routes
+  searchTransitRoutes: data => request('/api/ai/transit/search', { method: 'POST', body: JSON.stringify(data) }),
   getTransitRoutes: () => requestList('/api/transit-routes'),
 
   // Geofences
   getGeofences: () => requestList('/api/geofences'),
+  createGeofence: data => request('/api/geofences', { method: 'POST', body: JSON.stringify(data) }),
+  deleteGeofence: id => request(`/api/geofences/${id}`, { method: 'DELETE' }),
+  getGeofenceEvents: () => request('/api/geofences/events'),
+  trackGeofences: data => request('/api/geofences/track', { method: 'POST', body: JSON.stringify(data) }),
   updateGeofence: (id, data) =>
     request(`/api/geofences/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
 
@@ -193,6 +200,7 @@ export const api = {
 
   // Admin
   getAllUsers: () => requestList('/api/users'),
+  getExplorerDashboard: ({ page = 1, search = '', signal } = {}) => request(`/api/users/explorers?page=${page}&limit=20&search=${encodeURIComponent(search)}`, { signal }),
   getAnalytics: () => request('/api/analytics'),
   getDashboardAnalytics: () => request('/api/analytics/dashboard'),
 }

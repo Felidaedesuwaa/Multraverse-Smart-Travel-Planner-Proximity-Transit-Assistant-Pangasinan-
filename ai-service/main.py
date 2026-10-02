@@ -55,6 +55,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Multraverse AI Service", version="2.0.0", lifespan=lifespan)
+from transit import router as transit_router
+app.include_router(transit_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

@@ -1,7 +1,10 @@
 import { sanitizeRequest, validateRouter, pagination, validateId } from '../middleware/input'
 import express, { Router, Response } from 'express'
 import { authenticate, AuthRequest } from '../middleware/auth'
-import { Phrasebook } from '../models'
+import { Phrasebook, TransitRoute } from '../models'
+import { publishedFilter } from '../models/_moderation'
+import areas from '../data/plannerAreas.json'
+import { transitMunicipality } from '../lib/transitBoundary'
 import plannerRoutes from './planner'
 import groundedItineraryRoutes from './groundedItinerary'
 import { AISettings } from '../models/AISettings'
@@ -19,6 +22,25 @@ const expressJsonAudio = express.json({ limit: '12mb' })
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000'
 const supportedLanguages = ['Filipino', 'Pangasinan', 'English'] as const
+
+router.post('/transit/search', async (req: AuthRequest, res: Response) => {
+  const { from, to } = req.body
+  if (!areas.some(a => a.id === from) || !areas.some(a => a.id === to) || from === to) return res.status(400).json({ error: 'Choose two different Pangasinan municipalities.' })
+  try {
+    const records = await TransitRoute.find({ ...publishedFilter, status: 'ACTIVE', sourceUrl: { $regex: '^https?://' }, verifiedAt: { $ne: null } }).limit(500).lean()
+    const candidates = records.flatMap((r: any) => {
+      const stops = r.stopLocations || []
+      const start = stops.findIndex((s: any) => s.areaId === from)
+      const end = stops.findIndex((s: any, i: number) => i > start && s.areaId === to)
+      if (start < 0 || end <= start || !stops.every((s: any) => transitMunicipality(s.lat, s.lng) === s.areaId)) return []
+      return [{ id: String(r._id), name: r.name, type: r.type, frequency: r.frequency, sourceUrl: r.sourceUrl, verifiedAt: r.verifiedAt, firstDeparture: r.firstDeparture, lastDeparture: r.lastDeparture, stops: stops.slice(start, end + 1).map((s: any) => ({ name: s.name, areaId: s.areaId, lat: s.lat, lng: s.lng })) }]
+    })
+    if (!candidates.length) return res.json({ routes: [] })
+    const result = await callAI('/transit/search', { from_area: from, to_area: to, candidates }) as any
+    const ids = Array.isArray(result?.route_ids) ? result.route_ids : []
+    res.json({ routes: [...new Set(ids)].map(id => candidates.find(c => c.id === id)).filter(Boolean) })
+  } catch (error) { sendAIError(res, error, 'Unable to search transit routes.') }
+})
 
 class AIServiceError extends Error {
   constructor(message: string, readonly status: number) {

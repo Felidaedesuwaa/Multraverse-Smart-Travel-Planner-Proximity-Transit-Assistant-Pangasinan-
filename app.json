@@ -14,7 +14,9 @@
           "microphonePermission": false
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-font",
+      ["expo-location", { "locationWhenInUsePermission": "Allow Multraverse to show your GPS position inside your assigned LGU map." }]
     ],
     "assetBundlePatterns": [
       "**/*"
