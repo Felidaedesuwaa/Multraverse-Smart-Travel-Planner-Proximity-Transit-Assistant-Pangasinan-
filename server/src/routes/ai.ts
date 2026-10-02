@@ -35,10 +35,8 @@ router.post('/transit/search', async (req: AuthRequest, res: Response) => {
       if (start < 0 || end <= start || !stops.every((s: any) => transitMunicipality(s.lat, s.lng) === s.areaId)) return []
       return [{ id: String(r._id), name: r.name, type: r.type, frequency: r.frequency, sourceUrl: r.sourceUrl, verifiedAt: r.verifiedAt, firstDeparture: r.firstDeparture, lastDeparture: r.lastDeparture, stops: stops.slice(start, end + 1).map((s: any) => ({ name: s.name, areaId: s.areaId, lat: s.lat, lng: s.lng })) }]
     })
-    if (!candidates.length) return res.json({ routes: [] })
-    const result = await callAI('/transit/search', { from_area: from, to_area: to, candidates }) as any
-    const ids = Array.isArray(result?.route_ids) ? result.route_ids : []
-    res.json({ routes: [...new Set(ids)].map(id => candidates.find(c => c.id === id)).filter(Boolean) })
+    // Transit selection is deterministic; no language model or Python service is needed.
+    res.json({ routes: candidates.sort((a, b) => a.stops.length - b.stops.length || a.id.localeCompare(b.id)) })
   } catch (error) { sendAIError(res, error, 'Unable to search transit routes.') }
 })
 

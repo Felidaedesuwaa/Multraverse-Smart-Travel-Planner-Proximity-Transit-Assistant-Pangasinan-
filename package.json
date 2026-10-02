@@ -13,7 +13,8 @@
     "dev:clear": "expo start --clear",
     "build": "expo export --platform all",
     "build:web": "expo export --platform web",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test:transit": "node scripts/check-transit-alarm.cjs && npm run build --prefix server && node server/scripts/check-transit-search.cjs"
   },
   "dependencies": {
     "@expo-google-fonts/dm-sans": "^0.4.2",
@@ -28,7 +29,9 @@
     "expo-image-picker": "~57.0.20",
     "expo-linear-gradient": "~57.0.2",
     "expo-location": "~57.0.20",
+    "expo-notifications": "~57.0.21",
     "expo-secure-store": "~57.0.4",
+    "expo-task-manager": "~57.0.21",
     "lucide-react-native": "^1.33.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",

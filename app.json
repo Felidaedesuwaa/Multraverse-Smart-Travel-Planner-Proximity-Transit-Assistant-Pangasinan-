@@ -16,7 +16,14 @@
       ],
       "expo-secure-store",
       "expo-font",
-      ["expo-location", { "locationWhenInUsePermission": "Allow Multraverse to show your GPS position inside your assigned LGU map." }]
+      ["expo-location", {
+        "locationWhenInUsePermission": "Allow Multraverse to show your location and check your selected transit stop.",
+        "locationAlwaysAndWhenInUsePermission": "Allow Multraverse to check your stop in the background during a trip you start.",
+        "isIosBackgroundLocationEnabled": true,
+        "isAndroidBackgroundLocationEnabled": true,
+        "isAndroidForegroundServiceEnabled": true
+      }],
+      "expo-notifications"
     ],
     "assetBundlePatterns": [
       "**/*"

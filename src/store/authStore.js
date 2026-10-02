@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { api, onUnauthorized } from '../lib/api'
 import { storage } from '../lib/storage'
+import { stopTransitAlarm } from '../lib/transitTracking'
 
 // Includes SUPERADMIN, ADMIN, LGU and EXPLORER roles without dropping account fields.
 // Keep role and municipality in the persisted user profile, including refreshes.
@@ -106,7 +107,9 @@ export const useAuthStore = create((set, get) => ({
 
   logout: async () => {
     try {
-      await Promise.all([storage.removeItem('token'), storage.removeItem('user')])
+      try { await stopTransitAlarm() } finally {
+        await Promise.all([storage.removeItem('token'), storage.removeItem('user')])
+      }
     } finally {
       set({ ...accountState(null), isAuthenticated: false, isLoading: false, error: null, fieldErrors: {} })
     }
