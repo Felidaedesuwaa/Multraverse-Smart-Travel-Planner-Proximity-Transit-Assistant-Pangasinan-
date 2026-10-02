@@ -4,6 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
+    "test:security": "npm run build && node scripts/check-password-security.cjs --isolated-database",
     "dev": "nodemon --watch src --watch .env --ext ts,json,env --exec ts-node src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",

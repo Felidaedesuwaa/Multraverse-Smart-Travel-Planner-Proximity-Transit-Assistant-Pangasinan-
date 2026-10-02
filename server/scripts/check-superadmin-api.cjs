@@ -1,3 +1,4 @@
+const { sessionCredential } = require('../dist/lib/sessionCredential');
 const assert = require('node:assert/strict')
 const { randomBytes } = require('node:crypto')
 const mongoose = require('mongoose')
@@ -16,7 +17,7 @@ const { lguResources } = require('../dist/lib/lguResources')
 const app = express()
 app.use(express.json())
 for (const [url, file] of [['users', 'users'], ['audit-logs', 'auditLogs'], ['admin/approvals', 'approvals'], ['lgu', 'lgu'], ['auth', 'auth']]) app.use(`/api/${url}`, require(`../dist/routes/${file}`).default)
-app.use((error, req, res, next) => res.status(500).json({ error: 'Operation failed' }))
+app.use((error, req, res, next) => res.status(error.status || 500).json({ error: 'Operation failed' }))
 let server
 ;(async () => {
   try {
@@ -33,7 +34,7 @@ let server
     const originalHash = superadmin.passwordHash
     await bootstrapSuperAdmin('different@multraverse.ph', 'Different123!')
     assert.equal((await User.findById(superadmin._id).select('+passwordHash')).passwordHash, originalHash)
-    const token = user => jwt.sign({ userId: String(user._id), role: 'SUPERADMIN' }, process.env.JWT_SECRET)
+    const token = user => jwt.sign({ userId: String(user._id), role: 'SUPERADMIN', credential: sessionCredential(user.passwordHash) }, process.env.JWT_SECRET)
     const superToken = token(superadmin)
     const accounts = []
     for (const role of ['ADMIN', 'LGU', 'EXPLORER', 'PRO']) accounts.push(await User.create({ name: role, email: `${role.toLowerCase()}@multraverse.ph`, passwordHash: await bcrypt.hash('Example123!', 4), role, ...(role === 'LGU' ? { municipality: 'Dagupan' } : {}) }))

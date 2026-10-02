@@ -83,6 +83,6 @@ async function main() {
     await new Promise(resolve => server.close(resolve))
     auth.authenticate = previousAuth; User.findById = previousRead; User.findByIdAndUpdate = previousWrite
   }
-  console.log('PASS: 16 explicit collections; embedded preferences; typed, bounded itinerary; derived stops/cost; no assumed location/budget; read-only settings GET; validated atomic settings PUT')
+  console.log('PASS: 16 explicit collections including password resets; embedded preferences; typed, bounded itinerary; derived stops/cost; no assumed location/budget; read-only settings GET; validated atomic settings PUT')
 }
 main().catch(error => { console.error(error); process.exitCode = 1 })

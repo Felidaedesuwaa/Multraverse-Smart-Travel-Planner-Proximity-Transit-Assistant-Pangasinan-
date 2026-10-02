@@ -10,6 +10,7 @@ import DeleteAccountDialog from "../components/DeleteAccountDialog";
 import { useAuthStore } from "../store/authStore";
 import { usePreferencesStore } from "../store/preferencesStore";
 import { useAppTheme } from "../theme/useAppTheme";
+import ChangePasswordDialog from "../components/ChangePasswordDialog";
 import { colors } from "../theme/colors";
 
 function Section({ title, children }) {
@@ -38,6 +39,7 @@ export default function SettingsPage() {
   const user = useAuthStore(state => state.user);
   const [editor, setEditor] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
   const [profileMessage, setProfileMessage] = useState(null);
   useEffect(() => { useAuthStore.getState().refreshProfile(); }, []);
   const dark = usePreferencesStore(state => state.darkMode);
@@ -87,6 +89,9 @@ export default function SettingsPage() {
       <Row label="Default Region" description="Pre-filled in trip search" stacked={compact} control={<TextInput accessibilityLabel="Default destination region" value={region} onChangeText={setRegion} style={themeStyle([styles.regionInput, compact && styles.regionInputCompact])} />} last />
     </Section>
     {storageError && <Text style={themeStyle(styles.storageError)}>{storageError}</Text>}
+    <Section title="Account Security">
+      <Row label="Password" description="Update your password and sign out other sessions" control={<Pressable accessibilityRole="button" onPress={() => setChangingPassword(true)} style={themeStyle(styles.photo)}><Text style={themeStyle(styles.photoText)}>Change password</Text></Pressable>} last />
+    </Section>
     <Section title="Privacy & Data">
       <Row label="Location Access" description="For transit alerts and geofencing" control={<Text style={themeStyle(styles.allowed)}>Allowed</Text>} />
       <Row label="Delete Account" description="Permanently remove your data" danger control={<Pressable accessibilityRole="button" onPress={() => setDeleting(true)} style={themeStyle(styles.delete)}><Text style={themeStyle(styles.deleteText)}>Delete</Text></Pressable>} last />
@@ -95,6 +100,7 @@ export default function SettingsPage() {
   </ScrollView>
     {editor && <ProfileEditor key={editor} mode={editor} onClose={() => setEditor(null)} onSaved={message => { setEditor(null); setProfileMessage(message); }} />}
     {deleting && <DeleteAccountDialog onClose={() => setDeleting(false)} />}
+    {changingPassword && <ChangePasswordDialog onClose={() => setChangingPassword(false)} />}
   </>;
 }
 const styles = StyleSheet.create({

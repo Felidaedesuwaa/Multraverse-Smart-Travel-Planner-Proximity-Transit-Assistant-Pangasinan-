@@ -48,6 +48,7 @@ export default function LoginPage() {
       <AuthInput label="Password" placeholder="••••••••" value={password} onChangeText={setPassword} error={errors.password} isPassword autoComplete="current-password" editable={!isLoading} returnKeyType="go" onSubmitEditing={handleSubmit} />
       {formError ? <Text accessibilityRole="alert" style={themeStyle(styles.formError)}>{formError}</Text> : null}
       <TravelButton label="Sign In" loading={isLoading} onPress={handleSubmit} />
+      <Pressable accessibilityRole="button" onPress={() => navigation.navigate("ForgotPassword")} disabled={isLoading} style={styles.signup}><Text style={[styles.footerLink, { textAlign: "center" }]}>Forgot password?</Text></Pressable>
     </LoginLayout>
   );
 }

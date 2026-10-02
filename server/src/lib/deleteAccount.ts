@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs'
 import { User, Trip, BudgetEntry, SavedPlace } from '../models'
 import { PlannerDraft } from '../models/PlannerDraft'
 import { PendingRegistration } from '../models/PendingRegistration'
+import { PasswordReset } from '../models/PasswordReset'
 import { AuthError } from './authLimits'
 
 export async function deleteAccount(userId: string, password: unknown, confirmation: unknown) {
@@ -21,5 +22,6 @@ export async function deleteAccount(userId: string, password: unknown, confirmat
     await SavedPlace.deleteMany({ userId }, { session })
     await PlannerDraft.deleteMany({ userId }, { session })
     await PendingRegistration.deleteMany({ email: user.email }, { session })
+    await PasswordReset.deleteMany({ userId }, { session })
   })
 }

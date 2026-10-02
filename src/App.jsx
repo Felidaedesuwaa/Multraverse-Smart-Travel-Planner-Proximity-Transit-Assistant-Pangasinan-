@@ -14,6 +14,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { colors } from "./theme/colors";
 import { useAuthStore } from "./store/authStore";
 import LoginPage from "./pages/LoginPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import RegisterPage from "./pages/RegisterPage";
 import LandingPage from "./pages/LandingPage";
 import UserDashboard from "./pages/UserDashboard";
@@ -54,6 +55,7 @@ const linking = {
       // only registered after authentication, so deep links cannot bypass it.
       Landing: "",
       Login: "login",
+      ForgotPassword: "forgot-password",
       Register: "register",
       User: {
         screens: {
@@ -274,6 +276,7 @@ export default function App() {
           <>
             <RootStack.Screen name="Landing" component={LandingPage} />
             <RootStack.Screen name="Login" component={LoginPage} />
+            <RootStack.Screen name="ForgotPassword" component={ForgotPasswordPage} />
             <RootStack.Screen name="Register" component={RegisterPage} />
           </>
         )}

@@ -1,3 +1,4 @@
+const { sessionCredential } = require('../dist/lib/sessionCredential');
 const assert = require('node:assert/strict')
 const { randomBytes } = require('node:crypto')
 const express = require('express')
@@ -16,7 +17,7 @@ const { lguResources } = require('../dist/lib/lguResources')
 const app = express()
 app.use(express.json())
 for (const [url, file] of [['lgu', 'lgu'], ['admin/approvals', 'approvals'], ['knowledge', 'knowledge'], ['geofences', 'geofences'], ['transit-routes', 'transitRoutes'], ['users', 'users'], ['auth', 'auth']]) app.use(`/api/${url}`, require(`../dist/routes/${file}`).default)
-app.use((error, req, res, next) => res.status(500).json({ error: error.message }))
+app.use((error, req, res, next) => res.status(error.status || 500).json({ error: 'Test operation failed' }))
 let server
 const fixtures = {
   places: { name: 'Municipal beach', description: 'A coastal destination', location: 'Barangay One', category: 'Beach' },
@@ -38,7 +39,7 @@ const fixtures = {
     }
     const account = async (role, municipality) => {
       const user = await User.create({ name: role, email: `${randomBytes(5).toString('hex')}@test.invalid`, passwordHash: await bcrypt.hash('Lgu123!', 4), emailVerifiedAt: new Date(), role, municipality })
-      return { user, token: jwt.sign({ userId: String(user._id), role: 'ADMIN', municipality: 'Bolinao' }, process.env.JWT_SECRET) }
+      return { user, token: jwt.sign({ userId: String(user._id), role: 'ADMIN', municipality: 'Bolinao', credential: sessionCredential(user.passwordHash) }, process.env.JWT_SECRET) }
     }
     const lgu = await account('lgu', 'Dagupan'), other = await account('LGU', 'Bolinao'), admin = await account('ADMIN'), explorer = await account('EXPLORER'), pro = await account('PRO')
     assert.equal(lgu.user.role, 'LGU')

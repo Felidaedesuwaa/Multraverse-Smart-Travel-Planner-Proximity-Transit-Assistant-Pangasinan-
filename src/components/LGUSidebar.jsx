@@ -3,40 +3,17 @@ import { Compass, MapPin, Utensils, Wallet, Radio, Route, LogOut, Building2, Shi
 import { getLGUMunicipality } from '../data/lguMunicipalities'
 import { useAuthStore } from '../store/authStore'
 import { lguResources } from '../data/lguResources'
-import { useAppTheme } from '../theme/useAppTheme'
-import { FeedbackPressable } from './WorkspaceMotion'
-
-const icons = { places: MapPin, foods: Utensils, 'route-prices': Wallet, geofences: Radio, 'transit-routes': Route }
+import { colors } from '../theme/colors'
 
 export default function LGUSidebar({ activeResource, onNavigate, compact }) {
   const { palette } = useAppTheme()
   const user = useAuthStore(state => state.user)
   const logout = useAuthStore(state => state.logout)
-  const municipality = getLGUMunicipality(user?.municipality)?.name || 'Unassigned municipality'
-  const foreground = { color: palette.onPrimary }
-  return <View style={[styles.sidebar, compact && styles.compact, { backgroundColor: palette.dark ? palette.deep : palette.primary }]}>
-    <View style={styles.brand}>
-      <View style={[styles.brandIcon, { backgroundColor: palette.brand }]}><Compass size={22} color={palette.onPrimary} /></View>
-      <View style={styles.grow}><Text style={[styles.brandName, foreground]}>Multraverse</Text><Text style={[styles.caption, foreground]}>LGU Console</Text></View>
-      {compact && <FeedbackPressable accessibilityRole="button" accessibilityLabel="Log out" onPress={logout} style={styles.logoutIcon}><LogOut size={20} color={palette.onPrimary} /></FeedbackPressable>}
-    </View>
-    {!compact && <View style={styles.municipality}><Building2 size={18} color={palette.onPrimary} /><View style={styles.grow}><Text style={[styles.caption, foreground]}>MUNICIPAL WORKSPACE</Text><Text style={[styles.municipalityName, foreground]}>{municipality}</Text></View></View>}
-    {!compact && <Text style={[styles.section, foreground]}>CONTENT MANAGEMENT</Text>}
-    <ScrollView horizontal={compact} showsHorizontalScrollIndicator={false} showsVerticalScrollIndicator={false} style={compact ? styles.mobileScroll : styles.grow} contentContainerStyle={[styles.navigation, compact && styles.mobileNavigation]}>
-      {Object.entries(lguResources).map(([key, value]) => {
-        const Icon = icons[key]
-        const active = activeResource === key
-        return <FeedbackPressable key={key} accessibilityRole="button" accessibilityState={{ selected: active }} onPress={() => onNavigate(key)} style={({ hovered, pressed }) => [styles.item, active && { backgroundColor: palette.deep }, (hovered || pressed) && !active && styles.hover]}>
-          <Icon size={18} color={active ? palette.button : palette.onPrimary} />
-          <Text style={[styles.label, { color: active ? palette.button : palette.onPrimary }, active && styles.activeLabel]}>{value.label}</Text>
-        </FeedbackPressable>
-      })}
-    </ScrollView>
-    {!compact && <View style={styles.footer}>
-      <View style={styles.review}><ShieldCheck size={20} color={palette.onPrimary} /><View style={styles.grow}><Text style={[styles.label, foreground]}>Admin review</Text><Text style={[styles.caption, foreground]}>Submissions require approval</Text></View></View>
-      <FeedbackPressable accessibilityRole="button" onPress={logout} style={styles.logout}><LogOut size={18} color={palette.onPrimary} /><Text style={[styles.label, foreground]}>Log out</Text></FeedbackPressable>
-    </View>}
-  </View>
+  return <ScrollView horizontal={compact} style={compact ? styles.compact : styles.sidebar} contentContainerStyle={{ padding: 16, gap: 12 }}>
+    {!compact && <><Text style={styles.brand}>Multraverse LGU</Text><Text style={styles.text}>{getLGUMunicipality(user?.municipality)?.name || 'Unassigned municipality'}</Text></>}
+    {Object.entries(lguResources).map(([key, value]) => <Pressable key={key} accessibilityRole="button" accessibilityState={{ selected: activeResource === key }} onPress={() => onNavigate(key)} style={[styles.item, activeResource === key && styles.active]}><Text style={styles.text}>{value.label}</Text></Pressable>)}
+    <Pressable accessibilityRole="button" onPress={logout} style={styles.item}><Text style={styles.text}>Log out</Text></Pressable>
+  </ScrollView>
 }
 
 const styles = StyleSheet.create({
