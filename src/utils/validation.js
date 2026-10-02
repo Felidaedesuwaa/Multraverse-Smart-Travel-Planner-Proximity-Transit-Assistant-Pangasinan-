@@ -19,6 +19,10 @@ export function normalizeName(value) {
   return typeof value === "string" ? value.normalize("NFC").trim().replace(/\s+/g, " ") : "";
 }
 
+export function filterNameInput(value) {
+  return typeof value === 'string' ? value.normalize('NFC').replace(/[^\p{L}\p{M} .\u2019'-]/gu, '') : '';
+}
+
 export function validateNamePart(value, label, optional = false) {
   if (typeof value !== "string") return `${label} is required`;
   const name = normalizeName(value);

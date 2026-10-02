@@ -53,6 +53,7 @@ function checkField(field: any, value: any, key: string): void {
   const opts = field.options
   if (field.instance === 'String') {
     if (typeof value !== 'string' || value.length > (opts.maxlength ?? 2000) || value.length < (opts.minlength ?? 0) || (field.isRequired && !value.trim())) invalid(`Invalid ${key}`)
+    if (key === 'name' && !/^\p{L}[\p{L}\p{M} .\u2019'-]*$/u.test(value.trim())) invalid('Names accept letters, spaces, initials, apostrophes and hyphens only; numbers are not accepted.')
     if (field.enumValues?.length && !field.enumValues.includes(value)) invalid(`Invalid ${key}`)
     if (opts.match && !opts.match.test(value)) invalid(`Invalid ${key}`)
   } else if (field.instance === 'Number') {

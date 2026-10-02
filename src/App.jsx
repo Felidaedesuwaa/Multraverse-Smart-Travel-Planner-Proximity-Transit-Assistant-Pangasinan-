@@ -204,13 +204,8 @@ function AdminScreens() {
         </View>
       )}
       <View style={themeStyle(styles.content)}>
-        {!isWide && <View style={themeStyle({ flexDirection: 'row', flexWrap: 'wrap', gap: 16, padding: 12, backgroundColor: colors.warmSand })}>
-          <Pressable accessibilityRole="button" onPress={() => handleNavigate('AdminDashboard')}><Text style={themeStyle({ color: colors.oceanBlue })}>Overview</Text></Pressable>
-          <Pressable accessibilityRole="button" onPress={() => handleNavigate('AdminApprovals')}><Text style={themeStyle({ color: colors.oceanBlue })}>LGU approvals</Text></Pressable>
-          <Pressable accessibilityRole="button" onPress={() => handleNavigate('AdminGeofences')}><Text style={themeStyle({ color: colors.oceanBlue })}>Geofences</Text></Pressable>
-          <Pressable accessibilityRole="button" onPress={() => handleNavigate('AdminUsers')}><Text style={themeStyle({ color: colors.oceanBlue })}>Users</Text></Pressable>
-        </View>}
-        <AdminStack.Navigator screenLayout={({ children }) => <ScreenMotion>{children}</ScreenMotion>} screenOptions={{ headerShown: false }}>
+        {!isWide && <AdminSidebar compact activeScreen={activeScreen} onNavigate={handleNavigate} />}
+        <AdminStack.Navigator screenListeners={({ route }) => ({ focus: () => setActiveScreen(route.name) })} screenLayout={({ children }) => <ScreenMotion>{children}</ScreenMotion>} screenOptions={{ headerShown: false }}>
           <AdminStack.Screen name="AdminDashboard" component={AdminDashboard} />
           <AdminStack.Screen name="AdminApprovals" component={AdminApprovals} />
           <AdminStack.Screen name="AdminRoutes" component={AdminRoutes} />

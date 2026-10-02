@@ -94,8 +94,8 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
 
   const handleSave = async () => {
     if (savingRef.current) return;
-    const invalid = name.trim().length < 2 || name.trim().length > 120 || !/\p{L}/u.test(name) || /[<>\x00-\x1f\x7f]/.test(name);
-    setNameError(invalid ? "Enter a place name with letters, 2–120 characters, without markup." : null);
+    const invalid = name.trim().length < 2 || name.trim().length > 120 || !/^\p{L}[\p{L}\p{M} .\u2019'-]*$/u.test(name.trim());
+    setNameError(invalid ? "Use letters, spaces, apostrophes or hyphens for the place name (2–120 characters); numbers are not accepted." : null);
     if (invalid) { nameInput.current?.focus(); return; }
     savingRef.current = true;
     setSaving(true);
@@ -152,6 +152,7 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
               <FormField
                 ref={nameInput}
                 label="Place name *"
+                lettersOnly
                 error={nameError}
                 editable={!saving}
                 maxLength={120}

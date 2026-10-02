@@ -1,8 +1,10 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native'
-import { Building2, ClipboardList, Compass, LayoutGrid, LogOut, Settings, ShieldCheck, Users } from 'lucide-react-native'
+import { Building2, ClipboardList, Compass, LayoutGrid, Settings, Users } from 'lucide-react-native'
 import { useAuthStore } from '../store/authStore'
 import { useAppTheme } from '../theme/useAppTheme'
 import { FeedbackPressable } from './WorkspaceMotion'
+import ProfileAvatar from './ProfileAvatar'
+import SidebarLogoutButton from './SidebarLogoutButton'
 
 const sections = [
   ['SuperAdminDashboard', 'Overview', LayoutGrid],
@@ -15,7 +17,7 @@ const sections = [
 
 export default function SuperAdminSidebar({ activeScreen, onNavigate, compact }) {
   const { palette } = useAppTheme()
-  const logout = useAuthStore(state => state.logout)
+  const user = useAuthStore(state => state.user)
   const foreground = { color: palette.onPrimary }
   return <ScrollView horizontal={compact} showsVerticalScrollIndicator={false}
     style={[compact ? styles.compact : styles.sidebar, { backgroundColor: palette.dark ? palette.deep : palette.primary }]}
@@ -25,12 +27,13 @@ export default function SuperAdminSidebar({ activeScreen, onNavigate, compact })
         <View style={[styles.brandIcon, { backgroundColor: palette.brand }]}><Compass size={22} color={palette.onPrimary} /></View>
         <View style={styles.grow}><Text style={[styles.brandName, foreground]}>Multraverse</Text><Text style={[styles.caption, foreground]}>Super Admin Console</Text></View>
       </View>
-      <View style={styles.account}>
-        <ShieldCheck size={20} color={palette.onPrimary} />
-        <View style={styles.grow}><Text style={[styles.caption, foreground]}>Workspace</Text><Text style={[styles.accountName, foreground]}>Super Admin</Text></View>
-      </View>
-      <Text style={[styles.section, foreground]}>MANAGEMENT</Text>
     </>}
+    <View style={[styles.account, compact && { minWidth: 230, maxWidth: 280 }]}>
+      <ProfileAvatar user={user} size={34} />
+      <View style={styles.grow}><Text numberOfLines={1} style={[styles.accountName, foreground]}>{user?.name || 'Super Admin'}</Text><Text style={[styles.caption, foreground]}>Super Admin</Text></View>
+      <SidebarLogoutButton />
+    </View>
+    {!compact && <Text style={[styles.section, foreground]}>MANAGEMENT</Text>}
     <View style={[styles.navigation, compact && styles.mobileNavigation]}>
       {sections.map(([screen, label, Icon]) => {
         const active = activeScreen === screen || (screen === 'SuperAdminUsers' && activeScreen === 'SuperAdminCreateLGU')
@@ -40,11 +43,6 @@ export default function SuperAdminSidebar({ activeScreen, onNavigate, compact })
           <Text style={[styles.label, { color: active ? palette.button : palette.onPrimary }, active && styles.activeLabel]}>{label}</Text>
         </FeedbackPressable>
       })}
-    </View>
-    <View style={[styles.footer, compact && styles.mobileFooter]}>
-      <FeedbackPressable accessibilityRole="button" onPress={logout} style={({ pressed, hovered }) => [styles.logout, compact && styles.mobileLogout, (pressed || hovered) && styles.hover]}>
-        <LogOut size={18} color={palette.button} /><Text style={[styles.label, { color: palette.button }]}>Log out</Text>
-      </FeedbackPressable>
     </View>
   </ScrollView>
 }
@@ -62,14 +60,10 @@ const styles = StyleSheet.create({
   account: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.06)' },
   accountName: { fontFamily: 'DMSans', fontSize: 14, fontWeight: '600', marginTop: 3 },
   section: { fontFamily: 'DMSans', fontSize: 10, letterSpacing: 1.2, opacity: 0.6, paddingHorizontal: 12 },
-  navigation: { gap: 6 },
-  mobileNavigation: { flexDirection: 'row', gap: 8, alignItems: 'center' },
-  item: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 12, paddingVertical: 13, borderRadius: 10 },
+  navigation: { gap: 10 },
+  mobileNavigation: { flexDirection: 'row', gap: 12, alignItems: 'center' },
+  item: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 12, paddingVertical: 13, borderRadius: 10, minHeight: 48 },
   label: { fontFamily: 'DMSans', fontSize: 14, flexShrink: 1 },
   activeLabel: { fontWeight: '700' },
   hover: { backgroundColor: 'rgba(255,255,255,0.08)' },
-  footer: { gap: 16, marginTop: 'auto', paddingTop: 16 },
-  mobileFooter: { flexDirection: 'row', alignItems: 'center', marginTop: 0, paddingTop: 0 },
-  logout: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 10, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.1)' },
-  mobileLogout: { borderTopWidth: 0 },
 })

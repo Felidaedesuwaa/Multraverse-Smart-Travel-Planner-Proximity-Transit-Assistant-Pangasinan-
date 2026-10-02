@@ -2,14 +2,16 @@ import { forwardRef, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useAppTheme } from "../theme/useAppTheme";
 import { colors } from "../theme/colors";
+import NameInput from './NameInput';
 
-export default forwardRef(function FormField({ label, error, hint, password, ...props }, ref) {
+export default forwardRef(function FormField({ label, error, hint, password, lettersOnly = false, ...props }, ref) {
   const { themeStyle, themeColor } = useAppTheme();
   const [hidden, setHidden] = useState(true);
+  const Input = lettersOnly ? NameInput : TextInput;
   return <View style={styles.field}>
     <Text style={themeStyle(styles.label)}>{label}</Text>
     <View style={themeStyle([styles.row, error && styles.invalid])}>
-      <TextInput {...props} ref={ref} accessibilityLabel={label} accessibilityHint={error || hint} aria-invalid={!!error} secureTextEntry={password && hidden} placeholderTextColor={themeColor(colors.textMuted)} style={themeStyle(styles.input)} />
+      <Input {...props} ref={ref} accessibilityLabel={label} accessibilityHint={error || hint} aria-invalid={!!error} secureTextEntry={password && hidden} placeholderTextColor={themeColor(colors.textMuted)} style={themeStyle(styles.input)} />
       {password && <Pressable accessibilityRole="button" accessibilityLabel={hidden ? `Show ${label}` : `Hide ${label}`} onPress={() => setHidden(!hidden)} style={styles.toggle}><Text style={themeStyle(styles.toggleText)}>{hidden ? "Show" : "Hide"}</Text></Pressable>}
     </View>
     {!!hint && <Text style={themeStyle(styles.hint)}>{hint}</Text>}

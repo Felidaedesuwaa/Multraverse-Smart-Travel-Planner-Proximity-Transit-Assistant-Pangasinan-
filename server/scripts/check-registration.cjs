@@ -8,6 +8,10 @@ const { ensureEmailDomain } = require('../dist/lib/emailDomain');
   // Load the exact frontend validators without changing the package module type.
   const code = fs.readFileSync(path.resolve(__dirname, '../../src/utils/validation.js'), 'utf8');
   const front = await import('data:text/javascript;base64,' + Buffer.from(code).toString('base64'));
+  assert.equal(front.filterNameInput('Maria123'), 'Maria');
+  assert.equal(front.filterNameInput('Juan１２٣'), 'Juan');
+  assert.equal(front.filterNameInput("José R. O’Neill-Santos"), "José R. O’Neill-Santos");
+  assert.equal(front.filterNameInput('Jose\u0301'), 'José');
   const valid = { firstName: ' Juan ', middleName: ' reyes ', surname: 'dela  Cruz', email: ' Juan.Delacruz@GMAIL.com ', password: 'Lakbay_2026' };
   assert.deepEqual(registrationDetails(valid), { name: 'Juan R. dela Cruz', email: 'juan.delacruz@gmail.com', password: 'Lakbay_2026' });
   assert.equal(front.registrationFullName(valid.firstName, valid.middleName, valid.surname), 'Juan R. dela Cruz');

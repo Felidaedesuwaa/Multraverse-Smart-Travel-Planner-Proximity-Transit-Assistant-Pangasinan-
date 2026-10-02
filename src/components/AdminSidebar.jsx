@@ -3,9 +3,10 @@ import { useAppTheme } from "../theme/useAppTheme";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import {
   BarChart3, Circle, Compass, LayoutGrid,
-  LogOut, Radio, Route, Settings, Users, Zap,
+  Radio, Route, Settings, Users, Zap,
 } from "lucide-react-native";
-import { useNavigation } from "@react-navigation/native";
+import ProfileAvatar from './ProfileAvatar';
+import SidebarLogoutButton from './SidebarLogoutButton';
 import { colors } from "../theme/colors";
 import { useAuthStore } from "../store/authStore";
 
@@ -20,22 +21,16 @@ const items = [
   { label: "Settings", icon: Settings, screen: "AdminSettings" },
 ];
 
-export default function AdminSidebar({ activeScreen = "AdminDashboard", onNavigate }) {
+export default function AdminSidebar({ activeScreen = "AdminDashboard", onNavigate, compact = false }) {
   const { themeStyle, themeColor, palette } = useAppTheme();
 
-  const navigation = useNavigation();
-  const logout = useAuthStore((state) => state.logout);
-
-  const handleLogout = async () => {
-    await logout();
-    navigation.reset({ index: 0, routes: [{ name: "Login" }] });
-  };
+  const user = useAuthStore(state => state.user);
 
   return (
-    <View style={themeStyle([styles.sidebar, { backgroundColor: palette.dark ? palette.deep : palette.primary }])}>
-      <ScrollView showsVerticalScrollIndicator={false} style={themeStyle(styles.scrollContent)}>
+    <View style={themeStyle([styles.sidebar, compact && styles.compact, { backgroundColor: palette.dark ? palette.deep : palette.primary }])}>
+      <ScrollView horizontal={compact} showsHorizontalScrollIndicator={false} showsVerticalScrollIndicator={false} style={!compact && themeStyle(styles.scrollContent)} contentContainerStyle={compact && { alignItems: 'center', gap: 16 }}>
         {/* Brand */}
-        <View style={themeStyle(styles.brand)}>
+        {!compact && <View style={themeStyle(styles.brand)}>
           <View style={themeStyle([styles.brandIcon, { backgroundColor: palette.brand }])}>
             <Compass size={20} color={themeColor(colors.white, "color")} />
           </View>
@@ -43,10 +38,15 @@ export default function AdminSidebar({ activeScreen = "AdminDashboard", onNaviga
             <Text style={themeStyle(styles.brandName)}>Multraverse</Text>
             <Text style={themeStyle(styles.brandSub)}>Admin Console</Text>
           </View>
-        </View>
+        </View>}
 
+        <View style={[styles.profile, compact && { width: 240, marginBottom: 0 }]}>
+          <ProfileAvatar user={user} size={34} />
+          <View style={{ flex: 1, minWidth: 0 }}><Text numberOfLines={1} style={themeStyle(styles.label)}>{user?.name || 'Admin'}</Text><Text style={themeStyle(styles.brandSub)}>Administrator</Text></View>
+          <SidebarLogoutButton />
+        </View>
         {/* Nav Items */}
-        <View style={themeStyle(styles.navSection)}>
+        <View style={themeStyle([styles.navSection, compact && { flexDirection: 'row', gap: 12 }])}>
           {items.map(({ label, icon: Icon, screen }) => {
             const active = activeScreen === screen;
             return (
@@ -75,22 +75,19 @@ export default function AdminSidebar({ activeScreen = "AdminDashboard", onNaviga
       </ScrollView>
 
       {/* System Status */}
-      <View style={themeStyle(styles.status)}>
+      {!compact && <View style={themeStyle(styles.status)}>
         <Circle size={9} fill={themeColor(colors.palmGreen, "fill")} color={themeColor(colors.palmGreen, "color")} />
         <View>
           <Text style={themeStyle(styles.statusTitle)}>System Status</Text>
           <Text style={themeStyle(styles.statusText)}>All systems operational</Text>
         </View>
-      </View>
-      <FeedbackPressable onPress={handleLogout} accessibilityLabel="Log out" style={themeStyle(styles.logout)}>
-        <LogOut size={18} color={themeColor("#FF9B85", "color")} />
-        <Text style={themeStyle(styles.logoutText)}>Log out</Text>
-      </FeedbackPressable>
+      </View>}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  compact: { width: '100%', minWidth: 0, maxWidth: '100%', flex: 0, minHeight: 100, height: 100, padding: 16 },
   sidebar: {
     width: 260,
     minWidth: 260,
@@ -128,9 +125,11 @@ const styles = StyleSheet.create({
     color: "#8FB0C2",
   },
   navSection: {
-    gap: 4,
+    gap: 10,
   },
+  profile: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, marginBottom: 24, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.06)' },
   item: {
+    minHeight: 48,
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
@@ -169,20 +168,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     color: colors.white,
-  },
-  logout: {
-    borderTopWidth: 1,
-    borderTopColor: "rgba(255,255,255,0.1)",
-    paddingTop: 16,
-    marginTop: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 12,
-  },
-  logoutText: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#FF9B85",
   },
 });

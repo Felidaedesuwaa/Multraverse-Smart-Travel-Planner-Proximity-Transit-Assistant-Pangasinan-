@@ -1,3 +1,4 @@
+import { filterNameInput } from '../utils/validation'
 import { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, Modal, ScrollView, Pressable, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native'
 import { useAuthStore } from '../store/authStore'
@@ -61,6 +62,7 @@ function MunicipalEditor({ resource, municipality }) {
       for (const [key, label, type = ''] of definition.fields) {
         const value = typeof draft[key] === 'string' ? draft[key].trim() : draft[key]
         if (type.includes('required') && value === '') throw new Error(`${label} is required`)
+        if (key === 'name' && !/^\p{L}[\p{L}\p{M} .\u2019'-]*$/u.test(value)) throw new Error('Names accept letters and spaces; numbers are not accepted.')
         if (type.includes('number') && value !== '') {
           if (!Number.isFinite(Number(value)) || Number(value) < 0) throw new Error(`${label} must be a nonnegative number`)
           if (key === 'stops' && !Number.isInteger(Number(value))) throw new Error('Number of stops must be a whole number')
@@ -109,7 +111,7 @@ function MunicipalEditor({ resource, municipality }) {
         <View style={styles.formGrid}>
           {definition.fields.map(([key, label, type, choices]) => <View key={key} style={[styles.field, { flexBasis: width >= 1100 && key !== 'description' && key !== 'notes' ? '47%' : '100%' }]}>
             <Text style={themeStyle(styles.fieldLabel)}>{label}{type?.includes('required') ? ' *' : ''}</Text>
-            {type === 'boolean' ? <ToggleSwitch accessibilityLabel={label} checked={draft[key]} onChange={value => !busy && setDraft({ ...draft, [key]: value })} /> : type === 'choice' ? <View style={styles.filters}>{choices.map(value => <Pressable key={value} disabled={busy} accessibilityRole="button" accessibilityState={{ selected: draft[key] === value, disabled: busy }} onPress={() => setDraft({ ...draft, [key]: value })} style={themeStyle([styles.chip, draft[key] === value && styles.selected])}>{text(value)}</Pressable>)}</View> : <TextInput accessibilityLabel={label} editable={!busy} value={String(draft[key])} onChangeText={value => setDraft({ ...draft, [key]: value })} keyboardType={type?.includes('number') ? 'decimal-pad' : 'default'} multiline={key === 'description' || key === 'notes'} placeholder={`Enter ${label.toLowerCase()}`} placeholderTextColor={themeColor(colors.textMuted, 'color')} style={themeStyle([styles.input, (key === 'description' || key === 'notes') && styles.multiline])} />}
+            {type === 'boolean' ? <ToggleSwitch accessibilityLabel={label} checked={draft[key]} onChange={value => !busy && setDraft({ ...draft, [key]: value })} /> : type === 'choice' ? <View style={styles.filters}>{choices.map(value => <Pressable key={value} disabled={busy} accessibilityRole="button" accessibilityState={{ selected: draft[key] === value, disabled: busy }} onPress={() => setDraft({ ...draft, [key]: value })} style={themeStyle([styles.chip, draft[key] === value && styles.selected])}>{text(value)}</Pressable>)}</View> : <TextInput accessibilityLabel={label} editable={!busy} value={String(draft[key])} onChangeText={value => setDraft({ ...draft, [key]: key === 'name' ? filterNameInput(value) : value })} keyboardType={type?.includes('number') ? 'decimal-pad' : 'default'} multiline={key === 'description' || key === 'notes'} placeholder={`Enter ${label.toLowerCase()}`} placeholderTextColor={themeColor(colors.textMuted, 'color')} style={themeStyle([styles.input, (key === 'description' || key === 'notes') && styles.multiline])} />}
           </View>)}
         </View>
         <View style={styles.filters}><MunicipalButton style={styles.submitButton} label="Submit for approval" loading={busy} onPress={save} /><Pressable disabled={busy} onPress={() => setDraft(null)} accessibilityRole="button" style={styles.chip}>{text('Cancel')}</Pressable></View>

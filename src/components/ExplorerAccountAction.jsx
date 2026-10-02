@@ -4,6 +4,7 @@ import { Pencil, Trash2 } from 'lucide-react-native'
 import { WorkspaceButton, ui } from './SuperAdminWorkspace'
 import { useAppTheme } from '../theme/useAppTheme'
 import { api } from '../lib/api'
+import NameInput from './NameInput'
 
 export default function ExplorerAccountAction({ account, mode, onClose, onSaved }) {
   const { palette: p } = useAppTheme()
@@ -40,7 +41,7 @@ export default function ExplorerAccountAction({ account, mode, onClose, onSaved 
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}><Icon size={24} color={deleting ? '#DC2626' : '#2563EB'} /><Text accessibilityRole="header" style={[ui.heading, { color: p.ink }]}>{deleting ? 'Permanently delete user?' : 'Edit user information'}</Text></View>
           <Text style={[ui.body, { color: p.muted }]}>{deleting ? `Delete ${account.name} (${account.email})? Their sign-in credentials, trips, expenses, saved places, planner drafts and geofence history will be permanently removed. This cannot be undone.` : 'Update the user’s name and location.'}</Text>
           {!deleting && <>
-            <View style={{ gap: 8 }}><Text style={[ui.buttonText, { color: p.ink }]}>Name</Text><TextInput ref={nameInput} accessibilityLabel="User name" value={name} onChangeText={setName} editable={!busy} maxLength={80} placeholder="e.g. Maria R. Santos" placeholderTextColor={p.muted} style={[ui.input, { color: p.ink, backgroundColor: p.background, borderColor: errors.name ? '#DC2626' : p.line }]} />{!!errors.name && <Text accessibilityRole="alert" style={[ui.caption, { color: '#DC2626' }]}>{errors.name}</Text>}</View>
+            <View style={{ gap: 8 }}><Text style={[ui.buttonText, { color: p.ink }]}>Name</Text><NameInput ref={nameInput} accessibilityLabel="User name" accessibilityHint="Letters only; numbers are not accepted." value={name} onChangeText={setName} editable={!busy} maxLength={80} placeholder="e.g. Maria R. Santos" placeholderTextColor={p.muted} style={[ui.input, { color: p.ink, backgroundColor: p.background, borderColor: errors.name ? '#DC2626' : p.line }]} />{!!errors.name && <Text accessibilityRole="alert" style={[ui.caption, { color: '#DC2626' }]}>{errors.name}</Text>}</View>
             <View style={{ gap: 8 }}><Text style={[ui.buttonText, { color: p.ink }]}>Location</Text><TextInput accessibilityLabel="User location" value={location} onChangeText={setLocation} editable={!busy} maxLength={120} placeholder="e.g. Dagupan, Pangasinan" placeholderTextColor={p.muted} style={[ui.input, { color: p.ink, backgroundColor: p.background, borderColor: errors.location ? '#DC2626' : p.line }]} />{!!errors.location && <Text accessibilityRole="alert" style={[ui.caption, { color: '#DC2626' }]}>{errors.location}</Text>}</View>
             <View style={{ gap: 4 }}><Text style={[ui.buttonText, { color: p.ink }]}>Sign-in email</Text><Text selectable style={[ui.body, { color: p.muted }]}>{account.email}</Text></View>
           </>}

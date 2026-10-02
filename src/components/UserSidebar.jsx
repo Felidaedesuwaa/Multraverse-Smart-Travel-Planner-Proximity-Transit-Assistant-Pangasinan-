@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import {
   Bell, Bookmark, Compass, Download, Home,
-  Languages, LogOut, MapPin, Settings, Sparkles, Wallet,
+  Languages, MapPin, Settings, Sparkles, Wallet,
 } from "lucide-react-native";
 import { colors } from "../theme/colors";
 import { useAuthStore } from "../store/authStore";
@@ -13,7 +13,7 @@ import { api } from "../lib/api";
 import BudgetOverview from "./BudgetOverview";
 import SavedTripCard from "./SavedTripCard";
 import ProfileAvatar from "./ProfileAvatar";
-import LogoutConfirmationDialog from "./LogoutConfirmationDialog";
+import SidebarLogoutButton from "./SidebarLogoutButton";
 
 const navigationItems = [
   { label: "Dashboard", icon: Home, screen: "Dashboard" },
@@ -33,11 +33,9 @@ const aiItems = [
 export default function UserSidebar({ activeScreen = "Dashboard", onNavigate, compact = false }) {
   const { themeStyle, themeColor, isDark, palette } = useAppTheme();
 
-  const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
   const [entries, setEntries] = useState([]);
   const [trips, setTrips] = useState([]);
-  const [confirmLogout, setConfirmLogout] = useState(false);
 
   useEffect(() => {
     if (compact) return;
@@ -51,7 +49,6 @@ export default function UserSidebar({ activeScreen = "Dashboard", onNavigate, co
 
   const name = user?.name || "User";
 
-  const handleLogout = () => setConfirmLogout(true);
 
   const handleNavigate = (screen) => {
     onNavigate?.(screen);
@@ -104,9 +101,7 @@ export default function UserSidebar({ activeScreen = "Dashboard", onNavigate, co
           <Text style={themeStyle(styles.name)} numberOfLines={1}>{name}</Text>
           <Text style={themeStyle(styles.location)}>{user?.role === "PRO" ? "Pro" : "Explorer"}{user?.location ? ` · ${user.location}` : ""}</Text>
         </View>
-        <FeedbackPressable onPress={handleLogout} accessibilityRole="button" accessibilityLabel="Log out" style={themeStyle(styles.logoutIcon)}>
-          <LogOut size={16} color={themeColor("#8FB0C2", "color")} />
-        </FeedbackPressable>
+        <SidebarLogoutButton />
       </View>
 
       {/* Main Nav */}
@@ -150,13 +145,8 @@ export default function UserSidebar({ activeScreen = "Dashboard", onNavigate, co
       </View>
 
       </>}
-      {/* Logout */}
-      <FeedbackPressable accessibilityRole="button" onPress={handleLogout} style={themeStyle(styles.logout)}>
-        <LogOut size={18} color={themeColor("#FF9B85", "color")} />
-        <Text style={themeStyle(styles.logoutText)}>Log Out</Text>
-      </FeedbackPressable>
     </ScrollView>
-    {confirmLogout && <LogoutConfirmationDialog onCancel={() => setConfirmLogout(false)} onConfirm={logout} />}</>
+    </>
   );
 }
 
@@ -217,12 +207,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#8FB0C2",
   },
-  logoutIcon: {
-    padding: 6,
-    borderRadius: 8,
-  },
   navSection: {
-    gap: 2,
+    gap: 10,
   },
   item: {
     minHeight: 48,
@@ -267,21 +253,5 @@ const styles = StyleSheet.create({
   empty: {
     fontSize: 13,
     color: "#C9DAE3",
-  },
-  logout: {
-    borderTopWidth: 1,
-    borderTopColor: "rgba(255,255,255,0.1)",
-    paddingTop: 16,
-    marginTop: 8,
-    flexDirection: "row",
-    gap: 12,
-    alignItems: "center",
-    paddingHorizontal: 14,
-    paddingBottom: 8,
-  },
-  logoutText: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#FF9B85",
   },
 });

@@ -3,17 +3,19 @@ import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { Eye, EyeOff } from "lucide-react-native";
 import { colors } from "../theme/colors";
+import NameInput from './NameInput';
 
-export default function AuthInput({ label, error, hint, isPassword, inputRef, value, onChangeText, onChange, placeholder, ...props }) {
+export default function AuthInput({ label, error, hint, isPassword, lettersOnly = false, inputRef, value, onChangeText, onChange, placeholder, ...props }) {
   const { themeStyle, themeColor } = useAppTheme();
 
   const [hidden, setHidden] = useState(isPassword);
+  const Input = lettersOnly ? NameInput : TextInput;
 
   return (
     <View style={themeStyle(styles.wrapper)}>
       <Text style={themeStyle(styles.label)}>{label}</Text>
       <View style={themeStyle([styles.inputRow, { borderColor: error ? colors.sunsetCoral : "rgba(255,255,255,0.15)" }])}>
-        <TextInput
+        <Input
           ref={inputRef}
           aria-invalid={!!error}
           accessibilityLabel={label}

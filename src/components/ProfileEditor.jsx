@@ -1,11 +1,12 @@
 import { useRef, useState } from "react";
-import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Check, Upload, X } from "lucide-react-native";
 import { useAuthStore } from "../store/authStore";
 import { useAppTheme } from "../theme/useAppTheme";
 import { chooseProfilePhoto } from "../lib/profilePhoto";
 import ProfileAvatar from "./ProfileAvatar";
+import NameInput from './NameInput';
 import TravelAvatar, { travelAvatars } from "./TravelAvatar";
 import LocationAutocomplete from "./LocationAutocomplete";
 import { normalizeName, profileNameFields, registrationFullName, validateProfileNames } from "../utils/validation";
@@ -107,7 +108,7 @@ export default function ProfileEditor({ mode, onClose, onSaved }) {
               {typeof user?.firstName !== "string" && <Text style={themeStyle(styles.caption)}>Review the name fields below. Your existing full name has been split for editing.</Text>}
               {nameInputs.map(({ key, label, placeholder, autoComplete, hint }) => <View key={key} style={styles.field}>
                 <Text style={themeStyle(styles.label)}>{label}</Text>
-                <TextInput ref={input => { inputRefs.current[key] = input; }} accessibilityLabel={label} accessibilityHint={fieldErrors[key] || hint} {...(Platform.OS === "web" ? { "aria-invalid": !!fieldErrors[key] } : {})} value={names[key]} onChangeText={value => changeName(key, value)} editable={!busy} placeholder={placeholder} placeholderTextColor={themeColor("#6B7876")} autoCapitalize="words" autoComplete={autoComplete} autoCorrect={false} style={themeStyle([styles.input, fieldErrors[key] && styles.invalidInput])} />
+                <NameInput ref={input => { inputRefs.current[key] = input; }} accessibilityLabel={label} accessibilityHint={fieldErrors[key] || hint || 'Letters only; numbers are not accepted.'} {...(Platform.OS === "web" ? { "aria-invalid": !!fieldErrors[key] } : {})} value={names[key]} onChangeText={value => changeName(key, value)} editable={!busy} placeholder={placeholder} placeholderTextColor={themeColor("#6B7876")} autoCapitalize="words" autoComplete={autoComplete} autoCorrect={false} style={themeStyle([styles.input, fieldErrors[key] && styles.invalidInput])} />
                 {hint && <Text style={themeStyle(styles.caption)}>{hint}</Text>}
                 {!!fieldErrors[key] && <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={themeStyle(styles.error)}>{fieldErrors[key]}</Text>}
               </View>)}

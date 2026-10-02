@@ -21,7 +21,7 @@ app.use((error, req, res, next) => res.status(error.status || 500).json({ error:
 let server
 const fixtures = {
   places: { name: 'Municipal beach', description: 'A coastal destination', location: 'Barangay One', category: 'Beach' },
-  geofences: { location: 'Town center', zone: 'Tourism zone', radius: '200 m' },
+  geofences: { location: 'Town center', zone: 'Tourism zone', radius: '200 m', coordinates: { lat: 16.043, lng: 120.334 }, radiusMeters: 200 },
   foods: { name: 'Bangus', description: 'Local milkfish', avgPrice: 150, where: 'Market', category: 'Seafood' },
   'route-prices': { from: 'Dagupan', to: 'Lingayen', vehicle: 'BUS', price: 50, duration: '30 min' },
   'transit-routes': { name: 'Town loop', type: 'BUS', frequency: '30 min' },
@@ -57,6 +57,7 @@ const fixtures = {
       const endpoint = `lgu/${resource}`
       const publicEndpoint = ['geofences', 'transit-routes'].includes(resource) ? resource : `knowledge/${resource}`
       const model = lguResources[resource].model
+      if (fixture.name) assert.equal((await call(endpoint, lgu.token, 'POST', { ...fixture, name: 'Name123' })).status, 400, 'Named resource fields must reject digits at the API')
       // Raw legacy record without moderation fields stays readable.
       const legacy = await model.collection.insertOne({ ...fixture, municipality: 'Legacy' })
       assert.ok((await call(publicEndpoint, explorer.token)).body.some(row => row.id === String(legacy.insertedId)))
@@ -96,12 +97,15 @@ const fixtures = {
     assert.equal((await call('lgu/route-prices', lgu.token, 'POST', { ...fixtures['route-prices'], transitRouteId: String(foreignRoute._id) })).status, 400)
     // The same five route handlers must isolate each of the six sample scopes.
     const { lguSeedAccounts } = require('../dist/data/lguSeedAccounts')
+    const mapCode = require('node:fs').readFileSync(path.resolve(__dirname, '../../src/data/lguMunicipalities.js'), 'utf8')
+    const { getLGUMunicipality } = await import('data:text/javascript;base64,' + Buffer.from(mapCode).toString('base64'))
     for (const sample of lguSeedAccounts) {
       const municipal = await account('lgu', sample.municipality)
       const profile = await call('users/me', municipal.token)
       assert.equal(profile.body.municipality, sample.municipality)
       for (const [resource, fixture] of Object.entries(fixtures)) {
-        const created = await call(`lgu/${resource}`, municipal.token, 'POST', fixture)
+        const scopedFixture = resource === 'geofences' ? { ...fixture, coordinates: getLGUMunicipality(sample.municipality).center } : fixture
+        const created = await call(`lgu/${resource}`, municipal.token, 'POST', scopedFixture)
         assert.equal(created.status, 201)
         assert.equal(created.body.municipality, sample.municipality)
         const list = await call(`lgu/${resource}`, municipal.token)
