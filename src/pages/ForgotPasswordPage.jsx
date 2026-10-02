@@ -59,6 +59,7 @@ export default function ForgotPasswordPage() {
     {!!message && <Text accessibilityLiveRegion="polite" style={themeStyle(styles.message)}>{message}</Text>}
     {!done && <>
       <AuthInput label="Account email" placeholder="juan.delacruz@gmail.com" value={email} onChangeText={setEmail} keyboardType="email-address" autoComplete="email" maxLength={254} {...input("email")} editable={!busy && !challenge} />
+      {!challenge && <Text style={themeStyle(styles.message)}>Use the email linked to your account. LGU accounts can also reset their password here.</Text>}
       {challenge && <>
         <AuthInput label="Verification code" placeholder="123456" hint="The latest code expires after 10 minutes and can be used once." value={code} onChangeText={value => setCode(value.replace(/\D/g, "").slice(0, 6))} keyboardType="number-pad" autoComplete="one-time-code" textContentType="oneTimeCode" maxLength={6} {...input("code")} />
         <AuthInput label="New password" placeholder="Create your new password" hint="8–72 characters, including an uppercase letter and a number. Only letters, numbers, _, - and @." value={newPassword} onChangeText={setPassword} isPassword autoComplete="new-password" maxLength={72} {...input("newPassword")} />
