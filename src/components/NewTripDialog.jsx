@@ -1,5 +1,6 @@
+import { FeedbackPressable } from "./WorkspaceMotion";
 import { useRef, useState } from "react";
-import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import FormField from "./FormField";
 import MoneyInput from "./MoneyInput";
@@ -42,7 +43,7 @@ export default function NewTripDialog({ onClose, onCreated }) {
         <Text style={themeStyle(styles.hint)}>Choose a destination, set your travel date and plan your budget. Fields marked * are required.</Text>
         <FormField ref={node => { inputs.current.title = node; }} label="Trip title *" placeholder="Hundred Islands Adventure" value={fields.title} onChangeText={value => change("title", value)} maxLength={100} error={errors.title} editable={!saving} />
         <FormField ref={node => { inputs.current.location = node; }} label="Destination *" placeholder="Alaminos, Pangasinan" value={fields.location} onChangeText={value => change("location", value)} maxLength={120} error={errors.location} editable={!saving} />
-        <View style={styles.suggestions}>{destinations.map(name => <Pressable accessibilityRole="button" accessibilityLabel={`Use ${name} as destination`} disabled={saving} key={name} onPress={() => change("location", `${name}, Pangasinan`)} style={themeStyle(styles.chip)}><Text style={themeStyle(styles.chipText)}>{name}</Text></Pressable>)}</View>
+        <View style={styles.suggestions}>{destinations.map(name => <FeedbackPressable accessibilityRole="button" accessibilityLabel={`Use ${name} as destination`} disabled={saving} key={name} onPress={() => change("location", `${name}, Pangasinan`)} style={themeStyle(styles.chip)}><Text style={themeStyle(styles.chipText)}>{name}</Text></FeedbackPressable>)}</View>
         <FormField ref={node => { inputs.current.date = node; }} label="Travel date *" placeholder="2027-01-15" hint="Use YYYY-MM-DD, for example January 15, 2027 is 2027-01-15." value={fields.date} onChangeText={value => change("date", value)} maxLength={10} autoCorrect={false} error={errors.date} editable={!saving} />
         <View style={styles.field}><Text style={themeStyle(styles.label)}>Trip budget ({currency})</Text>
           <MoneyInput ref={node => { inputs.current.budget = node; }} accessibilityLabel={`Trip budget in ${currency}`} accessibilityHint={errors.budget || "Optional; leave blank for zero budget"} aria-invalid={!!errors.budget} value={fields.budget} onChangeText={value => change("budget", value)} placeholder="0.00" editable={!saving} style={themeStyle([styles.money, errors.budget && styles.invalid])} />
@@ -51,8 +52,8 @@ export default function NewTripDialog({ onClose, onCreated }) {
         </View>
         {!!error && <Text accessibilityRole="alert" style={themeStyle(styles.error)}>{error}</Text>}
         <View style={styles.actions}>
-          <Pressable accessibilityRole="button" disabled={saving} onPress={close} style={themeStyle(styles.cancel)}><Text style={themeStyle(styles.chipText)}>Cancel</Text></Pressable>
-          <Pressable accessibilityRole="button" accessibilityState={{ disabled: saving, busy: saving }} disabled={saving} onPress={create} style={themeStyle(styles.save)}>{saving ? <ActivityIndicator color={themeColor(colors.white)} /> : <Text style={themeStyle(styles.saveText)}>Create trip</Text>}</Pressable>
+          <FeedbackPressable accessibilityRole="button" disabled={saving} onPress={close} style={themeStyle(styles.cancel)}><Text style={themeStyle(styles.chipText)}>Cancel</Text></FeedbackPressable>
+          <FeedbackPressable accessibilityRole="button" accessibilityState={{ disabled: saving, busy: saving }} disabled={saving} onPress={create} style={themeStyle(styles.save)}>{saving ? <ActivityIndicator color={themeColor(colors.white)} /> : <Text style={themeStyle(styles.saveText)}>Create trip</Text>}</FeedbackPressable>
         </View>
       </ScrollView></View>
     </KeyboardAvoidingView></SafeAreaView>

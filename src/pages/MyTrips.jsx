@@ -342,6 +342,8 @@ export default function MyTrips() {
         {TABS.map(({ key, label }) => (
           <FeedbackPressable
             key={key}
+            accessibilityRole="button"
+            accessibilityState={{ selected: filter === key }}
             onPress={() => setFilter(key)}
             style={themeStyle([styles.tab, filter === key && styles.tabActive])}
           >

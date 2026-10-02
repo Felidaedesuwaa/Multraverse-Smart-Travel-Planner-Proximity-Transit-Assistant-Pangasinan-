@@ -6,6 +6,7 @@ import { FeedbackPressable } from '../components/WorkspaceMotion';
 import AIToolHeader from '../components/AIToolHeader';
 import Select from '../components/SuperAdminSelect';
 import { useAppTheme } from '../theme/useAppTheme';
+import { colors } from '../theme/colors';
 import { api } from '../lib/api';
 import map from '../data/pangasinanMap.json';
 import { distanceMeters, municipality, isArrival } from '../lib/transitGeometry';
@@ -18,7 +19,7 @@ const modes = [{ key: 'vibrate', label: 'Vibrate', Icon: Vibrate }, { key: 'soun
 export default function TransitAlarm() {
   const { width } = useWindowDimensions();
   const compact = width < 1100;
-  const { themeStyle: t, themeColor } = useAppTheme();
+  const { themeStyle: t, themeColor, palette } = useAppTheme();
   const [from, setFrom] = useState('dagupan'), [to, setTo] = useState('alaminos');
   const [routes, setRoutes] = useState([]), [route, setRoute] = useState(null), [stopIndex, setStopIndex] = useState(0);
   const [radius, setRadius] = useState(500), [mode, setMode] = useState('vibrate');
@@ -136,12 +137,21 @@ export default function TransitAlarm() {
     Alert.alert('Your stop is approaching', text);
   }, [alarm, target, tracking, accurate, position, radius, mode]);
   function button(label, onPress, Icon = MapPin, secondary = false, disabled = false) {
-    return <FeedbackPressable accessibilityRole="button" disabled={disabled} onPress={onPress} style={t([styles.button, secondary && styles.secondary, disabled && { opacity: 0.45 }])}><Icon size={14} color={secondary ? themeColor('#103E53', 'color') : '#fff'} /><Text style={t([styles.buttonText, secondary && { color: '#103E53' }])}>{label}</Text></FeedbackPressable>;
+    const foreground = secondary ? palette.ink : palette.onPrimary;
+    return <FeedbackPressable lift accessibilityRole="button" disabled={disabled} onPress={onPress}
+      style={({ hovered, pressed }) => [t(styles.button), secondary && [styles.secondary, { backgroundColor: palette.paper, borderColor: palette.primary }],
+        !disabled && (hovered || pressed) && { backgroundColor: secondary ? palette.tint : palette.brand }, disabled && { opacity: 0.45 }]}>
+      <Icon size={14} color={foreground} /><Text style={[styles.buttonText, { color: foreground }]}>{label}</Text>
+    </FeedbackPressable>;
+  }
+  function choiceStyle(base, selected, { hovered, pressed }) {
+    return [base, { backgroundColor: selected ? palette.primary : palette.paper, borderColor: selected ? palette.primary : palette.line },
+      (hovered || pressed) && { backgroundColor: selected ? palette.brand : palette.tint, borderColor: palette.brand }];
   }
   return <ScrollView style={t(styles.container)} contentContainerStyle={t([styles.screen, compact && { padding: 16 }])}>
     <AIToolHeader eyebrow="PANGASINAN TRANSIT COMPANION" title="Transit Alarm" subtitle="Get proximity alerts for active Pangasinan transit routes." badges={[{ label: 'Active route data' }, { label: 'Location-aware alerts' }, { label: 'Smart notifications', color: '#A78BFA' }]} Icon={Bell} />
-    <View style={t([styles.columns, compact && { flexDirection: 'column' }])}>
-      <View style={{ flex: 1, gap: 16, width: '100%' }}>
+    <View style={t([styles.columns, compact && { flexDirection: 'column', marginTop: 20, gap: 20 }])}>
+      <View style={{ flex: 1, gap: 20, width: '100%' }}>
         <View style={t(styles.card)}><Text style={t(styles.title)}>Plan Your Route</Text>
           <View style={styles.row}><View style={{ flex: 1 }}><Select label="From" value={from} options={options} onChange={v => changeEndpoint('from', v)} /></View><View style={{ flex: 1 }}><Select label="To" value={to} options={options} onChange={v => changeEndpoint('to', v)} /></View></View>
           {button(busyGPS ? 'Locating…' : 'Use my GPS location', () => gps(true), MapPin, true, busyGPS)}
@@ -151,7 +161,7 @@ export default function TransitAlarm() {
         {loading && <ActivityIndicator />}
         {searched && !loading && !routes.length && <View style={t(styles.card)}><Text style={t(styles.muted)}>No sourced, coordinate-backed transit route is published for this journey. Try another pair or ask your LGU to publish stop locations.</Text></View>}
         {!searched && <Text style={t(styles.muted)}>Choose your journey to search published Pangasinan transit routes.</Text>}
-        {routes.map(r => <View key={r.id} style={t([styles.card, route?.id === r.id && { borderColor: '#EE7058' }])}>
+        {routes.map(r => <View key={r.id} style={t([styles.card, route?.id === r.id && { borderColor: palette.primary }])}>
           <View style={styles.row}><View style={t(styles.icon)}><Bus size={20} color={themeColor('#103E53', 'color')} /></View><View style={{ flex: 1 }}><Text style={t(styles.name)}>{r.name}</Text><Text style={t(styles.muted)}>{r.stops.length} stops · {r.type}</Text></View><Text style={t(styles.muted)}>Fare unconfirmed</Text></View>
           <Text style={t(styles.muted)}>{r.frequency}{r.firstDeparture && r.lastDeparture ? ` · ${r.firstDeparture} – ${r.lastDeparture}` : ''}</Text>
           {button('View route source', () => Linking.openURL(r.sourceUrl).catch(() => setMessage('Unable to open route source.')), MapPin, true)}
@@ -161,23 +171,23 @@ export default function TransitAlarm() {
       <View style={[styles.right, compact && { width: '100%' }]}>
         <View style={t(styles.card)}><View style={styles.row}><Text style={t([styles.title, { flex: 1 }])}>Stop Alarm</Text><Text style={t(styles.muted)}>{alarm ? 'On' : 'Off'}</Text></View>
           <Select label="Alert me at" disabled={!route} value={String(stopIndex)} options={(route?.stops || []).map((s, i) => ({ value: String(i), label: s.name }))} onChange={v => { disarm(); setStopIndex(Number(v)); }} />
-          {target && <TransitStopPreview stop={target} />}<Text style={t(styles.muted)}>Alert radius · {radius} m</Text><View style={[styles.row, { flexWrap: 'wrap' }]}>{[100, 300, 500, 1000, 2000].map(n => <FeedbackPressable key={n} accessibilityRole="button" accessibilityState={{ selected: radius === n }} onPress={() => { disarm(); setRadius(n); }} style={t([styles.chip, radius === n && styles.active])}><Text style={t(styles.muted)}>{n} m</Text></FeedbackPressable>)}</View>
-          <View style={styles.row}>{modes.map(({ key, label, Icon }) => <FeedbackPressable key={key} accessibilityRole="button" accessibilityState={{ selected: mode === key }} onPress={() => { disarm(); setMode(key); }} style={t([styles.mode, mode === key && styles.active])}><Icon size={16} color={themeColor('#103E53', 'color')} /><Text style={t(styles.muted)}>{label}</Text></FeedbackPressable>)}</View>
+          {target && <TransitStopPreview stop={target} />}<Text style={t(styles.muted)}>Alert radius · {radius} m</Text><View style={[styles.row, { flexWrap: 'wrap' }]}>{[100, 300, 500, 1000, 2000].map(n => <FeedbackPressable lift key={n} accessibilityRole="button" accessibilityState={{ selected: radius === n }} onPress={() => { disarm(); setRadius(n); }} style={state => choiceStyle(styles.chip, radius === n, state)}><Text style={[styles.muted, { color: radius === n ? palette.onPrimary : palette.ink }]}>{n} m</Text></FeedbackPressable>)}</View>
+          <View style={styles.row}>{modes.map(({ key, label, Icon }) => <FeedbackPressable lift key={key} accessibilityRole="button" accessibilityState={{ selected: mode === key }} onPress={() => { disarm(); setMode(key); }} style={state => choiceStyle(styles.mode, mode === key, state)}><Icon size={16} color={mode === key ? palette.onPrimary : palette.ink} /><Text style={[styles.muted, { color: mode === key ? palette.onPrimary : palette.ink }]}>{label}</Text></FeedbackPressable>)}</View>
           {button(arming ? 'Setting up…' : alarm ? 'Disable Alarm' : 'Enable Alarm', enable, Bell, false, !target || arming)}
           {button(tracking ? 'Stop Tracking' : 'Resume GPS Tracking', tracking ? halt : () => gps(), MapPin, true, !route || busyGPS)}
           <Text style={t(styles.muted)}>{tracking ? accurate ? `GPS active · accuracy ±${Math.round(position.coords.accuracy)} m` : 'Waiting for fresh, accurate GPS…' : 'GPS tracking off'}</Text>
           <Text style={t(styles.muted)}>{Platform.OS === 'web' ? 'Keep this page open for alerts. ' : 'Background alerts require an installed mobile build. Do not force-close the app. '}Distances are GPS proximity, not road distance or live vehicle arrival times.</Text>
         </View>
-        <View style={t(styles.card)}><Text style={t(styles.title)}>Stop Progress</Text>{!route && <Text style={t(styles.muted)}>Select a route to see its stops.</Text>}{route?.stops.map((s, i) => <FeedbackPressable key={`${i}-${s.name}`} accessibilityRole="button" onPress={() => { disarm(); setStopIndex(i); }} style={styles.row}><View style={t([styles.dot, i === stopIndex && { borderColor: '#EE7058', backgroundColor: '#EE7058' }])} /><View style={{ flex: 1 }}><Text style={t(styles.name)}>{s.name}</Text><Text style={t(styles.muted)}>{fresh ? `${(distanceMeters(position.coords, s) / 1000).toFixed(2)} km away` : 'Waiting for GPS'}{i === stopIndex ? ' · Alert stop' : ''}</Text></View></FeedbackPressable>)}</View>
+        <View style={t(styles.card)}><Text style={t(styles.title)}>Stop Progress</Text>{!route && <Text style={t(styles.muted)}>Select a route to see its stops.</Text>}{route?.stops.map((s, i) => <FeedbackPressable lift key={`${i}-${s.name}`} accessibilityRole="button" accessibilityState={{ selected: i === stopIndex }} onPress={() => { disarm(); setStopIndex(i); }} style={({ hovered, pressed }) => [styles.row, styles.stopButton, (hovered || pressed) && { backgroundColor: palette.tint }]}><View style={t([styles.dot, i === stopIndex && { borderColor: palette.primary, backgroundColor: palette.primary }])} /><View style={{ flex: 1 }}><Text style={t(styles.name)}>{s.name}</Text><Text style={t(styles.muted)}>{fresh ? `${(distanceMeters(position.coords, s) / 1000).toFixed(2)} km away` : 'Waiting for GPS'}{i === stopIndex ? ' · Alert stop' : ''}</Text></View></FeedbackPressable>)}</View>
       </View>
     </View>{!!message && <View accessibilityLiveRegion="polite" style={t([styles.card, { marginTop: 16 }])}><Text style={t(styles.name)}>{message}</Text></View>}
   </ScrollView>;
 }
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FAF9F6' }, screen: { padding: 32, paddingBottom: 48 },
-  columns: { flexDirection: 'row', alignItems: 'flex-start', gap: 20 }, right: { width: 310, gap: 16 },
+  columns: { flexDirection: 'row', alignItems: 'flex-start', marginTop: 24, gap: 24 }, right: { width: 310, gap: 20 },
   card: { backgroundColor: '#fff', padding: 20, borderRadius: 18, borderWidth: 1, borderColor: '#E9E8E4', gap: 14, shadowColor: '#103E53', shadowOpacity: 0.04, shadowRadius: 8, shadowOffset: { width: 0, height: 2 } },
   title: { fontSize: 18, fontWeight: '700', color: '#103E53' }, name: { fontSize: 13, fontWeight: '600', color: '#103E53' }, muted: { fontSize: 12, color: '#758994', lineHeight: 18 },
-  row: { flexDirection: 'row', gap: 10, alignItems: 'center' }, button: { backgroundColor: '#EE7058', padding: 12, borderRadius: 12, flexDirection: 'row', gap: 6, alignItems: 'center', justifyContent: 'center' }, secondary: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#E3E8EB' }, buttonText: { color: '#fff', fontSize: 12, fontWeight: '600' },
-  chip: { padding: 7, borderRadius: 8, borderWidth: 1, borderColor: '#E3E8EB' }, active: { backgroundColor: '#FFF0EB', borderColor: '#EE7058' }, mode: { flex: 1, gap: 6, alignItems: 'center', padding: 12, borderRadius: 12, borderWidth: 1, borderColor: '#E3E8EB' }, icon: { padding: 12, borderRadius: 22, backgroundColor: '#EDF2F5' }, dot: { width: 12, height: 12, borderRadius: 6, borderWidth: 2, borderColor: '#DEE6E9' },
+  row: { flexDirection: 'row', gap: 10, alignItems: 'center' }, button: { backgroundColor: colors.oceanBlue, padding: 12, borderRadius: 12, flexDirection: 'row', gap: 6, alignItems: 'center', justifyContent: 'center' }, secondary: { borderWidth: 1 }, buttonText: { fontSize: 12, fontWeight: '600' },
+  chip: { padding: 7, borderRadius: 8, borderWidth: 1 }, mode: { flex: 1, gap: 6, alignItems: 'center', padding: 12, borderRadius: 12, borderWidth: 1 }, stopButton: { padding: 6, borderRadius: 8 }, icon: { padding: 12, borderRadius: 22, backgroundColor: '#EDF2F5' }, dot: { width: 12, height: 12, borderRadius: 6, borderWidth: 2, borderColor: '#DEE6E9' },
 });

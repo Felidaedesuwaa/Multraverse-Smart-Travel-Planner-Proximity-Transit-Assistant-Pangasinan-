@@ -1,3 +1,4 @@
+import { FeedbackPressable } from "./WorkspaceMotion";
 import { useRef, useState } from "react";
 import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -86,23 +87,23 @@ export default function ProfileEditor({ mode, onClose, onSaved }) {
         <View accessibilityViewIsModal style={themeStyle(styles.panel)}>
           <View style={styles.header}>
             <Text accessibilityRole="header" style={themeStyle(styles.title)}>{photoMode ? "Change Photo" : "Edit Profile"}</Text>
-            <Pressable accessibilityLabel="Close profile editor" accessibilityRole="button" onPress={close} disabled={busy} style={styles.close}><X size={22} color={themeColor("#0B3C5D")} /></Pressable>
+            <FeedbackPressable accessibilityLabel="Close profile editor" accessibilityRole="button" onPress={close} disabled={busy} style={styles.close}><X size={22} color={themeColor("#0B3C5D")} /></FeedbackPressable>
           </View>
           <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.form}>
             {photoMode ? <View style={styles.photoForm}>
               <ProfileAvatar user={{ ...user, photo }} size={112} />
               <Text style={themeStyle(styles.caption)}>Pick your travel style or upload your own photo.</Text>
-              <Pressable accessibilityRole="button" onPress={pick} disabled={busy} style={themeStyle([styles.secondary, styles.upload])}><Upload size={16} color={themeColor("#0B3C5D")} /><Text style={themeStyle(styles.secondaryText)}>Upload Photo</Text></Pressable>
+              <FeedbackPressable accessibilityRole="button" onPress={pick} disabled={busy} style={themeStyle([styles.secondary, styles.upload])}><Upload size={16} color={themeColor("#0B3C5D")} /><Text style={themeStyle(styles.secondaryText)}>Upload Photo</Text></FeedbackPressable>
               <View style={styles.galleryHeading}><Text style={themeStyle(styles.label)}>TRAVEL AVATARS</Text><Text style={themeStyle(styles.caption)}>16 to explore</Text></View>
               <View style={styles.gallery}>
-                {travelAvatars.map(avatar => <Pressable key={avatar.id} accessibilityRole="button" accessibilityLabel={`Choose ${avatar.name} avatar`} accessibilityState={{ selected: photo === avatar.id, disabled: busy }}
+                {travelAvatars.map(avatar => <FeedbackPressable key={avatar.id} accessibilityRole="button" accessibilityLabel={`Choose ${avatar.name} avatar`} accessibilityState={{ selected: photo === avatar.id, disabled: busy }}
                   disabled={busy} onPress={() => { setPhoto(avatar.id); setError(null); }} style={[styles.avatarOption, themeStyle(photo === avatar.id ? styles.selectedAvatar : styles.unselectedAvatar)]}>
                   <TravelAvatar avatar={avatar} size={48} />
                   <Text style={themeStyle(styles.avatarName)}>{avatar.name}</Text>
                   {photo === avatar.id && <View style={themeStyle(styles.selectedBadge)}><Check size={12} color="#FFFFFF" /></View>}
-                </Pressable>)}
+                </FeedbackPressable>)}
               </View>
-              {photo && <Pressable accessibilityRole="button" onPress={() => setPhoto(null)} disabled={busy} style={styles.remove}><Text style={themeStyle(styles.error)}>Remove photo</Text></Pressable>}
+              {photo && <FeedbackPressable accessibilityRole="button" onPress={() => setPhoto(null)} disabled={busy} style={styles.remove}><Text style={themeStyle(styles.error)}>Remove photo</Text></FeedbackPressable>}
               {busy && !saving && <ActivityIndicator accessibilityLabel="Preparing photo" color={themeColor("#0B3C5D")} />}
             </View> : <>
               {typeof user?.firstName !== "string" && <Text style={themeStyle(styles.caption)}>Review the name fields below. Your existing full name has been split for editing.</Text>}
@@ -119,11 +120,11 @@ export default function ProfileEditor({ mode, onClose, onSaved }) {
             {error && <Text accessibilityRole="alert" style={themeStyle(styles.error)}>{error}</Text>}
           </ScrollView>
           <View style={themeStyle(styles.footer)}>
-            <Pressable accessibilityRole="button" onPress={close} disabled={busy} style={themeStyle(styles.secondary)}><Text style={themeStyle(styles.secondaryText)}>Cancel</Text></Pressable>
-            <Pressable accessibilityRole="button" onPress={save} disabled={busy || !changed} style={themeStyle([styles.save, (busy || !changed) && styles.disabled])}>
+            <FeedbackPressable accessibilityRole="button" onPress={close} disabled={busy} style={themeStyle(styles.secondary)}><Text style={themeStyle(styles.secondaryText)}>Cancel</Text></FeedbackPressable>
+            <FeedbackPressable accessibilityRole="button" onPress={save} disabled={busy || !changed} style={themeStyle([styles.save, (busy || !changed) && styles.disabled])}>
               {saving && <ActivityIndicator size="small" color="#FFFFFF" />}
               <Text style={themeStyle(styles.saveText)}>{saving ? "Saving…" : "Save Changes"}</Text>
-            </Pressable>
+            </FeedbackPressable>
           </View>
         </View>
       </KeyboardAvoidingView>

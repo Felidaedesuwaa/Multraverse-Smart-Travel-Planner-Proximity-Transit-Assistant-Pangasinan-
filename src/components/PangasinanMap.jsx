@@ -1,6 +1,7 @@
+import { FeedbackPressable } from "./WorkspaceMotion";
 import { useAppTheme } from "../theme/useAppTheme";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AccessibilityInfo, Animated, Linking, PanResponder, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { AccessibilityInfo, Animated, Linking, PanResponder, Platform, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Compass, MapPin, Maximize2, Minus, Plus, Search } from "lucide-react-native";
 import Svg, { Circle, G, Path, Polyline, Text as SvgText } from "react-native-svg";
 import geometry from "../data/pangasinanMap.json";
@@ -117,10 +118,10 @@ export default function PangasinanMap({ mode = "explore", selectedIds = [], onTo
         </View>
         <View pointerEvents="none" style={themeStyle(styles.compass)}><Compass size={24} color={themeColor(colors.oceanBlue, "color")} /><Text style={themeStyle(styles.north)}>N</Text></View>
         <View style={themeStyle(styles.controls)}>
-          <Pressable accessibilityRole="button" accessibilityLabel="Zoom in" disabled={zoom === 4} style={themeStyle([styles.control, zoom === 4 && styles.disabled])} onPress={() => changeZoom(0.5)}><Plus size={20} color={themeColor(colors.oceanBlue, "color")} /></Pressable>
+          <FeedbackPressable accessibilityRole="button" accessibilityLabel="Zoom in" disabled={zoom === 4} style={themeStyle([styles.control, zoom === 4 && styles.disabled])} onPress={() => changeZoom(0.5)}><Plus size={20} color={themeColor(colors.oceanBlue, "color")} /></FeedbackPressable>
           <Text style={themeStyle(styles.zoomText)}>{Math.round(zoom * 100)}%</Text>
-          <Pressable accessibilityRole="button" accessibilityLabel="Zoom out" disabled={zoom === 1} style={themeStyle([styles.control, zoom === 1 && styles.disabled])} onPress={() => changeZoom(-0.5)}><Minus size={20} color={themeColor(colors.oceanBlue, "color")} /></Pressable>
-          <Pressable accessibilityRole="button" accessibilityLabel="Reset map view" style={themeStyle(styles.control)} onPress={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}><Maximize2 size={18} color={themeColor(colors.oceanBlue, "color")} /></Pressable>
+          <FeedbackPressable accessibilityRole="button" accessibilityLabel="Zoom out" disabled={zoom === 1} style={themeStyle([styles.control, zoom === 1 && styles.disabled])} onPress={() => changeZoom(-0.5)}><Minus size={20} color={themeColor(colors.oceanBlue, "color")} /></FeedbackPressable>
+          <FeedbackPressable accessibilityRole="button" accessibilityLabel="Reset map view" style={themeStyle(styles.control)} onPress={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}><Maximize2 size={18} color={themeColor(colors.oceanBlue, "color")} /></FeedbackPressable>
         </View>
         {floatingPreview && previewCard}
         <View pointerEvents="none" style={themeStyle(styles.mapHint)}><Text style={themeStyle(styles.caption)}>{selecting ? "Select areas on the map or in the accessible list below" : zoom > 1 ? "Drag to move · tap an area to explore" : Platform.OS === "web" ? "Hover to discover · click to explore" : "Tap an area to explore · + to zoom"}</Text></View>
@@ -130,11 +131,11 @@ export default function PangasinanMap({ mode = "explore", selectedIds = [], onTo
       <View style={themeStyle(styles.directory)}>
         <View style={themeStyle(styles.directoryHeading)}><Text style={themeStyle(styles.sectionTitle)}>{query ? `${matches.length} matching areas` : "Explore by area"}</Text><Text style={themeStyle(styles.caption)}>Cities & municipalities</Text></View>
         <ScrollView style={themeStyle(styles.areaList)} nestedScrollEnabled contentContainerStyle={themeStyle(styles.chips)}>
-          {matches.map(area => <Pressable key={area.id} accessibilityRole="button" accessibilityLabel={`${selecting ? "Select" : "Explore"} ${area.name}`} accessibilityState={{ selected: selectedIds.includes(area.id) }} onPress={() => select(area)} onHoverIn={() => hover(area)} onHoverOut={() => setHovered(null)} onFocus={() => hover(area)} onBlur={() => setHovered(null)} style={themeStyle(({ pressed }) => [styles.chip, (pressed || active?.id === area.id || selectedIds.includes(area.id)) && styles.activeChip])}><Text style={themeStyle([styles.chipLabel, (active?.id === area.id || selectedIds.includes(area.id)) && styles.activeChipLabel])}>{area.name}</Text></Pressable>)}
+          {matches.map(area => <FeedbackPressable key={area.id} accessibilityRole="button" accessibilityLabel={`${selecting ? "Select" : "Explore"} ${area.name}`} accessibilityState={{ selected: selectedIds.includes(area.id) }} onPress={() => select(area)} onHoverIn={() => hover(area)} onHoverOut={() => setHovered(null)} onFocus={() => hover(area)} onBlur={() => setHovered(null)} style={themeStyle(({ pressed }) => [styles.chip, (pressed || active?.id === area.id || selectedIds.includes(area.id)) && styles.activeChip])}><Text style={themeStyle([styles.chipLabel, (active?.id === area.id || selectedIds.includes(area.id)) && styles.activeChipLabel])}>{area.name}</Text></FeedbackPressable>)}
           {!matches.length && <Text style={themeStyle(styles.caption)}>No matching area. Try another name.</Text>}
         </ScrollView>
       </View>
-      <Pressable accessibilityRole="link" onPress={() => Linking.openURL("https://github.com/faeldon/philippines-json-maps")}><Text style={themeStyle(styles.attribution)}>Map: Philippines JSON Maps · 2023 boundaries · MIT</Text></Pressable>
+      <FeedbackPressable accessibilityRole="link" onPress={() => Linking.openURL("https://github.com/faeldon/philippines-json-maps")}><Text style={themeStyle(styles.attribution)}>Map: Philippines JSON Maps · 2023 boundaries · MIT</Text></FeedbackPressable>
       {selected && <MapPlacePreview key={selected.id} area={selected} onClose={() => setSelected(null)} />}
     </View>
   );

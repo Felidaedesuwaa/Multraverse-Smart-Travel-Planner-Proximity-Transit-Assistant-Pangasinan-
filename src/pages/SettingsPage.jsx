@@ -1,6 +1,6 @@
 import { FeedbackPressable } from "../components/WorkspaceMotion";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 import Card from "../components/Card";
 import ToggleSwitch from "../components/ToggleSwitch";
 import CurrencyPicker from "../components/CurrencyPicker";
@@ -90,11 +90,11 @@ export default function SettingsPage() {
     </Section>
     {storageError && <Text style={themeStyle(styles.storageError)}>{storageError}</Text>}
     <Section title="Account Security">
-      <Row label="Password" description="Update your password and sign out other sessions" control={<Pressable accessibilityRole="button" onPress={() => setChangingPassword(true)} style={themeStyle(styles.photo)}><Text style={themeStyle(styles.photoText)}>Change password</Text></Pressable>} last />
+      <Row label="Password" description="Update your password and sign out other sessions" control={<FeedbackPressable accessibilityRole="button" onPress={() => setChangingPassword(true)} style={themeStyle(styles.photo)}><Text style={themeStyle(styles.photoText)}>Change password</Text></FeedbackPressable>} last />
     </Section>
     <Section title="Privacy & Data">
       <Row label="Location Access" description="For transit alerts and geofencing" control={<Text style={themeStyle(styles.allowed)}>Allowed</Text>} />
-      <Row label="Delete Account" description="Permanently remove your data" danger control={<Pressable accessibilityRole="button" onPress={() => setDeleting(true)} style={themeStyle(styles.delete)}><Text style={themeStyle(styles.deleteText)}>Delete</Text></Pressable>} last />
+      <Row label="Delete Account" description="Password required to permanently remove your data" danger control={<FeedbackPressable accessibilityRole="button" onPress={() => setDeleting(true)} style={({ pressed, hovered }) => [styles.delete, hovered && styles.deleteHovered, pressed && styles.deletePressed]}><Text style={styles.deleteText}>Delete</Text></FeedbackPressable>} last />
     </Section>
     </View>
   </ScrollView>
@@ -139,8 +139,10 @@ const styles = StyleSheet.create({
   regionInputCompact: { width: "100%" },
   allowed: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 6, backgroundColor: colors.palmGreenLight, color: colors.palmGreen, fontSize: 11, fontWeight: "600" },
   dangerText: { color: colors.sunsetCoral },
-  delete: { paddingHorizontal: 12, minHeight: 44, justifyContent: "center", borderWidth: 1, borderColor: colors.coralLight, borderRadius: 8 },
-  deleteText: { color: colors.sunsetCoral, fontSize: 12, fontWeight: "600" },
+  delete: { paddingHorizontal: 12, minHeight: 44, alignItems: "center", justifyContent: "center", backgroundColor: "#8F4549", borderWidth: 1, borderColor: "#8F4549", borderRadius: 8 },
+  deleteHovered: { backgroundColor: "#7D3D42", borderColor: "#7D3D42" },
+  deletePressed: { backgroundColor: "#6E3439", borderColor: "#6E3439" },
+  deleteText: { color: colors.white, fontSize: 12, fontWeight: "600" },
   rateStatus: { paddingVertical: 10, gap: 6 },
   retry: { minHeight: 44, justifyContent: "center", alignSelf: "flex-start" },
   storageError: { color: colors.sunsetCoral, fontSize: 12, lineHeight: 18 },

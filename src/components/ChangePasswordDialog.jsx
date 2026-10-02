@@ -1,5 +1,6 @@
+import { FeedbackPressable } from "./WorkspaceMotion";
 import { useRef, useState } from "react";
-import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import FormField from "./FormField";
 import { api } from "../lib/api";
@@ -39,8 +40,8 @@ export default function ChangePasswordDialog({ onClose }) {
           {!!error && <Text accessibilityRole="alert" style={themeStyle(styles.error)}>{error}</Text>}
         </>}
         <View style={styles.actions}>
-          {!done && <Pressable accessibilityRole="button" disabled={busy} onPress={close} style={themeStyle(styles.cancel)}><Text style={themeStyle(styles.cancelText)}>Cancel</Text></Pressable>}
-          <Pressable accessibilityRole="button" accessibilityState={{ busy, disabled: busy }} disabled={busy} onPress={done ? close : submit} style={themeStyle(styles.save)}>{busy ? <ActivityIndicator color={themeColor(colors.white)} /> : <Text style={themeStyle(styles.saveText)}>{done ? "Sign out" : "Update password"}</Text>}</Pressable>
+          {!done && <FeedbackPressable accessibilityRole="button" disabled={busy} onPress={close} style={themeStyle(styles.cancel)}><Text style={themeStyle(styles.cancelText)}>Cancel</Text></FeedbackPressable>}
+          <FeedbackPressable accessibilityRole="button" accessibilityState={{ busy, disabled: busy }} disabled={busy} onPress={done ? close : submit} style={themeStyle(styles.save)}>{busy ? <ActivityIndicator color={themeColor(colors.white)} /> : <Text style={themeStyle(styles.saveText)}>{done ? "Sign out" : "Update password"}</Text>}</FeedbackPressable>
         </View>
       </ScrollView></View>
     </KeyboardAvoidingView></SafeAreaView>

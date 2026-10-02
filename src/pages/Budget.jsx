@@ -46,7 +46,7 @@ function StatCard({ label, value, sub, icon, iconBg, valueColor, onPress }) {
   const { themeStyle, themeColor } = useAppTheme();
 
   return (
-    <FeedbackPressable onPress={onPress} disabled={!onPress} style={themeStyle(styles.statCard)}>
+    <Pressable accessibilityRole={onPress ? "button" : undefined} onPress={onPress} disabled={!onPress} style={themeStyle(styles.statCard)}>
       <View style={themeStyle([styles.statIconBox, { backgroundColor: iconBg }])}>
         {icon}
       </View>
@@ -56,7 +56,7 @@ function StatCard({ label, value, sub, icon, iconBg, valueColor, onPress }) {
       </Text>
       {sub && <Text style={themeStyle(styles.statSub)}>{sub}</Text>}
       {onPress && <View style={themeStyle(styles.editHint)}><Pencil size={12} color={themeColor("#6B8CA8", "color")} /><Text style={themeStyle(styles.editHintText)}>Edit</Text></View>}
-    </FeedbackPressable>
+    </Pressable>
   );
 }
 

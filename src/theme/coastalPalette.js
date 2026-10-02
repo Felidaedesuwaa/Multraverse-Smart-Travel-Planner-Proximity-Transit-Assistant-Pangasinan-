@@ -2,15 +2,17 @@
 export const coastalLight = {
   dark: false, background: "#FCF8EF", surface: "#FFFDFA", ink: "#163F49",
   muted: "#566F72", line: "#E4E6DB", tint: "#E8F0E5", accent: "#B8583B", paper: "#F4ECDD",
-  primary: "#123F52", deep: "#103746", brand: "#256773", button: "#F4B183", onButton: "#153C45",
+  primary: "#123F52", deep: "#103746", sidebar: "#123F52", brand: "#256773", button: "#F4B183", onButton: "#153C45",
   onPrimary: "#FFF9EF", secondaryOnPrimary: "#BDD3D8",
+  sidebarBorder: "#365F68",
 };
 
 export const coastalDark = {
   dark: true, background: "#14252D", surface: "#20363F", ink: "#E5EEE9",
   muted: "#ADC5C7", line: "#365059", tint: "#284B4C", accent: "#F4B58B", paper: "#243C45",
-  primary: "#365F68", deep: "#183039", brand: "#256773", button: "#F4B183", onButton: "#153C45",
+  primary: "#365F68", deep: "#183039", sidebar: "#14252D", brand: "#256773", button: "#F4B183", onButton: "#153C45",
   onPrimary: "#FFF9EF", secondaryOnPrimary: "#BDD3D8",
+  sidebarBorder: "#365059",
 };
 
 const lookup = groups => Object.fromEntries(groups.flatMap(([value, keys]) => keys.map(key => [key, value])));
@@ -18,7 +20,7 @@ const lookup = groups => Object.fromEntries(groups.flatMap(([value, keys]) => ke
 // Older components use literal colors as well as named tokens. Resolve both
 // here, by their visual role, without changing any component's layout.
 export const lightSurfaces = lookup([
-  [coastalLight.background, ["FDFBF7", "F7F9FB", "F4F8FA"]],
+  [coastalLight.background, ["FDFBF7", "F7F9FB", "F4F8FA", "FAF9F5", "FAF9F6"]],
   [coastalLight.surface, ["FFFFFF", "FCFEFF", "FAFCFD"]],
   [coastalLight.paper, ["F8FAFC", "FAFCFF", "F4F7FB", "F4F8FC", "F0F5FA", "F0F4F8", "EEF2F7", "F5F6F2", "EFEAE0", "E2EBF3", "E7E1D6", "EDF3F6", "F4FAFC", "EFEFEF", "F0F0F0"]],
   ["#DCECE2", ["DDEAF2", "EAF1FB", "EAF1F8", "F0F8FF", "EDF4F6", "F0F7FA"]],

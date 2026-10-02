@@ -8,14 +8,14 @@ export default function ItineraryFareInputs({ modes, tables, values, onChange, a
   return <div className="aip-fare-inputs">
     <style>{`
       .aip-fare-inputs { margin:20px 0; }
-      .aip-fare-inputs > p { font-size:12px; color:#5C6D7A; }
-      .aip-fare-input { padding:16px; border:1px solid #E4E1D8; border-radius:12px; margin:12px 0; }
+      .aip-fare-inputs > p { font-size:12px; color:var(--aip-muted); }
+      .aip-fare-input { padding:16px; border:1px solid var(--aip-border); border-radius:12px; margin:12px 0; }
       .aip-fare-input h4 { display:flex; align-items:center; gap:8px; margin:0 0 12px; font-size:14px; }
       .aip-fare-fields { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr)); gap:12px; }
-      .aip-fare-fields label { display:block; font-size:12px; color:#5C6D7A; }
+      .aip-fare-fields label { display:block; font-size:12px; color:var(--aip-muted); }
       .aip-fare-fields input,.aip-fare-fields select { margin-top:5px; font-size:13px; min-height:44px; padding:10px; }
       .aip-fare-confirm { display:flex; align-items:flex-start; gap:8px; font-size:12px; margin-top:12px; }
-      .aip-fare-scope { display:flex; gap:6px; font-size:11px; color:#795416; margin:12px 0 0; }
+      .aip-fare-scope { display:flex; gap:6px; font-size:11px; color:var(--aip-warning); margin:12px 0 0; }
     `}</style>
     {!!modes.length && <p>Estimate fares per person. Enter total rides for the whole trip, including return rides. Use billed route distance, not straight-line distance.</p>}
     {modes.map(mode => {

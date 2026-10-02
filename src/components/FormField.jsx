@@ -1,5 +1,6 @@
+import { FeedbackPressable } from "./WorkspaceMotion";
 import { forwardRef, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { StyleSheet, Text, TextInput, View } from "react-native";
 import { useAppTheme } from "../theme/useAppTheme";
 import { colors } from "../theme/colors";
 import NameInput from './NameInput';
@@ -12,7 +13,7 @@ export default forwardRef(function FormField({ label, error, hint, password, let
     <Text style={themeStyle(styles.label)}>{label}</Text>
     <View style={themeStyle([styles.row, error && styles.invalid])}>
       <Input {...props} ref={ref} accessibilityLabel={label} accessibilityHint={error || hint} aria-invalid={!!error} secureTextEntry={password && hidden} placeholderTextColor={themeColor(colors.textMuted)} style={themeStyle(styles.input)} />
-      {password && <Pressable accessibilityRole="button" accessibilityLabel={hidden ? `Show ${label}` : `Hide ${label}`} onPress={() => setHidden(!hidden)} style={styles.toggle}><Text style={themeStyle(styles.toggleText)}>{hidden ? "Show" : "Hide"}</Text></Pressable>}
+      {password && <FeedbackPressable accessibilityRole="button" accessibilityLabel={hidden ? `Show ${label}` : `Hide ${label}`} onPress={() => setHidden(!hidden)} style={styles.toggle}><Text style={themeStyle(styles.toggleText)}>{hidden ? "Show" : "Hide"}</Text></FeedbackPressable>}
     </View>
     {!!hint && <Text style={themeStyle(styles.hint)}>{hint}</Text>}
     {!!error && <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={themeStyle(styles.error)}>{error}</Text>}

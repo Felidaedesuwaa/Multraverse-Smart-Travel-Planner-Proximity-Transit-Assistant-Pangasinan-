@@ -1,3 +1,4 @@
+import { FeedbackPressable } from "./WorkspaceMotion";
 import { useAppTheme } from "../theme/useAppTheme";
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Image, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
@@ -42,12 +43,12 @@ function PhotoCarousel({ area }) {
         {!photos.length && <View style={themeStyle(styles.photoFallback)}><Camera size={38} color={themeColor(colors.slate, "color")} /><Text style={themeStyle(styles.muted)}>Photos are not available for this area yet.</Text></View>}
         <View style={themeStyle(styles.photoBadge)}><Camera size={13} color={themeColor(colors.white, "color")} /><Text style={themeStyle(styles.photoBadgeText)}>{photo ? `${index + 1} / ${photos.length}` : "Area preview"}</Text></View>
         {photos.length > 1 && <>
-          <Pressable accessibilityRole="button" accessibilityLabel="Previous photo" style={themeStyle([styles.photoArrow, { left: 14 }])} onPress={() => move(-1)}><ChevronLeft size={22} color={themeColor(colors.oceanBlue, "color")} /></Pressable>
-          <Pressable accessibilityRole="button" accessibilityLabel="Next photo" style={themeStyle([styles.photoArrow, { right: 14 }])} onPress={() => move(1)}><ChevronRight size={22} color={themeColor(colors.oceanBlue, "color")} /></Pressable>
+          <FeedbackPressable accessibilityRole="button" accessibilityLabel="Previous photo" style={themeStyle([styles.photoArrow, { left: 14 }])} onPress={() => move(-1)}><ChevronLeft size={22} color={themeColor(colors.oceanBlue, "color")} /></FeedbackPressable>
+          <FeedbackPressable accessibilityRole="button" accessibilityLabel="Next photo" style={themeStyle([styles.photoArrow, { right: 14 }])} onPress={() => move(1)}><ChevronRight size={22} color={themeColor(colors.oceanBlue, "color")} /></FeedbackPressable>
         </>}
       </View>
-      {photos.length > 1 && <View style={themeStyle(styles.dots)}>{photos.map((item, i) => <Pressable key={item.uri} accessibilityRole="button" accessibilityLabel={`Show photo ${i + 1}`} accessibilityState={{ selected: i === index }} onPress={() => goTo(i)} style={themeStyle(styles.dotTarget)}><View style={themeStyle([styles.dot, i === index && styles.activeDot])} /></Pressable>)}</View>}
-      {photo && <Pressable accessibilityRole="link" accessibilityLabel="View photo credit and license" onPress={() => Linking.openURL(photo.source)} style={themeStyle(styles.credit)}><Text numberOfLines={2} style={themeStyle(styles.creditText)}>{photo.credit || "Wikimedia Commons"} · {photo.license} ↗</Text></Pressable>}
+      {photos.length > 1 && <View style={themeStyle(styles.dots)}>{photos.map((item, i) => <FeedbackPressable key={item.uri} accessibilityRole="button" accessibilityLabel={`Show photo ${i + 1}`} accessibilityState={{ selected: i === index }} onPress={() => goTo(i)} style={themeStyle(styles.dotTarget)}><View style={themeStyle([styles.dot, i === index && styles.activeDot])} /></FeedbackPressable>)}</View>}
+      {photo && <FeedbackPressable accessibilityRole="link" accessibilityLabel="View photo credit and license" onPress={() => Linking.openURL(photo.source)} style={themeStyle(styles.credit)}><Text numberOfLines={2} style={themeStyle(styles.creditText)}>{photo.credit || "Wikimedia Commons"} · {photo.license} ↗</Text></FeedbackPressable>}
     </View>
   );
 }
@@ -80,7 +81,7 @@ export default function MapPlacePreview({ area, onClose }) {
       <SafeAreaView style={themeStyle(styles.overlay)}>
         <Pressable accessibilityRole="button" accessibilityLabel="Close area preview" style={themeStyle(StyleSheet.absoluteFill)} onPress={onClose} />
         <View accessibilityViewIsModal style={themeStyle([styles.modal, { width: Math.min(560, width - 24), maxHeight: height - 90 }])}>
-          <View style={themeStyle(styles.modalHeader)}><Text style={themeStyle(styles.eyebrow)}>EXPLORE PANGASINAN</Text><Pressable accessibilityRole="button" accessibilityLabel="Close area preview" onPress={onClose} style={themeStyle(styles.close)}><X size={22} color={themeColor(colors.oceanBlue, "color")} /></Pressable></View>
+          <View style={themeStyle(styles.modalHeader)}><Text style={themeStyle(styles.eyebrow)}>EXPLORE PANGASINAN</Text><FeedbackPressable accessibilityRole="button" accessibilityLabel="Close area preview" onPress={onClose} style={themeStyle(styles.close)}><X size={22} color={themeColor(colors.oceanBlue, "color")} /></FeedbackPressable></View>
           <ScrollView showsVerticalScrollIndicator={false}>
             <PhotoCarousel area={area} />
             <View style={themeStyle(styles.body)}>
@@ -89,13 +90,13 @@ export default function MapPlacePreview({ area, onClose }) {
                 <View style={themeStyle(styles.stars)}>{[1, 2, 3, 4, 5].map(star => <Star key={star} size={22} color={themeColor(rating.average && star <= Math.round(rating.average) ? "#E8A33D" : "#CBD4DA", "color")} fill={themeColor(rating.average && star <= Math.round(rating.average) ? "#E8A33D" : "transparent", "fill")} />)}</View>
                 {loading ? <ActivityIndicator color={themeColor(colors.oceanBlue, "color")} /> : <Text style={themeStyle(styles.ratingValue)}>{error ? "Ratings unavailable" : rating.average ? `${rating.average.toFixed(1)} / 5` : "Not yet rated"}</Text>}
                 <Text style={themeStyle(styles.muted)}>{loading ? "Loading traveler ratings…" : error ? "Connect to the server to see traveler ratings." : rating.count ? `${rating.count} public saved-place ${rating.count === 1 ? "rating" : "ratings"} in this area` : "Be the first to share your experience in Saved Places."}</Text>
-                {error && <Pressable accessibilityRole="button" onPress={() => setAttempt(value => value + 1)}><Text style={themeStyle(styles.retry)}>Retry ratings</Text></Pressable>}
+                {error && <FeedbackPressable accessibilityRole="button" onPress={() => setAttempt(value => value + 1)}><Text style={themeStyle(styles.retry)}>Retry ratings</Text></FeedbackPressable>}
               </View>
               <Text style={themeStyle(styles.sectionTitle)}>A closer look at {area.name}</Text>
               <Text style={themeStyle(styles.description)}>Explore this {area.kind.toLowerCase()} through local photos and places shared by other travelers. Save your favorites and add your own experience in Saved Places.</Text>
               {!loading && !error && places.length > 0 && <View style={themeStyle(styles.sharedPlaces)}><Text style={themeStyle(styles.sectionTitle)}>Places shared by travelers</Text>{places.slice(0, 5).map((place, i) => <View key={place.id || place._id || i} style={themeStyle(styles.sharedPlace)}><View style={themeStyle({ flex: 1 })}><Text style={themeStyle(styles.placeName)}>{place.name}</Text><Text style={themeStyle(styles.muted)}>{place.category}</Text></View>{place.rating > 0 && <View style={themeStyle(styles.location)}><Star size={14} color={themeColor(colors.gold, "color")} fill={themeColor(colors.gold, "fill")} /><Text style={themeStyle(styles.placeName)}>{Number(place.rating).toFixed(1)}</Text></View>}</View>)}</View>}
-              <Pressable accessibilityRole="button" accessibilityLabel={`Choose ${area.name} to explore`} onPress={planTrip} style={themeStyle(styles.primary)}><MapPin size={18} color={themeColor(colors.white, "color")} /><Text style={themeStyle(styles.primaryLabel)}>Choose this place to explore</Text><ArrowUpRight size={18} color={themeColor(colors.white, "color")} /></Pressable>
-              <Pressable accessibilityRole="button" onPress={openSaved} style={themeStyle(styles.secondary)}><Bookmark size={18} color={themeColor(colors.oceanBlue, "color")} /><Text style={themeStyle(styles.secondaryLabel)}>View Saved Places</Text></Pressable>
+              <FeedbackPressable accessibilityRole="button" accessibilityLabel={`Choose ${area.name} to explore`} onPress={planTrip} style={themeStyle(styles.primary)}><MapPin size={18} color={themeColor(colors.white, "color")} /><Text style={themeStyle(styles.primaryLabel)}>Choose this place to explore</Text><ArrowUpRight size={18} color={themeColor(colors.white, "color")} /></FeedbackPressable>
+              <FeedbackPressable accessibilityRole="button" onPress={openSaved} style={themeStyle(styles.secondary)}><Bookmark size={18} color={themeColor(colors.oceanBlue, "color")} /><Text style={themeStyle(styles.secondaryLabel)}>View Saved Places</Text></FeedbackPressable>
             </View>
           </ScrollView>
         </View>

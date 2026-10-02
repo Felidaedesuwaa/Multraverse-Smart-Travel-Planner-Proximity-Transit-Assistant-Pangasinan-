@@ -1,6 +1,5 @@
 import { FeedbackPressable } from "./WorkspaceMotion";
 import { useAppTheme } from "../theme/useAppTheme";
-import { darkPalette } from "../theme/darkPalette";
 import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import {
@@ -31,7 +30,7 @@ const aiItems = [
 ];
 
 export default function UserSidebar({ activeScreen = "Dashboard", onNavigate, compact = false }) {
-  const { themeStyle, themeColor, isDark, palette } = useAppTheme();
+  const { themeStyle, themeColor, palette } = useAppTheme();
 
   const user = useAuthStore((state) => state.user);
   const [entries, setEntries] = useState([]);
@@ -78,7 +77,7 @@ export default function UserSidebar({ activeScreen = "Dashboard", onNavigate, co
 
   return (
     <><ScrollView
-      style={[themeStyle([styles.sidebar, compact && styles.compactSidebar]), isDark && { backgroundColor: darkPalette.inset }]}
+      style={[styles.sidebar, compact && styles.compactSidebar, { backgroundColor: palette.sidebar, borderRightWidth: compact ? 0 : 1, borderRightColor: palette.sidebarBorder }]}
       contentContainerStyle={themeStyle(styles.content)}
       showsVerticalScrollIndicator={false}
     >
@@ -109,18 +108,6 @@ export default function UserSidebar({ activeScreen = "Dashboard", onNavigate, co
         <BudgetOverview entries={entries} />
       </View>
 
-      {/* Main Nav */}
-      <View style={themeStyle(styles.navSection)}>
-        {navigationItems.map((item) => renderNavItem(item, false))}
-      </View>
-
-      {/* AI Tools */}
-      <View style={themeStyle(styles.navSection)}>
-        <Text style={themeStyle(styles.sectionTitle)}>AI TOOLS</Text>
-        {aiItems.map((item) => renderNavItem(item, true))}
-      </View>
-
-      {!compact && <>
       {/* Saved Trips */}
       <View>
         <Text style={themeStyle(styles.sectionTitle)}>SAVED TRIPS</Text>
@@ -142,8 +129,16 @@ export default function UserSidebar({ activeScreen = "Dashboard", onNavigate, co
           <Text style={themeStyle(styles.empty)}>No saved trips yet</Text>
         )}
       </View>
+      {/* Main Nav */}
+      <View style={themeStyle(styles.navSection)}>
+        {navigationItems.map((item) => renderNavItem(item, false))}
+      </View>
 
-      </>}
+      {/* AI Tools */}
+      <View style={themeStyle(styles.navSection)}>
+        <Text style={themeStyle(styles.sectionTitle)}>AI TOOLS</Text>
+        {aiItems.map((item) => renderNavItem(item, true))}
+      </View>
     </ScrollView>
     </>
   );

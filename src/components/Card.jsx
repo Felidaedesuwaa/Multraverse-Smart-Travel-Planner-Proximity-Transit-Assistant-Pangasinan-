@@ -1,16 +1,12 @@
 import { useAppTheme } from "../theme/useAppTheme";
-import { useState } from "react";
-import { Platform, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { colors } from "../theme/colors";
-import { useWorkspaceReducedMotion } from "./WorkspaceMotion";
 
 export default function Card({ children, style }) {
-  const { themeStyle, palette } = useAppTheme();
-  const [hovered, setHovered] = useState(false);
-  const reduced = useWorkspaceReducedMotion();
+  const { themeStyle } = useAppTheme();
 
   return (
-    <View onPointerEnter={() => setHovered(true)} onPointerLeave={() => setHovered(false)} style={[themeStyle([styles.card, style]), hovered && { borderColor: palette.dark ? "#719998" : "#97B6A9", shadowOpacity: 0.13 }, Platform.OS === "web" && { transitionProperty: "border-color, box-shadow", transitionDuration: reduced ? "0ms" : "180ms" }]}>{children}</View>
+    <View style={themeStyle([styles.card, style])}>{children}</View>
   );
 }
 

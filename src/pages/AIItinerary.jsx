@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { useAppTheme } from "../theme/useAppTheme";
+import { darkPalette } from "../theme/darkPalette";
 import { Image as NativeImage, useWindowDimensions } from "react-native";
 import AIToolHeader from "../components/AIToolHeader";
 import { api } from "../lib/api";
@@ -17,26 +19,11 @@ import {
 } from "lucide-react-native";
 
 /* ------------------------------------------------------------------ */
-/*  Design tokens — pulled from the Figma "DESIGN TOKENS" footer       */
+/*  Typography uses the same Expo font aliases as the app shell.      */
 /* ------------------------------------------------------------------ */
-const colors = {
-  oceanBlue: "#123A5E",
-  oceanBlueDark: "#0C2740",
-  sunsetCoral: "#E8613F",
-  palmGreen: "#2E7D5B",
-  warmSand: "#F6F1E7",
-  seafoam: "#8FD1C7",
-  golden: "#E7A93E",
-  ink: "#16324A",
-  border: "#E4E1D8",
-  muted: "#8A8F98",
-  page: "#FAF9F5",
-};
-
 const fonts = {
-  display: '"Playfair Display", Georgia, serif',
-  body: '"DM Sans", -apple-system, sans-serif',
-  mono: '"JetBrains Mono", ui-monospace, monospace',
+  display: 'Poppins, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+  body: 'DMSans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
 };
 
 /* ------------------------------------------------------------------ */
@@ -178,7 +165,7 @@ function LodgingCard({ lodging: l, selected, onSelect, comparison }) {
 
 function Chip({ selected, onClick, children }) {
   return (
-    <button type="button" className={`aip-chip ${selected ? "is-selected" : ""}`} onClick={onClick}>
+    <button type="button" aria-pressed={selected} className={`aip-chip ${selected ? "is-selected" : ""}`} onClick={onClick}>
       {children}
     </button>
   );
@@ -220,8 +207,8 @@ function MultiSelectField({ label, placeholder, options, values, onChange }) {
 const todayInManila = () => new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10);
 const BUDGET_PACKAGES = [
   { id: "economy", min: 200, max: 500, rate: 500, label: "Economy", Icon: PiggyBank, color: "#246B73" },
-  { id: "budget", min: 500, max: 1000, rate: 1000, label: "Budget", Icon: Wallet, color: colors.palmGreen },
-  { id: "standard", min: 1000, max: 2000, rate: 2000, label: "Standard", Icon: Star, color: colors.oceanBlue },
+  { id: "budget", min: 500, max: 1000, rate: 1000, label: "Budget", Icon: Wallet, color: "#2A7B4C" },
+  { id: "standard", min: 1000, max: 2000, rate: 2000, label: "Standard", Icon: Star, color: "#0B3C5D" },
   { id: "comfortable", min: 2000, max: 4000, rate: 4000, label: "Comfortable", Icon: TrendingUp, color: "#946516" },
   { id: "premium", min: 4000, max: null, rate: 4000, label: "Premium", Icon: Zap, color: "#B7472B" },
 ];
@@ -245,6 +232,30 @@ const initialForm = () => ({
 });
 
 export default function AIItinerary() {
+  const { isDark, palette, themeColor } = useAppTheme();
+  // Share semantic colors with the fare inputs and generated itinerary.
+  const themeVariables = {
+    colorScheme: isDark ? "dark" : "light",
+    "--aip-background": palette.background,
+    "--aip-surface": palette.surface,
+    "--aip-paper": palette.paper,
+    "--aip-ink": palette.ink,
+    "--aip-muted": palette.muted,
+    "--aip-border": palette.line,
+    "--aip-primary": palette.primary,
+    "--aip-on-primary": palette.onPrimary,
+    "--aip-button": palette.button,
+    "--aip-on-button": palette.onButton,
+    "--aip-accent": palette.accent,
+    "--aip-selected": palette.tint,
+    "--aip-selection-border": isDark ? "#83A8AA" : palette.brand,
+    "--aip-focus": isDark ? "#8FD1C7" : palette.brand,
+    "--aip-success": isDark ? darkPalette.green : "#316B59",
+    "--aip-success-tint": isDark ? darkPalette.greenTint : "#EDF6F0",
+    "--aip-warning": isDark ? darkPalette.gold : "#795416",
+    "--aip-warning-tint": isDark ? darkPalette.goldTint : "#FFF6E3",
+    "--aip-danger-tint": isDark ? darkPalette.coralTint : "#FFF0EB",
+  };
   const { width } = useWindowDimensions();
   const contentWidth = width >= 768 ? width - 280 : width;
   const [step, setStep] = useState(1);
@@ -374,7 +385,7 @@ export default function AIItinerary() {
 
   /* -------------------------- render -------------------------- */
   return (
-    <div className="aip-shell">
+    <div className="aip-shell" style={themeVariables}>
       <style>{CSS}</style>
 
       {/* Navigation is provided by the shared UserSidebar in App.jsx. */}
@@ -428,7 +439,7 @@ export default function AIItinerary() {
                     <label className="aip-label">Who are you traveling with?</label>
                     <div className="aip-icon-grid">
                       {TRAVELER_TYPES.map(({ id, label, Icon }) => (
-                        <button type="button" key={id} className={`aip-icon-card ${form.travelerType === id ? "is-selected" : ""}`} onClick={() => set("travelerType", id)}>
+                        <button type="button" key={id} aria-pressed={form.travelerType === id} className={`aip-icon-card ${form.travelerType === id ? "is-selected" : ""}`} onClick={() => set("travelerType", id)}>
                           <Icon size={20} /><span>{label}</span>
                         </button>
                       ))}
@@ -439,7 +450,7 @@ export default function AIItinerary() {
                     <label className="aip-label">What's your travel style?</label>
                     <div className="aip-style-grid">
                       {TRAVEL_STYLES.map(({ id, label, desc, Icon }) => (
-                        <button type="button" key={id} className={`aip-style-card ${form.travelStyle === id ? "is-selected" : ""}`} onClick={() => set("travelStyle", id)}>
+                        <button type="button" key={id} aria-pressed={form.travelStyle === id} className={`aip-style-card ${form.travelStyle === id ? "is-selected" : ""}`} onClick={() => set("travelStyle", id)}>
                           <Icon size={18} /><strong>{label}</strong><span>{desc}</span>
                         </button>
                       ))}
@@ -481,7 +492,8 @@ export default function AIItinerary() {
                       {BUDGET_PACKAGES.map((tier) => {
                         const { Icon } = tier;
                         const multiplier = form.travelers * form.days;
-                        return <button type="button" key={tier.id} aria-pressed={budgetTier === tier.id} className={`aip-budget-card ${budgetTier === tier.id ? "is-selected" : ""}`} style={{ "--tier-color": tier.color, "--tier-tint": `${tier.color}0D`, "--tier-border": `${tier.color}40`, "--tier-icon-bg": `${tier.color}18` }} onClick={() => chooseBudget(tier)}>
+                        const tierColor = themeColor(tier.color);
+                        return <button type="button" key={tier.id} aria-pressed={budgetTier === tier.id} className={`aip-budget-card ${budgetTier === tier.id ? "is-selected" : ""}`} style={{ "--tier-color": tierColor, "--tier-tint": `${tierColor}0D`, "--tier-border": `${tierColor}66`, "--tier-icon-bg": `${tierColor}18` }} onClick={() => chooseBudget(tier)}>
                           <span className="aip-budget-icon"><Icon size={18} /></span>
                           <strong>{tier.label}</strong>
                           <span className="aip-budget-range">{peso(tier.min * multiplier)}{tier.max ? `–${peso(tier.max * multiplier)}` : "+"}</span>
@@ -587,7 +599,7 @@ export default function AIItinerary() {
 
                   <div className="aip-step-actions">
                     <button className="aip-btn aip-btn-outline" onClick={goBack}>← Back</button>
-                    <button className="aip-btn aip-btn-gradient" disabled={!!phase || !catalog.length} onClick={generate}><Zap size={16} />{phase ? `Generating… ${elapsed}s` : 'Generate my itinerary'}</button>
+                    <button className="aip-btn aip-btn-generate" disabled={!!phase || !catalog.length} onClick={generate}><Zap size={16} />{phase ? `Generating… ${elapsed}s` : 'Generate my itinerary'}</button>
                   </div>
                   {error && <p className="aip-error" role="alert" style={{ marginTop: 14 }}>{error}</p>}
                 </div>
@@ -610,202 +622,211 @@ export default function AIItinerary() {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Stylesheet — mirrors the Figma tokens (Ocean Blue / Sunset Coral /  */
-/*  Palm Green / Warm Sand / Seafoam / Golden, Playfair + DM Sans +     */
-/*  JetBrains Mono)                                                     */
-/* ------------------------------------------------------------------ */
+/*  Shared app typography and semantic theme colors. */
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap');
 
 .aip-shell, .aip-shell * { box-sizing: border-box; }
-.aip-shell { display: flex; flex: 1; min-height: 0; overflow-y: auto; background: ${colors.page}; font-family: ${fonts.body}; font-size: 16px; line-height: 1.5; color: ${colors.ink}; }
+.aip-shell { display: flex; flex: 1; min-height: 0; overflow-y: auto; background: var(--aip-background); font-family: ${fonts.body}; font-size: 16px; line-height: 1.5; color: var(--aip-ink); }
 .aip-shell svg { flex-shrink: 0; }
 .aip-shell button, .aip-shell input, .aip-shell select { font-family: inherit; }
-.aip-shell button { overflow-wrap: anywhere; }
-.aip-shell button:focus-visible, .aip-shell input:focus-visible, .aip-shell select:focus-visible { outline: 3px solid ${colors.seafoam}; outline-offset: 3px; }
+.aip-shell button { overflow-wrap: anywhere; transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 180ms ease, background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease; }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .aip-shell button:enabled:hover { transform: translateY(-2px) scale(1.015); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .aip-shell button:enabled:active { transform: translateY(1px) scale(0.985); opacity: 0.9; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aip-shell button { transition: none !important; }
+}
+.aip-shell h2, .aip-shell h3, .aip-shell h4 { font-family: ${fonts.display}; }
+.aip-icon-card, .aip-style-card { color: var(--aip-ink); }
+.aip-icon-card:hover, .aip-style-card:hover, .aip-chip:hover, .aip-lodging-row:hover { border-color: var(--aip-selection-border); }
+.aip-input::placeholder { color: var(--aip-muted); opacity: 1; }
+.aip-shell input[type="checkbox"] { accent-color: var(--aip-selection-border); }
+.aip-budget-range, .aip-price, .aip-stop-time, .air-stat > strong { font-variant-numeric: tabular-nums; }
+.aip-shell button:focus-visible, .aip-shell input:focus-visible, .aip-shell select:focus-visible { outline: 3px solid var(--aip-focus); outline-offset: 3px; }
 
 .aip-main { flex: 1; width: 100%; display: flex; flex-direction: column; min-width: 0; }
 .aip-tool-header { margin-bottom: 32px; }
 
 .aip-content { max-width: 1200px; width: 100%; margin: 0 auto; padding: clamp(16px, 3vw, 36px) clamp(16px, 3vw, 40px) 60px; }
 .aip-progress-header { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px 20px; margin-bottom: 12px; }
-.aip-step-title { font-family: ${fonts.display}; font-size: 20px; font-weight: 700; color: ${colors.oceanBlue}; }
+.aip-step-title { font-family: ${fonts.display}; font-size: 20px; font-weight: 700; color: var(--aip-ink); }
 .aip-progress-bars { display: flex; gap: 8px; margin-bottom: 28px; }
-.aip-progress-bar { flex: 1; height: 6px; border-radius: 8px; background: ${colors.border}; }
-.aip-progress-bar.is-active { background: ${colors.sunsetCoral}; }
+.aip-progress-bar { flex: 1; height: 6px; border-radius: 8px; background: var(--aip-border); }
+.aip-progress-bar.is-active { background: var(--aip-accent); }
 
-.aip-card { background: #fff; border: 1px solid ${colors.border}; border-radius: 16px; padding: clamp(20px, 3vw, 36px); margin-bottom: 24px; min-width: 0; }
-.aip-heading { font-family: ${fonts.display}; font-size: clamp(22px, 2.5vw, 28px); margin: 0 0 10px; color: ${colors.oceanBlue}; }
-.aip-heading-sm { font-family: ${fonts.display}; font-size: 18px; margin: 0 0 12px; color: ${colors.oceanBlue}; }
-.aip-subtitle { color: ${colors.muted}; font-size: 16px; line-height: 1.6; margin: 0 0 28px; }
+.aip-card { background: var(--aip-surface); border: 1px solid var(--aip-border); border-radius: 16px; padding: clamp(20px, 3vw, 36px); margin-bottom: 24px; min-width: 0; }
+.aip-heading { font-family: ${fonts.display}; font-size: clamp(22px, 2.5vw, 28px); margin: 0 0 10px; color: var(--aip-ink); }
+.aip-heading-sm { font-family: ${fonts.display}; font-size: 18px; margin: 0 0 12px; color: var(--aip-ink); }
+.aip-subtitle { color: var(--aip-muted); font-size: 16px; line-height: 1.6; margin: 0 0 28px; }
 
 .aip-field { min-width: 0; margin-bottom: 28px; }
 .aip-field-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 24px; margin-bottom: 28px; }
 .aip-field-row .aip-field { margin-bottom: 0; }
-.aip-label { display: block; font-size: 15px; font-weight: 600; color: ${colors.oceanBlue}; margin-bottom: 10px; }
+.aip-label { display: block; font-size: 15px; font-weight: 600; color: var(--aip-ink); margin-bottom: 10px; }
 .aip-input, .aip-select, .aip-select-trigger {
-  width: 100%; min-width: 0; max-width: 100%; min-height: 52px; padding: 14px 16px; border-radius: 10px; border: 1px solid ${colors.border};
-  font-family: ${fonts.body}; font-size: 16px; background: #fff; color: ${colors.ink};
+  width: 100%; min-width: 0; max-width: 100%; min-height: 52px; padding: 14px 16px; border-radius: 10px; border: 1px solid var(--aip-border);
+  font-family: ${fonts.body}; font-size: 16px; background: var(--aip-surface); color: var(--aip-ink);
 }
 .aip-select-trigger { gap: 12px; text-align: left; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
 .aip-select-trigger > span { min-width: 0; overflow-wrap: anywhere; }
-.aip-placeholder { color: ${colors.muted}; }
+.aip-placeholder { color: var(--aip-muted); }
 
-.aip-multiselect-panel { border: 1px solid ${colors.border}; border-radius: 12px; padding: 20px; margin-top: 12px; }
+.aip-multiselect-panel { border: 1px solid var(--aip-border); border-radius: 12px; padding: 20px; margin-top: 12px; }
 .aip-multiselect-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
 .aip-chip-row { display: flex; flex-wrap: wrap; gap: 10px; }
 .aip-chip {
-  border: 1px solid ${colors.border}; background: #fff; border-radius: 22px; min-height: 44px; max-width: 100%; padding: 10px 16px;
-  font-size: 15px; cursor: pointer; color: ${colors.ink};
+  border: 1px solid var(--aip-border); background: var(--aip-surface); border-radius: 22px; min-height: 44px; max-width: 100%; padding: 10px 16px;
+  font-size: 15px; cursor: pointer; color: var(--aip-ink);
 }
-.aip-chip.is-selected { background: ${colors.oceanBlue}; border-color: ${colors.oceanBlue}; color: #fff; }
+.aip-chip.is-selected { background: var(--aip-primary); border-color: var(--aip-selection-border); color: var(--aip-on-primary); }
 
 .aip-icon-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 110px), 1fr)); gap: 14px; }
-.aip-icon-card { display: flex; flex-direction: column; align-items: center; gap: 12px; min-height: 100px; padding: 20px 12px; border-radius: 12px; border: 1px solid ${colors.border}; background: #fff; cursor: pointer; font-size: 16px; font-weight: 600; }
-.aip-icon-card.is-selected { border-color: ${colors.oceanBlue}; background: ${colors.warmSand}; }
+.aip-icon-card { display: flex; flex-direction: column; align-items: center; gap: 12px; min-height: 100px; padding: 20px 12px; border-radius: 12px; border: 1px solid var(--aip-border); background: var(--aip-surface); cursor: pointer; font-size: 16px; font-weight: 600; }
+.aip-icon-card.is-selected { border-color: var(--aip-selection-border); background: var(--aip-selected); box-shadow: inset 0 0 0 1px var(--aip-selection-border); }
 
 .aip-style-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: 16px; }
-.aip-style-card { text-align: left; display: flex; flex-direction: column; gap: 10px; min-height: 136px; padding: 22px; border-radius: 12px; border: 1px solid ${colors.border}; background: #fff; cursor: pointer; }
+.aip-style-card { text-align: left; display: flex; flex-direction: column; gap: 10px; min-height: 136px; padding: 22px; border-radius: 12px; border: 1px solid var(--aip-border); background: var(--aip-surface); cursor: pointer; }
 .aip-style-card strong { font-size: 17px; }
-.aip-style-card span { font-size: 14px; color: ${colors.muted}; }
-.aip-style-card.is-selected { background: ${colors.oceanBlue}; border-color: ${colors.oceanBlue}; color: #fff; }
-.aip-style-card.is-selected span { color: #C9D6E3; }
+.aip-style-card span { font-size: 14px; color: var(--aip-muted); }
+.aip-style-card.is-selected { background: var(--aip-selected); border-color: var(--aip-selection-border); color: var(--aip-ink); box-shadow: inset 0 0 0 1px var(--aip-selection-border); }
 
-.aip-error { color: ${colors.sunsetCoral}; font-size: 13px; margin: 4px 0 14px; }
-.aip-budget-heading { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #70868E; font-size: 14px; font-weight: 600; margin: 28px 0 14px; }
+.aip-error { color: var(--aip-accent); font-size: 13px; margin: 4px 0 14px; }
+.aip-budget-heading { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: var(--aip-muted); font-size: 14px; font-weight: 600; margin: 28px 0 14px; }
 .aip-budget-heading > span:last-child { font-size: 12px; font-weight: 400; }
 .aip-budget-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
-.aip-budget-card { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; padding: 16px 12px; border: 1px solid var(--tier-border); border-radius: 20px; background: var(--tier-tint); color: ${colors.ink}; text-align: left; cursor: pointer; min-width: 0; transition: background .15s, border-color .15s; }
+.aip-budget-card { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; padding: 16px 12px; border: 1px solid var(--tier-border); border-radius: 20px; background: var(--tier-tint); color: var(--aip-ink); text-align: left; cursor: pointer; min-width: 0; }
 .aip-budget-card:hover { border-color: var(--tier-color); background: var(--tier-icon-bg); }
 .aip-budget-card > strong { font-size: 13px; }
 .aip-budget-icon { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--tier-icon-bg); color: var(--tier-color); margin-bottom: 4px; }
-.aip-budget-range { font-family: ${fonts.mono}; font-size: 11px; font-weight: 600; color: var(--tier-color); }
-.aip-budget-person { font-size: 11px; line-height: 1.5; color: #70868E; }
-.aip-budget-card.is-selected { background: var(--tier-color); border-color: var(--tier-color); color: #fff; box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--tier-color); }
-.aip-budget-card.is-selected .aip-budget-icon { color: #fff; background: #FFFFFF20; }
-.aip-budget-card.is-selected .aip-budget-range, .aip-budget-card.is-selected .aip-budget-person { color: #fff; }
-.aip-budget-summary { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; padding: 12px 14px; margin-top: 14px; border-radius: 18px; background: #F7F9FA; font-size: 13px; }
-.aip-budget-summary > span { color: #70868E; }
-.aip-budget-summary strong > span { padding: 0 8px; color: #70868E; }
+.aip-budget-range { font-family: ${fonts.body}; font-size: 11px; font-weight: 600; color: var(--tier-color); }
+.aip-budget-person { font-size: 11px; line-height: 1.5; color: var(--aip-muted); }
+.aip-budget-card.is-selected { background: var(--tier-icon-bg); border-color: var(--tier-color); box-shadow: inset 0 0 0 1px var(--tier-color); }
+.aip-budget-summary { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; padding: 12px 14px; margin-top: 14px; border-radius: 18px; background: var(--aip-paper); font-size: 13px; }
+.aip-budget-summary > span { color: var(--aip-muted); }
+.aip-budget-summary strong > span { padding: 0 8px; color: var(--aip-muted); }
 @media (max-width: 1100px) { .aip-budget-grid { grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); } }
 @media (max-width: 480px) { .aip-budget-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
 .aip-btn { min-height: 48px; border-radius: 10px; padding: 14px 22px; font-size: 16px; font-weight: 600; cursor: pointer; border: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
 .aip-btn-block { width: 100%; margin-top: 6px; }
 .aip-btn-sm { padding: 6px 14px; font-size: 13px; }
-.aip-btn-dark { background: ${colors.oceanBlue}; color: #fff; }
-.aip-btn-disabled { background: ${colors.border}; color: ${colors.muted}; cursor: not-allowed; }
-.aip-btn-outline { background: #fff; border: 1px solid ${colors.border}; color: ${colors.ink}; }
-.aip-btn-outline-coral { background: #fff; border: 1px solid ${colors.sunsetCoral}; color: ${colors.sunsetCoral}; }
-.aip-btn-primary { background: #3450E0; color: #fff; }
-.aip-btn-gradient { background: linear-gradient(90deg, ${colors.oceanBlueDark}, ${colors.sunsetCoral}); color: #fff; }
+.aip-btn-dark { background: var(--aip-primary); color: var(--aip-on-primary); }
+.aip-btn-disabled { background: var(--aip-border); color: var(--aip-muted); cursor: not-allowed; }
+.aip-btn-outline { background: var(--aip-surface); border: 1px solid var(--aip-border); color: var(--aip-ink); }
+.aip-btn-outline-coral { background: var(--aip-surface); border: 1px solid var(--aip-accent); color: var(--aip-accent); }
+.aip-btn-primary { background: var(--aip-primary); color: var(--aip-on-primary); }
+.aip-btn-generate { background: var(--aip-button); color: var(--aip-on-button); }
+.aip-btn:disabled { opacity: .65; cursor: not-allowed; }
 
 .aip-step-actions { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; margin-top: 28px; }
 .aip-step-actions .aip-btn { flex: 1 1 220px; }
 .aip-row-between { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 10px; }
 
-.aip-lodging-row { width: 100%; display: flex; gap: 12px; align-items: flex-start; font-size: 16px; line-height: 1.5; color: ${colors.ink}; text-align: left; padding: 20px; border-radius: 12px; border: 1px solid ${colors.border}; background: #fff; margin-bottom: 10px; cursor: pointer; }
-.aip-lodging-row.is-selected { border-color: ${colors.oceanBlue}; background: ${colors.warmSand}; }
+.aip-lodging-row { width: 100%; display: flex; gap: 12px; align-items: flex-start; font-size: 16px; line-height: 1.5; color: var(--aip-ink); text-align: left; padding: 20px; border-radius: 12px; border: 1px solid var(--aip-border); background: var(--aip-surface); margin-bottom: 10px; cursor: pointer; }
+.aip-lodging-row.is-selected { border-color: var(--aip-selection-border); background: var(--aip-selected); }
 .aip-lodging-info { flex: 1; min-width: 0; overflow-wrap: anywhere; }
-.aip-amenities { display: flex; gap: 10px; flex-wrap: wrap; font-size: 14px; color: ${colors.muted}; margin: 10px 0; }
+.aip-amenities { display: flex; gap: 10px; flex-wrap: wrap; font-size: 14px; color: var(--aip-muted); margin: 10px 0; }
 .aip-amenity { display: inline-flex; align-items: center; gap: 4px; }
-.aip-price { font-family: ${fonts.mono}; color: ${colors.sunsetCoral}; font-weight: 700; }
-.aip-check { color: ${colors.oceanBlue}; }
-.aip-hotel-budget-panel { background: ${colors.page}; border: 1px solid ${colors.border}; border-radius: 12px; padding: 16px; margin-bottom: 18px; }
+.aip-price { font-family: ${fonts.body}; color: var(--aip-accent); font-weight: 700; }
+.aip-check { color: var(--aip-ink); }
+.aip-hotel-budget-panel { background: var(--aip-background); border: 1px solid var(--aip-border); border-radius: 12px; padding: 16px; margin-bottom: 18px; }
 .aip-hotel-budget-panel input { max-width: 120px; }
 .aip-hotel-budget-panel p { font-size: 13px; line-height: 1.6; }
-.aip-hotel-budget { display: flex; align-items: flex-start; gap: 7px; font-size: 12px; padding: 10px; border-radius: 8px; background: #EDF3F4; margin: 12px 0 0; }
-.aip-hotel-budget.over { color: #A43724; background: #FFF0EB; }
-.aip-hotel-budget.possible { color: #795416; background: #FFF6E3; }
-.aip-hotel-budget.within { color: ${colors.palmGreen}; background: #EDF6F0; }
-.aip-stay-card { border: 1px solid ${colors.border}; border-radius: 14px; margin-bottom: 14px; background: #fff; overflow: hidden; }
-.aip-stay-card.is-selected { border-color: ${colors.oceanBlue}; background: #F5F9FA; box-shadow: inset 3px 0 ${colors.oceanBlue}; }
-.aip-stay-select { display: flex; align-items: center; gap: 14px; width: 100%; padding: 20px 20px 12px; border: 0; background: transparent; color: ${colors.ink}; text-align: left; cursor: pointer; }
+.aip-hotel-budget { display: flex; align-items: flex-start; gap: 7px; font-size: 12px; padding: 10px; border-radius: 8px; background: var(--aip-paper); margin: 12px 0 0; }
+.aip-hotel-budget.over { color: var(--aip-accent); background: var(--aip-danger-tint); }
+.aip-hotel-budget.possible { color: var(--aip-warning); background: var(--aip-warning-tint); }
+.aip-hotel-budget.within { color: var(--aip-success); background: var(--aip-success-tint); }
+.aip-stay-card { border: 1px solid var(--aip-border); border-radius: 14px; margin-bottom: 14px; background: var(--aip-surface); overflow: hidden; }
+.aip-stay-card.is-selected { border-color: var(--aip-selection-border); background: var(--aip-selected); box-shadow: inset 3px 0 var(--aip-selection-border); }
+.aip-stay-select { display: flex; align-items: center; gap: 14px; width: 100%; padding: 20px 20px 12px; border: 0; background: transparent; color: var(--aip-ink); text-align: left; cursor: pointer; }
 .aip-stay-select:disabled { cursor: not-allowed; opacity: .65; }
 .aip-stay-select:focus-visible { outline-offset: -4px; }
-.aip-stay-icon { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; flex-shrink: 0; background: #EDF3F4; color: ${colors.oceanBlue}; border-radius: 12px; }
+.aip-stay-icon { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; flex-shrink: 0; background: var(--aip-paper); color: var(--aip-ink); border-radius: 12px; }
 .aip-stay-title { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
 .aip-stay-title strong { font-size: 17px; }
-.aip-stay-tier { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 20px; background: ${colors.warmSand}; }
-.aip-stay-radio { width: 22px; height: 22px; flex-shrink: 0; border: 1.5px solid #A7B6C0; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-.aip-stay-radio.is-selected { background: ${colors.oceanBlue}; border-color: ${colors.oceanBlue}; }
+.aip-stay-tier { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 20px; background: var(--aip-paper); }
+.aip-stay-radio { width: 22px; height: 22px; flex-shrink: 0; border: 1.5px solid var(--aip-selection-border); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.aip-stay-radio.is-selected { background: var(--aip-primary); border-color: var(--aip-selection-border); }
 .aip-stay-body { padding: 0 20px 16px; }
-.aip-stay-location { display: flex; align-items: flex-start; gap: 7px; color: #5C6D7A; font-size: 12px; overflow-wrap: anywhere; }
+.aip-stay-location { display: flex; align-items: flex-start; gap: 7px; color: var(--aip-muted); font-size: 12px; overflow-wrap: anywhere; }
 .aip-stay-location svg { margin-top: 2px; }
 .aip-stay-amenities { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
-.aip-stay-amenity { display: inline-flex; align-items: center; gap: 7px; padding: 6px 10px; border-radius: 7px; background: #F0F4F5; color: #3C5668; font-size: 12px; }
+.aip-stay-amenity { display: inline-flex; align-items: center; gap: 7px; padding: 6px 10px; border-radius: 7px; background: var(--aip-paper); color: var(--aip-ink); font-size: 12px; }
 .aip-stay-bottom { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
-.aip-stay-rate strong { font-size: 19px; font-weight: 700; color: ${colors.oceanBlue}; }
-.aip-stay-rate > span { color: #5C6D7A; font-size: 12px; }
-.aip-stay-selected { display: inline-flex; align-items: center; gap: 4px; color: ${colors.palmGreen}; font-size: 12px; font-weight: 600; }
-.aip-stay-note { font-size: 12px; color: #79542A; margin: 10px 0 0; }
-.aip-stay-details { border-top: 1px solid ${colors.border}; }
-.aip-stay-details summary { display: flex; align-items: center; gap: 7px; padding: 12px 20px; min-height: 44px; cursor: pointer; color: ${colors.oceanBlue}; font-size: 12px; font-weight: 600; list-style: none; }
+.aip-stay-rate strong { font-size: 19px; font-weight: 700; color: var(--aip-ink); }
+.aip-stay-rate > span { color: var(--aip-muted); font-size: 12px; }
+.aip-stay-selected { display: inline-flex; align-items: center; gap: 4px; color: var(--aip-success); font-size: 12px; font-weight: 600; }
+.aip-stay-note { font-size: 12px; color: var(--aip-warning); margin: 10px 0 0; }
+.aip-stay-details { border-top: 1px solid var(--aip-border); }
+.aip-stay-details summary { display: flex; align-items: center; gap: 7px; padding: 12px 20px; min-height: 44px; cursor: pointer; color: var(--aip-ink); font-size: 12px; font-weight: 600; list-style: none; }
 .aip-stay-details summary::-webkit-details-marker { display: none; }
 .aip-stay-details summary > svg:last-child { margin-left: auto; }
-.aip-stay-details summary:focus-visible { outline: 3px solid ${colors.seafoam}; outline-offset: -3px; }
+.aip-stay-details summary:focus-visible { outline: 3px solid var(--aip-focus); outline-offset: -3px; }
 .aip-stay-hide, .aip-stay-details[open] .aip-stay-show { display: none; }
 .aip-stay-details[open] .aip-stay-hide { display: inline; }
 .aip-stay-details[open] summary > svg:last-child { transform: rotate(180deg); }
 .aip-stay-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 20px; padding: 8px 20px 20px; }
-.aip-stay-fact { display: flex; align-items: flex-start; gap: 10px; min-width: 0; color: #5C6D7A; }
+.aip-stay-fact { display: flex; align-items: flex-start; gap: 10px; min-width: 0; color: var(--aip-muted); }
 .aip-stay-fact > svg { margin-top: 3px; }
 .aip-stay-fact > div { min-width: 0; }
-.aip-stay-fact span { font-size: 11px; font-weight: 700; color: ${colors.oceanBlue}; }
+.aip-stay-fact span { font-size: 11px; font-weight: 700; color: var(--aip-ink); }
 .aip-stay-fact p { font-size: 13px; margin: 3px 0 0; overflow-wrap: anywhere; }
 .aip-stay-times { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 
-.aip-info-box { background: ${colors.warmSand}; border-radius: 12px; padding: 24px; margin-bottom: 24px; font-size: 16px; overflow-wrap: anywhere; }
-.aip-info-label { font-size: 13px; letter-spacing: .04em; color: ${colors.muted}; margin: 10px 0 4px; }
-.aip-review-destination { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; color: ${colors.oceanBlue}; }
+.aip-info-box { background: var(--aip-paper); border-radius: 12px; padding: 24px; margin-bottom: 24px; font-size: 16px; overflow-wrap: anywhere; }
+.aip-info-label { font-size: 13px; letter-spacing: .04em; color: var(--aip-muted); margin: 10px 0 4px; }
+.aip-review-destination { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; color: var(--aip-ink); }
 .aip-discovery-section { margin-bottom: 28px; }
-.aip-more-discoveries { margin-top: 14px; font-size: 12px; color: #5C6D7A; }
-.aip-more-discoveries summary { cursor: pointer; padding: 8px 0; color: ${colors.oceanBlue}; }
+.aip-more-discoveries { margin-top: 14px; font-size: 12px; color: var(--aip-muted); }
+.aip-more-discoveries summary { cursor: pointer; padding: 8px 0; color: var(--aip-ink); }
 .aip-discovery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr)); gap: 16px; }
-.aip-discovery-card { border: 1px solid ${colors.border}; border-radius: 14px; overflow: hidden; background: #fff; }
-.aip-discovery-image { height: 155px; background: ${colors.warmSand}; }
+.aip-discovery-card { border: 1px solid var(--aip-border); border-radius: 14px; overflow: hidden; background: var(--aip-surface); }
+.aip-discovery-image { height: 155px; background: var(--aip-paper); }
 .aip-discovery-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.aip-photo-placeholder { height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 8px; color: #657B88; font-size: 12px; }
+.aip-photo-placeholder { height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 8px; color: var(--aip-muted); font-size: 12px; }
 .aip-discovery-caption { display: flex; gap: 8px; padding: 14px; height: 88px; align-items: flex-start; }
 .aip-discovery-caption h4 { margin: 0; font-size: 13px; line-height: 1.5; }
-.aip-photo-credits { font-size: 11px; color: #5C6D7A; margin-bottom: 24px; }
+.aip-photo-credits { font-size: 11px; color: var(--aip-muted); margin-bottom: 24px; }
 .aip-photo-credits summary { cursor: pointer; padding: 8px 0; }
-.aip-photo-credits a { color: ${colors.oceanBlue}; }
-.aip-meal-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: 16px; background: #F3F7F7; padding: 20px; border-radius: 12px; margin-bottom: 24px; }
+.aip-photo-credits a { color: var(--aip-ink); }
+.aip-meal-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: 16px; background: var(--aip-paper); padding: 20px; border-radius: 12px; margin-bottom: 24px; }
 .aip-meal-summary > div { display: flex; flex-direction: column; gap: 6px; }
-.aip-meal-summary span, .aip-meal-summary small, .aip-meal-note { font-size: 12px; color: #5C6D7A; }
+.aip-meal-summary span, .aip-meal-summary small, .aip-meal-note { font-size: 12px; color: var(--aip-muted); }
 .aip-meal-summary strong { font-size: 21px; }
 .aip-summary-chips { margin-bottom: 18px; }
-.aip-summary-chip { background: ${colors.warmSand}; border-radius: 16px; padding: 10px 14px; font-size: 14px; max-width: 100%; overflow-wrap: anywhere; }
+.aip-summary-chip { background: var(--aip-paper); border-radius: 16px; padding: 10px 14px; font-size: 14px; max-width: 100%; overflow-wrap: anywhere; }
 
-.aip-advanced { border-top: 1px solid ${colors.border}; padding-top: 28px; margin-top: 24px; margin-bottom: 28px; }
+.aip-advanced { border-top: 1px solid var(--aip-border); padding-top: 28px; margin-top: 24px; margin-bottom: 28px; }
 .aip-advanced > .aip-chip-row { margin-bottom: 28px; }
 
 .aip-generating { display: flex; align-items: center; gap: 12px; }
-.aip-spinner { width: 18px; height: 18px; border: 2px solid ${colors.border}; border-top-color: ${colors.sunsetCoral}; border-radius: 50%; animation: aip-spin 0.8s linear infinite; }
+.aip-spinner { width: 18px; height: 18px; border: 2px solid var(--aip-border); border-top-color: var(--aip-accent); border-radius: 50%; animation: aip-spin 0.8s linear infinite; }
 @keyframes aip-spin { to { transform: rotate(360deg); } }
 
 .aip-result-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 20px; }
 .aip-timeline { display: flex; flex-direction: column; gap: 12px; }
-.aip-stop-row { display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid ${colors.border}; border-radius: 12px; padding: 12px 16px; }
-.aip-stop-time { width: 70px; font-family: ${fonts.mono}; font-size: 12px; color: ${colors.muted}; flex-shrink: 0; }
-.aip-stop-icon { width: 34px; height: 34px; border-radius: 50%; background: ${colors.warmSand}; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.aip-stop-row { display: flex; align-items: center; gap: 12px; background: var(--aip-surface); border: 1px solid var(--aip-border); border-radius: 12px; padding: 12px 16px; }
+.aip-stop-time { width: 70px; font-family: ${fonts.body}; font-size: 12px; color: var(--aip-muted); flex-shrink: 0; }
+.aip-stop-icon { width: 34px; height: 34px; border-radius: 50%; background: var(--aip-paper); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .aip-stop-body { flex: 1; min-width: 0; }
 .aip-stop-tags { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-.aip-day-divider { font-size: 14px; color: ${colors.muted}; margin: 10px 0; }
+.aip-day-divider { font-size: 14px; color: var(--aip-muted); margin: 10px 0; }
 .aip-pill { border-radius: 20px; padding: 4px 10px; font-size: 12px; font-weight: 600; }
-.aip-pill-dark { background: ${colors.oceanBlueDark}; color: #fff; }
-.aip-pill-green { background: rgba(46,125,91,0.15); color: ${colors.palmGreen}; }
-.aip-pill-tan { background: ${colors.warmSand}; color: ${colors.ink}; }
+.aip-pill-dark { background: var(--aip-primary); color: var(--aip-on-primary); }
+.aip-pill-green { background: rgba(46,125,91,0.15); color: var(--aip-success); }
+.aip-pill-tan { background: var(--aip-paper); color: var(--aip-ink); }
 
 .aip-side-col { display: flex; flex-direction: column; gap: 16px; }
-.aip-summary-row { padding: 6px 0; border-bottom: 1px solid ${colors.border}; }
+.aip-summary-row { padding: 6px 0; border-bottom: 1px solid var(--aip-border); }
 .aip-breakdown-row { margin-bottom: 12px; }
-.aip-progress { height: 6px; border-radius: 6px; background: ${colors.border}; overflow: hidden; margin-top: 4px; }
-.aip-progress-fill { height: 100%; background: ${colors.sunsetCoral}; border-radius: 6px; }
-.aip-total-row { border-top: 1px solid ${colors.border}; padding-top: 10px; margin-top: 4px; }
+.aip-progress { height: 6px; border-radius: 6px; background: var(--aip-border); overflow: hidden; margin-top: 4px; }
+.aip-progress-fill { height: 100%; background: var(--aip-accent); border-radius: 6px; }
+.aip-total-row { border-top: 1px solid var(--aip-border); padding-top: 10px; margin-top: 4px; }
 
-.aip-muted { color: ${colors.muted}; }
+.aip-muted { color: var(--aip-muted); }
 .aip-small { font-size: 12px; }
 @media (max-width: 480px) {
   .aip-content { padding: 16px 12px 40px; }

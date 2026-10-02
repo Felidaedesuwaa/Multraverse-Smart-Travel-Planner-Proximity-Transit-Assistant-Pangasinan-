@@ -1,5 +1,6 @@
+import { FeedbackPressable } from "./WorkspaceMotion";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, Keyboard, Linking, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Keyboard, Linking, Platform, StyleSheet, Text, TextInput, View } from "react-native";
 import { MapPin } from "lucide-react-native";
 import { api } from "../lib/api";
 import { useAppTheme } from "../theme/useAppTheme";
@@ -60,11 +61,11 @@ export default function LocationAutocomplete({ value, onChange, disabled }) {
       onFocus={() => { clearTimeout(blurTimer.current); setOpen(true); }} onBlur={() => { blurTimer.current = setTimeout(() => setOpen(false), 180); }} onKeyPress={onKeyPress}
       autoCorrect={false} placeholder="Search city, town, or area" placeholderTextColor={themeColor("#6B7876")} style={themeStyle(styles.input)} />
     {expanded ? <View nativeID="profile-location-results" {...(Platform.OS === "web" ? { role: "listbox", "aria-label": "Location suggestions" } : {})} style={themeStyle(styles.suggestions)}>
-      {results.map((place, index) => <Pressable key={place.id || place.label} nativeID={`location-option-${index}`}
+      {results.map((place, index) => <FeedbackPressable key={place.id || place.label} nativeID={`location-option-${index}`}
         accessibilityRole={Platform.OS === "web" ? "option" : "button"} accessibilityLabel={`Use ${place.label}`} accessibilityState={{ selected: index === active }}
         onPress={() => choose(place)} style={themeStyle([styles.suggestion, index === active && styles.active])}>
         <MapPin size={16} color={themeColor("#6B7876")} /><Text style={themeStyle(styles.result)}>{place.label}</Text>
-      </Pressable>)}
+      </FeedbackPressable>)}
       <View style={styles.status}>
         {current.status === "loading" && <ActivityIndicator size="small" color={themeColor("#0B3C5D")} />}
         <Text accessibilityLiveRegion="polite" style={themeStyle(styles.hint)}>{current.status === "loading" ? "Searching places…" : current.status === "offline" ? "Online search unavailable. Choose a local match or type your location." : results.length ? "Select a suggestion or keep your own location." : "No matches. Try a city name or keep your own location."}</Text>

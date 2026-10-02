@@ -20,7 +20,7 @@ export default function SuperAdminSidebar({ activeScreen, onNavigate, compact })
   const user = useAuthStore(state => state.user)
   const foreground = { color: palette.onPrimary }
   return <ScrollView horizontal={compact} showsVerticalScrollIndicator={false}
-    style={[compact ? styles.compact : styles.sidebar, { backgroundColor: palette.dark ? palette.deep : palette.primary }]}
+    style={[compact ? styles.compact : styles.sidebar, { backgroundColor: palette.sidebar, borderRightWidth: compact ? 0 : 1, borderBottomWidth: compact ? 1 : 0, borderColor: palette.sidebarBorder }]}
     contentContainerStyle={[styles.content, compact && styles.mobileContent]}>
     {!compact && <>
       <View style={styles.brand}>

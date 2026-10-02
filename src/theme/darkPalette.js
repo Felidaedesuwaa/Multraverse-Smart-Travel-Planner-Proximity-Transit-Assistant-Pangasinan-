@@ -28,7 +28,7 @@ export const darkPalette = {
 
 const lookup = groups => Object.fromEntries(groups.flatMap(([value, keys]) => keys.map(key => [key, value])));
 export const darkSurfaces = lookup([
-  [darkPalette.background, ["FDFBF7", "F7F9FB", "F4F8FA"]],
+  [darkPalette.background, ["FDFBF7", "F7F9FB", "F4F8FA", "FAF9F5", "FAF9F6"]],
   [darkPalette.surface, ["FFFFFF", "FCFEFF"]],
   [darkPalette.inset, ["F8FAFC", "FAFCFD", "FAFCFF"]],
   [darkPalette.raised, ["F4F7FB", "F4F8FC", "F0F5FA", "F0F4F8", "EEF2F7", "F5F6F2", "EFEAE0", "E2EBF3", "E7E1D6", "D1DCE5", "CBD5E0", "B0C4D4", "EDF3F6", "F4FAFC", "EFEFEF", "F0F0F0", "D9D9D9"]],

@@ -1,5 +1,6 @@
+import { FeedbackPressable } from "./WorkspaceMotion";
 import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { Pencil, MapPin } from "lucide-react-native";
 import MoneyAmount from "./MoneyAmount";
 import { colors } from "../theme/colors";
@@ -25,7 +26,7 @@ export default function ItineraryResult({ plan, onEditStop, disabled = false }) 
       {!day.stops.length && <Text style={text}>No selected place fits this day. Try fewer days, a larger budget or an earlier start.</Text>}
       {day.stops.map(stop => <View key={stop.placeId} style={themeStyle({ gap: 6, paddingLeft: 12, borderLeftWidth: 3, borderLeftColor: colors.sunsetCoral })}>
         <Text style={text}>{stop.time}–{stop.endTime} · estimated</Text>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}><MapPin size={18} color={themeColor(colors.oceanBlue)} /><Text style={[heading, { flex: 1 }]}>{stop.place}</Text>{onEditStop && <Pressable disabled={disabled} accessibilityRole="button" accessibilityLabel={`Edit ${stop.place}`} onPress={() => onEditStop(stop)} style={{ minHeight: 44, minWidth: 44, alignItems: "center", justifyContent: "center" }}><Pencil size={18} color={themeColor(colors.oceanBlue)} /></Pressable>}</View>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}><MapPin size={18} color={themeColor(colors.oceanBlue)} /><Text style={[heading, { flex: 1 }]}>{stop.place}</Text>{onEditStop && <FeedbackPressable disabled={disabled} accessibilityRole="button" accessibilityLabel={`Edit ${stop.place}`} onPress={() => onEditStop(stop)} style={{ minHeight: 44, minWidth: 44, alignItems: "center", justifyContent: "center" }}><Pencil size={18} color={themeColor(colors.oceanBlue)} /></FeedbackPressable>}</View>
         <Text style={text}>{stop.narrative || stop.activity}</Text>
         <Text style={text}>Entrance for your group: {(stop.entryCost ?? stop.listedEntryEstimate) == null ? "Confirm at the venue" : <MoneyAmount value={stop.entryCost ?? stop.listedEntryEstimate} />}{stop.entryCost === null && stop.listedEntryEstimate != null ? " (guide estimate)" : ""}</Text>
         {stop.transit.cost !== null && <Text style={text}>Travel to this stop: <MoneyAmount value={stop.transit.cost} /> for the group.</Text>}

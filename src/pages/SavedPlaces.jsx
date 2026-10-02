@@ -436,7 +436,8 @@ function PlaceCard({ place, onView, onDelete, index }) {
   const bgColor = PLACE_BG_COLORS[index % PLACE_BG_COLORS.length];
 
   return (
-    <FeedbackPressable
+    <Pressable
+      accessibilityRole="button"
       onPress={() => onView(place)}
       style={themeStyle(({ pressed }) => [styles.card, pressed && { opacity: 0.92 }])}
     >
@@ -507,7 +508,7 @@ function PlaceCard({ place, onView, onDelete, index }) {
           </FeedbackPressable>
         </View>
       </View>
-    </FeedbackPressable>
+    </Pressable>
   );
 }
 
@@ -635,6 +636,8 @@ export default function SavedPlaces() {
         {CATEGORIES.map((cat) => (
           <FeedbackPressable
             key={cat}
+            accessibilityRole="button"
+            accessibilityState={{ selected: categoryFilter === cat }}
             onPress={() => setCategoryFilter(cat)}
             style={themeStyle([
               styles.catTab,

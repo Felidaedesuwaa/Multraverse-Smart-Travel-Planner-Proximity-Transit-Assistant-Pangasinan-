@@ -1,5 +1,6 @@
+import { FeedbackPressable } from "./WorkspaceMotion";
 import { useState } from "react";
-import { ActivityIndicator, Image, Linking, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Image, Linking, StyleSheet, Text, View } from "react-native";
 import { ArrowUpRight, Camera, Star, X } from "lucide-react-native";
 import { colors } from "../theme/colors";
 import { useAppTheme } from "../theme/useAppTheme";
@@ -17,7 +18,7 @@ export default function MapHoverPreview({ area, places, loading, error, retry, o
   return <View testID="map-hover-preview" style={themeStyle(styles.card)}>
     <View style={styles.heading}>
       <Text style={themeStyle(styles.eyebrow)}>AREA PREVIEW</Text>
-      <Pressable accessibilityRole="button" accessibilityLabel="Dismiss map preview" onPress={onDismiss} style={styles.close}><X size={16} color={themeColor(colors.textMuted)} /></Pressable>
+      <FeedbackPressable accessibilityRole="button" accessibilityLabel="Dismiss map preview" onPress={onDismiss} style={styles.close}><X size={16} color={themeColor(colors.textMuted)} /></FeedbackPressable>
     </View>
     <View style={styles.summary}>
       <View style={themeStyle(styles.photo)}>
@@ -34,12 +35,12 @@ export default function MapHoverPreview({ area, places, loading, error, retry, o
       </View>
     </View>
     <Text numberOfLines={2} style={themeStyle(styles.description)}>{error ? "Photos are ready to explore. Reconnect for traveler ratings." : loading ? "Explore local photos while traveler details load." : nearby.length ? `${nearby.length} shared ${nearby.length === 1 ? "place" : "places"} · ${nearby.slice(0, 2).map(place => place.name).join(" · ")}` : "Discover local photos and share your own favorite places."}</Text>
-    {photo && !photoFailed && <Pressable accessibilityRole="link" accessibilityLabel={`Photo credit for ${area.name}`} onPress={() => Linking.openURL(photo.source)}><Text numberOfLines={1} style={themeStyle(styles.credit)}>{photo.credit || "Wikimedia Commons"} · {photo.license} ↗</Text></Pressable>}
-    {error && <Pressable accessibilityRole="button" onPress={retry} style={styles.retry}><Text style={themeStyle(styles.retryLabel)}>Retry ratings</Text></Pressable>}
-    <Pressable accessibilityRole="button" accessibilityLabel={`Explore ${area.name} details`} onPress={onExplore} style={themeStyle(styles.explore)}>
+    {photo && !photoFailed && <FeedbackPressable accessibilityRole="link" accessibilityLabel={`Photo credit for ${area.name}`} onPress={() => Linking.openURL(photo.source)}><Text numberOfLines={1} style={themeStyle(styles.credit)}>{photo.credit || "Wikimedia Commons"} · {photo.license} ↗</Text></FeedbackPressable>}
+    {error && <FeedbackPressable accessibilityRole="button" onPress={retry} style={styles.retry}><Text style={themeStyle(styles.retryLabel)}>Retry ratings</Text></FeedbackPressable>}
+    <FeedbackPressable accessibilityRole="button" accessibilityLabel={`Explore ${area.name} details`} onPress={onExplore} style={themeStyle(styles.explore)}>
       <Text style={styles.exploreText}>Explore {area.name}</Text><View style={styles.photoCount}><Camera size={13} color={colors.white} /><Text style={styles.photoCountText}>{photos.length}</Text></View><ArrowUpRight size={16} color={colors.white} />
-    </Pressable>
-    <Pressable accessibilityRole="button" accessibilityLabel={`Choose ${area.name} to explore`} onPress={onChoose} style={themeStyle(styles.choose)}><Text style={themeStyle(styles.chooseText)}>Choose this place to explore</Text></Pressable>
+    </FeedbackPressable>
+    <FeedbackPressable accessibilityRole="button" accessibilityLabel={`Choose ${area.name} to explore`} onPress={onChoose} style={themeStyle(styles.choose)}><Text style={themeStyle(styles.chooseText)}>Choose this place to explore</Text></FeedbackPressable>
   </View>;
 }
 

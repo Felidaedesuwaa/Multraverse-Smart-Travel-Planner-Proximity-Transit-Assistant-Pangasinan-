@@ -1,3 +1,4 @@
+import { FeedbackPressable } from "./WorkspaceMotion";
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -36,12 +37,12 @@ export default function LogoutConfirmationDialog({ onCancel, onConfirm }) {
             <Text style={themeStyle(styles.description)}>You can sign in again whenever you're ready to continue.</Text>
             {!!error && <Text accessibilityRole="alert" style={themeStyle(styles.error)}>{error}</Text>}
             <View style={styles.actions}>
-              <Pressable ref={cancelButton} accessibilityRole="button" disabled={busy} onPress={cancel} style={themeStyle(styles.cancel)}>
+              <FeedbackPressable ref={cancelButton} accessibilityRole="button" disabled={busy} onPress={cancel} style={themeStyle(styles.cancel)}>
                 <Text style={themeStyle(styles.cancelText)}>Cancel</Text>
-              </Pressable>
-              <Pressable accessibilityRole="button" accessibilityLabel="Confirm log out" accessibilityState={{ disabled: busy, busy }} disabled={busy} onPress={confirm} style={themeStyle([styles.confirm, busy && styles.disabled])}>
+              </FeedbackPressable>
+              <FeedbackPressable accessibilityRole="button" accessibilityLabel="Confirm log out" accessibilityState={{ disabled: busy, busy }} disabled={busy} onPress={confirm} style={themeStyle([styles.confirm, busy && styles.disabled])}>
                 {busy ? <ActivityIndicator color={themeColor(colors.white)} /> : <Text style={themeStyle(styles.confirmText)}>Log out</Text>}
-              </Pressable>
+              </FeedbackPressable>
             </View>
           </ScrollView>
         </View>

@@ -27,7 +27,7 @@ export default function AdminSidebar({ activeScreen = "AdminDashboard", onNaviga
   const user = useAuthStore(state => state.user);
 
   return (
-    <View style={themeStyle([styles.sidebar, compact && styles.compact, { backgroundColor: palette.dark ? palette.deep : palette.primary }])}>
+    <View style={themeStyle([styles.sidebar, compact && styles.compact, { backgroundColor: palette.sidebar, borderRightWidth: compact ? 0 : 1, borderBottomWidth: compact ? 1 : 0, borderColor: palette.sidebarBorder }])}>
       <ScrollView horizontal={compact} showsHorizontalScrollIndicator={false} showsVerticalScrollIndicator={false} style={!compact && themeStyle(styles.scrollContent)} contentContainerStyle={compact && { alignItems: 'center', gap: 16 }}>
         {/* Brand */}
         {!compact && <View style={themeStyle(styles.brand)}>

@@ -1,5 +1,6 @@
+import { FeedbackPressable } from "./WorkspaceMotion";
 import { useEffect, useRef, useState } from 'react';
-import { AppState, Platform, Pressable, Text, View } from 'react-native';
+import { AppState, Platform, Text, View } from 'react-native';
 import * as Location from 'expo-location';
 import { api } from '../lib/api';
 import { useAppTheme } from '../theme/useAppTheme';
@@ -43,7 +44,7 @@ export default function GeofenceTracking({ onEvents }) {
     } catch (e) { setMessage(e.message); }
   }
   return <View style={{ padding: 14, gap: 8, backgroundColor: palette.surface, borderColor: palette.line, borderWidth: 1, borderRadius: 14, marginBottom: 16 }}>
-    <Pressable accessibilityRole="button" onPress={toggle} style={{ alignSelf: 'flex-start', padding: 10, borderRadius: 20, backgroundColor: palette.tint }}><Text style={{ color: palette.ink, fontFamily: 'DMSans', fontWeight: '700' }}>{enabled ? 'Stop GPS alerts' : 'Enable GPS alerts'}</Text></Pressable>
+    <FeedbackPressable accessibilityRole="button" onPress={toggle} style={{ alignSelf: 'flex-start', padding: 10, borderRadius: 20, backgroundColor: palette.tint }}><Text style={{ color: palette.ink, fontFamily: 'DMSans', fontWeight: '700' }}>{enabled ? 'Stop GPS alerts' : 'Enable GPS alerts'}</Text></FeedbackPressable>
     <Text accessibilityLiveRegion="polite" style={{ color: palette.muted, fontFamily: 'DMSans', fontSize: 12 }}>{message}</Text>
     {!!lastAlert && <Text accessibilityLiveRegion="assertive" style={{ color: palette.ink, fontFamily: 'DMSans', fontWeight: '700', fontSize: 13 }}>Latest alert: {lastAlert}</Text>}
   </View>;

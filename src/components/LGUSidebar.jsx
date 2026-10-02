@@ -21,7 +21,7 @@ export default function LGUSidebar({ activeResource, onNavigate, compact }) {
       <Text style={[styles.label, foreground, active && styles.activeLabel, active && { color: palette.button }]}>{value.label}</Text>
     </Pressable>
   })
-  return <><View style={[compact ? styles.compact : styles.sidebar, { backgroundColor: palette.dark ? palette.deep : palette.primary }]}>
+  return <><View style={[compact ? styles.compact : styles.sidebar, { backgroundColor: palette.sidebar, borderRightWidth: compact ? 0 : 1, borderBottomWidth: compact ? 1 : 0, borderColor: palette.sidebarBorder }]}>
     <View style={styles.brand}>
       <View style={[styles.brandIcon, { backgroundColor: palette.brand }]}><Compass size={22} color={palette.onPrimary} /></View>
       <View style={styles.grow}><Text style={[styles.brandName, foreground]}>Multraverse</Text><Text style={[styles.caption, foreground]}>LGU Admin Console</Text></View>

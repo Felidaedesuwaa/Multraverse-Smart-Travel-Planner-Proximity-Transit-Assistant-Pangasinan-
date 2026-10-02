@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,6 +15,7 @@ import {
 import {
   ArrowLeftRight,
   BookOpen,
+  Check,
   ChevronDown,
   Mic,
   MicOff,
@@ -69,9 +71,11 @@ function PhraseCard({ phrase, from, to, onPress, compact }) {
   const subText = phrase[to.toLowerCase()] ?? phrase.english ?? "";
 
   return (
-    <FeedbackPressable
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`Translate: ${mainText}`}
       onPress={() => onPress(phrase)}
-      style={themeStyle(({ pressed }) => [styles.phraseCard, compact && styles.phraseCardMobile, pressed && { opacity: 0.85 }])}
+      style={({ pressed }) => [themeStyle(styles.phraseCard), compact && styles.phraseCardMobile, pressed && { opacity: 0.9 }]}
     >
       <View style={themeStyle(styles.phraseCardTop)}>
         <View style={themeStyle([styles.catBadge, { backgroundColor: catStyle.bg }])}>
@@ -84,13 +88,13 @@ function PhraseCard({ phrase, from, to, onPress, compact }) {
       <Text style={themeStyle(styles.phraseMain)} numberOfLines={2}>{mainText}</Text>
       <Text style={themeStyle(styles.phraseSub)} numberOfLines={2}>{subText}</Text>
       <Text style={themeStyle(styles.phraseTap)}>Tap to translate →</Text>
-    </FeedbackPressable>
+    </Pressable>
   );
 }
 
 // ── Main Screen ─────────────────────────────────────────
 export default function Translator() {
-  const { themeStyle, themeColor } = useAppTheme();
+  const { palette, themeStyle, themeColor } = useAppTheme();
   const { width } = useWindowDimensions();
   const mobile = width < 700;
   const [from, setFrom] = useState("Filipino");
@@ -99,7 +103,7 @@ export default function Translator() {
   const [translation, setTranslation] = useState("");
   const [source, setSource] = useState(null);
   const [phrases, setPhrases] = useState([]);
-  const [category, setCategory] = useState("All");
+  const [category, setCategory] = useState("Greetings");
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [phrasesLoading, setPhrasesLoading] = useState(true);
@@ -228,10 +232,11 @@ export default function Translator() {
     }
   };
 
-  const categories = ["All", ...new Set(phrases.map((p) => p.category))];
+  const categories = [...new Set(phrases.map((p) => p.category).filter(Boolean))];
+  const selectedCategory = categories.includes(category) ? category : categories[0];
   const visible = phrases.filter(
     (p) =>
-      (category === "All" || p.category === category) &&
+      p.category === selectedCategory &&
       Object.values(p).some((v) =>
         String(v).toLowerCase().includes(query.toLowerCase())
       )
@@ -453,20 +458,23 @@ export default function Translator() {
             {/* Category tabs */}
             <ScrollView
               horizontal
+              style={styles.catScroll}
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={themeStyle(styles.catTabs)}
             >
               {categories.map((cat) => (
                 <FeedbackPressable
                   key={cat}
+                  focusRing="inset"
+                  accessibilityRole="button"
+                  accessibilityLabel={`${cat} phrases`}
+                  accessibilityState={{ selected: selectedCategory === cat }}
                   onPress={() => setCategory(cat)}
-                  style={themeStyle([styles.catTab, category === cat && styles.catTabActive])}
+                  style={({ hovered, pressed }) => [styles.catTab, { backgroundColor: palette.paper, borderColor: palette.line }, (hovered || pressed) && { borderColor: themeColor(colors.oceanBlue, "borderColor") }, selectedCategory === cat && { backgroundColor: palette.tint, borderColor: themeColor(colors.oceanBlue, "borderColor") }]}
                 >
+                  {selectedCategory === cat && <Check size={14} color={palette.ink} />}
                   <Text
-                    style={themeStyle([
-                      styles.catTabText,
-                      category === cat && styles.catTabTextActive,
-                    ])}
+                    style={[styles.catTabText, { color: selectedCategory === cat ? palette.ink : palette.muted }]}
                   >
                     {cat}
                   </Text>
@@ -485,7 +493,7 @@ export default function Translator() {
                 <Text style={themeStyle(styles.emptyText)}>No phrases match your search.</Text>
               </View>
             ) : (
-              mobile ? <ScrollView style={themeStyle(styles.phraseResultsMobile)} nestedScrollEnabled showsVerticalScrollIndicator>{phraseCards}</ScrollView> : phraseCards
+              <ScrollView style={themeStyle([styles.phraseResults, mobile && styles.phraseResultsMobile])} contentContainerStyle={styles.phraseResultsContent} nestedScrollEnabled showsVerticalScrollIndicator>{phraseCards}</ScrollView>
             )}
           </View>
         </View>
@@ -564,11 +572,11 @@ const styles = StyleSheet.create({
   },
 
   // Layout
-  body: { flexDirection: "row", gap: 20, alignItems: "flex-start" },
-  bodyMobile: { flexDirection: "column", gap: 16 },
-  leftCol: { flex: 1, gap: 20 },
-  leftColMobile: { width: "100%", gap: 16 },
-  rightCol: { width: 380, flexShrink: 0 },
+  body: { flexDirection: "row", marginTop: 24, gap: 24, alignItems: "flex-start" },
+  bodyMobile: { flexDirection: "column", marginTop: 20, gap: 20 },
+  leftCol: { flex: 1, gap: 24 },
+  leftColMobile: { width: "100%", gap: 20 },
+  rightCol: { width: 380, maxWidth: "100%", flexShrink: 0, minHeight: 0 },
   rightColMobile: { width: "100%" },
 
   // Card
@@ -804,16 +812,20 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, fontSize: 13, color: "#183447" },
 
   // Category tabs
-  catTabs: { flexDirection: "row", gap: 6, paddingBottom: 16 },
+  catScroll: { flexGrow: 0, flexShrink: 0, marginBottom: 16 },
+  catTabs: { flexDirection: "row", gap: 8, paddingVertical: 2, paddingRight: 4 },
   catTab: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    minHeight: 44,
     paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 20,
-    backgroundColor: "#EDF3F6",
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderRadius: 22,
   },
-  catTabActive: { backgroundColor: colors.oceanBlue },
-  catTabText: { fontSize: 12, fontWeight: "700", color: "#527084" },
-  catTabTextActive: { color: "#fff" },
+  catTabText: { fontFamily: "DMSans", fontSize: 12, fontWeight: "700" },
 
   // States
   loadingBox: { alignItems: "center", paddingVertical: 40, gap: 10 },
@@ -824,10 +836,12 @@ const styles = StyleSheet.create({
   // Phrase grid
   phraseGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   phraseGridMobile: { flexDirection: "column", gap: 8, paddingRight: 4 },
+  phraseResults: { maxHeight: 420, flexShrink: 1, minHeight: 0 },
+  phraseResultsContent: { paddingRight: 8 },
   phraseResultsMobile: { maxHeight: 330 },
   phraseCard: {
     width: "48%",
-    minWidth: 160,
+    minWidth: 140,
     flexGrow: 1,
     borderWidth: 1,
     borderColor: "#E2ECEF",

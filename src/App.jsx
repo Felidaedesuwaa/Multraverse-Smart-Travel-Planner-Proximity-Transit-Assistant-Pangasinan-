@@ -38,7 +38,7 @@ import AdminAnalytics from "./pages/AdminAnalytics";
 import AdminSettings from "./pages/AdminSettings";
 import UserSidebar from "./components/UserSidebar";
 import AdminSidebar from "./components/AdminSidebar";
-import { WorkspaceMotionProvider, ScreenMotion } from "./components/WorkspaceMotion";
+import { WorkspaceMotionProvider, ScreenMotion, UserInteractionProvider, FeedbackPressable } from "./components/WorkspaceMotion";
 
 const RootStack = createNativeStackNavigator();
 const UserStack = createNativeStackNavigator();
@@ -91,7 +91,7 @@ const linking = {
 
 // ── User screens with sidebar ───────────────────────────
 function UserScreens() {
-  const { themeStyle, themeColor } = useAppTheme();
+  const { themeStyle, themeColor, palette } = useAppTheme();
 
   const { width } = useWindowDimensions();
   const isWide = width >= 768;
@@ -109,6 +109,7 @@ function UserScreens() {
   };
 
   return (
+    <UserInteractionProvider>
     <View style={themeStyle(styles.layout)}>
       {isWide && (
         <View style={themeStyle(styles.userSidebarContainer)}>
@@ -127,7 +128,7 @@ function UserScreens() {
             headerStyle: themeStyle({ backgroundColor: colors.warmSand }),
             headerBackVisible: false,
             headerLeft: () => (
-              <Pressable
+              <FeedbackPressable
                 accessibilityRole="button"
                 accessibilityLabel="Open navigation menu"
                 accessibilityState={{ expanded: menuOpen }}
@@ -135,7 +136,7 @@ function UserScreens() {
                 style={themeStyle(styles.menuButton)}
               >
                 <Menu size={24} color={themeColor(colors.oceanBlue, "color")} />
-              </Pressable>
+              </FeedbackPressable>
             ),
           }}
         >
@@ -163,23 +164,24 @@ function UserScreens() {
             accessibilityLabel="Close navigation menu"
             onPress={() => setMenuOpen(false)}
           />
-          <SafeAreaView style={themeStyle([styles.drawer, { width: Math.min(320, width - 32) }])}>
+          <SafeAreaView style={[styles.drawer, { width: Math.min(320, width - 32), backgroundColor: palette.sidebar, borderRightWidth: 1, borderRightColor: palette.sidebarBorder }]}>
             <View style={themeStyle(styles.drawerHeader)}>
               <Text style={themeStyle(styles.drawerTitle)}>Menu</Text>
-              <Pressable
+              <FeedbackPressable
                 accessibilityRole="button"
                 accessibilityLabel="Close navigation menu"
                 onPress={() => setMenuOpen(false)}
                 style={themeStyle(styles.menuButton)}
               >
                 <X size={24} color={themeColor(colors.white, "color")} />
-              </Pressable>
+              </FeedbackPressable>
             </View>
             <UserSidebar compact activeScreen={activeScreen} onNavigate={handleNavigate} />
           </SafeAreaView>
         </View>
       </Modal>
     </View>
+    </UserInteractionProvider>
   );
 }
 

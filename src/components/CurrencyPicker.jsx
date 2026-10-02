@@ -1,3 +1,4 @@
+import { FeedbackPressable } from "./WorkspaceMotion";
 import { useState } from "react";
 import { ActivityIndicator, FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -16,16 +17,16 @@ export default function CurrencyPicker({ buttonStyle }) {
   const [query, setQuery] = useState("");
   const matches = currencies.filter(item => `${item.code} ${item.name}`.toLowerCase().includes(query.trim().toLowerCase()));
   return <>
-    <Pressable accessibilityRole="button" accessibilityLabel={`Display currency: ${currency}`} accessibilityState={{ expanded: open }} onPress={() => { setQuery(""); setOpen(true); refreshRates(); }} style={themeStyle([styles.button, buttonStyle])}>
+    <FeedbackPressable accessibilityRole="button" accessibilityLabel={`Display currency: ${currency}`} accessibilityState={{ expanded: open }} onPress={() => { setQuery(""); setOpen(true); refreshRates(); }} style={themeStyle([styles.button, buttonStyle])}>
       <Text style={themeStyle(styles.buttonLabel)}>{currency}</Text><ChevronDown size={16} color={themeColor("#0B3C5D")} />
-    </Pressable>
+    </FeedbackPressable>
     <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
       <SafeAreaView style={styles.overlay}>
         <Pressable accessibilityRole="button" accessibilityLabel="Close currency selection" onPress={() => setOpen(false)} style={StyleSheet.absoluteFill} />
         <View accessibilityViewIsModal style={themeStyle(styles.modal)}>
-          <View style={styles.header}><View style={{ flex: 1 }}><Text style={themeStyle(styles.title)}>Display currency</Text><Text style={themeStyle(styles.caption)}>{currencies.length} supported currencies</Text></View><Pressable accessibilityRole="button" accessibilityLabel="Close currency selection" style={styles.close} onPress={() => setOpen(false)}><X size={22} color={themeColor("#0B3C5D")} /></Pressable></View>
+          <View style={styles.header}><View style={{ flex: 1 }}><Text style={themeStyle(styles.title)}>Display currency</Text><Text style={themeStyle(styles.caption)}>{currencies.length} supported currencies</Text></View><FeedbackPressable accessibilityRole="button" accessibilityLabel="Close currency selection" style={styles.close} onPress={() => setOpen(false)}><X size={22} color={themeColor("#0B3C5D")} /></FeedbackPressable></View>
           <View style={themeStyle(styles.search)}><Search size={18} color={themeColor("#6B7876")} /><TextInput accessibilityLabel="Search currencies" placeholder="Search currency or code" placeholderTextColor={themeColor("#6B7876")} value={query} onChangeText={setQuery} style={themeStyle(styles.searchInput)} autoCorrect={false} /></View>
-          <FlatList data={matches} keyExtractor={item => item.code} keyboardShouldPersistTaps="handled" style={{ flexGrow: 0 }} initialNumToRender={18} renderItem={({ item }) => <Pressable accessibilityRole="button" accessibilityLabel={`${item.code} ${item.name}`} accessibilityState={{ selected: item.code === currency }} onPress={() => { setCurrency(item.code); setOpen(false); }} style={themeStyle([styles.option, item.code === currency && styles.selected])}><Text style={themeStyle(styles.code)}>{item.code}</Text><Text style={themeStyle(styles.name)}>{item.name}</Text>{item.code === currency && <Check size={18} color={themeColor("#2A7B4C")} />}</Pressable>} ListEmptyComponent={<Text style={themeStyle(styles.empty)}>No matching currency.</Text>} />
+          <FlatList data={matches} keyExtractor={item => item.code} keyboardShouldPersistTaps="handled" style={{ flexGrow: 0 }} initialNumToRender={18} renderItem={({ item }) => <FeedbackPressable accessibilityRole="button" accessibilityLabel={`${item.code} ${item.name}`} accessibilityState={{ selected: item.code === currency }} onPress={() => { setCurrency(item.code); setOpen(false); }} style={themeStyle([styles.option, item.code === currency && styles.selected])}><Text style={themeStyle(styles.code)}>{item.code}</Text><Text style={themeStyle(styles.name)}>{item.name}</Text>{item.code === currency && <Check size={18} color={themeColor("#2A7B4C")} />}</FeedbackPressable>} ListEmptyComponent={<Text style={themeStyle(styles.empty)}>No matching currency.</Text>} />
           <View style={styles.footer}>{loading && <ActivityIndicator size="small" color={themeColor("#0B3C5D")} />}<Text style={themeStyle(styles.caption)}>Converted prices are estimates. Local charges may still be in PHP.</Text></View>
         </View>
       </SafeAreaView>
