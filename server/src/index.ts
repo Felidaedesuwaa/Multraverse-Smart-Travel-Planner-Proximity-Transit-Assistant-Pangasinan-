@@ -21,8 +21,12 @@ import { connectDatabase, verifyDatabaseLayout } from './lib/db'
 import { User, AuditLog } from './models'
 import { PendingRegistration } from './models/PendingRegistration'
 import { AuthLimit } from './lib/authLimits'
+import { preparePasswordResetStorage } from './models/PasswordReset'
+import { rateLimit, securityHeaders } from './middleware/security'
 
 const app = express()
+app.disable('x-powered-by')
+app.use(securityHeaders)
 const PORT = process.env.PORT || 3001
 // Vercel overwrites X-Forwarded-For with the client IP. Trust its immediate
 // proxy only on Vercel so authentication limits don't group every visitor.
@@ -34,8 +38,9 @@ async function prepareDatabase() {
   // Share initialization between concurrent cold-start requests. Retry a
   // failed attempt instead of leaving this function instance unusable.
   // Keep the database-layout check from the latest application startup.
-  // Index creation is handled by db:harden, not by these model initializers.
-  indexesReady ??= verifyDatabaseLayout()
+  // Existing indexes are provisioned separately. Only the new password-reset
+  // collection and its indexes are added here, without changing account data.
+  indexesReady ??= preparePasswordResetStorage().then(() => verifyDatabaseLayout())
     .then(() => Promise.all([User.init(), AuditLog.init(), PendingRegistration.init(), AuthLimit.init()]))
     .catch((error) => { indexesReady = undefined; throw error })
   await indexesReady
@@ -53,9 +58,10 @@ app.use(cors({
       callback(null, true)
       return
     }
-    callback(new Error(`Origin ${origin} is not allowed by CORS`))
+    callback(Object.assign(new Error('Origin is not allowed'), { status: 403 }))
   },
   credentials: true,
+  exposedHeaders: ['Retry-After', 'X-Request-Id'],
 }))
 app.use(async (_req, res, next) => {
   try {
@@ -65,13 +71,16 @@ app.use(async (_req, res, next) => {
     res.status(503).json({ error: 'Database is temporarily unavailable. Please try again.' })
   }
 })
+app.use('/api', (req, res, next) => req.path === '/health' && req.method === 'GET' ? next() : rateLimit('api-ip', 300, 60 * 1000)(req, res, next))
+app.use('/api/auth', rateLimit('auth-ip', 60, 15 * 60 * 1000))
 // Profile photos are resized on-device and capped at 512 KB by the route.
 app.use('/api/users/me', express.json({ limit: '1mb' }))
 app.use('/api/auth', express.json({ limit: '16kb' }))
 // Voice recordings are posted to the local speech service as base64. The
 // route validates its own tighter payload shape; this limit keeps recordings
 // usable while still bounding request memory.
-app.use(express.json({ limit: '12mb' }))
+app.use('/api/ai/transcribe', express.json({ limit: '12mb' }))
+app.use(express.json({ limit: '1mb' }))
 
 app.use(sanitizeRequest)
 
@@ -94,7 +103,7 @@ app.get('/api/health', (_, res) => res.json({ status: 'ok' }))
 
 app.use((error: { status?: number; name?: string; code?: number }, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   const status = error.status || (['ValidationError', 'CastError', 'StrictModeError'].includes(error.name || '') || error.code === 121 ? 400 : error.code === 11000 ? 409 : 500)
-  res.status(status).json({ error: status === 413 ? 'Photo is too large. Choose a smaller image.' : status === 400 ? 'Invalid request' : 'Unable to complete the request. Please try again.' })
+  res.status(status).json({ error: status === 413 ? 'Request is too large. Reduce the upload size.' : status === 400 ? 'Invalid request' : 'Unable to complete the request. Please try again.' })
 })
 
 // Vercel imports the app; local development and Node hosts start a listener.

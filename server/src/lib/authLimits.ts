@@ -3,7 +3,7 @@ import { AuthLimit } from '../models/AuthLimit'
 export { AuthLimit } from '../models/AuthLimit'
 
 export class AuthError extends Error {
-  constructor(message: string, public status = 400) { super(message) }
+  constructor(message: string, public status = 400, public retryAfter?: number) { super(message) }
 }
 
 // Database-backed limits also apply after a restart or across server instances.
@@ -20,5 +20,5 @@ export async function authLimit(scope: string, key: string, maximum: number, win
     if ((error as { code?: number }).code !== 11000) throw error
     record = await AuthLimit.findOneAndUpdate({ _id }, { $inc: { count: 1 } }, { returnDocument: 'after' })
   }
-  if (!record || record.count > maximum) throw new AuthError('Too many attempts. Please try again later.', 429)
+  if (!record || record.count > maximum) throw new AuthError('Too many attempts. Please try again later.', 429, Math.max(1, Math.ceil(((bucket + 1) * windowMs - Date.now()) / 1000)))
 }

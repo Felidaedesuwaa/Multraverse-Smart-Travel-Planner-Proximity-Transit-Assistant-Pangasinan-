@@ -7,6 +7,7 @@ const environmentPath = require.resolve('../dist/lib/environment');
 require.cache[environmentPath] = { id: environmentPath, filename: environmentPath, loaded: true, exports: {} };
 const mongoose = require('mongoose');
 const db = require('../dist/lib/db');
+require('../dist/models/PasswordReset').preparePasswordResetStorage = async () => {};
 let server;
 
 (async () => {
@@ -73,6 +74,13 @@ let server;
   assert.equal(layoutCalls, 3, 'Retry failed setup and share successful layout validation');
   response = await fetch(`${base}/api/health`, { headers: { Origin: 'https://web.test' } });
   assert.equal(response.headers.get('access-control-allow-origin'), 'https://web.test');
+  assert.match(response.headers.get('access-control-expose-headers'), /Retry-After/);
+  assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
+  assert.equal(response.headers.get('cache-control'), 'no-store');
+  assert.equal(response.headers.get('x-powered-by'), null);
+  response = await fetch(`${base}/api/health`, { headers: { Origin: 'https://untrusted.test' } });
+  assert.equal(response.status, 403);
+  assert.equal(response.headers.get('access-control-allow-origin'), null);
   response = await fetch(`${base}/test-client-ip`, { headers: { 'X-Forwarded-For': '203.0.113.10' } });
   assert.deepEqual(await response.json(), { ip: '203.0.113.10' });
   console.log('Vercel startup, database retry, concurrent initialization, health, CORS, and client IP checks passed.');

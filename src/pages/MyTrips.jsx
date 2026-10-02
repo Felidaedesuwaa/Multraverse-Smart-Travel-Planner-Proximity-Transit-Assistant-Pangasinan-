@@ -1,7 +1,6 @@
+import NewTripDialog from "../components/NewTripDialog";
 import { FeedbackPressable } from "../components/WorkspaceMotion";
 import MoneyAmount from "../components/MoneyAmount";
-import { useCurrency } from "../hooks/useCurrency";
-import MoneyInput from "../components/MoneyInput";
 import { useAppTheme } from "../theme/useAppTheme";
 import { useCallback, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
@@ -171,143 +170,6 @@ function TripDetailModal({ trip, onClose, onDelete }) {
 }
 
 // ── New Trip Modal ──────────────────────────────────────
-function NewTripModal({ visible, onClose, onCreated }) {
-  const { currency } = useCurrency();
-
-  const { themeStyle, themeColor } = useAppTheme();
-
-  const [title, setTitle] = useState("");
-  const [location, setLocation] = useState("");
-  const [date, setDate] = useState("");
-  const [budget, setBudget] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState(null);
-
-  const reset = () => {
-    setTitle("");
-    setLocation("");
-    setDate("");
-    setBudget("");
-    setError(null);
-  };
-
-  const handleCreate = async () => {
-    if (!title.trim() || !location.trim()) {
-      setError("Title and location are required.");
-      return;
-    }
-    setSaving(true);
-    setError(null);
-    try {
-      const newTrip = await api.createTrip({
-        title: title.trim(),
-        location: location.trim(),
-        date: date.trim() || new Date().toLocaleDateString("en-PH", {
-          month: "short", day: "numeric", year: "numeric",
-        }),
-        budget: Number(budget) || 0,
-        spent: 0,
-        stops: 0,
-        icon: "landmark",
-        status: "UPCOMING",
-      });
-      onCreated(newTrip);
-      reset();
-      onClose();
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Failed to create trip.");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable style={themeStyle(styles.modalOverlay)} onPress={onClose}>
-        <Pressable style={themeStyle(styles.modalBox)} onPress={() => {}}>
-          <View style={themeStyle(styles.modalHeader)}>
-            <Text style={themeStyle(styles.modalTitle)}>Create New Trip</Text>
-            <FeedbackPressable onPress={onClose} style={themeStyle(styles.closeBtn)}>
-              <X size={18} color={themeColor("#6B8CA8", "color")} />
-            </FeedbackPressable>
-          </View>
-
-          <View style={themeStyle(styles.formGroup)}>
-            <Text style={themeStyle(styles.formLabel)}>Trip Title *</Text>
-            <TextInput
-              value={title}
-              onChangeText={setTitle}
-              placeholder="e.g. Hundred Islands Adventure"
-              placeholderTextColor={themeColor("#A8BECC", "color")}
-              style={themeStyle(styles.formInput)}
-            />
-          </View>
-
-          <View style={themeStyle(styles.formGroup)}>
-            <Text style={themeStyle(styles.formLabel)}>Location *</Text>
-            <TextInput
-              value={location}
-              onChangeText={setLocation}
-              placeholder="e.g. Alaminos, Pangasinan"
-              placeholderTextColor={themeColor("#A8BECC", "color")}
-              style={themeStyle(styles.formInput)}
-            />
-          </View>
-
-          <View style={themeStyle(styles.formRow)}>
-            <View style={themeStyle([styles.formGroup, { flex: 1 }])}>
-              <Text style={themeStyle(styles.formLabel)}>Date</Text>
-              <TextInput
-                value={date}
-                onChangeText={setDate}
-                placeholder="e.g. Aug 20–22, 2026"
-                placeholderTextColor={themeColor("#A8BECC", "color")}
-                style={themeStyle(styles.formInput)}
-              />
-            </View>
-            <View style={themeStyle([styles.formGroup, { flex: 1 }])}>
-              <Text style={themeStyle(styles.formLabel)}>Budget ({currency})</Text>
-              <MoneyInput
-                value={budget}
-                onChangeText={setBudget}
-                keyboardType="numeric"
-                placeholder="0"
-                placeholderTextColor={themeColor("#A8BECC", "color")}
-                style={themeStyle(styles.formInput)}
-              />
-            </View>
-          </View>
-
-          {error && (
-            <View style={themeStyle(styles.errorBox)}>
-              <Text style={themeStyle(styles.errorText)}>{error}</Text>
-            </View>
-          )}
-
-          <View style={themeStyle(styles.modalActions)}>
-            <FeedbackPressable onPress={onClose} style={themeStyle(styles.cancelBtn)}>
-              <Text style={themeStyle(styles.cancelBtnText)}>Cancel</Text>
-            </FeedbackPressable>
-            <FeedbackPressable
-              onPress={handleCreate}
-              disabled={saving}
-              style={themeStyle([styles.doneBtn, saving && { opacity: 0.7 }])}
-            >
-              {saving && (
-                <ActivityIndicator size="small" color={themeColor("#fff", "color")} style={themeStyle({ marginRight: 6 })} />
-              )}
-              <Text style={themeStyle(styles.doneBtnText)}>
-                {saving ? "Creating..." : "Create Trip"}
-              </Text>
-            </FeedbackPressable>
-          </View>
-        </Pressable>
-      </Pressable>
-    </Modal>
-  );
-}
-
-// ── Trip Card ───────────────────────────────────────────
 function TripCard({ trip, onView, onDelete, compact }) {
   const { themeStyle, themeColor } = useAppTheme();
 
@@ -557,11 +419,7 @@ export default function MyTrips() {
         onClose={() => setSelectedTrip(null)}
         onDelete={handleDelete}
       />
-      <NewTripModal
-        visible={showNewTrip}
-        onClose={() => setShowNewTrip(false)}
-        onCreated={handleCreated}
-      />
+      {showNewTrip && <NewTripDialog onClose={() => setShowNewTrip(false)} onCreated={handleCreated} />}
     </ScrollView>
   );
 }

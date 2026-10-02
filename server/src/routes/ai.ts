@@ -6,11 +6,13 @@ import plannerRoutes from './planner'
 import groundedItineraryRoutes from './groundedItinerary'
 import { AISettings } from '../models/AISettings'
 import phrasebookV2 from '../data/phrasebookV2.json'
+import { rateLimit } from '../middleware/security'
 
 const router = Router()
 router.param('id', validateId)
 router.use(sanitizeRequest, validateRouter('ai'))
 router.use(authenticate)
+router.use((req, res, next) => req.method === 'POST' ? rateLimit('ai-user', 10, 60 * 1000, true)(req, res, next) : next())
 router.use(groundedItineraryRoutes)
 router.use(plannerRoutes)
 const expressJsonAudio = express.json({ limit: '12mb' })
@@ -35,8 +37,7 @@ async function callAI(endpoint: string, body: object) {
       signal: AbortSignal.timeout(120_000),
     })
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unable to reach AI service'
-    throw new AIServiceError(`AI service is unavailable: ${message}`, 503)
+    throw new AIServiceError('AI service is unavailable. Please try again later.', 503)
   }
 
   const payload: unknown = await response.json().catch(() => null)
@@ -45,15 +46,15 @@ async function callAI(endpoint: string, body: object) {
       ? (payload as { detail?: unknown }).detail
       : undefined
     throw new AIServiceError(
-      typeof detail === 'string' ? detail : 'AI service error',
-      response.status,
+      'The AI service could not complete the request. Please try again.',
+      response.status >= 500 ? 503 : 400,
     )
   }
   return payload
 }
 
 function sendAIError(res: Response, error: unknown, fallback: string) {
-  const message = error instanceof Error ? error.message : fallback
+  const message = error instanceof AIServiceError ? error.message : fallback
   const status = error instanceof AIServiceError ? error.status : 500
   return res.status(status).json({ error: message })
 }

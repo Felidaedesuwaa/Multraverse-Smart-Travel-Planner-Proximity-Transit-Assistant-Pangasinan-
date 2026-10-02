@@ -1,3 +1,4 @@
+const { sessionCredential } = require('../dist/lib/sessionCredential');
 // Existing-account GET smoke checks only. No login, seeding, inserts or deletes.
 const assert = require('node:assert/strict')
 const { MongoClient } = require('mongodb')
@@ -8,10 +9,10 @@ async function main() {
   try {
     await client.connect()
     const db = client.db()
-    const account = await db.collection('users').findOne({ role: 'ADMIN' }, { projection: { _id: 1, role: 1 } })
-      || await db.collection('users').findOne({}, { projection: { _id: 1, role: 1 } })
+    const account = await db.collection('users').findOne({ role: 'ADMIN' }, { projection: { _id: 1, role: 1, passwordHash: 1 } })
+      || await db.collection('users').findOne({}, { projection: { _id: 1, role: 1, passwordHash: 1 } })
     assert.ok(account, 'An existing account is required for GET verification')
-    const token = jwt.sign({ userId: String(account._id), role: account.role }, process.env.JWT_SECRET, { expiresIn: '2m' })
+    const token = jwt.sign({ userId: String(account._id), role: account.role, credential: sessionCredential(account.passwordHash) }, process.env.JWT_SECRET, { expiresIn: '2m' })
     const paths = ['/api/trips', '/api/budget', '/api/budget/settings', '/api/places', '/api/ai/phrasebook', '/api/ai/planner/catalog']
     if (account.role === 'ADMIN') paths.push('/api/analytics', '/api/analytics/dashboard')
     for (const path of paths) {

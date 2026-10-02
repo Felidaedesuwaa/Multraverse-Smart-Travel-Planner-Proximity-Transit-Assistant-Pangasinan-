@@ -81,9 +81,23 @@ export function validateRegistration(fields) {
 }
 
 export function validateName(name) {
-  if (!name.trim()) return "Full name is required";
+  if (typeof name !== "string" || !name.trim()) return "Full name is required";
   if (name.trim().length < 2) return "Name is too short";
+  if (name.trim().length > 80 || !/^\p{L}[\p{L}\p{M} .\u2019'-]*$/u.test(name.trim())) return "Use letters, spaces, initials, apostrophes or hyphens only (up to 80 characters)";
   return null;
+}
+
+export function validateTrip(fields) {
+  const errors = {};
+  for (const [key, label, max] of [["title", "Trip title", 100], ["location", "Destination", 120]]) {
+    const value = fields[key];
+    if (typeof value !== "string" || value.trim().length < 2 || value.trim().length > max || !/\p{L}/u.test(value) || /[<>\x00-\x1f\x7f]/.test(value)) errors[key] = `${label} must contain letters and be 2 to ${max} characters, without markup.`;
+  }
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(fields.date) ? new Date(`${fields.date}T00:00:00Z`) : null;
+  if (!date || !Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== fields.date || fields.date < "1900-01-01" || fields.date > "2100-12-31") errors.date = "Enter a real date in YYYY-MM-DD format, for example 2027-01-15.";
+  const budget = fields.budget === "" ? 0 : Number(fields.budget);
+  if (fields.budget === null || !Number.isFinite(budget) || budget < 0 || budget > 1000000) errors.budget = "Budget must be between PHP 0 and PHP 1,000,000 (or its equivalent).";
+  return errors;
 }
 
 export function validateConfirmPassword(password, confirm) {

@@ -61,8 +61,10 @@ branch. Push the backend changes in this checkout before importing it.
 Vercel compiles the TypeScript Express entry point `server/src/index.ts`.
 The backend exports the application, connects to MongoDB and validates the
 database layout before serving requests, and retries failed initialization.
-It preserves the existing requirement to provision database collections and
-indexes separately; deployment does not seed or rebuild the database.
+It preserves the existing requirement to provision the original database
+collections and indexes separately. Password recovery adds only the
+`passwordresets` collection and its indexes at startup; deployment does not
+seed or rebuild the database.
 Local `npm run dev` and `npm start`
 still launch a listening server. The root `vercel.json` belongs to the website;
 do not copy its static-site rewrite into the backend.
@@ -175,6 +177,44 @@ translation require that service to be reachable.
 3. Test signup with your own mailbox, code verification, login, and saving a trip.
 4. Check the API logs for CORS, Atlas access, or SMTP errors if these fail.
 5. Test AI functions after deploying the Python service and setting `AI_SERVICE_URL`.
+
+## Password recovery and security update
+
+Deploy the backend and frontend from the same updated commit. The existing
+SMTP variables also deliver password reset codes; no additional mail API key
+is needed. Local tests mock delivery, so test a reset using your own mailbox
+after deployment. Codes expire after ten minutes, allow five attempts, and
+become unusable after a successful reset or a password change.
+
+The backend database account must be allowed to create the `passwordresets`
+collection and indexes in the existing application database. Startup adds only
+this collection, with a validator, unique user/challenge indexes and an expiry
+index. It leaves existing accounts and other collections intact. A replica set
+(including Atlas) is required for the password and audit transactions. Do not
+run `db:rebuild` to install this feature. If startup returns 503, check database
+permissions and the existing collection layout in the server logs.
+
+All sessions created before this update require a fresh login once. Changing or
+resetting a password invalidates every earlier token for that account. Native
+apps now store tokens with `expo-secure-store`, migrating the old token on read;
+produce a new Android/iOS binary to include this native dependency. A web
+redeployment or JavaScript-only mobile update cannot add a native module.
+
+Before pushing future security changes, run these from the repository root:
+
+```powershell
+npm.cmd run build --prefix server
+node server/scripts/check-registration.cjs
+node server/scripts/check-database-hardening.cjs
+node server/scripts/check-vercel.cjs
+npm.cmd run build:web
+```
+
+For password integration tests, set `AUTH_TEST_MONGODB_URI` to a **dedicated test
+replica set** and run `npm.cmd run test:security --prefix server`. It creates a
+randomly named test database and removes its test collections afterward. It
+mocks email delivery and does not send messages. See [SECURITY.md](SECURITY.md)
+for the controls, rate limits and remaining limitations.
 
 References: [Expo website deployment](https://docs.expo.dev/guides/publishing-websites/#vercel),
 [Express on Vercel](https://vercel.com/docs/frameworks/backend/express),

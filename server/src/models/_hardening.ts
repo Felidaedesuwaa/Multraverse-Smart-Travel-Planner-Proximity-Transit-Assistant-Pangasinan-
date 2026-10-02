@@ -20,6 +20,7 @@ export function hardenSchema(schema: Schema, name: string) {
     if (typeof transform === 'function') ret = transform(doc, ret, options) || ret
     delete ret.passwordHash
     delete ret.codeHash
+    delete ret.credential
     return ret
   } })
   schema.eachPath((key, field: any) => {

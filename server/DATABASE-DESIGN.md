@@ -1,6 +1,17 @@
-# MongoDB design, version 2
+# MongoDB design, version 3
 
-This document supersedes the original 17-collection audit in DATABASE-HARDENING.md. The redesign preserves the existing users and phrasebooks and creates the remaining structure without seeding documents. There are **15 root collections**. Schema definitions for embedded value objects are not separate collections.
+This document supersedes the original 17-collection audit in DATABASE-HARDENING.md. The redesign preserves the existing users and phrasebooks and creates the remaining structure without seeding documents. The current code declares **16 root collections**, including password recovery. Schema definitions for embedded value objects are not separate collections.
+
+## Password recovery addition (October 2026)
+
+Version 3 adds `passwordresets`: one temporary challenge per user, unique random
+challenge IDs, hidden code/credential hashes, five-attempt bounds and TTL expiry.
+The backend creates this collection and indexes additively on startup. It does
+not rebuild existing collections or alter account records during deployment.
+Password updates, challenge consumption and audit events are transactional.
+Deployment permissions and test instructions are in the root DEPLOYMENT.md and
+SECURITY.md. The historical applied state below describes version 2; it is not
+confirmation that version 3 has already been installed in Atlas.
 
 ## Applied state (2026-09-27)
 
@@ -28,6 +39,7 @@ Deployment is complete. The final apply changed validators only; no documents or
 | routeprices | Fare records and LGU submissions | Optional transit-route reference; direction, vehicle and fare basis vary independently from a service |
 | geofences | Geographic advisory zones and LGU submissions | Embeds geographic and moderation data; independent zone lifecycle |
 | pendingregistrations | Email verification before account creation | TTL challenge, password/code hashes hidden by default; never embeds expiry on a permanent user |
+| passwordresets | Email OTP password recovery | One expiring challenge per user with hidden hashes; removed on redemption, password change or account deletion |
 | plannerdrafts | Generate, review, enrich and save an itinerary | Owner reference plus typed embedded plan; TTL expiry distinct from permanent saved trips |
 | authlimits | Shared authentication rate limits | Atomic counters and TTL buckets; must work across server processes/restarts |
 | auditlogs | Managed-account creation and approval decisions | Growing administrative history; should outlive the originating account/resource |

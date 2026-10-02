@@ -1,6 +1,7 @@
 import { Pressable, ScrollView, Text } from 'react-native'
 import { useAuthStore } from '../store/authStore'
 import { colors } from '../theme/colors'
+import ChangePasswordButton from './ChangePasswordButton'
 const sections = [
   ['SuperAdminDashboard', 'Overview'],
   ['SuperAdminUsers', 'Manage LGU Accounts'],
@@ -13,5 +14,6 @@ export default function SuperAdminSidebar({ activeScreen, onNavigate, compact })
     {!compact && <Text style={{ color: colors.white, fontFamily: 'Poppins', fontSize: 20 }}>Super Admin</Text>}
     {sections.map(([screen, label]) => <Pressable key={screen} accessibilityRole="button" accessibilityState={{ selected: activeScreen === screen }} onPress={() => onNavigate(screen)} style={{ padding: 12, borderRadius: 10, backgroundColor: activeScreen === screen ? colors.sunsetCoral : 'transparent' }}><Text style={{ color: colors.white }}>{label}</Text></Pressable>)}
     <Pressable accessibilityRole="button" onPress={logout} style={{ padding: 12 }}><Text style={{ color: colors.white }}>Log out</Text></Pressable>
+    <ChangePasswordButton inverted />
   </ScrollView>
 }

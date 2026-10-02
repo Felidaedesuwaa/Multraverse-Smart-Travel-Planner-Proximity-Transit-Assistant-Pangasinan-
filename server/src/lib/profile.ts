@@ -15,8 +15,8 @@ export function profileUpdate(body: unknown): ProfileUpdate {
   if (['firstName', 'middleName', 'surname'].some(key => key in input)) {
     Object.assign(update, registrationNameDetails(input))
   } else if ('name' in input) {
-    if (typeof input.name !== 'string' || !input.name.trim() || input.name.trim().length > 80) {
-      throw new Error('Name must contain 1 to 80 characters')
+    if (typeof input.name !== 'string' || !input.name.trim() || input.name.trim().length > 80 || !/^\p{L}[\p{L}\p{M} .\u2019'-]*$/u.test(input.name.trim())) {
+      throw new Error('Name must contain letters only, with spaces, initials, apostrophes or hyphens; maximum 80 characters')
     }
     update.name = input.name.trim()
     // Older clients only send a full name. Clear stale structured fields.

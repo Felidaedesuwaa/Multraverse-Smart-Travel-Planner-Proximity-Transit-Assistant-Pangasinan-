@@ -5,5 +5,5 @@ export const collectionNames: Record<string, string> = {
   SavedPlace: 'savedplaces', Place: 'places', LocalFood: 'localfoods',
   TransitRoute: 'transitroutes', RoutePrice: 'routeprices', Geofence: 'geofences',
   PendingRegistration: 'pendingregistrations', PlannerDraft: 'plannerdrafts',
-  AuthLimit: 'authlimits', AuditLog: 'auditlogs', AISettings: 'aisettings',
+  AuthLimit: 'authlimits', AuditLog: 'auditlogs', AISettings: 'aisettings', PasswordReset: 'passwordresets',
 }

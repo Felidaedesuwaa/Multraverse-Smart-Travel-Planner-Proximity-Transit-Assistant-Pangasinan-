@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { api } from '../lib/api'
+import { api, onUnauthorized } from '../lib/api'
 import { storage } from '../lib/storage'
 
 // Includes SUPERADMIN, ADMIN, LGU and EXPLORER roles without dropping account fields.
@@ -112,3 +112,4 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 }))
+onUnauthorized(() => useAuthStore.getState().logout())

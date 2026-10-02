@@ -4,7 +4,7 @@ import { ArrowLeft, Compass, Sun, Waves } from "lucide-react-native";
 import SummerScene from "./SummerScene";
 import { SummerBrand, useSummerColors } from "./SummerUI";
 
-export default function LoginLayout({ title, subtitle, children, footer, onBack }) {
+export default function LoginLayout({ title, subtitle, children, footer, onBack, backLabel = "Back to home" }) {
   const { width } = useWindowDimensions();
   const compact = width < 900;
   const palette = useSummerColors();
@@ -12,7 +12,7 @@ export default function LoginLayout({ title, subtitle, children, footer, onBack 
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[styles.scroll, compact && styles.scrollCompact]}>
         <View style={styles.topbar}>
-          <Pressable accessibilityRole="button" accessibilityLabel="Back to landing page" onPress={onBack} style={({ pressed, hovered }) => [styles.back, (pressed || hovered) && { backgroundColor: palette.tint }]}><ArrowLeft size={19} color={palette.ink} /><Text style={[styles.backText, { color: palette.ink }]}>Back to home</Text></Pressable>
+          <Pressable accessibilityRole="button" accessibilityLabel={backLabel} onPress={onBack} style={({ pressed, hovered }) => [styles.back, (pressed || hovered) && { backgroundColor: palette.tint }]}><ArrowLeft size={19} color={palette.ink} /><Text style={[styles.backText, { color: palette.ink }]}>{backLabel}</Text></Pressable>
           {!compact && <SummerBrand />}
           {compact && <Compass size={24} color={palette.accent} />}
         </View>

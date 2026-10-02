@@ -55,6 +55,7 @@ function models() {
   const loaded = { ...require('../dist/models'),
     ...require('../dist/models/AISettings'), ...require('../dist/models/PendingRegistration'),
     ...require('../dist/models/PlannerDraft'), ...require('../dist/models/AuthLimit'),
+    ...require('../dist/models/PasswordReset'),
   }
   const { collectionNames } = require('../dist/models/_collections')
   return Object.entries(collectionNames).map(([name, collection]) => {

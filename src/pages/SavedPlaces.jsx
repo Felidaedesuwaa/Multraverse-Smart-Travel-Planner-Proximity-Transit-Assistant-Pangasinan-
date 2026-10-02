@@ -1,6 +1,7 @@
 import { FeedbackPressable } from "../components/WorkspaceMotion";
 import { useAppTheme } from "../theme/useAppTheme";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import FormField from "../components/FormField";
 import {
   ActivityIndicator,
   Modal,
@@ -84,11 +85,19 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
   const [isPublic, setIsPublic] = useState(place?.isPublic ?? true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [nameError, setNameError] = useState(null);
+  const nameInput = useRef(null);
+  const savingRef = useRef(false);
+  const close = () => { if (!savingRef.current) onClose(); };
 
   const cats = CATEGORIES.filter((c) => c !== "All");
 
   const handleSave = async () => {
-    if (!name.trim()) { setError("Place name is required."); return; }
+    if (savingRef.current) return;
+    const invalid = name.trim().length < 2 || name.trim().length > 120 || !/\p{L}/u.test(name) || /[<>\x00-\x1f\x7f]/.test(name);
+    setNameError(invalid ? "Enter a place name with letters, 2–120 characters, without markup." : null);
+    if (invalid) { nameInput.current?.focus(); return; }
+    savingRef.current = true;
     setSaving(true);
     setError(null);
     try {
@@ -118,29 +127,34 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Failed to save place.");
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable style={themeStyle(styles.overlay)} onPress={onClose}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={close}>
+      <Pressable style={themeStyle(styles.overlay)} onPress={close}>
         <Pressable style={themeStyle(styles.modalBox)} onPress={() => {}}>
-          <ScrollView showsVerticalScrollIndicator={false}>
+          <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
             {/* Header */}
             <View style={themeStyle(styles.modalHeader)}>
               <Text style={themeStyle(styles.modalTitle)}>
                 {isEdit ? "Edit Place" : "Add New Place"}
               </Text>
-              <FeedbackPressable onPress={onClose} style={themeStyle(styles.closeBtn)}>
+              <FeedbackPressable onPress={close} style={themeStyle(styles.closeBtn)}>
                 <X size={18} color={themeColor("#6B8CA8", "color")} />
               </FeedbackPressable>
             </View>
 
             {/* Name */}
             <View style={themeStyle(styles.formGroup)}>
-              <Text style={themeStyle(styles.formLabel)}>Place Name *</Text>
-              <TextInput
+              <FormField
+                ref={nameInput}
+                label="Place name *"
+                error={nameError}
+                editable={!saving}
+                maxLength={120}
                 value={name}
                 onChangeText={setName}
                 placeholder="e.g. Hundred Islands National Park"
@@ -180,6 +194,8 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
               <Text style={themeStyle(styles.formLabel)}>Description</Text>
               <TextInput
                 value={description}
+                maxLength={10000}
+                editable={!saving}
                 onChangeText={setDescription}
                 multiline
                 numberOfLines={3}
@@ -194,6 +210,8 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
               <Text style={themeStyle(styles.formLabel)}>My Experience / Notes</Text>
               <TextInput
                 value={userNote}
+                maxLength={10000}
+                editable={!saving}
                 onChangeText={setUserNote}
                 multiline
                 numberOfLines={3}
@@ -255,7 +273,7 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
             )}
 
             <View style={themeStyle(styles.modalActions)}>
-              <FeedbackPressable onPress={onClose} style={themeStyle(styles.cancelBtn)}>
+              <FeedbackPressable onPress={close} disabled={saving} style={themeStyle(styles.cancelBtn)}>
                 <Text style={themeStyle(styles.cancelText)}>Cancel</Text>
               </FeedbackPressable>
               <FeedbackPressable
@@ -680,12 +698,13 @@ export default function SavedPlaces() {
       )}
 
       {/* Modals */}
-      <PlaceFormModal
+      {(showAdd || !!editingPlace) && <PlaceFormModal
+        key={editingPlace?.id || editingPlace?._id || "new"}
         visible={showAdd || !!editingPlace}
         place={editingPlace}
         onClose={() => { setShowAdd(false); setEditingPlace(null); }}
         onSaved={handleSaved}
-      />
+      />}
       <PlaceDetailModal
         place={viewingPlace}
         onClose={() => setViewingPlace(null)}

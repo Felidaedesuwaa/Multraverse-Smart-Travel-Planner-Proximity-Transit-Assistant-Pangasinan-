@@ -4,6 +4,7 @@ import { Schema } from 'mongoose'
 import { BudgetEntry, Trip, SavedPlace, Place, RoutePrice, LocalFood, Geofence, TransitRoute } from '../models'
 import { lguResources } from '../lib/lguResources'
 import { validateRequest } from '../lib/planner'
+import { tripFieldErrors } from '../lib/tripValidation'
 
 function invalid(message = 'Invalid request'): never { throw Object.assign(new Error(message), { status: 400 }) }
 function object(value: unknown): asserts value is Record<string, any> {
@@ -110,15 +111,22 @@ export function validateRouter(scope: string): RequestHandler {
       object(body)
       const create = req.method === 'POST'
       if (scope === 'auth') {
-        const rules: Record<string, Rule> = { email: string, password: string, firstName: string, middleName: string, surname: string, challengeId: string, code: string }
-        const keys = req.path === '/login' ? ['email', 'password'] : req.path === '/register' ? ['firstName', 'middleName', 'surname', 'email', 'password'] : req.path === '/register/resend' ? ['challengeId'] : ['challengeId', 'code']
+        const rules: Record<string, Rule> = { email: string, password: string, firstName: string, middleName: string, surname: string, challengeId: string, code: string, currentPassword: string, newPassword: string }
+        const keys = req.path === '/password/forgot' ? ['email'] : req.path === '/password/reset' ? ['challengeId', 'code', 'newPassword'] : req.path === '/password/change' ? ['currentPassword', 'newPassword'] : req.path === '/login' ? ['email', 'password'] : req.path === '/register' ? ['firstName', 'middleName', 'surname', 'email', 'password'] : req.path === '/register/resend' ? ['challengeId'] : ['challengeId', 'code']
         fields(body, Object.fromEntries(keys.map(k => [k, rules[k]])), keys.filter(k => k !== 'middleName'))
       } else if (scope === 'users') {
         const rules: Record<string, Rule> = req.path === '/me' ? { name: string, firstName: string, middleName: string, surname: string, location: string, photo: (v: any) => v === null || (typeof v === 'string' && v.length <= 700000) } : { email: string, password: string, municipality: string }
         fields(body, rules)
-      } else if (scope === 'trips') modelInput(Trip.schema, body, create ? ['title', 'location', 'date', 'budget', 'icon'] : ['title', 'location', 'date', 'status', 'budget', 'icon'], create)
+      } else if (scope === 'trips') {
+        const errors = tripFieldErrors(body, create)
+        if (Object.keys(errors).length) return res.status(400).json({ error: 'Check the highlighted trip fields.', fieldErrors: errors })
+        modelInput(Trip.schema, body, create ? ['title', 'location', 'date', 'budget', 'icon'] : ['title', 'location', 'date', 'status', 'budget', 'icon'], create)
+      }
       else if (scope === 'budget') modelInput(req.path === '/settings' ? budgetSettingsSchema : BudgetEntry.schema, body, req.path === '/settings' ? ['monthlyBudget', 'savingsTarget'] : ['label', 'category', 'amount', 'color', 'tripId'], create || req.path === '/settings')
-      else if (scope === 'places') modelInput(SavedPlace.schema, body, ['name', 'category', 'description', 'icon', 'rating', 'userNote', 'photos', 'isPublic', 'addedToTrip'], create)
+      else if (scope === 'places') {
+        if ('name' in body && (typeof body.name !== 'string' || body.name.trim().length < 2 || body.name.trim().length > 120 || !/\p{L}/u.test(body.name) || /[<>\x00-\x1f\x7f]/.test(body.name))) invalid('Enter a place name with letters, 2–120 characters, without markup.')
+        modelInput(SavedPlace.schema, body, ['name', 'category', 'description', 'icon', 'rating', 'userNote', 'photos', 'isPublic', 'addedToTrip'], create)
+      }
       else if (scope === 'approvals') fields(body, { reason: string, revision: v => number(v) && Number.isInteger(v) }, ['revision'])
       else if (scope === 'lgu') {
         const resource = lguResources[parts[0]]

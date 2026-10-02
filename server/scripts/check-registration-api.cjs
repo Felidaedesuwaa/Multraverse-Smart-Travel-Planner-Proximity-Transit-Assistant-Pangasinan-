@@ -1,3 +1,4 @@
+const { sessionCredential } = require('../dist/lib/sessionCredential');
 ﻿const assert = require('node:assert/strict');
 const { randomBytes } = require('node:crypto');
 const path = require('node:path');
@@ -37,7 +38,7 @@ domain.ensureEmailDomain = async address => {
 const app = express(); app.use(express.json());
 app.use('/api/auth', require('../dist/routes/auth').default);
 app.use('/api/users', require('../dist/routes/users').default);
-app.use((error, req, res, next) => res.status(500).json({ error: 'Test operation failed' }));
+app.use((error, req, res, next) => res.status(error.status || 500).json({ error: 'Test operation failed' }));
 let server;
 (async () => {
   try {
@@ -107,7 +108,7 @@ let server;
     assert.equal((await call('auth/login', { email: valid.email, password: valid.password })).status, 200);
     await resetLimits();
     const other = await User.create({ name: 'Other Traveler', email: 'other@gmail.com', passwordHash: await bcrypt.hash(valid.password, 10) });
-    const otherToken = jwt.sign({ userId: other._id.toString(), role: 'ADMIN' }, process.env.JWT_SECRET);
+    const otherToken = jwt.sign({ userId: other._id.toString(), role: 'ADMIN', credential: sessionCredential(other.passwordHash) }, process.env.JWT_SECRET);
     assert.equal((await call('users', undefined, otherToken, 'GET')).status, 403, 'Database role overrides stale token role');
     assert.equal((await call('auth/login', { email: other.email, password: valid.password })).status, 200, 'Existing accounts remain usable');
     const owner = registered.user.id;

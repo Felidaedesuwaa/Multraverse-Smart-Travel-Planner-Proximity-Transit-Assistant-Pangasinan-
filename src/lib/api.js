@@ -38,6 +38,8 @@ function getBaseUrl() {
 }
 
 export const BASE_URL = getBaseUrl();
+let unauthorizedHandler;
+export const onUnauthorized = handler => { unauthorizedHandler = handler; };
 
 async function getToken() {
   return storage.getItem("token");
@@ -56,9 +58,11 @@ async function request(path, options = {}) {
 
   const data = await res.json();
   if (!res.ok) {
+    if (res.status === 401 && token && (!path.startsWith('/api/auth/') || path === '/api/auth/password/change') && await getToken() === token) await unauthorizedHandler?.();
     const error = new Error(data.error || "Request failed");
     error.fieldErrors = data.fieldErrors;
     error.status = res.status;
+    error.retryAfter = Number(res.headers.get('Retry-After')) || 0;
     throw error;
   }
   return data;
@@ -112,6 +116,9 @@ export const api = {
   getApprovals: resource => requestList(`/api/admin/approvals/${resource}`),
   reviewSubmission: (resource, id, decision, reason, revision) => request(`/api/admin/approvals/${resource}/${id}/${decision}`, { method: 'POST', body: JSON.stringify({ reason, revision }) }),
   // Auth
+  requestPasswordReset: email => request('/api/auth/password/forgot', { method: 'POST', body: JSON.stringify({ email }) }),
+  resetPassword: (challengeId, code, newPassword) => request('/api/auth/password/reset', { method: 'POST', body: JSON.stringify({ challengeId, code, newPassword }) }),
+  changePassword: (currentPassword, newPassword) => request('/api/auth/password/change', { method: 'POST', body: JSON.stringify({ currentPassword, newPassword }) }),
   login: (email, password) =>
     request('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }),
 
