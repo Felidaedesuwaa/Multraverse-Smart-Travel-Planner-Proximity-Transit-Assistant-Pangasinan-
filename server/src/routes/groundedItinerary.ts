@@ -54,7 +54,7 @@ router.post('/itinerary/grounded', async (req: AuthRequest, res) => {
     if (error instanceof ItineraryInputError) return res.status(400).json({ error: error.message })
     if ((error as { code?: number }).code === 121) {
       console.error('Itinerary draft rejected by database validator; apply migrate-guided-itinerary after schema changes.')
-      return res.status(503).json({ error: 'The itinerary database needs a schema update. Please ask the administrator to update the planner database and try again.' })
+      return res.status(503).json({ code: 'ITINERARY_SCHEMA_OUTDATED', error: 'The itinerary database needs a schema update. Please ask the administrator to update the planner database and try again.' })
     }
     throw error
   } finally { inFlight.delete(userId) }

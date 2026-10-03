@@ -9,7 +9,7 @@ export const guidedPlanSchema = nested({
     returnToOrigin: Boolean, startTime: String, mealBudget: Number, hotelRooms: Number,
     fareInputs: { type: [nested({ mode: String, tableId: String, km: Number, rides: Number, allowance: Number, referenceAccepted: Boolean })], maxItems: 5 } }), required: true },
   stops: { type: [nested({ time: String, title: String, subtitle: String, tag: String, price: Number, iconKey: String, day: Number, entryId: String })], maxItems: 60 },
-  breakdown: { type: nested({ Transit: Number, Attraction: Number, Food: Number, Shopping: Number, Lodging: Number }), required: true },
+  breakdown: { type: nested({ Emergency: Number, Transit: Number, Attraction: Number, Food: Number, Shopping: Number, Lodging: Number }), required: true },
   estimated: Number, warnings: strings, budgetComplete: Boolean, mealAllocation: Number, mode: String, chosenIds: strings, generatedAt: String,
   foodOptions: { type: [nested({ id: String, name: String, description: String, where: String, listedAveragePrice: Number, source: String })], maxItems: 500, default: undefined },
   costEstimate: { type: nested({ meals: Number, emergency: Number, entryFees: Number, transportTotal: Number, min: Number, max: Number, perPersonMin: Number, perPersonMax: Number, remainingMin: { type: Number, min: -1000000000 }, remainingMax: { type: Number, min: -1000000000 }, status: String, note: String,

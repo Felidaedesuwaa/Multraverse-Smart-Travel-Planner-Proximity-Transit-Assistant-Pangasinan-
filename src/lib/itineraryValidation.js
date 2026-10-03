@@ -51,6 +51,7 @@ export function itineraryErrors(form, { catalog, hotelRooms, budgetTier, today, 
 export const itineraryErrorStep = key => ['areaId', 'tripTypes', 'activities', 'travelerType', 'travelStyle'].includes(key) ? 1 : ['date', 'travelers', 'days', 'budget', 'lodgingId', 'hotelRooms'].includes(key) ? 2 : 3;
 
 export function itineraryFailureMessage(error, fallback) {
+  if (error?.code === 'ITINERARY_SCHEMA_OUTDATED') return 'The itinerary database needs an update. Ask the administrator to run the itinerary schema migration.';
   if (error?.status === 401) return 'Please sign in again to continue.';
   if (error instanceof TypeError || error instanceof SyntaxError) return 'We could not reach the travel planner. Check your connection and try again.';
   if (error?.status >= 500) return 'The travel planner is temporarily unavailable. Please try again shortly.';

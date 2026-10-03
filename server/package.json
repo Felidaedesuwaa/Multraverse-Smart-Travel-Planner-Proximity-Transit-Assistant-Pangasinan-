@@ -10,6 +10,7 @@
     "start": "node dist/index.js",
     "seed": "npm run seed:phrases && npm run seed:city-guides",
     "seed:city-guides": "ts-node seeds/seedCityGuides.ts",
+    "seed:local-foods": "ts-node seeds/seedLocalFoods.ts",
     "seed:phrases": "ts-node prisma/seedPhrasebookV2.ts",
     "test:planner": "npm run build && node scripts/check-planner.cjs && node scripts/check-planner-api.cjs",
     "test:registration": "npm run build && node scripts/check-registration.cjs",

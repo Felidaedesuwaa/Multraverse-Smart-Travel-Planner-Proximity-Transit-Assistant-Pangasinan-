@@ -1,17 +1,23 @@
+import { itinerarySummary } from '../lib/itinerarySummary';
+import { calculateTransport, finiteNumber } from '../../server/src/lib/fareCalculation';
 import { downloadItineraryPdf } from '../lib/itineraryPdf';
 import { useState } from 'react';
 import { Bus, Utensils, BedDouble, Wallet, Users, CalendarDays, MapPin, Clock, Info, BookmarkPlus, Download, Pencil, Compass } from 'lucide-react-native';
 
-const money = n => `₱${Number(n).toLocaleString('en-PH', { maximumFractionDigits: 2 })}`;
+const money = n => n == null || !Number.isFinite(Number(n)) ? 'Pending' : `₱${Number(n).toLocaleString('en-PH', { maximumFractionDigits: 2 })}`;
+const detailCopy = value => String(value || '').replace(/Source:\s*.*?(?:,\s*page\s*\d+\.?|$)/gi, '').replace(/Guide states verified[^.]*\.?/gi, '').trim();
 const range = (min, max) => min === max ? money(min) : `${money(min)}–${money(max)}`;
 
-export default function ItineraryResults({ plan, areaName, onEdit, onSave, saved, saving }) {
+export default function ItineraryResults({ plan, fareTables = [], areaName, onEdit, onSave, saved, saving }) {
   const r = plan.request;
-  const c = plan.costEstimate;
+  const stored = plan.costEstimate;
+  const transport = fareTables.length ? calculateTransport(r, fareTables) : stored?.transport;
+  const transportTotal = transport?.reduce((sum, item) => sum + finiteNumber(item.total), 0) ?? 0;
+  const c = itinerarySummary({ ...plan, costEstimate: { ...stored, transport: transport || [], transportTotal } });
   const [exportMessage, setExportMessage] = useState('');
   const [exportFailed, setExportFailed] = useState(false);
   const exportPlan = () => {
-    try { downloadItineraryPdf(plan, areaName); setExportFailed(false); setExportMessage('Your itinerary PDF download has started.'); }
+    try { downloadItineraryPdf({ ...plan, costEstimate: c }, areaName); setExportFailed(false); setExportMessage('Your itinerary PDF download has started.'); }
     catch { setExportFailed(true); setExportMessage('The PDF could not be downloaded. Please try again.'); }
   };
   return <section className="air-results">
@@ -26,13 +32,13 @@ export default function ItineraryResults({ plan, areaName, onEdit, onSave, saved
       <Stat Icon={Wallet} label="Trip budget" value={money(r.budget)} />
       <Stat Icon={Compass} label="Planned total" value={c ? range(c.min, c.max) : 'Pending'} note="Meals + transport + hotel + listed entry fees + emergency reserve" />
       <Stat Icon={Users} label="Per person · full trip" value={c ? range(c.perPersonMin, c.perPersonMax) : 'Pending'} />
-      <Stat Icon={Wallet} label={c?.remainingMin < 0 ? 'Budget shortfall' : 'Available after estimates'} value={c ? c.remainingMin < 0 ? `Up to ${money(-c.remainingMin)}` : range(c.remainingMin, c.remainingMax) : 'Pending'} note="Unpriced costs still need covering" alert={c?.remainingMin < 0} />
+      <Stat Icon={Wallet} label={c?.remainingMin < 0 ? 'Budget shortfall' : 'Available after estimates'} value={c ? c.remainingMin < 0 ? `Up to ${money(-c.remainingMin)}` : range(c.remainingMin, c.remainingMax) : 'Pending'} note="After trip costs and the 10% emergency reserve" alert={c?.remainingMin < 0} />
     </div>
     <p className="air-notice"><Info size={16} /><span>{c?.note || 'Unpriced costs are not included.'}</span></p>
     {plan.foodOptions?.length > 0 && <section className="air-panel air-food-options">
       <h3><Utensils size={18} />All local foods to try in {areaName || r.areaId} ({plan.foodOptions.length})</h3>
       <p>Choose tastings within your {money(r.mealBudget)} per person daily meal allowance. This list includes every listed local food; the schedule below highlights a few to try.</p>
-      <div className="air-food-grid">{plan.foodOptions.map(food => <article key={food.id} className="air-food-card"><h4>{food.name}</h4><p>{food.description}</p>{food.where && <p><strong>Where:</strong> {food.where}</p>}<p>{food.listedAveragePrice == null ? 'Menu price to confirm' : `Listed average: ${money(food.listedAveragePrice)} · confirm portions and current price`}</p><details><summary>Source</summary><p>{food.source}</p></details></article>)}</div>
+      <div className="air-food-grid">{plan.foodOptions.map(food => <article key={food.id} className="air-food-card"><h4>{food.name}</h4><p>{detailCopy(food.description)}</p>{food.where && <p><strong>Where:</strong> {detailCopy(food.where)}</p>}<p>{food.listedAveragePrice == null ? 'Menu price to confirm' : `Listed average: ${money(food.listedAveragePrice)} · confirm portions and current price`}</p></article>)}</div>
     </section>}
     <div className="air-layout">
       <div className="air-days">
@@ -40,12 +46,12 @@ export default function ItineraryResults({ plan, areaName, onEdit, onSave, saved
           <h3><CalendarDays size={18} />Day {day}<span>Suggested schedule</span></h3>
           {plan.stops.filter(stop => stop.day === day).map((stop, i) => {
             const Icon = stop.tag === 'Transit' ? Bus : stop.tag === 'Food' ? Utensils : stop.tag === 'Lodging' ? BedDouble : MapPin;
-            const summary = stop.tag === 'Food' ? 'Try this local specialty. Meals use your daily allowance.' : stop.tag === 'Lodging' ? 'Your selected overnight stay.' : stop.tag === 'Transit' ? `${r.transportModes.join(' / ')} · Confirm route and travel time.` : stop.subtitle.split(' Leave ')[0];
+            const summary = stop.tag === 'Food' ? 'Try this local specialty. Meals use your daily allowance.' : stop.tag === 'Lodging' ? 'Your selected overnight stay.' : stop.tag === 'Transit' ? `${r.transportModes.join(' / ')} · Confirm route and travel time.` : detailCopy(stop.subtitle).split(' Leave ')[0];
             return <article className="air-stop" key={`${stop.entryId || stop.tag}-${i}`}>
               <div className={`air-stop-icon air-${stop.tag.toLowerCase()}`}><Icon size={20} /></div>
-              <div className="air-stop-main"><div className="air-stop-top"><span><Clock size={12} />{stop.time.replace(/^Day \d+\s*·\s*/, '')}</span><span>{stop.tag === 'Food' ? 'Meal allowance' : stop.tag === 'Transit' ? 'See fare estimate' : stop.tag === 'Lodging' ? 'Estimated stay' : stop.price == null ? 'Entry fee to confirm' : `${money(stop.price)} group entry estimate`}</span></div>
+              <div className="air-stop-main"><div className="air-stop-top"><span><Clock size={12} />{stop.time.replace(/^Day \d+\s*·\s*/, '')}</span><span>{stop.tag === 'Food' ? 'Meal allowance' : stop.tag === 'Transit' ? 'See transport fares' : stop.tag === 'Lodging' ? 'Estimated stay' : stop.price == null ? 'Entry fee to confirm' : `${money(stop.price)} group entry estimate`}</span></div>
                 <h4>{stop.title}</h4><p>{summary}</p>
-                <details><summary>Details</summary><p>{stop.subtitle}</p></details>
+                <details><summary>Details</summary><p>{detailCopy(stop.subtitle)}</p></details>
               </div>
             </article>;
           })}
@@ -56,16 +62,16 @@ export default function ItineraryResults({ plan, areaName, onEdit, onSave, saved
           <Cost Icon={Utensils} label="Meals" value={money(c?.meals ?? plan.mealAllocation)} note={`${money(r.mealBudget)} × ${r.travelers} people × ${r.days} days`} />
           <Cost Icon={Bus} label="Transport" value={c?.transport.some(t => t.total != null) ? money(c.transportTotal) : 'Not priced'} note="Entered rides for the entire trip" />
           <Cost Icon={BedDouble} label="Hotel" value={c?.lodging ? range(c.lodging.min, c.lodging.max) : r.days === 1 ? 'No overnight stay' : 'Not priced'} note={c?.lodging ? `${c.lodging.nights} nights × ${c.lodging.rooms} rooms · approximate` : undefined} />
-          <Cost Icon={Wallet} label="Emergency allowance" value={money(c?.emergency ?? 0)} note="10% of trip budget reserved for emergencies" />
+          <Cost Icon={Wallet} label="Emergency allowance" value={money(c?.emergency ?? 0)} note={`${money(r.budget)} - 10% reserved; ${money(Number(r.budget) - (c?.emergency ?? 0))} available before trip costs`} />
           <Cost Icon={MapPin} label="Listed entry fees" value={c?.entryFees > 0 ? money(c.entryFees) : 'No priced entries'} note="Only listed fees included; unpriced visits and extras need confirmation" />
           <div className="air-total"><span>Planned total</span><strong>{c ? range(c.min, c.max) : 'Pending'}</strong></div>
           <button className="aip-btn aip-btn-dark aip-btn-block" disabled={saved || saving} onClick={onSave}><BookmarkPlus size={16} />{saved ? 'Saved to My Trips' : saving ? 'Saving…' : 'Save plan'}</button>
         </section>
-        <section className="air-panel"><h3><Bus size={18} />Transport estimate</h3>
+        <section className="air-panel"><h3><Bus size={18} />Transport fares</h3>
           {c?.transport.map(t => <div className="air-fare" key={t.mode}><div><strong>{t.mode}</strong><strong>{t.total == null ? 'Not priced' : money(t.total)}</strong></div>
             {t.total != null && <p>{money(t.perRide)} / person / ride × {t.rides} rides × {r.travelers} people</p>}
-            <span className="air-fare-badge">{t.basis === 'reference' ? 'Fare matrix reference' : t.basis === 'allowance' ? 'Your allowance' : 'Needs local fare'}</span>
-            <details><summary>Basis & source</summary><p>{t.note}</p>{t.source && <p>{t.source}</p>}</details>
+            <span className="air-fare-badge">{t.basis === 'reference' ? 'Fare matrix' : t.basis === 'allowance' ? 'Your allowance' : 'Needs local fare'}</span>
+
           </div>)}
           {!r.transportModes.length && <p>No transport selected.</p>}
           <p className="air-small">Total rides include outbound, local transfers and return rides. A selected mode does not imply an available route.</p>

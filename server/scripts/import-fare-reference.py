@@ -48,7 +48,7 @@ def main():
             assert target.read_text(encoding='utf-8') == output, 'Retained reference differs from PDF'
         else:
             target.write_text(output, encoding='utf-8')
-            (ROOT / 'ai-service/data/pangasinan_fares.jsonl').write_text('\n'.join(json.dumps(dict(source_file=args.pdf.name, **s), ensure_ascii=False) for s in sections) + '\n', encoding='utf-8')
+            (ROOT / 'ai-service/data/pangasinan_fares.jsonl').write_text('\n'.join(json.dumps(dict(instruction=f"Show supplied Pangasinan fare matrix {s['id']} in kilometers.", response=s['scope'] + '\nDistance is in kilometers (km).\n' + s['text']), ensure_ascii=False) for s in sections) + '\n', encoding='utf-8')
         print(f'{len(pages)} pages; {len(sections)} sections; extracted rows verified')
         return
     if len(pages) != 18 or 'NEW TRICYCLE FARE RATE' not in pages[1] or 'MODERN UV EXPRESS' not in pages[15]:

@@ -53,7 +53,7 @@ function checkField(field: any, value: any, key: string): void {
   const opts = field.options
   if (field.instance === 'String') {
     if (typeof value !== 'string' || value.length > (opts.maxlength ?? 2000) || value.length < (opts.minlength ?? 0) || (field.isRequired && !value.trim())) invalid(`Invalid ${key}`)
-    if (key === 'name' && !/^\p{L}[\p{L}\p{M} .\u2019'-]*$/u.test(value.trim())) invalid('Names accept letters, spaces, initials, apostrophes and hyphens only; numbers are not accepted.')
+    if (key === 'name' && !opts.catalogName && !/^\p{L}[\p{L}\p{M} .\u2019'-]*$/u.test(value.trim())) invalid('Names accept letters, spaces, initials, apostrophes and hyphens only; numbers are not accepted.')
     if (field.enumValues?.length && !field.enumValues.includes(value)) invalid(`Invalid ${key}`)
     if (opts.match && !opts.match.test(value)) invalid(`Invalid ${key}`)
   } else if (field.instance === 'Number') {
@@ -126,7 +126,12 @@ export function validateRouter(scope: string): RequestHandler {
       else if (scope === 'budget') modelInput(req.path === '/settings' ? budgetSettingsSchema : BudgetEntry.schema, body, req.path === '/settings' ? ['monthlyBudget', 'savingsTarget'] : ['label', 'category', 'amount', 'color', 'tripId'], create || req.path === '/settings')
       else if (scope === 'places') {
         if ('name' in body && (typeof body.name !== 'string' || body.name.trim().length < 2 || body.name.trim().length > 120 || !/\p{L}/u.test(body.name) || /[<>\x00-\x1f\x7f]/.test(body.name))) invalid('Enter a place name with letters, 2–120 characters, without markup.')
-        modelInput(SavedPlace.schema, body, ['name', 'category', 'description', 'icon', 'rating', 'userNote', 'photos', 'isPublic', 'addedToTrip'], create)
+        if ('photos' in body && (!Array.isArray(body.photos) || body.photos.length > 3 || body.photos.some((photo: unknown) => typeof photo !== 'string' || photo.length > 250000 || !/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(photo)))) invalid('Upload up to 3 valid images, each under 250 KB.')
+        if ('categories' in body) {
+          if (!Array.isArray(body.categories) || body.categories.length < 1 || body.categories.length > 3 || new Set(body.categories).size !== body.categories.length || body.categories.some((value: unknown) => !['Nature Park', 'Beach', 'Religious', 'Restaurant', 'Landmark', 'Waterway'].includes(String(value)))) invalid('Choose 1 to 3 different categories.')
+          body.category = body.categories[0]
+        }
+        modelInput(SavedPlace.schema, body, ['name', 'category', 'categories', 'description', 'icon', 'rating', 'userNote', 'photos', 'isPublic', 'addedToTrip'], create)
       }
       else if (scope === 'approvals') fields(body, { reason: string, revision: v => number(v) && Number.isInteger(v) }, ['revision'])
       else if (scope === 'lgu') {

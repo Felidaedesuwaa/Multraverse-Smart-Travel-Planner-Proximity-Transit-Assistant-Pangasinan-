@@ -1,9 +1,15 @@
+import TripActionConfirmation from '../components/TripActionConfirmation';
+import { completedTripPlaces } from '../lib/completedTripPlaces';
+import BudgetDropdown from '../components/BudgetDropdown';
+import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 import { FeedbackPressable } from "../components/WorkspaceMotion";
 import { useAppTheme } from "../theme/useAppTheme";
 import { useEffect, useRef, useState } from "react";
 import FormField from "../components/FormField";
 import {
   ActivityIndicator,
+  Image,
   Modal,
   Pressable,
   ScrollView,
@@ -19,7 +25,6 @@ import {
   Globe,
   Lock,
   MapPin,
-  Navigation,
   Plus,
   Search,
   Star,
@@ -76,9 +81,45 @@ function StarRating({ rating, size = 14, onRate }) {
 function PlaceFormModal({ visible, place, onClose, onSaved }) {
   const { themeStyle, themeColor } = useAppTheme();
 
+  const [confirmation, setConfirmation] = useState(null);
+  const [feedback, setFeedback] = useState("");
+  const [catalog, setCatalog] = useState([]);
+  const [choicesLoading, setChoicesLoading] = useState(false);
+  const [choicesError, setChoicesError] = useState(false);
+  const [photos, setPhotos] = useState(place?.photos || []);
+  const [uploading, setUploading] = useState(false);
+  useEffect(() => {
+    if (!visible) return;
+    let alive = true;
+    setChoicesLoading(true); setChoicesError(false);
+    api.getTrips().then(trips => { if (alive) setCatalog(completedTripPlaces(trips)); })
+      .catch(() => { if (alive) { setChoicesError(true); setError('Could not load completed trips. Please reopen this form.'); } })
+      .finally(() => { if (alive) setChoicesLoading(false); });
+    return () => { alive = false; };
+  }, [visible]);
+  const pickPhotos = async () => {
+    if (photos.length >= 3 || uploading) return;
+    setError(null); setUploading(true);
+    try {
+      const selected = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsMultipleSelection: true, selectionLimit: 3 - photos.length });
+      if (!selected.canceled) {
+        if (selected.assets.length > 3 - photos.length) throw new Error('You can upload a maximum of 3 photos.');
+        const images = [];
+        for (const asset of selected.assets) {
+          const image = await ImageManipulator.manipulateAsync(asset.uri, [{ resize: { width: 900 } }], { compress: 0.65, format: ImageManipulator.SaveFormat.JPEG, base64: true });
+          const uri = `data:image/jpeg;base64,${image.base64}`;
+          if (!image.base64 || uri.length > 250000) throw new Error('This photo is too large. Please choose a smaller image.');
+          images.push(uri);
+        }
+        setPhotos(previous => [...previous, ...images].slice(0, 3));
+        setFeedback(`${images.length} photo(s) added. Save your experience to keep them.`);
+      }
+    } catch (cause) { setError(cause.message || 'Could not upload photos.'); }
+    finally { setUploading(false); }
+  };
   const isEdit = !!place;
   const [name, setName] = useState(place?.name ?? "");
-  const [category, setCategory] = useState(place?.category ?? "Landmark");
+  const [categories, setCategories] = useState(place?.categories?.length ? place.categories : [place?.category ?? "Landmark"]);
   const [description, setDescription] = useState(place?.description ?? "");
   const [userNote, setUserNote] = useState(place?.userNote ?? "");
   const [rating, setRating] = useState(place?.rating ?? 0);
@@ -88,15 +129,18 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
   const [nameError, setNameError] = useState(null);
   const nameInput = useRef(null);
   const savingRef = useRef(false);
-  const close = () => { if (!savingRef.current) onClose(); };
+  const close = () => { if (!savingRef.current && !uploading) setConfirmation({title:'Discard changes?',message:'Unsaved changes and photo selections will be discarded.',label:'Discard changes',destructive:true,run:()=>onClose('Changes discarded. Your saved experience was not changed.')}); };
 
   const cats = CATEGORIES.filter((c) => c !== "All");
 
-  const handleSave = async () => {
+  const handleSave = async (confirmed = false) => {
     if (savingRef.current) return;
-    const invalid = name.trim().length < 2 || name.trim().length > 120 || !/^\p{L}[\p{L}\p{M} .\u2019'-]*$/u.test(name.trim());
-    setNameError(invalid ? "Use letters, spaces, apostrophes or hyphens for the place name (2–120 characters); numbers are not accepted." : null);
-    if (invalid) { nameInput.current?.focus(); return; }
+    if (uploading || choicesLoading) return;
+    if (!categories.length) { setError('Choose at least one category.'); return; }
+    const invalid = !name || (!catalog.some(p => p.name === name) && name !== place?.name);
+    setNameError(invalid ? 'Choose a place from the dropdown.' : null);
+    if (invalid) return;
+    if (confirmed !== true) { setConfirmation({title:isEdit?'Save changes?':'Share this experience?',message:`Save your description, notes, categories and photos. ${isPublic?'This experience will be public.':'Only you can see this experience.'}`,label:isEdit?'Save changes':'Save experience',run:()=>handleSave(true)}); return; }
     savingRef.current = true;
     setSaving(true);
     setError(null);
@@ -105,20 +149,24 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
       if (isEdit) {
         result = await api.updateSavedPlace(place._id ?? place.id, {
           name: name.trim(),
-          category,
+          category: categories[0],
+          categories,
           description: description.trim(),
           userNote: userNote.trim(),
           rating,
           isPublic,
+          photos,
         });
       } else {
         result = await api.createSavedPlace({
           name: name.trim(),
-          category,
+          category: categories[0],
+          categories,
           description: description.trim(),
           userNote: userNote.trim(),
           rating,
           isPublic,
+          photos,
           icon: "landmark",
         });
       }
@@ -133,11 +181,12 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
   };
 
   return (
+    <>
     <Modal visible={visible} transparent animationType="fade" onRequestClose={close}>
       <Pressable style={themeStyle(styles.overlay)} onPress={close}>
         <Pressable style={themeStyle(styles.modalBox)} onPress={() => {}}>
           <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-            {/* Header */}
+      {/* Header */}
             <View style={themeStyle(styles.modalHeader)}>
               <Text style={themeStyle(styles.modalTitle)}>
                 {isEdit ? "Edit Place" : "Add New Place"}
@@ -149,38 +198,30 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
 
             {/* Name */}
             <View style={themeStyle(styles.formGroup)}>
-              <FormField
-                ref={nameInput}
-                label="Place name *"
-                lettersOnly
-                error={nameError}
-                editable={!saving}
-                maxLength={120}
-                value={name}
-                onChangeText={setName}
-                placeholder="e.g. Hundred Islands National Park"
-                placeholderTextColor={themeColor("#A8BECC", "color")}
-                style={themeStyle(styles.formInput)}
-              />
+              <Text style={themeStyle(styles.formLabel)}>Completed plan *</Text>
+              <BudgetDropdown value={name} onChange={value => { setName(value); setNameError(null); }} options={[...new Set([...catalog.map(p => p.name), ...(place?.name ? [place.name] : [])])].sort().map(value => ({value,label:value}))} placeholder={choicesLoading ? 'Loading completed plans...' : 'Select a completed plan'} />
+              <Text style={themeStyle(styles.photoHint)}>Share your experience for a completed plan. Write your own description and notes.</Text>
+              {!choicesLoading && !choicesError && !catalog.length && <Text style={themeStyle(styles.photoHint)}>Complete a saved trip in My Trips to select its plan here.</Text>}
+              {nameError && <Text accessibilityRole="alert" style={{color:colors.sunsetCoral}}>{nameError}</Text>}
             </View>
 
             {/* Category */}
             <View style={themeStyle(styles.formGroup)}>
-              <Text style={themeStyle(styles.formLabel)}>Category</Text>
+              <Text style={themeStyle(styles.formLabel)}>Categories ({categories.length}/3)</Text>
               <View style={themeStyle(styles.chipGrid)}>
                 {cats.map((cat) => (
                   <FeedbackPressable
                     key={cat}
-                    onPress={() => setCategory(cat)}
+                    onPress={() => { if (categories.includes(cat)) setCategories(previous=>previous.filter(value=>value!==cat)); else if (categories.length < 3) { setCategories(previous=>[...previous,cat]); setError(null); } else setError('Choose up to 3 categories. Remove one before adding another.'); }}
                     style={themeStyle([
                       styles.chip,
-                      category === cat && styles.chipActive,
+                      categories.includes(cat) && styles.chipActive,
                     ])}
                   >
                     <Text
                       style={themeStyle([
                         styles.chipText,
-                        category === cat && styles.chipTextActive,
+                        categories.includes(cat) && styles.chipTextActive,
                       ])}
                     >
                       {cat}
@@ -237,12 +278,14 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
               </View>
             </View>
 
+            <View style={themeStyle(styles.formGroup)}><Text style={themeStyle(styles.formLabel)}>Photos ({photos.length}/3)</Text><View style={{flexDirection:'row',flexWrap:'wrap',gap:10}}>{photos.map((uri,index)=><View key={index} style={styles.photoPreview}><Image source={{uri}} style={styles.photoThumbnail} /><FeedbackPressable accessibilityRole="button" accessibilityLabel={`Remove photo ${index + 1}`} style={themeStyle(styles.photoRemoveButton)} disabled={saving || uploading} onPress={()=>setConfirmation({title:'Remove this photo?',message:'This photo will be removed from your selection. Save changes to update the shared experience.',label:'Remove photo',destructive:true,run:()=>{setPhotos(previous=>previous.filter((_,i)=>i!==index));setFeedback('Photo removed from your selection.');}})}><X size={16} color={themeColor(colors.sunsetCoral, "color")} /></FeedbackPressable></View>)}</View><FeedbackPressable disabled={saving || uploading || photos.length===3} onPress={()=>setConfirmation({title:'Add photos?',message:'Choose up to 3 photos for this experience. Public experiences share these photos with other travelers.',label:'Choose photos',run:pickPhotos})} style={themeStyle(styles.visBtn)}><Camera size={16} color={themeColor(colors.oceanBlue,'color')} /><Text style={themeStyle(styles.visBtnText)}>{uploading?'Uploading...':'Upload photos'}</Text></FeedbackPressable><Text style={themeStyle(styles.photoHint)}>Up to 3 photos. Public photos are visible to other travelers.</Text></View>
+            {!!feedback && <Text accessibilityRole="alert" style={{color:colors.palmGreen}}>{feedback}</Text>}
             {/* Visibility */}
             <View style={themeStyle(styles.formGroup)}>
               <Text style={themeStyle(styles.formLabel)}>Visibility</Text>
               <View style={themeStyle(styles.visibilityRow)}>
                 <FeedbackPressable
-                  onPress={() => setIsPublic(true)}
+                  onPress={() => { if (!isPublic) setConfirmation({title:'Make this experience public?',message:'Other travelers can see your experience and photos after you save.',label:'Make public',run:()=>{setIsPublic(true);setFeedback('Public visibility selected. Save to apply the change.');}}); }}
                   style={themeStyle([styles.visBtn, isPublic && styles.visBtnActive])}
                 >
                   <Globe size={14} color={themeColor(isPublic ? colors.oceanBlue : "#6B8CA8", "color")} />
@@ -251,7 +294,7 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
                   </Text>
                 </FeedbackPressable>
                 <FeedbackPressable
-                  onPress={() => setIsPublic(false)}
+                  onPress={() => { if (isPublic) setConfirmation({title:'Make this experience private?',message:'Only you will be able to see it after you save.',label:'Make private',run:()=>{setIsPublic(false);setFeedback('Private visibility selected. Save to apply the change.');}}); }}
                   style={themeStyle([styles.visBtn, !isPublic && styles.visBtnActivePrivate])}
                 >
                   <Lock size={14} color={themeColor(!isPublic ? colors.sunsetCoral : "#6B8CA8", "color")} />
@@ -294,6 +337,8 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
         </Pressable>
       </Pressable>
     </Modal>
+    <TripActionConfirmation action={confirmation} busy={saving || uploading} onDismiss={()=>setConfirmation(null)} onConfirm={()=>{const action=confirmation;setConfirmation(null);action?.run();}} />
+    </>
   );
 }
 
@@ -339,12 +384,12 @@ function PlaceDetailModal({ place, onClose, onEdit, onDelete }) {
                 <Text style={themeStyle(styles.detailName)}>{place.name}</Text>
                 <View style={themeStyle(styles.detailMetaRow)}>
                   <MapPin size={12} color={themeColor("#6B8CA8", "color")} />
-                  <Text style={themeStyle(styles.detailMeta)}>{place.category}</Text>
+                  <Text style={themeStyle(styles.detailMeta)}>{(place.categories?.length ? place.categories : [place.category]).join(" / ")}</Text>
                 </View>
               </View>
               <View style={themeStyle([styles.catBadge, { backgroundColor: catStyle.bg }])}>
                 <Text style={themeStyle([styles.catBadgeText, { color: catStyle.color }])}>
-                  {place.category}
+                  {(place.categories?.length ? place.categories : [place.category]).join(" / ")}
                 </Text>
               </View>
             </View>
@@ -385,39 +430,25 @@ function PlaceDetailModal({ place, onClose, onEdit, onDelete }) {
               </FeedbackPressable>
             )}
 
-            {/* Photo placeholder */}
-            <View style={themeStyle(styles.photosSection)}>
-              <Text style={themeStyle(styles.detailSectionTitle)}>Photos</Text>
-              <View style={themeStyle(styles.photosGrid)}>
-                {[1, 2, 3].map((i) => (
-                  <View key={i} style={themeStyle([styles.photoSlot, { backgroundColor: bgColor }])}>
-                    <Camera size={20} color={themeColor("#A8BECC", "color")} />
-                    <Text style={themeStyle(styles.photoSlotText)}>Add photo</Text>
-                  </View>
-                ))}
-              </View>
-              <Text style={themeStyle(styles.photoHint)}>
-                Photo uploads coming soon. Stay tuned!
-              </Text>
-            </View>
+            {!!place.photos?.length && <View style={themeStyle(styles.photosSection)}><Text style={themeStyle(styles.detailSectionTitle)}>Photos</Text><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{gap:10}}>{place.photos.map((uri,index)=><Image key={index} source={{uri}} accessibilityLabel={`${place.name} photo ${index+1}`} style={{width:220,height:160,borderRadius:12}} />)}</ScrollView></View>}
 
             {/* Actions */}
             <View style={themeStyle(styles.detailActions)}>
               <FeedbackPressable
                 onPress={() => { onClose(); onEdit(place); }}
+                accessibilityRole="button"
+                accessibilityLabel="Edit place"
                 style={themeStyle(styles.editDetailBtn)}
               >
-                <Text style={themeStyle(styles.editDetailBtnText)}>Edit Place</Text>
+                <Text style={themeStyle(styles.editDetailBtnText)}>Edit</Text>
               </FeedbackPressable>
-              <Pressable style={themeStyle(styles.directionsBtn)}>
-                <Navigation size={14} color={themeColor("#fff", "color")} />
-                <Text style={themeStyle(styles.directionsBtnText)}>Directions</Text>
-              </Pressable>
               <FeedbackPressable
                 onPress={() => onDelete(place._id ?? place.id)}
+                accessibilityRole="button"
+                accessibilityLabel="Delete place"
                 style={themeStyle(styles.deleteDetailBtn)}
               >
-                <Trash2 size={14} color={themeColor(colors.sunsetCoral, "color")} />
+                <Text style={themeStyle(styles.deleteDetailBtnText)}>Delete</Text>
               </FeedbackPressable>
             </View>
           </ScrollView>
@@ -442,6 +473,7 @@ function PlaceCard({ place, onView, onDelete, index }) {
     >
       {/* Art header */}
       <View style={themeStyle([styles.cardArt, { backgroundColor: bgColor }])}>
+        {!!place.photos?.[0] && <Image source={{uri:place.photos[0]}} style={StyleSheet.absoluteFillObject} resizeMode="cover" />}
         <View style={themeStyle(styles.cardIconCircle)}>
           <Icon size={28} color={themeColor(colors.oceanBlue, "color")} />
         </View>
@@ -456,7 +488,7 @@ function PlaceCard({ place, onView, onDelete, index }) {
         {/* Category badge */}
         <View style={themeStyle([styles.cardCatBadge, { backgroundColor: catStyle.bg }])}>
           <Text style={themeStyle([styles.cardCatText, { color: catStyle.color }])}>
-            {place.category}
+            {(place.categories?.length ? place.categories : [place.category]).join(" / ")}
           </Text>
         </View>
       </View>
@@ -482,7 +514,7 @@ function PlaceCard({ place, onView, onDelete, index }) {
         {place.userNote ? (
           <View style={themeStyle(styles.notePreview)}>
             <Text style={themeStyle(styles.notePreviewText)} numberOfLines={1}>
-              📝 {place.userNote}
+               {place.userNote}
             </Text>
           </View>
         ) : null}
@@ -515,6 +547,9 @@ function PlaceCard({ place, onView, onDelete, index }) {
 export default function SavedPlaces() {
   const { themeStyle, themeColor } = useAppTheme();
 
+  const [notice, setNotice] = useState("");
+  const [deleteConfirmation, setDeleteConfirmation] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const [places, setPlaces] = useState([]);
   const [query, setQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
@@ -530,15 +565,22 @@ export default function SavedPlaces() {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleDelete = async (id) => {
+  const handleDelete = id => { setNotice(''); setDeleteConfirmation({id,title:'Delete this experience?',message:'This permanently removes the saved experience and its shared photos.',label:'Delete experience',destructive:true}); };
+  const confirmDelete = async () => {
+    if (deleting || !deleteConfirmation) return;
+    setDeleting(true);
     try {
+      const id = deleteConfirmation.id;
       await api.deleteSavedPlace(id);
-      setPlaces((prev) => prev.filter((p) => (p._id ?? p.id) !== id));
-      setViewingPlace(null);
-    } catch {}
+      setPlaces(prev=>prev.filter(p=>(p._id ?? p.id)!==id));
+      setViewingPlace(null); setDeleteConfirmation(null);
+      setNotice('Experience deleted successfully.');
+    } catch (cause) { setDeleteConfirmation(previous=>({...previous,message:cause.message || 'Could not delete the experience. Please try again.'})); }
+    finally { setDeleting(false); }
   };
 
   const handleSaved = (place, isEdit) => {
+    setNotice(isEdit ? "Experience updated successfully." : "Experience saved successfully.");
     if (isEdit) {
       setPlaces((prev) =>
         prev.map((p) => (p._id ?? p.id) === (place._id ?? place.id) ? place : p)
@@ -549,11 +591,11 @@ export default function SavedPlaces() {
   };
 
   const filtered = places.filter((p) => {
-    const matchesQuery = `${p.name} ${p.category} ${p.description}`
+    const matchesQuery = `${p.name} ${(p.categories || [p.category]).join(" ")} ${p.description}`
       .toLowerCase()
       .includes(query.toLowerCase());
     const matchesCategory =
-      categoryFilter === "All" || p.category === categoryFilter;
+      categoryFilter === "All" || (p.categories?.length ? p.categories : [p.category]).includes(categoryFilter);
     return matchesQuery && matchesCategory;
   });
 
@@ -570,6 +612,7 @@ export default function SavedPlaces() {
       contentContainerStyle={themeStyle(styles.screen)}
       showsVerticalScrollIndicator={false}
     >
+      {!!notice && <Text accessibilityRole="alert" style={themeStyle({color:colors.palmGreen,padding:14,marginBottom:12,backgroundColor:"#EDF7EE",borderRadius:10})}>{notice}</Text>}
       {/* Header */}
       <View style={themeStyle(styles.header)}>
         <View>
@@ -703,7 +746,7 @@ export default function SavedPlaces() {
         key={editingPlace?.id || editingPlace?._id || "new"}
         visible={showAdd || !!editingPlace}
         place={editingPlace}
-        onClose={() => { setShowAdd(false); setEditingPlace(null); }}
+        onClose={message => { setShowAdd(false); setEditingPlace(null); if (message) setNotice(message); }}
         onSaved={handleSaved}
       />}
       <PlaceDetailModal
@@ -712,6 +755,7 @@ export default function SavedPlaces() {
         onEdit={(p) => setEditingPlace(p)}
         onDelete={handleDelete}
       />
+      <TripActionConfirmation action={deleteConfirmation} busy={deleting} onDismiss={()=>setDeleteConfirmation(null)} onConfirm={confirmDelete} />
     </ScrollView>
   );
 }
@@ -1038,6 +1082,19 @@ const styles = StyleSheet.create({
     borderStyle: "dashed",
   },
   photoSlotText: { fontSize: 10, color: "#A8BECC" },
+  photoPreview: { position: "relative", width: 90, height: 90 },
+  photoThumbnail: { width: 90, height: 90, borderRadius: 10 },
+  photoRemoveButton: {
+    position: "absolute",
+    top: 4,
+    right: 4,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   photoHint: { fontSize: 11, color: "#A8BECC", textAlign: "center" },
   detailActions: {
     flexDirection: "row",
@@ -1046,26 +1103,17 @@ const styles = StyleSheet.create({
   },
   editDetailBtn: {
     flex: 1,
+    height: 44,
     alignItems: "center",
-    paddingVertical: 12,
+    justifyContent: "center",
     borderRadius: 10,
     borderWidth: 1.5,
     borderColor: "#E2EBF3",
   },
-  editDetailBtnText: { fontSize: 13, fontWeight: "600", color: "#4A6880" },
-  directionsBtn: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    paddingVertical: 12,
-    borderRadius: 10,
-    backgroundColor: colors.oceanBlue,
-  },
-  directionsBtnText: { fontSize: 13, fontWeight: "700", color: "#fff" },
+  editDetailBtnText: { fontSize: 14, fontWeight: "600", color: "#4A6880" },
+  deleteDetailBtnText: { fontSize: 14, fontWeight: "600", color: colors.sunsetCoral },
   deleteDetailBtn: {
-    width: 44,
+    flex: 1,
     height: 44,
     borderRadius: 10,
     backgroundColor: "#FFF1EE",

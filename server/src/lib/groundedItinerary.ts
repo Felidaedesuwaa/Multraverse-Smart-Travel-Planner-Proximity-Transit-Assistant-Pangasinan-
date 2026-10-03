@@ -128,7 +128,7 @@ export function buildGroundedItinerary(request: ItineraryRequest, used: Set<stri
   const unsupported = picks.filter(p => !area.entries.some(e => matchingPicks(e, { ...request, tripTypes: [p], activities: [], preferences: [] }).length))
   if (unsupported.length) warnings.push(`No specific catalog match for: ${unsupported.join(', ')}. These experiences are not promised.`)
   const stops: Stop[] = []
-  const transitNote = `${request.transportModes.join(' / ') || 'Choose transport'} · Route and journey time to confirm. See transport estimate for fare assumptions.`
+  const transitNote = `${request.transportModes.join(' / ') || 'Choose transport'} · Route and journey time to confirm. See transport fares for the selected kilometers and rides.`
   stops.push({ time: 'Before visits', day: 1, title: `Travel to ${area.name}`, subtitle: transitNote, tag: 'Transit', iconKey: 'Bus', price: null })
   const start = request.startTime.split(':').map(Number).reduce((h,m) => h * 60 + m)
   for (let day = 1; day <= request.days; day++) {
@@ -156,7 +156,11 @@ export function buildGroundedItinerary(request: ItineraryRequest, used: Set<stri
   const breakdown: Record<string, number> = {}
   stops.forEach(s => { if (s.price != null) breakdown[s.tag] = (breakdown[s.tag] || 0) + s.price })
   const costEstimate = estimateCosts(request, stay?.lodgingDetails, entryFees)
-  return { request, stops, breakdown, estimated: Object.values(breakdown).reduce((a,b) => a+b,0), warnings, costEstimate,
+  breakdown.Emergency = costEstimate.emergency
+  breakdown.Transit = costEstimate.transportTotal
+  breakdown.Food = costEstimate.meals
+  breakdown.Lodging = costEstimate.lodging?.max ?? 0
+  return { request, stops, breakdown, estimated: costEstimate.max, warnings, costEstimate,
     budgetComplete: false, mealAllocation: request.mealBudget * request.travelers * request.days, mode: modelOrder.length ? 'model-assisted' : 'catalog',
     foodOptions, chosenIds: [...new Set(stops.flatMap(s => s.entryId ? [s.entryId] : []))], generatedAt: new Date().toISOString() }
 }

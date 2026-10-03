@@ -78,7 +78,7 @@ const TRANSPORT_MODES = ["Bus", "Jeepney", "Tricycle", "Van", "Own Vehicle"];
 const AMENITY_ICON = { "Wi-Fi": Wifi, "A/C": Wind, "Restaurant": Utensils, "Pool": Waves, "Sea View": Eye, "Fan room": BedDouble };
 
 const toggleValue = (values, value) => values.includes(value) ? values.filter((v) => v !== value) : [...values, value];
-const peso = (n) => `₱${Number(n).toLocaleString()}`;
+const peso = (n) => n == null || !Number.isFinite(Number(n)) ? 'Pending' : `₱${Number(n).toLocaleString()}`;
 
 /* ------------------------------------------------------------------ */
 /*  Small building blocks                                              */
@@ -95,7 +95,7 @@ function AreaDropdown({ areas, value, onChange, invalid }) {
   }} onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) close(); }}>
     <button ref={trigger} id="aip-destination" type="button" className={`aip-area-trigger ${invalid ? "has-error" : ""}`} aria-expanded={open} aria-controls="aip-area-options" aria-invalid={invalid} onClick={() => { setOpen(!open); setQuery(""); }}>
       <span className="aip-area-icon"><MapPin size={20} /></span>
-      <span className="aip-area-copy"><small>YOUR DESTINATION</small><strong>{selected ? `${selected.name}${selected.group === "Cities" ? " City" : ""}` : "Choose a city or municipality"}</strong></span>
+      <span className="aip-area-copy"><strong>{selected ? `${selected.name}${selected.group === "Cities" ? " City" : ""}` : "Choose a city or municipality"}</strong></span>
       <ChevronDown size={18} style={{ transform: open ? "rotate(180deg)" : "none" }} />
     </button>
     {open && <div className="aip-area-panel" id="aip-area-options">
@@ -694,7 +694,7 @@ export default function AIItinerary({ navigation }) {
             </div>
           )}
 
-          {!showForm && plan && <ItineraryResults plan={plan} areaName={AREAS.find(a => a.id === plan.request.areaId)?.name} onEdit={() => setShowForm(true)} onSave={savePlan} saved={saved} saving={saving} />}
+          {!showForm && plan && <ItineraryResults plan={plan} fareTables={fareTables} areaName={AREAS.find(a => a.id === plan.request.areaId)?.name} onEdit={() => setShowForm(true)} onSave={savePlan} saved={saved} saving={saving} />}
         </div>
       </main>
     </div>
@@ -973,9 +973,8 @@ function plannerCSS(palette, themeColor) {
 .aip-area-trigger { display: flex; align-items: center; gap: 14px; width: 100%; padding: 14px 16px; min-height: 72px; border: 1px solid ${palette.line}; border-radius: 16px; background: ${palette.surface}; color: ${palette.ink}; cursor: pointer; text-align: left; }
 .aip-area-trigger:hover, .aip-area-trigger[aria-expanded="true"] { border-color: ${palette.brand}; }
 .aip-area-trigger.has-error { border-color: ${palette.accent}; }
-.aip-area-icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: ${palette.tint}; color: ${palette.ink}; flex-shrink: 0; }
+.aip-area-icon { display: grid; place-items: center; width: 40px; height: 40px; color: ${palette.ink}; flex-shrink: 0; }
 .aip-area-copy { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
-.aip-area-copy small { font-size: 10px; letter-spacing: 1px; color: ${palette.muted}; }
 .aip-area-copy strong { font-size: 15px; overflow-wrap: anywhere; }
 .aip-area-panel { margin-top: 8px; padding: 10px; border: 1px solid ${palette.line}; border-radius: 16px; background: ${palette.surface}; box-shadow: 0 8px 24px #0000000a; }
 .aip-area-search { width: 100%; min-width: 0; padding: 12px 14px; border: 1px solid ${palette.line}; border-radius: 10px; font-size: 14px; background: ${palette.background}; color: ${palette.ink}; }

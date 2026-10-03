@@ -1,3 +1,6 @@
+import { tripDisplayTitle } from '../lib/tripTitle';
+import TripActionConfirmation from '../components/TripActionConfirmation';
+import SavedItineraryDetails, { savedTripActionStyle } from '../components/SavedItineraryDetails';
 import { FeedbackPressable } from "../components/WorkspaceMotion";
 import MoneyAmount from "../components/MoneyAmount";
 import { useAppTheme } from "../theme/useAppTheme";
@@ -41,7 +44,7 @@ const STATUS_STYLE = {
 };
 
 // ── Trip Detail Modal ───────────────────────────────────
-function TripDetailModal({ trip, onClose, onDelete, onCancel, canceling, error }) {
+function TripDetailModal({ trip, onClose, onDelete, onCancel, onComplete, canceling, error, message }) {
   const { themeStyle, themeColor } = useAppTheme();
 
   if (!trip) return null;
@@ -63,7 +66,7 @@ function TripDetailModal({ trip, onClose, onDelete, onCancel, canceling, error }
               <Icon size={22} color={themeColor(colors.oceanBlue, "color")} />
             </View>
             <View style={themeStyle({ flex: 1 })}>
-              <Text style={themeStyle(styles.modalTitle)}>{trip.title}</Text>
+              <Text style={themeStyle(styles.modalTitle)}>{tripDisplayTitle(trip)}</Text>
               <Text style={themeStyle(styles.modalMeta)}>
                 {trip.location} · {trip.date}
               </Text>
@@ -83,7 +86,7 @@ function TripDetailModal({ trip, onClose, onDelete, onCancel, canceling, error }
 
           {/* Budget breakdown */}
           <View style={themeStyle(styles.modalSection)}>
-            <Text style={themeStyle(styles.modalSectionTitle)}>Budget Breakdown</Text>
+            <Text style={themeStyle(styles.modalSectionTitle)}>Actual spending</Text>
             <View style={themeStyle(styles.budgetGrid)}>
               <View style={themeStyle(styles.budgetItem)}>
                 <Text style={themeStyle(styles.budgetItemLabel)}>Total Budget</Text>
@@ -130,7 +133,7 @@ function TripDetailModal({ trip, onClose, onDelete, onCancel, canceling, error }
             </Text>
           </View>
 
-          {trip.plan?.version === 1 && <ScrollView style={{ maxHeight: 320 }} nestedScrollEnabled><ItineraryResult plan={trip.plan} showMap={false} /></ScrollView>}
+          {trip.plan?.guided ? <SavedItineraryDetails plan={trip.plan.guided} areaName={trip.location} /> : trip.plan?.version === 1 && <ItineraryResult plan={trip.plan} showMap={false} />}
 
           {/* Trip info */}
           <View style={themeStyle(styles.modalSection)}>
@@ -149,15 +152,17 @@ function TripDetailModal({ trip, onClose, onDelete, onCancel, canceling, error }
             </View>
           </View>
 
+          {!!message && <Text accessibilityRole="alert" style={themeStyle({color: colors.palmGreen})}>{message}</Text>}
           {error && <Text accessibilityRole="alert" style={themeStyle({ color: colors.sunsetCoral })}>{error}</Text>}
+          <View style={themeStyle(styles.modalActions)}>
           {trip.status === "UPCOMING" && (
             <FeedbackPressable onPress={() => onCancel(trip)} disabled={canceling} style={themeStyle(styles.deleteBtn)}>
               <X size={15} color={themeColor(colors.sunsetCoral, "color")} />
               <Text style={themeStyle(styles.deleteBtnText)}>{canceling ? "Canceling..." : "Cancel Trip"}</Text>
             </FeedbackPressable>
           )}
+          {trip.status === "UPCOMING" && <FeedbackPressable onPress={() => onComplete(trip)} disabled={canceling} style={themeStyle(styles.doneBtn)}><Text style={themeStyle(styles.doneBtnText)}>Complete Trip</Text></FeedbackPressable>}
           {/* Actions */}
-          <View style={themeStyle(styles.modalActions)}>
             <FeedbackPressable
               onPress={() => onDelete(trip._id ?? trip.id)}
               style={themeStyle(styles.deleteBtn)}
@@ -202,7 +207,7 @@ function TripCard({ trip, onView, onDelete, compact }) {
       </View>
 
       {/* Title + location */}
-      <Text style={themeStyle(styles.tripTitle)} numberOfLines={1}>{trip.title}</Text>
+      <Text style={themeStyle(styles.tripTitle)} numberOfLines={1}>{tripDisplayTitle(trip)}</Text>
       <View style={themeStyle(styles.tripMetaRow)}>
         <MapPin size={12} color={themeColor("#6B8CA8", "color")} />
         <Text style={themeStyle(styles.tripMeta)} numberOfLines={1}>
@@ -262,13 +267,15 @@ export default function MyTrips({ route }) {
   const { width } = useWindowDimensions();
   const compact = (width >= 768 ? width - 280 : width) < 680;
 
-  const successMessage = route?.params?.successMessage;
+  const [actionMessage, setActionMessage] = useState("");
+  const successMessage = actionMessage || route?.params?.successMessage;
+  const [confirmation, setConfirmation] = useState(null);
+  const [actionBusy, setActionBusy] = useState(false);
   const [filter, setFilter] = useState("all");
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedTrip, setSelectedTrip] = useState(null);
-  const [canceling, setCanceling] = useState(false);
   const [cancelError, setCancelError] = useState(null);
 
   useFocusEffect(useCallback(() => {
@@ -280,36 +287,48 @@ export default function MyTrips({ route }) {
     return () => { alive = false; };
   }, []));
 
-  const handleDelete = async (id) => {
-    try {
-      await api.deleteTrip(id);
-      setTrips((prev) => prev.filter((t) => (t._id ?? t.id) !== id));
-      setSelectedTrip(null);
-    } catch {
-      // handle silently
-    }
-  };
-
-  const handleCancel = async (trip) => {
-    setCanceling(true);
+  const requestAction = (kind, trip) => {
+    const copy = {
+      delete: { title:'Delete this trip?', message:'This removes the saved itinerary. Recorded expenses remain in Budget and are unlinked from the trip.', label:'Delete Trip', destructive:true },
+      cancel: { title:'Cancel this trip?', message:'The trip will move to Canceled. Your saved itinerary and recorded expenses will remain available.', label:'Cancel Trip' },
+      complete: { title:'Complete this trip?', message:'Confirm that you have finished this trip. It will move to Completed and keep its itinerary, PDF and expenses.', label:'Complete Trip' },
+      done: { title:'Close trip details?', message:'Your itinerary is saved. You can reopen it and export its PDF from My Trips.', label:'Done' },
+    };
     setCancelError(null);
+    setConfirmation({ ...copy[kind], kind, trip });
+  };
+  const handleDelete = id => requestAction('delete', trips.find(t => (t._id ?? t.id) === id));
+  const confirmAction = async () => {
+    if (actionBusy || !confirmation) return;
+    const { kind, trip } = confirmation;
+    setActionBusy(true); setCancelError(null);
     try {
-      const updated = await api.updateTrip(trip._id ?? trip.id, { status: "CANCELED" });
-      const canceled = { ...trip, ...updated };
-      setTrips(prev => prev.map(item => (item._id ?? item.id) === (trip._id ?? trip.id) ? canceled : item));
-      setSelectedTrip(canceled);
+      if (kind === 'done') { setSelectedTrip(null); setActionMessage('Trip details closed. Your saved plan is available in My Trips.'); }
+      else if (kind === 'delete') {
+        const id = trip._id ?? trip.id;
+        await api.deleteTrip(id);
+        setTrips(prev => prev.filter(t => (t._id ?? t.id) !== id));
+        setSelectedTrip(null); setActionMessage('Trip deleted successfully.');
+      } else {
+        const id = trip._id ?? trip.id;
+        const updated = await api.updateTrip(id, {status:kind === 'complete' ? 'COMPLETED' : 'CANCELED'});
+        const next = {...trip,...updated};
+        setTrips(prev => prev.map(t => (t._id ?? t.id) === id ? next : t));
+        setSelectedTrip(next);
+        setActionMessage(kind === 'complete' ? 'Trip marked as completed successfully.' : 'Trip canceled successfully.');
+      }
+      setConfirmation(null);
     } catch (cause) {
-      setCancelError(cause instanceof Error ? cause.message : "Could not cancel trip. Please try again.");
-    } finally {
-      setCanceling(false);
-    }
+      setCancelError(cause.message || 'Could not update this trip. Please try again.');
+      setConfirmation(null);
+    } finally { setActionBusy(false); }
   };
 
   const filtered = trips.filter((t) => {
     const matchesFilter = filter === "all" || t.status === filter;
     const matchesSearch =
       !search.trim() ||
-      t.title.toLowerCase().includes(search.toLowerCase()) ||
+      tripDisplayTitle(t).toLowerCase().includes(search.toLowerCase()) ||
       t.location.toLowerCase().includes(search.toLowerCase());
     return matchesFilter && matchesSearch;
   });
@@ -411,7 +430,7 @@ export default function MyTrips({ route }) {
             <TripCard
               key={trip._id ?? trip.id}
               trip={trip}
-              onView={(trip) => { setCancelError(null); setSelectedTrip(trip); }}
+              onView={(trip) => { setCancelError(null); setActionMessage(""); setSelectedTrip(trip); }}
               onDelete={handleDelete}
               compact={compact}
             />
@@ -419,13 +438,17 @@ export default function MyTrips({ route }) {
         </View>
       )}
 
+      {cancelError && !selectedTrip && <Text accessibilityRole="alert" style={themeStyle({color:colors.sunsetCoral})}>{cancelError}</Text>}
+      <TripActionConfirmation action={confirmation} busy={actionBusy} onDismiss={() => setConfirmation(null)} onConfirm={confirmAction} />
       {/* Modals */}
       <TripDetailModal
         trip={selectedTrip}
-        onClose={() => setSelectedTrip(null)}
+        onClose={() => requestAction('done', selectedTrip)}
         onDelete={handleDelete}
-        onCancel={handleCancel}
-        canceling={canceling}
+        onCancel={trip => requestAction('cancel', trip)}
+        onComplete={trip => requestAction('complete', trip)}
+        message={actionMessage}
+        canceling={actionBusy}
         error={cancelError}
       />
     </ScrollView>
@@ -596,7 +619,7 @@ const styles = StyleSheet.create({
   },
   modalBox: {
     width: "100%",
-    maxWidth: 560,
+    maxWidth: 960,
     maxHeight: "88%",
     backgroundColor: "#fff",
     borderRadius: 20,
@@ -672,13 +695,14 @@ const styles = StyleSheet.create({
   infoText: { fontSize: 13, color: "#4A6880" },
 
   // Modal actions
-  modalActions: { flexDirection: "row", gap: 10, marginTop: 4 },
+  modalActions: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 4 },
   deleteBtn: {
+    ...savedTripActionStyle,
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
     paddingHorizontal: 16,
-    paddingVertical: 11,
+    paddingVertical: 12,
     borderRadius: 10,
     borderWidth: 1.5,
     borderColor: colors.coralLight,
@@ -694,7 +718,7 @@ const styles = StyleSheet.create({
   },
   cancelBtnText: { fontSize: 13, fontWeight: "600", color: "#4A6880" },
   doneBtn: {
-    flex: 1,
+    ...savedTripActionStyle,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",

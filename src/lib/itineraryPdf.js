@@ -30,6 +30,8 @@ export function itineraryPdf(plan, areaName) {
   line(`Trip budget: ${amount(r.budget)}`);
   line(`Meals: ${amount(c?.meals ?? plan.mealAllocation)}`);
   line(`Transport: ${c?.transport.some(t => t.total != null) ? amount(c.transportTotal) : 'Not priced'}`);
+  const hotel = plan.stops?.find(stop => stop.tag === 'Lodging')?.title;
+  if (hotel) line(`Selected hotel: ${hotel}`);
   line(`Hotel: ${c?.lodging ? range(c.lodging.min, c.lodging.max) : r.days === 1 ? 'No overnight stay' : 'Not priced'}`);
   if (c?.lodging) line(`${c.lodging.nights} nights x ${c.lodging.rooms} rooms; same reference rates as Step 2`);
   line(`Emergency reserve: ${amount(c?.emergency ?? 0)} (10% of trip budget)`);
@@ -39,6 +41,15 @@ export function itineraryPdf(plan, areaName) {
     line(`Per person: ${range(c.perPersonMin, c.perPersonMax)}`);
     line(`Remaining budget: ${range(c.remainingMin, c.remainingMax)}`);
   }
+  if (c?.transport?.length) {
+    line('TRANSPORT FARES', 14, true);
+    for (const fare of c.transport) {
+      paragraph(`${fare.mode}: ${fare.total == null ? 'Not priced' : amount(fare.total)}`);
+      if (fare.total != null) paragraph(`${amount(fare.perRide)} / person / ride x ${fare.rides} rides x ${r.travelers} travelers`);
+      const input = r.fareInputs?.find(item => item.mode === fare.mode);
+      if (input?.km != null) paragraph(`Distance per ride: ${input.km} km`);
+    }
+  }
   if (plan.foodOptions?.length) {
     line(`ALL LOCAL FOODS TO TRY (${plan.foodOptions.length})`, 14, true);
     paragraph(`Choose tastings within your ${amount(r.mealBudget)} per person daily meal allowance. This is a suggestion list, not a charge for buying every food.`);
@@ -47,7 +58,7 @@ export function itineraryPdf(plan, areaName) {
       paragraph(food.description);
       if (food.where) paragraph(`Where: ${food.where}`);
       paragraph(food.listedAveragePrice == null ? 'Menu price to confirm' : `Listed average: ${amount(food.listedAveragePrice)}; confirm portions and price`);
-      paragraph(`Source: ${food.source}`);
+
       y -= 8;
     }
   }
@@ -58,7 +69,7 @@ export function itineraryPdf(plan, areaName) {
       if (y < 110) page();
       paragraph(`${stop.time} | ${stop.tag}`);
       line(stop.title, 12, true);
-      paragraph(stop.subtitle); y -= 8;
+      paragraph(String(stop.subtitle || '').split(/Source:|Guide states verified/i)[0].replace(/\?/g, '')); y -= 8;
     }
   }
   line('PLAN NOTES', 14, true);

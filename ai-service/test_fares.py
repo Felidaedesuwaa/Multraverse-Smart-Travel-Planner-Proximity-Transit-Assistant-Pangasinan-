@@ -18,7 +18,7 @@ class FareTests(unittest.TestCase):
 
     def test_updated_matrix_scope_and_exact_rows(self):
         reference = fare_reference()
-        self.assertEqual(reference['source_file'], 'Pangasinan_Fare_Reference_Updated_Tricycle.pdf')
+        self.assertEqual(reference['source_file'], 'Pangasinan_Fare_Reference_Updated_Tricycle (1).pdf')
         tricycle = fare_reference('tricycle')['sections'][0]
         self.assertIn('Dagupan City only', tricycle['scope'])
         self.assertEqual(tricycle['rows'][0], {'km': 1, 'regular': 20, 'discounted': 16})

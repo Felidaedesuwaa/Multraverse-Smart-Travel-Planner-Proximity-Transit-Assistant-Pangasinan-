@@ -51,7 +51,9 @@ export function hardenSchema(schema: Schema, name: string) {
       field.validate((v: unknown[]) => !v || v.length <= field.options.maxItems, `${key} has too many items`)
       const element = field.$embeddedSchemaType
       if (element?.instance === 'String') {
-        element.maxlength(2000)
+        const maxLength = name === 'SavedPlace' && key === 'photos' ? 250000 : 2000
+        element.options.maxlength = maxLength
+        element.maxlength(maxLength)
         element.castFunction((v: unknown) => {
           if (typeof v === 'string') return v
           throw new Error(`${key} items must be strings`)

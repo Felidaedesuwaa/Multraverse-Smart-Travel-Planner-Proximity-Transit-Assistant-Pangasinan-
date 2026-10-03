@@ -46,3 +46,41 @@ assert.throws(()=>validateItinerary({...base,fareInputs:[base.fareInputs[0],base
 console.log('PASS: meal/group/night/room totals, fare matrix rows, date boundaries, scope guards, unknown fares, category matching, input validation and persisted cost estimates.')
 
 assert.throws(()=>validateItinerary({...base,fareInputs:[{mode:'Jeepney',allowance:1,rides:2},base.fareInputs[1]]}),/supplied fare matrix/)
+
+assert.equal(plan.breakdown.Transit, plan.costEstimate.transportTotal)
+assert.equal(plan.estimated, plan.costEstimate.max)
+const { calculateTransport } = require('../dist/lib/fareCalculation')
+for (const [mode, tableId, km, perRide] of [['Bus','bus-ordinary',10,23], ['Bus','bus-aircon',10,24.5], ['Jeepney','jeepney',5,14.75], ['Tricycle','tricycle',3,30]]) {
+ const request = {...base, transportModes:[mode], fareInputs:[{mode,tableId,km,rides:3}]}
+ const selected = calculateTransport(request, fareTables)[0]
+ assert.equal(selected.perRide, perRide)
+ assert.equal(selected.total, perRide * 3 * base.travelers)
+ assert.deepEqual(estimateTransport(request)[0], selected)
+}
+console.log('PASS: selector calculator matches server for every matrix; transport included in breakdown and total.')
+
+const { calculateBudgetTotals } = require('../dist/lib/fareCalculation')
+assert.equal(plan.breakdown.Emergency, 1000)
+assert.equal(Object.values(plan.breakdown).reduce((sum, value) => sum + value, 0), plan.estimated)
+for (const budget of [10000, 1234.56]) {
+ const costs = {meals:600,transportTotal:92,entryFees:50,lodging:null}
+ const totals = calculateBudgetTotals(budget, 2, costs)
+ assert.equal(totals.emergency, Math.round(budget * 10) / 100)
+ assert.equal(totals.max, 742 + totals.emergency)
+ assert.equal(totals.remainingMin, Math.round((budget - totals.emergency - 742) * 100) / 100)
+}
+console.log('PASS: 10% emergency reserve included once in breakdown, trip total and remaining budget.')
+
+const missing = calculateBudgetTotals(10000,2,{meals:600,transportTotal:92})
+assert.equal(missing.max,1692)
+assert.equal(missing.remainingMin,8308)
+const strings = calculateBudgetTotals('10000','2',{meals:'600',transportTotal:'92',entryFees:'50'})
+assert.equal(strings.max,1742)
+assert.equal(strings.perPersonMax,871)
+assert.equal(calculateBudgetTotals(10000,0,{}).perPersonMax,null)
+const invalid = calculateBudgetTotals(NaN,undefined,{meals:NaN,transportTotal:Infinity})
+assert(Object.values(invalid).every(value => typeof value !== 'number' || Number.isFinite(value)))
+assert.equal(calculateBudgetTotals(10000,2,{meals:0.1,transportTotal:0.2}).max,1000.3)
+const badRide = calculateTransport({...base,transportModes:['Bus'],fareInputs:[{mode:'Bus',tableId:'bus-ordinary',km:10,rides:NaN}]},fareTables)
+assert.equal(badRide[0].total,null)
+console.log('PASS: missing fields, numeric strings, zero travelers, invalid inputs and cent rounding.')

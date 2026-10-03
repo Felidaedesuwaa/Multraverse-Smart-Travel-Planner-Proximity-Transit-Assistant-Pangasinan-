@@ -2,7 +2,7 @@
 
 Knowledge comes from Phrasebook V2 (95 entries) and seven uploaded guides:
 Dagupan, Alaminos, Urdaneta, San Carlos, Lingayen, Manaoag and Bolinao.
-`db.py` reads only `phrasebooks` from MongoDB, with a local fallback.
+`db.py` reads `phrasebooks` and published `localfoods` from MongoDB, with a local fallback.
 Tourism retrieval uses `server/src/data/cityGuides.json`; unsupported areas have
 no provincial fallback. The retired provincial collection is not read or recreated.
 
@@ -13,6 +13,19 @@ From `ai-service/`:
 .\venv\Scripts\python.exe -m unittest test_knowledge test_narrative test_city_guides
 .\venv\Scripts\python.exe main.py
 ```
+
+The supplied `Pangasinan_Local_Foods_Database_Reference.pdf` adds 53 foods in
+`server/src/data/localFoodReference.json`, retaining locality associations, PDF
+pages and the source SHA-256. Run `npm.cmd run seed:local-foods` from `server/`
+to import locality-specific records (`-- --dry-run` validates without writing).
+Existing IDs, prices, photos and moderation decisions are preserved.
+The planner already retrieves approved database foods for its food shortlist and
+AI ranking. FastAPI `/itinerary` also returns destination-scoped `local_foods`,
+and food questions through `/generate` use this reference. Database retrieval is
+live; offline retrieval uses the retained source. Province-wide and regional
+associations do not imply confirmed availability in every town. Prices remain
+unknown. `prepare_data.py` adds all 53 foods to the training corpus; preparing
+knowledge does not retrain model weights. Restart the AI service to load code changes.
 
 MongoDB uses `MONGODB_URI` from `server/.env` (or the process environment).
 There is no separate AI database credential to keep synchronized. Restart the service
@@ -60,7 +73,8 @@ stale. `/health` reports knowledge source and adapter status separately.
 To train new weights, review `data/provenance.json`, mark reviewed entries, then run
 `train.py` (or explicitly use `--allow-unreviewed` for an experimental run).
 Training uses only `data/combined_training_data.jsonl`, refuses stale provenance
-and refuses oversized examples instead of silently truncating facts. Successful
+and splits oversized responses into bounded training examples while retaining all
+source text. Prompts that leave no room for a response still fail. Successful
 training saves the knowledge manifest beside the adapter. Preparing data does not
 claim that TinyLlama has been retrained. Keep equivalent translations and records
 from the same LGU together when building evaluation splits.

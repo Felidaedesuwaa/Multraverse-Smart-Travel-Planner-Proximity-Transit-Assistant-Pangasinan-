@@ -1,3 +1,7 @@
+import { useBudgetStore } from "../store/budgetStore";
+import BudgetDropdown from '../components/BudgetDropdown';
+import { tripDisplayTitle } from '../lib/tripTitle';
+import SavedItineraryDetails from '../components/SavedItineraryDetails';
 import { FeedbackPressable } from "../components/WorkspaceMotion";
 import MoneyAmount from "../components/MoneyAmount";
 import { useCurrency } from "../hooks/useCurrency";
@@ -226,41 +230,10 @@ function AddExpenseModal({ visible, trips, onClose, onAdded }) {
           </View>
 
           {/* Link to trip */}
-          {trips.length > 0 && (
-            <View style={themeStyle(styles.formGroup)}>
-              <Text style={themeStyle(styles.formLabel)}>Link to Trip (optional)</Text>
-              <View style={themeStyle(styles.tripChips)}>
-                <FeedbackPressable
-                  onPress={() => setTripId(null)}
-                  style={themeStyle([styles.tripChip, !tripId && styles.tripChipActive])}
-                >
-                  <Text style={themeStyle([styles.tripChipText, !tripId && styles.tripChipTextActive])}>
-                    None
-                  </Text>
-                </FeedbackPressable>
-                {trips.map((t) => (
-                  <FeedbackPressable
-                    key={t._id ?? t.id}
-                    onPress={() => setTripId(t._id ?? t.id)}
-                    style={themeStyle([
-                      styles.tripChip,
-                      tripId === (t._id ?? t.id) && styles.tripChipActive,
-                    ])}
-                  >
-                    <Text
-                      style={themeStyle([
-                        styles.tripChipText,
-                        tripId === (t._id ?? t.id) && styles.tripChipTextActive,
-                      ])}
-                      numberOfLines={1}
-                    >
-                      {t.title}
-                    </Text>
-                  </FeedbackPressable>
-                ))}
-              </View>
-            </View>
-          )}
+          <View style={themeStyle(styles.formGroup)}>
+            <Text style={themeStyle(styles.formLabel)}>Link to Trip (optional)</Text>
+            <BudgetDropdown value={tripId} onChange={setTripId} options={[{value:null,label:'No linked trip'}, ...trips.map(trip=>({value:trip._id ?? trip.id,label:`${tripDisplayTitle(trip)} | ${trip.status.toLowerCase()}`}))]} placeholder="Select a saved trip" />
+          </View>
 
           {/* Color picker */}
           <View style={themeStyle(styles.formGroup)}>
@@ -322,7 +295,7 @@ function BudgetSettingsModal({ visible, settings, onClose, onSaved }) {
     if (!monthlyBudget.trim() || !savingsTarget.trim() || !Number.isFinite(budget) || budget < 0 || !Number.isFinite(target) || target < 0 || target > 100) { setError("Enter a valid budget and a savings target from 0 to 100%."); return; }
     setSaving(true); try { onSaved(await api.updateBudgetSettings({ monthlyBudget: budget, savingsTarget: target })); onClose(); } catch (cause) { setError(cause instanceof Error ? cause.message : "Could not save budget settings."); } finally { setSaving(false); }
   };
-  return <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}><Pressable style={themeStyle(styles.overlay)} onPress={onClose}><Pressable style={themeStyle(styles.modalBox)} onPress={() => {}}><View style={themeStyle(styles.modalHeader)}><View><Text style={themeStyle(styles.modalTitle)}>Budget settings</Text><Text style={themeStyle(styles.modalSub)}>Set your own monthly limit and savings goal.</Text></View><FeedbackPressable onPress={onClose} style={themeStyle(styles.closeBtn)}><X size={18} color={themeColor("#6B8CA8", "color")} /></FeedbackPressable></View><View style={themeStyle(styles.formGroup)}><Text style={themeStyle(styles.formLabel)}>Monthly budget</Text><MoneyInput value={monthlyBudget} onChangeText={setMonthlyBudget} keyboardType="numeric" placeholder="0" style={themeStyle(styles.formInput)} /></View><View style={themeStyle(styles.formGroup)}><Text style={themeStyle(styles.formLabel)}>Savings target (%)</Text><TextInput value={savingsTarget} onChangeText={setSavingsTarget} keyboardType="numeric" placeholder="20" style={themeStyle(styles.formInput)} /></View><Text style={themeStyle(styles.settingsNote)}>Amount spent and remaining are calculated from your recorded expenses, so your balance always stays accurate.</Text>{error && <View style={themeStyle(styles.errorBox)}><Text style={themeStyle(styles.errorText)}>{error}</Text></View>}<View style={themeStyle(styles.modalActions)}><FeedbackPressable onPress={onClose} style={themeStyle(styles.cancelBtn)}><Text style={themeStyle(styles.cancelText)}>Cancel</Text></FeedbackPressable><FeedbackPressable onPress={save} disabled={saving} style={themeStyle(styles.addBtn)}>{saving && <ActivityIndicator size="small" color="#fff" style={{ marginRight: 6 }} />}<Text style={themeStyle(styles.addBtnText)}>{saving ? "Saving..." : "Save settings"}</Text></FeedbackPressable></View></Pressable></Pressable></Modal>;
+  return <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}><Pressable style={themeStyle(styles.overlay)} onPress={onClose}><Pressable style={themeStyle(styles.modalBox)} onPress={() => {}}><View style={themeStyle(styles.modalHeader)}><View><Text style={themeStyle(styles.modalTitle)}>Budget settings</Text><Text style={themeStyle(styles.modalSub)}>Set your own monthly limit and savings goal.</Text></View><FeedbackPressable onPress={onClose} style={themeStyle(styles.closeBtn)}><X size={18} color={themeColor("#6B8CA8", "color")} /></FeedbackPressable></View><View style={themeStyle(styles.formGroup)}><Text style={themeStyle(styles.formLabel)}>Monthly budget</Text><BudgetDropdown value={monthlyBudget} onChange={setMonthlyBudget} placeholder="Select monthly budget" options={[...new Set([0,1000,2000,3000,5000,7500,10000,15000,20000,25000,30000,40000,50000,75000,100000,...(settings.monthlyBudget != null ? [Number(settings.monthlyBudget)] : [])])].sort((a,b)=>a-b).map(amount=>({value:String(amount),label:`PHP ${amount.toLocaleString('en-PH')}`}))} /></View><View style={themeStyle(styles.formGroup)}><Text style={themeStyle(styles.formLabel)}>Savings target (%)</Text><TextInput value={savingsTarget} onChangeText={setSavingsTarget} keyboardType="numeric" placeholder="20" style={themeStyle(styles.formInput)} /></View><Text style={themeStyle(styles.settingsNote)}>Amount spent and remaining are calculated from your recorded expenses, so your balance always stays accurate.</Text>{error && <View style={themeStyle(styles.errorBox)}><Text style={themeStyle(styles.errorText)}>{error}</Text></View>}<View style={themeStyle(styles.modalActions)}><FeedbackPressable onPress={onClose} style={themeStyle(styles.cancelBtn)}><Text style={themeStyle(styles.cancelText)}>Cancel</Text></FeedbackPressable><FeedbackPressable onPress={save} disabled={saving} style={themeStyle(styles.addBtn)}>{saving && <ActivityIndicator size="small" color="#fff" style={{ marginRight: 6 }} />}<Text style={themeStyle(styles.addBtnText)}>{saving ? "Saving..." : "Save settings"}</Text></FeedbackPressable></View></Pressable></Pressable></Modal>;
 }
 
 // â”€â”€ Trip Budget Section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -333,7 +306,7 @@ function TripBudgetRow({ trip, entries }) {
   const tripEntries = entries.filter(
     (e) => e.tripId === (trip._id ?? trip.id)
   );
-  const actualSpent = tripEntries.reduce((sum, entry) => sum + entry.amount, 0);
+  const actualSpent = tripEntries.reduce((sum, entry) => sum + (Number(entry.amount) || 0), 0);
   const remaining = trip.budget - actualSpent;
   const pct = trip.budget > 0
     ? Math.min(100, (actualSpent / trip.budget) * 100)
@@ -347,7 +320,7 @@ function TripBudgetRow({ trip, entries }) {
         style={themeStyle(styles.tripSectionHeader)}
       >
         <View style={themeStyle(styles.tripSectionLeft)}>
-          <Text style={themeStyle(styles.tripSectionName)}>{trip.title}</Text>
+          <Text style={themeStyle(styles.tripSectionName)}>{tripDisplayTitle(trip)}</Text>
           <Text style={themeStyle(styles.tripSectionMeta)}>
             {trip.location} Â· {trip.status.toLowerCase()}
           </Text>
@@ -362,7 +335,7 @@ function TripBudgetRow({ trip, entries }) {
         </View>
       </FeedbackPressable>
 
-      {trip.plan?.costs && <View style={themeStyle({ paddingHorizontal: 18, paddingBottom: 12 })}><Text style={themeStyle({ fontFamily: "DMSans", color: colors.textMuted })}>Planned known subtotal: <MoneyAmount value={trip.plan.costs.knownTotal} /> ({trip.plan.costs.status}). This is separate from actual expenses.</Text>{Object.entries(trip.plan.costs.categories).map(([category, amount]) => <Text key={category} style={themeStyle({ fontFamily: "DMSans", color: colors.textPrimary })}>{category}: <MoneyAmount value={amount} /></Text>)}</View>}
+      {trip.plan?.guided ? <View style={{ padding: 16 }}><SavedItineraryDetails plan={trip.plan.guided} areaName={trip.location} compact /><Text style={themeStyle({ fontFamily: 'DMSans', color: colors.textMuted, marginTop: 10 })}>Actual expenses below update when you record spending for this trip.</Text></View> : trip.plan?.costs && <View style={themeStyle({ paddingHorizontal: 18, paddingBottom: 12 })}><Text style={themeStyle({ fontFamily: "DMSans", color: colors.textMuted })}>Planned known subtotal: <MoneyAmount value={trip.plan.costs.knownTotal} /> ({trip.plan.costs.status}). This is separate from actual expenses.</Text>{Object.entries(trip.plan.costs.categories).map(([category, amount]) => <Text key={category} style={themeStyle({ fontFamily: "DMSans", color: colors.textPrimary })}>{category}: <MoneyAmount value={amount} /></Text>)}</View>}
       {/* Progress */}
       <View style={themeStyle(styles.tripProgress)}>
         <View style={themeStyle(styles.track)}>
@@ -417,9 +390,11 @@ export default function Budget() {
   const contentWidth = width >= 768 ? width - 280 : width;
   const { themeStyle, themeColor } = useAppTheme();
 
-  const [entries, setEntries] = useState([]);
+  const entries = useBudgetStore(state => state.entries);
+  const setEntries = useBudgetStore(state => state.setEntries);
   const [trips, setTrips] = useState([]);
-  const [settings, setSettings] = useState({ monthlyBudget: null, savingsTarget: null });
+  const settings = useBudgetStore(state => state.settings);
+  const setSettings = useBudgetStore(state => state.setSettings);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
