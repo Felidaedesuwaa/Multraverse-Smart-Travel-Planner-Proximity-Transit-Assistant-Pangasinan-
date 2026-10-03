@@ -493,7 +493,15 @@ export default function Translator() {
                 <Text style={themeStyle(styles.emptyText)}>No phrases match your search.</Text>
               </View>
             ) : (
-              <ScrollView style={themeStyle([styles.phraseResults, mobile && styles.phraseResultsMobile])} contentContainerStyle={styles.phraseResultsContent} nestedScrollEnabled showsVerticalScrollIndicator>{phraseCards}</ScrollView>
+              <ScrollView
+                style={themeStyle([styles.phraseResults, mobile && styles.phraseResultsMobile])}
+                contentContainerStyle={styles.phraseResultsContent}
+                nestedScrollEnabled
+                showsVerticalScrollIndicator
+                keyboardShouldPersistTaps="handled"
+              >
+                {phraseCards}
+              </ScrollView>
             )}
           </View>
         </View>
@@ -836,7 +844,12 @@ const styles = StyleSheet.create({
   // Phrase grid
   phraseGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   phraseGridMobile: { flexDirection: "column", gap: 8, paddingRight: 4 },
-  phraseResults: { maxHeight: 420, flexShrink: 1, minHeight: 0 },
+  phraseResults: {
+    maxHeight: 480,
+    flexShrink: 1,
+    minHeight: 0,
+    ...Platform.select({ web: { overscrollBehaviorY: "contain" } }),
+  },
   phraseResultsContent: { paddingRight: 8 },
   phraseResultsMobile: { maxHeight: 330 },
   phraseCard: {

@@ -9,9 +9,12 @@ const { PlannerDraft } = require('../dist/models/PlannerDraft')
 const { Trip } = require('../dist/models/Trip')
 const { AISettings } = require('../dist/models/AISettings')
 const { sanitizeRequest, validateRouter } = require('../dist/middleware/input')
-const base = { areaId: 'bolinao', tripTypes: ['Beach & Sea'], activities: ['Swimming'], travelerType: 'couple', travelStyle: 'balanced', date: '2026-09-28', travelers: 2, budget: '3000', days: 2, lodgingId: null, transportModes: ['Bus'], preferences: [], returnToOrigin: true, startTime: '07:00', mealBudget: '300' }
+const base = { areaId: 'bolinao', tripTypes: ['Beach & Sea'], activities: ['Swimming'], travelerType: 'couple', travelStyle: 'balanced', date: new Date(Date.now()+8*3600000).toISOString().slice(0,10), travelers: 2, budget: '3000', days: 2, lodgingId: null, transportModes: ['Bus'], preferences: [], returnToOrigin: true, startTime: '07:00', mealBudget: '300', fareInputs:[{mode:'Bus',rides:2,allowance:30}] }
 const Snapshot = model('GuidedTestSnapshot', planSchema)
-assert.equal(itineraryCatalog.length, 7)
+assert.equal(itineraryCatalog.length, 48)
+assert.equal(itineraryCatalog.filter(a => a.group === 'Municipalities').length, 44)
+assert.equal(itineraryCatalog.filter(a => a.group === 'Cities').length, 4)
+assert.deepEqual(itineraryCatalog.map(a => a.name), itineraryCatalog.map(a => a.name).sort((a,b) => a.localeCompare(b, 'en')))
 const dagupan = itineraryCatalog.find(a => a.id === 'dagupan')
 const urdaneta = itineraryCatalog.find(a => a.id === 'urdaneta')
 assert.equal(urdaneta.lodging.filter(h => h.lodgingDetails).length, 5)
@@ -29,7 +32,7 @@ const goldenCastle = sanCarlos.lodging.find(h => h.name === 'Golden Castle Resor
 assert.throws(() => validateItinerary({ ...base, areaId: 'san-carlos', lodgingId: goldenCastle.id }), /day-use/)
 const sanCarlosRequest = validateItinerary({ ...base, areaId: 'san-carlos', lodgingId: sanCarlos.lodging[0].id })
 const onlyDayUseLeft = new Set(sanCarlos.lodging.filter(h => h.id !== goldenCastle.id).map(h => h.id))
-assert.ok(!buildGroundedItinerary(sanCarlosRequest, onlyDayUseLeft).stops.some(s => s.tag === 'Lodging'))
+assert.ok(buildGroundedItinerary(sanCarlosRequest, onlyDayUseLeft).stops.filter(s => s.tag === 'Lodging').every(s => s.entryId === sanCarlosRequest.lodgingId))
 const anthony = sanCarlos.lodging.find(h => h.lodgingDetails.accommodation_id === 'SCC-ACC-004')
 const resortPlan = buildGroundedItinerary({ ...sanCarlosRequest, lodgingId: anthony.id }, new Set())
 assert.match(resortPlan.stops.find(s => s.tag === 'Lodging').subtitle, /whole-resort overnight package/)
@@ -53,7 +56,7 @@ assert.match(lodgingStop.subtitle, /basis unspecified/)
 assert.match(lodgingStop.subtitle, /Dagupan_City_Hotels_and_Lodging_Guide.pdf, page 1/)
 assert.equal(lodgingStop.price, null)
 for (const area of itineraryCatalog) {
-  const request = validateItinerary({ ...base, areaId: area.id, lodgingId: area.lodging[0]?.id })
+  const request = validateItinerary({ ...base, areaId: area.id, lodgingId: area.lodging[0]?.id ?? null })
   const plan = buildGroundedItinerary(request, new Set())
   for (const stop of plan.stops) {
     assert.equal(stop.price, null, 'No source-confirmed prices available')
@@ -63,12 +66,19 @@ for (const area of itineraryCatalog) {
   assert.equal(plan.mealAllocation, 1200)
   assert.equal(new Snapshot(guidedSnapshot(plan)).validateSync(), undefined, 'Persisted snapshot must satisfy existing envelope')
   const next = buildGroundedItinerary(request, new Set(plan.chosenIds))
-  assert.ok(next.chosenIds.every(id => !plan.chosenIds.includes(id)))
+  assert.ok(next.stops.some(stop => stop.tag === 'Attraction') || plan.stops.every(stop => stop.tag !== 'Attraction'))
   const exhausted = buildGroundedItinerary(request, new Set(area.entries.map(e => e.id)))
-  assert.equal(exhausted.chosenIds.length, 0)
-  assert.ok(exhausted.warnings.some(w => /Verified options are limited/.test(w)))
+  if (area.entries.length) {
+    assert.ok(exhausted.chosenIds.some(id => id !== request.lodgingId))
+    assert.ok(exhausted.warnings.some(w => /reused/.test(w)))
+  } else {
+    assert.deepEqual(exhausted.chosenIds, [])
+    assert.ok(exhausted.stops.every(stop => stop.tag === 'Transit'))
+    assert.ok(exhausted.warnings.some(w => /No verified attractions/.test(w)))
+  }
 }
-assert.throws(() => validateItinerary({ ...base, areaId: 'anda' }))
+assert.equal(validateItinerary({ ...base, areaId: 'anda' }).areaId, 'anda')
+assert.throws(() => validateItinerary({ ...base, areaId: 'unknown' }))
 assert.throws(() => validateItinerary({ ...base, userId: 'someone-else' }))
 assert.throws(() => validateItinerary({ ...base, date: '2026-02-30' }))
 assert.throws(() => validateItinerary({ ...base, travelers: [] }))
@@ -83,6 +93,34 @@ const unthemed = {...request, tripTypes: [], activities: []}
 assert.ok(buildGroundedItinerary({...unthemed, travelStyle:'adventurous'},new Set()).stops.length > buildGroundedItinerary({...unthemed,travelStyle:'relaxed'},new Set()).stops.length)
 assert.ok(buildGroundedItinerary({...request,travelStyle:'adventurous'},new Set()).stops.filter(s=>s.tag==='Attraction').every(s=>/beach|island|sea|resort/i.test(s.title)))
 
+// Food selections must survive history and expose every destination food.
+for (const area of itineraryCatalog) {
+  const foodRequest = validateItinerary({...base, areaId:area.id, days:1, tripTypes:['Food Trip'], activities:['Local Food']})
+  const allUsed = new Set(area.entries.map(e=>e.id))
+  const foodPlan = buildGroundedItinerary(foodRequest, allUsed)
+  assert.deepEqual(foodPlan.foodOptions.map(f=>f.name).sort(), area.foods.slice().sort())
+  assert.equal(foodPlan.stops.some(s=>s.tag==='Food'), area.foods.length > 0)
+  assert(!foodPlan.stops.some(s=>s.tag==='Attraction'))
+  assert.equal(new Snapshot(guidedSnapshot(foodPlan)).validateSync(), undefined)
+  const mixed = buildGroundedItinerary({...foodRequest, tripTypes:['Food Trip','History & Culture']},allUsed)
+  assert.equal(mixed.foodOptions.length, area.foods.length)
+  assert(mixed.stops.filter(s=>s.tag==='Attraction').every(s=>matchingPicks(area.entries.find(e=>e.id===s.entryId),mixed.request).includes('History & Culture')))
+}
+// Known admission fees consume only the allowance left after fixed costs.
+const pricedRequest = validateItinerary({...base, areaId:'dagupan', days:1, budget:1000, tripTypes:['Nature'], activities:['Outdoor Exploration'], transportModes:['Own Vehicle'], fareInputs:[{mode:'Own Vehicle',rides:1,allowance:0}], mealBudget:100})
+const pricedArea = {...dagupan, entries:[
+  {id:'111111111111111111111111',name:'Affordable Park',tag:'Attraction',category:'Park',source:'LGU',price:null,tier:'',amenities:[],entryFee:100,feeBasis:'person'},
+  {id:'222222222222222222222222',name:'Expensive Park',tag:'Attraction',category:'Park',source:'LGU',price:null,tier:'',amenities:[],entryFee:800,feeBasis:'group'},
+]}
+const priced = buildGroundedItinerary(pricedRequest,new Set(),[],[pricedArea])
+assert.deepEqual(priced.stops.filter(s=>s.tag==='Attraction').map(s=>s.title),['Affordable Park'])
+assert.equal(priced.costEstimate.entryFees,200)
+assert.equal(priced.costEstimate.max,500)
+assert.equal(new Snapshot(guidedSnapshot(priced)).validateSync(),undefined)
+const higher = buildGroundedItinerary({...pricedRequest,budget:3000},new Set(),[],[pricedArea])
+assert.equal(higher.stops.filter(s=>s.tag==='Attraction').length,2)
+assert.equal(higher.costEstimate.entryFees,1000)
+
 // Exercise HTTP boundaries/history with repositories isolated from the real database.
 const records = []
 const query = value => ({ lean: async () => value, sort() { return this }, select() { return this }, limit() { return this }, then(resolve,reject) { return Promise.resolve(value).then(resolve,reject) } })
@@ -90,6 +128,15 @@ PlannerDraft.find = filter => query(records.filter(r => r.userId === filter.user
 Trip.find = () => query([])
 AISettings.findById = () => query({ itineraryNarrative: true })
 PlannerDraft.create = async record => { assert.equal(new Snapshot(record.plan).validateSync(), undefined); record._id = String(records.length+1).padStart(24,'0'); records.push(record); return record }
+require('../dist/models').Place.find = filter => {
+  assert.equal(filter.approvalStatus, 'approved')
+  assert.deepEqual(filter.pendingDeletion, { $ne: true })
+  return query([{_id:'012345678901234567890123',municipality:'Dagupan',name:'LGU Test Park',description:'Approved park description',category:'Park',location:'Dagupan centre',photo:'data:image/jpeg;base64,YQ=='}])
+}
+require('../dist/models').LocalFood.find = filter => {
+  assert.equal(filter.approvalStatus, 'approved')
+  return query([{_id:'012345678901234567890124',municipality:'Dagupan',name:'LGU Test Food',description:'Approved food description',category:'Local food',where:'Public market',photo:'data:image/jpeg;base64,YQ=='}])
+}
 const nativeFetch = global.fetch
 let badModel = false
 global.fetch = async (url,opts) => String(url).endsWith('/itinerary/rank') ? { ok: true, json: async () => ({ ids: badModel ? ['fake'] : JSON.parse(opts.body).candidates.map(c=>c.id).reverse() }) } : nativeFetch(url,opts)
@@ -100,16 +147,25 @@ app.use((err,_req,res,_next)=>res.status(500).json({error:err.message}))
 const server = app.listen(0, '127.0.0.1', async () => {
   const call = (body,user='owner') => nativeFetch(`http://127.0.0.1:${server.address().port}/api/ai/itinerary/grounded`, {method:'POST',headers:{'Content-Type':'application/json','x-user':user},body:JSON.stringify(body)})
   try {
+    const catalogResponse = await nativeFetch(`http://127.0.0.1:${server.address().port}/api/ai/itinerary/catalog`)
+    const catalog = await catalogResponse.json()
+    const published = catalog.areas.find(a => a.id === 'dagupan')
+    assert(published.famousPlaces.includes('LGU Test Park'))
+    assert(published.foods.includes('LGU Test Food'))
+    assert.equal(published.entries.find(e => e.name === 'LGU Test Park').description, 'Approved park description')
+    assert.equal(published.entries.find(e => e.name === 'LGU Test Food').photo, 'data:image/jpeg;base64,YQ==')
+    assert(!catalog.areas.find(a => a.id === 'alaminos').famousPlaces.includes('LGU Test Park'))
     const firstResponse=await call(base); assert.equal(firstResponse.status,200); const first=await firstResponse.json()
     assert.equal(first.mode,'model-assisted')
     const second=await (await call(base)).json()
-    assert.ok(second.chosenIds.every(id=>!first.chosenIds.includes(id)))
+    assert(second.stops.some(s=>s.tag==='Attraction'))
+    assert(second.stops.filter(s=>s.tag==='Attraction').every(s=>/beach|island|sea|resort/i.test(s.title)))
     const other=await (await call(base,'other')).json(); assert.deepEqual(other.chosenIds,first.chosenIds)
     assert.equal((await call({...base,areaId:'unknown'})).status,400)
     assert.equal((await call({...base,userId:'other'})).status,400)
     badModel=true
     const fallback=await (await call({...base,areaId:'dagupan'})).json(); assert.equal(fallback.mode,'catalog'); assert.ok(fallback.warnings.some(w=>/invalid selection/.test(w)))
-    console.log('PASS: all seven areas, schema persistence, no-repeat, owner isolation, preference ranking, pacing, null costs, input validation and hallucinated-model fallback.')
+    console.log('PASS: all 48 areas, schema persistence, repeat-plan recovery, owner isolation, preference ranking, pacing, null costs, input validation and hallucinated-model fallback.')
   } catch(error) { console.error(error); process.exitCode=1 }
   finally { global.fetch=nativeFetch; server.close() }
 })

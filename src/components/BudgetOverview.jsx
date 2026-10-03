@@ -4,10 +4,14 @@ import { StyleSheet, Text, View } from "react-native";
 import { colors } from "../theme/colors";
 import WovenDivider from "./WovenDivider";
 
-export default function BudgetOverview({ entries }) {
+export default function BudgetOverview({ entries, settings }) {
   const { themeStyle } = useAppTheme();
 
-  const total = entries.reduce((sum, entry) => sum + entry.amount, 0);
+  const total = entries.reduce((sum, entry) => sum + Number(entry.amount || 0), 0);
+  const hasBudget = settings?.monthlyBudget != null;
+  const monthlyBudget = Number(settings?.monthlyBudget) || 0;
+  const remaining = monthlyBudget - total;
+  const overBudget = hasBudget && remaining < 0;
   const max = Math.max(...entries.map((entry) => entry.amount), 1);
 
   return (
@@ -16,14 +20,24 @@ export default function BudgetOverview({ entries }) {
       <Text style={themeStyle(styles.eyebrow)}>Total spent</Text>
       <View style={themeStyle(styles.totalRow)}>
         <Text style={themeStyle(styles.total)}><MoneyAmount value={total} /></Text>
-        <Text style={themeStyle(styles.status)}>On budget</Text>
+        <Text style={themeStyle([styles.status, overBudget && { color: colors.sunsetCoral, backgroundColor: colors.coralLight }])}>{!hasBudget ? "Budget not set" : overBudget ? "Over budget" : "On budget"}</Text>
       </View>
 
+      <View style={themeStyle(styles.summary)}>
+        <View style={themeStyle(styles.entryHeader)}>
+          <Text style={themeStyle(styles.entryLabel)}>Monthly budget</Text>
+          <Text style={themeStyle(styles.amount)}>{hasBudget ? <MoneyAmount value={monthlyBudget} /> : "Not set"}</Text>
+        </View>
+        <View style={themeStyle(styles.entryHeader)}>
+          <Text style={themeStyle(styles.entryLabel)}>{overBudget ? "Over budget by" : "Remaining"}</Text>
+          <Text style={themeStyle(styles.amount)}>{hasBudget ? <MoneyAmount value={Math.abs(remaining)} /> : "Not set"}</Text>
+        </View>
+      </View>
       <View style={themeStyle(styles.entries)}>
         {entries.length === 0 ? (
           <Text style={themeStyle(styles.empty)}>No expenses yet</Text>
         ) : entries.map((entry) => (
-          <View key={entry.label}>
+          <View key={entry._id ?? entry.id ?? entry.label}>
             <View style={themeStyle(styles.entryHeader)}>
               <View style={themeStyle(styles.entryLabelRow)}>
                 <View style={themeStyle([styles.dot, { backgroundColor: entry.color }])} />
@@ -47,6 +61,7 @@ const styles = StyleSheet.create({
   totalRow: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 10, marginTop: 4, marginBottom: 16 },
   total: { fontFamily: "Poppins", fontSize: 26, fontWeight: "700", color: colors.white },
   status: { fontFamily: "DMSans", fontSize: 11, fontWeight: "600", color: colors.palmGreen, backgroundColor: colors.palmGreenLight, paddingHorizontal: 10, paddingVertical: 3, borderRadius: 999 },
+  summary: { gap: 8, marginBottom: 16 },
   entries: { gap: 12 },
   empty: { fontFamily: "DMSans", fontSize: 13, color: "#C9DAE3" },
   entryHeader: { flexDirection: "row", justifyContent: "space-between", marginBottom: 4 },

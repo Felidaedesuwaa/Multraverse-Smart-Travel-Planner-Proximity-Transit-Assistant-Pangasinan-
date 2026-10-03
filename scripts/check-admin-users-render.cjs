@@ -33,10 +33,11 @@ const summary = { total: 0, verified: 0, newThisWeek: 0, newLastWeek: 0, totalTr
 const empty = render([[], summary, 0, '', '', 1, 0, false, '', null]); assert.ok(empty.includes('No Explorer accounts yet'));
 const user = { id: 'fixture-id', name: 'Render fixture', email: 'fixture@example.test', role: 'EXPLORER', createdAt: '2026-10-02T00:00:00Z', emailVerifiedAt: '2026-10-02T00:01:00Z', tripCount: 7, location: 'Dagupan' };
 const populated = render([[user], { ...summary, total: 1, verified: 1, totalTrips: 7 }, 1, '', '', 1, 0, false, '', null]);
-for (const text of ['Render fixture', 'fixture@example.test', 'Verified', '7', 'Edit information for Render fixture', 'Compose email']) assert.ok(populated.includes(text), `Missing ${text}`);
+for (const text of ['Render fixture', 'fixture@example.test', 'Verified', '7', 'Edit information for Render fixture']) assert.ok(populated.includes(text), `Missing ${text}`);
 assert.ok(!populated.includes('Delete account Render fixture'), 'Admin must not have the deletion action');
 role = 'SUPERADMIN';
 const superadmin = render([[user], { ...summary, total: 1, verified: 1, totalTrips: 7 }, 1, '', '', 1, 0, false, '', null]);
 assert.ok(superadmin.includes('Delete account Render fixture'), 'Super Admin must have the deletion action');
+assert.ok(!populated.includes('Compose email') && !superadmin.includes('Compose email'), 'Email action must be removed');
 for (const text of ['Pro users', 'Invite User', 'Super Admin', 'LGU accounts', 'suspended']) assert.ok(!populated.includes(text), `Unexpected ${text}`);
 console.log('PASS: Explorer Users render with edit actions and Super Admin-only delete actions; loading, empty and account scope preserved.');

@@ -1,3 +1,4 @@
+import { useBudgetStore } from "../store/budgetStore";
 import { FeedbackPressable } from "./WorkspaceMotion";
 import { useAppTheme } from "../theme/useAppTheme";
 import { useEffect, useState } from "react";
@@ -33,17 +34,32 @@ export default function UserSidebar({ activeScreen = "Dashboard", onNavigate, co
   const { themeStyle, themeColor, palette } = useAppTheme();
 
   const user = useAuthStore((state) => state.user);
-  const [entries, setEntries] = useState([]);
+  const entries = useBudgetStore(state => state.entries);
+  const settings = useBudgetStore(state => state.settings);
+  const setEntries = useBudgetStore(state => state.setEntries);
+  const setSettings = useBudgetStore(state => state.setSettings);
+  const resetBudget = useBudgetStore(state => state.reset);
+  const userId = user?._id ?? user?.id;
   const [trips, setTrips] = useState([]);
 
   useEffect(() => {
-    Promise.all([api.getBudget(), api.getTrips()])
-      .then(([budgetEntries, userTrips]) => {
+    resetBudget();
+    setTrips([]);
+  }, [userId, resetBudget]);
+
+  useEffect(() => {
+    let alive = true;
+    if (!userId) return;
+    Promise.all([api.getBudget(), api.getBudgetSettings()])
+      .then(([budgetEntries, budgetSettings]) => {
+        if (!alive) return;
         setEntries(budgetEntries);
-        setTrips(userTrips);
+        setSettings(budgetSettings || { monthlyBudget: null, savingsTarget: null });
       })
       .catch(() => {});
-  }, [compact]);
+    api.getTrips().then(userTrips => { if (alive) setTrips(userTrips); }).catch(() => {});
+    return () => { alive = false; };
+  }, [compact, activeScreen, userId, setEntries, setSettings]);
 
   const name = user?.name || "User";
 
@@ -105,7 +121,7 @@ export default function UserSidebar({ activeScreen = "Dashboard", onNavigate, co
       {/* Budget Overview */}
       <View>
         <Text style={themeStyle(styles.sectionTitle)}>BUDGET OVERVIEW</Text>
-        <BudgetOverview entries={entries} />
+        <BudgetOverview entries={entries} settings={settings} />
       </View>
 
       {/* Saved Trips */}

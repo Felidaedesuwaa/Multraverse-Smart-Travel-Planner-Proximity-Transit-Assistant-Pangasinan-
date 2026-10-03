@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
+from training_chunks import response_chunks
 
 ROOT = Path(__file__).resolve().parent
 # Configure Hugging Face cache locations before Transformers is imported.
@@ -117,14 +118,17 @@ def main() -> None:
     dataset = load_data(DATA_FILE)
 
     def tokenize(examples):
+        pairs = []
         for prompt, response in zip(examples['prompt'], examples['response']):
-            if len(tokenizer(prompt + response)['input_ids']) > MAX_LENGTH:
-                raise ValueError('Training record exceeds token limit; split it rather than silently truncating source facts')
+            parts = response_chunks(prompt, response,
+                lambda text: len(tokenizer(text, add_special_tokens=False)['input_ids']), MAX_LENGTH)
+            pairs.extend((prompt, part) for part in parts)
         # Mask the prompt so loss is computed only for the desired assistant reply.
-        prompts = tokenizer(examples["prompt"], add_special_tokens=False)["input_ids"]
+        prompts = tokenizer([prompt for prompt, _ in pairs], add_special_tokens=False)["input_ids"]
         encoded = tokenizer(
-            [prompt + response for prompt, response in zip(examples["prompt"], examples["response"])],
-            truncation=True,
+            [prompt + response for prompt, response in pairs],
+            add_special_tokens=False,
+            truncation=False,
             max_length=MAX_LENGTH,
             padding="max_length",
         )

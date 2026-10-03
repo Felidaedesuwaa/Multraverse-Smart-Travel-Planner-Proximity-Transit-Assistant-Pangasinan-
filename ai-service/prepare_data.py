@@ -4,6 +4,7 @@ import itertools
 import json
 from knowledge import ROOT, source_phrases, source_city_guides, source_lodging_guides
 from fares import fare_reference
+from local_foods import REFERENCE
 
 
 def main():
@@ -46,7 +47,14 @@ def main():
             response = reference['note'] + '\n' + section['scope'] + '\n' + '\n'.join(lines[offset:offset+10])
             add(instruction, response, reference['source_file'], 'fare:' + section['id'])
             fare_records.append(records[-1])
+    food_records = []
+    for food in REFERENCE['foods']:
+        add(f"What is {food['name']} and where is it associated in Pangasinan?",
+            REFERENCE['note'] + '\n' + json.dumps(food, ensure_ascii=False),
+            REFERENCE['source_file'], 'food:' + food['name'])
+        food_records.append(records[-1])
     directory = ROOT / 'data'
+    (directory / 'pangasinan_local_foods.jsonl').write_text(''.join(json.dumps(row, ensure_ascii=False) + '\n' for row in food_records), encoding='utf-8')
     (directory / 'pangasinan_fares.jsonl').write_text(''.join(json.dumps(row, ensure_ascii=False) + '\n' for row in fare_records), encoding='utf-8')
     corpus = ''.join(json.dumps(row, ensure_ascii=False) + '\n' for row in records)
     (directory / 'combined_training_data.jsonl').write_text(corpus, encoding='utf-8', newline='\n')
@@ -56,8 +64,9 @@ def main():
         'records': len(records), 'phrases': len(phrases), 'lgus': len(guides),
         'city_guides': len(guides),
         'fare_sections': len(reference['sections']),
+        'local_foods': len(REFERENCE['foods']),
         'lodging_properties': sum(len(lodging['hotels']) for lodging in lodging_guides),
-        'sources': ['server/prisma/seedPhrasebookV2.ts', 'server/src/data/cityGuides.json', 'server/src/data/pangasinanFares.json', 'server/src/data/dagupanLodging.json', 'server/src/data/alaminosLodging.json', 'server/src/data/san-carlosLodging.json', 'server/src/data/urdanetaLodging.json']}, indent=2) + '\n', encoding='utf-8')
+        'sources': ['server/prisma/seedPhrasebookV2.ts', 'server/src/data/cityGuides.json', 'server/src/data/pangasinanFares.json', 'server/src/data/localFoodReference.json', 'server/src/data/dagupanLodging.json', 'server/src/data/alaminosLodging.json', 'server/src/data/san-carlosLodging.json', 'server/src/data/urdanetaLodging.json']}, indent=2) + '\n', encoding='utf-8')
     print(f'Built {len(records)} records from {len(phrases)} V2 phrases and {len(guides)} selected guides.')
 
 

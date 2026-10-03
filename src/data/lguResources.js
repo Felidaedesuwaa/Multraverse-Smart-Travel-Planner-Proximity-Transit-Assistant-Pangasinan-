@@ -1,10 +1,12 @@
 // Field definitions shared by the municipal editor and Admin review queue.
 export const lguResources = {
   places: { label: 'Places', fields: [
+    ['photo', 'Entry image', 'image'],
     ['name', 'Name', 'required'], ['description', 'Description', 'required'], ['location', 'Address / location', 'required'],
     ['category', 'Category', 'required'], ['entryFee', 'Entry fee (PHP)', 'number'], ['openHours', 'Opening hours'], ['tips', 'Visitor tips'], ['sourceUrl', 'Source URL'],
   ] },
   foods: { label: 'Local food', fields: [
+    ['photo', 'Entry image', 'image'],
     ['name', 'Name', 'required'], ['description', 'Description', 'required'], ['avgPrice', 'Average price (PHP)', 'required-number'], ['where', 'Where to find it', 'required'], ['category', 'Category', 'required'],
   ] },
   'route-prices': { label: 'Route prices', fields: [

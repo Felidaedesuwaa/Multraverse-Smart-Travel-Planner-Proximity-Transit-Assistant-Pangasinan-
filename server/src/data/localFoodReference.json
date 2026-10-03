@@ -1,0 +1,573 @@
+{
+  "source_file": "Pangasinan_Local_Foods_Database_Reference.pdf",
+  "sha256": "7cde6ebecfb8724356d589ef5aa9bf3f9c0f5e3baf61aa8c7d2aeca6eaaff473",
+  "note": "Localities are documented associations, not exclusive ownership or confirmed vendors. Prices and availability are unknown. Condiments and ingredients are food products, not standalone meals.",
+  "foods": [
+    {
+      "name": "Bangus (Milkfish)",
+      "category": "Seafood",
+      "localities": [
+        "Dagupan City",
+        "Binmaley",
+        "Lingayen"
+      ],
+      "description": "Pangasinan signature fish; one of the province's famous 3Bs.",
+      "source_page": 2,
+      "avgPrice": null
+    },
+    {
+      "name": "Inihaw na Bangus",
+      "category": "Seafood dish",
+      "localities": [
+        "Dagupan City",
+        "Binmaley",
+        "Lingayen"
+      ],
+      "description": "Grilled milkfish, commonly served with local vegetable dishes.",
+      "source_page": 2,
+      "avgPrice": null
+    },
+    {
+      "name": "Boneless Bangus",
+      "category": "Processed seafood",
+      "localities": [
+        "Dagupan City"
+      ],
+      "description": "Deboned milkfish; major Pangasinan food product associated with Dagupan.",
+      "source_page": 2,
+      "avgPrice": null
+    },
+    {
+      "name": "Rellenong Bangus",
+      "category": "Seafood dish",
+      "localities": [
+        "Dagupan City",
+        "Pangasinan"
+      ],
+      "description": "Stuffed deboned milkfish preparation.",
+      "source_page": 2,
+      "avgPrice": null
+    },
+    {
+      "name": "Bangus Sisig",
+      "category": "Seafood dish",
+      "localities": [
+        "Dagupan City",
+        "Pangasinan"
+      ],
+      "description": "Sisig-style preparation using milkfish.",
+      "source_page": 2,
+      "avgPrice": null
+    },
+    {
+      "name": "Pigar-pigar",
+      "category": "Meat / street food",
+      "localities": [
+        "Dagupan City"
+      ],
+      "description": "Thinly sliced beef or carabeef cooked with onions and vegetables.",
+      "source_page": 2,
+      "avgPrice": null
+    },
+    {
+      "name": "Kaleskes",
+      "category": "Soup / meat",
+      "localities": [
+        "Dagupan City",
+        "Calasiao"
+      ],
+      "description": "Savory broth using beef/carabeef intestines and other cuts.",
+      "source_page": 2,
+      "avgPrice": null
+    },
+    {
+      "name": "Beng-beng",
+      "category": "Meat / street food",
+      "localities": [
+        "Mangaldan"
+      ],
+      "description": "Mangaldan carabeef/beef preparation associated with the history of pigar-pigar.",
+      "source_page": 2,
+      "avgPrice": null
+    },
+    {
+      "name": "Baguisen / Dinalaan",
+      "category": "Meat / stew",
+      "localities": [
+        "Lingayen",
+        "Bayambang",
+        "Pangasinan"
+      ],
+      "description": "Pangasinense dinuguan-style dish using pork offal/meat, vinegar and aromatics; versions may use kamias.",
+      "source_page": 2,
+      "avgPrice": null
+    },
+    {
+      "name": "Lauya",
+      "category": "Soup / meat",
+      "localities": [
+        "Pangasinan"
+      ],
+      "description": "Clear-broth beef or pork stew with vegetables.",
+      "source_page": 2,
+      "avgPrice": null
+    },
+    {
+      "name": "Alaminos Longganisa",
+      "category": "Processed meat",
+      "localities": [
+        "Alaminos City"
+      ],
+      "description": "Savory native sausage, commonly garlic-forward; major Alaminos pasalubong.",
+      "source_page": 2,
+      "avgPrice": null
+    },
+    {
+      "name": "Binalonan Longganisa",
+      "category": "Processed meat",
+      "localities": [
+        "Binalonan"
+      ],
+      "description": "Local longganisa identified by the provincial government.",
+      "source_page": 2,
+      "avgPrice": null
+    },
+    {
+      "name": "Burong Isda",
+      "category": "Fermented food",
+      "localities": [
+        "Bayambang",
+        "Pangasinan"
+      ],
+      "description": "Fermented fish and rice preparation; Bayambang is strongly associated with fish buro.",
+      "source_page": 3,
+      "avgPrice": null
+    },
+    {
+      "name": "Mulantong",
+      "category": "Fermented food",
+      "localities": [
+        "Bayambang"
+      ],
+      "description": "Bayambang variant of buro using smaller freshwater fish.",
+      "source_page": 3,
+      "avgPrice": null
+    },
+    {
+      "name": "Bagoong",
+      "category": "Condiment",
+      "localities": [
+        "Lingayen",
+        "coastal Pangasinan"
+      ],
+      "description": "Fermented fish paste/sauce; one of Pangasinan's 3Bs.",
+      "source_page": 3,
+      "avgPrice": null
+    },
+    {
+      "name": "Bagoong Dilis / Inasin",
+      "category": "Condiment",
+      "localities": [
+        "Pangasinan"
+      ],
+      "description": "Fermented anchovy-based bagoong.",
+      "source_page": 3,
+      "avgPrice": null
+    },
+    {
+      "name": "Agamang / Alamang",
+      "category": "Condiment",
+      "localities": [
+        "Pangasinan"
+      ],
+      "description": "Fermented shrimp-fry paste.",
+      "source_page": 3,
+      "avgPrice": null
+    },
+    {
+      "name": "Bagoong Padas",
+      "category": "Condiment",
+      "localities": [
+        "Pangasinan"
+      ],
+      "description": "Traditional fermented fish condiment.",
+      "source_page": 3,
+      "avgPrice": null
+    },
+    {
+      "name": "Boneless Bagoong",
+      "category": "Condiment / seafood",
+      "localities": [
+        "Pangasinan"
+      ],
+      "description": "Bagoong preparation processed without large bones.",
+      "source_page": 3,
+      "avgPrice": null
+    },
+    {
+      "name": "Patis",
+      "category": "Condiment",
+      "localities": [
+        "Pangasinan"
+      ],
+      "description": "Fish sauce used in local cooking and at the table.",
+      "source_page": 3,
+      "avgPrice": null
+    },
+    {
+      "name": "Bocayo / Bucayo",
+      "category": "Sweet / coconut",
+      "localities": [
+        "Lingayen"
+      ],
+      "description": "Young coconut cooked with sweetener such as sinakob; one of the 3Bs.",
+      "source_page": 3,
+      "avgPrice": null
+    },
+    {
+      "name": "Sinakob / Panocha",
+      "category": "Sweetener / ingredient",
+      "localities": [
+        "Pozorrubio",
+        "Balungao"
+      ],
+      "description": "Traditional unrefined brown sugar/jaggery used for kakanin and coconut sweets.",
+      "source_page": 3,
+      "avgPrice": null
+    },
+    {
+      "name": "Puto Calasiao",
+      "category": "Rice cake / kakanin",
+      "localities": [
+        "Calasiao"
+      ],
+      "description": "Small steamed rice cake; Calasiao's famous 'white gold'.",
+      "source_page": 3,
+      "avgPrice": null
+    },
+    {
+      "name": "Tupig",
+      "category": "Rice cake / kakanin",
+      "localities": [
+        "Laoac",
+        "Mangatarem",
+        "Bayambang",
+        "Rosales"
+      ],
+      "description": "Glutinous rice, coconut and sweetener wrapped in banana leaves and grilled.",
+      "source_page": 3,
+      "avgPrice": null
+    },
+    {
+      "name": "Patupat",
+      "category": "Rice cake / kakanin",
+      "localities": [
+        "Pozorrubio",
+        "Balungao"
+      ],
+      "description": "Sticky rice wrapped in woven leaves and cooked in sugarcane/coconut mixture.",
+      "source_page": 4,
+      "avgPrice": null
+    },
+    {
+      "name": "Binungey",
+      "category": "Rice cake / kakanin",
+      "localities": [
+        "Bolinao",
+        "Anda"
+      ],
+      "description": "Sticky rice with coconut milk cooked inside bamboo over charcoal/wood fire.",
+      "source_page": 4,
+      "avgPrice": null
+    },
+    {
+      "name": "Gipang",
+      "category": "Rice snack / kakanin",
+      "localities": [
+        "Bayambang"
+      ],
+      "description": "Crunchy-chewy blackened rice snack made from deremen; associated with Undas.",
+      "source_page": 4,
+      "avgPrice": null
+    },
+    {
+      "name": "Inlubi",
+      "category": "Rice cake / kakanin",
+      "localities": [
+        "Bayambang"
+      ],
+      "description": "Black rice cake made by cooking deremen with coconut milk and sugar.",
+      "source_page": 4,
+      "avgPrice": null
+    },
+    {
+      "name": "Deremen",
+      "category": "Rice heritage food",
+      "localities": [
+        "Bayambang",
+        "Mangaldan",
+        "Calasiao",
+        "Sta. Barbara",
+        "Sual",
+        "Mangatarem"
+      ],
+      "description": "Immature glutinous rice toasted/blackened and pounded; used for inlubi and gipang.",
+      "source_page": 4,
+      "avgPrice": null
+    },
+    {
+      "name": "Latik (Pangasinan)",
+      "category": "Rice cake / kakanin",
+      "localities": [
+        "Bayambang",
+        "Urbiztondo"
+      ],
+      "description": "Glutinous-rice cake with coconut milk and sugar/coconut caramel.",
+      "source_page": 4,
+      "avgPrice": null
+    },
+    {
+      "name": "Suman",
+      "category": "Rice cake / kakanin",
+      "localities": [
+        "Urbiztondo",
+        "Pangasinan"
+      ],
+      "description": "Leaf-wrapped glutinous-rice cake featured in Urbiztondo's Kanen Festival.",
+      "source_page": 4,
+      "avgPrice": null
+    },
+    {
+      "name": "Bibingka",
+      "category": "Rice cake / kakanin",
+      "localities": [
+        "Urbiztondo",
+        "Pangasinan"
+      ],
+      "description": "Native rice cake featured in Urbiztondo's Kanen Festival.",
+      "source_page": 4,
+      "avgPrice": null
+    },
+    {
+      "name": "Bitso-bitso / Bicho-bicho",
+      "category": "Fried snack",
+      "localities": [
+        "Urbiztondo",
+        "Bayambang"
+      ],
+      "description": "Traditional fried kakanin/snack in Pangasinan food traditions.",
+      "source_page": 4,
+      "avgPrice": null
+    },
+    {
+      "name": "Puto Lasong / Lanson",
+      "category": "Rice cake / kakanin",
+      "localities": [
+        "Bayambang"
+      ],
+      "description": "Soft steamed rice cake documented as a Bayambang local kakanin.",
+      "source_page": 4,
+      "avgPrice": null
+    },
+    {
+      "name": "Pinais ya Suman",
+      "category": "Rice cake / kakanin",
+      "localities": [
+        "Bayambang"
+      ],
+      "description": "Local kakanin using cassava or glutinous rice and coconut cream.",
+      "source_page": 4,
+      "avgPrice": null
+    },
+    {
+      "name": "Tapong",
+      "category": "Rice cake / kakanin",
+      "localities": [
+        "Bayambang"
+      ],
+      "description": "Local rice cake described as a cross between puto and bibingka.",
+      "source_page": 4,
+      "avgPrice": null
+    },
+    {
+      "name": "Kinerel",
+      "category": "Sweet / coconut dessert",
+      "localities": [
+        "Mangaldan",
+        "Pangasinan"
+      ],
+      "description": "Small flour-based balls with cassava and saba banana cooked in coconut milk.",
+      "source_page": 5,
+      "avgPrice": null
+    },
+    {
+      "name": "Kundandit",
+      "category": "Sweet / kakanin",
+      "localities": [
+        "Manaoag",
+        "nearby Pangasinan towns"
+      ],
+      "description": "Traditional local sweet recorded in Bayambang's culinary survey as made in nearby Manaoag.",
+      "source_page": 5,
+      "avgPrice": null
+    },
+    {
+      "name": "Katiba",
+      "category": "Sweet / coconut",
+      "localities": [
+        "Pangasinan"
+      ],
+      "description": "Pangasinense term for coconut jam/coco jam.",
+      "source_page": 5,
+      "avgPrice": null
+    },
+    {
+      "name": "Peanut Brittle",
+      "category": "Sweet / confection",
+      "localities": [
+        "Mangaldan"
+      ],
+      "description": "Local peanut confection identified in Pangasinan culinary references.",
+      "source_page": 5,
+      "avgPrice": null
+    },
+    {
+      "name": "Mango Pickles",
+      "category": "Pickled food",
+      "localities": [
+        "Pangasinan",
+        "Bayambang"
+      ],
+      "description": "Pickled mango preparation found in local food traditions.",
+      "source_page": 5,
+      "avgPrice": null
+    },
+    {
+      "name": "Dried Salt / Asin",
+      "category": "Salt / food product",
+      "localities": [
+        "Bolinao",
+        "Dasol",
+        "western Pangasinan"
+      ],
+      "description": "Locally produced sea salt; Pangasinan's name is tied to salt-making.",
+      "source_page": 5,
+      "avgPrice": null
+    },
+    {
+      "name": "Goat / Chevon Dishes",
+      "category": "Meat / local cuisine",
+      "localities": [
+        "Balungao"
+      ],
+      "description": "Balungao is noted for its goat industry and dishes made from chevon.",
+      "source_page": 5,
+      "avgPrice": null
+    },
+    {
+      "name": "Freshwater Fish Dishes",
+      "category": "Seafood / local cuisine",
+      "localities": [
+        "Bayambang"
+      ],
+      "description": "Bayambang cuisine is strongly linked to freshwater fish and its Malangsi Fish-tival.",
+      "source_page": 5,
+      "avgPrice": null
+    },
+    {
+      "name": "Hito (Catfish) dishes",
+      "category": "Seafood / local cuisine",
+      "localities": [
+        "Pangasinan"
+      ],
+      "description": "Catfish is served and processed in Pangasinan, including grilled and value-added forms.",
+      "source_page": 5,
+      "avgPrice": null
+    },
+    {
+      "name": "Katuray Salad",
+      "category": "Vegetable dish",
+      "localities": [
+        "Bayambang",
+        "Pangasinan"
+      ],
+      "description": "Blanched katuray flowers with tomato/onion and bagoong-based seasoning.",
+      "source_page": 5,
+      "avgPrice": null
+    },
+    {
+      "name": "Pising ya Inangel",
+      "category": "Vegetable dish",
+      "localities": [
+        "Bayambang"
+      ],
+      "description": "Lowland vegetables stewed with ginger and salt.",
+      "source_page": 5,
+      "avgPrice": null
+    },
+    {
+      "name": "Ginataan ya Kamansi / Langka",
+      "category": "Vegetable dish",
+      "localities": [
+        "Bayambang",
+        "Pangasinan"
+      ],
+      "description": "Breadfruit or young jackfruit cooked in coconut milk.",
+      "source_page": 5,
+      "avgPrice": null
+    },
+    {
+      "name": "Kalamay",
+      "category": "Sweet / kakanin",
+      "localities": [
+        "Pangasinan"
+      ],
+      "description": "Traditional sweet rice/coconut preparation mentioned among Pangasinan native cakes.",
+      "source_page": 6,
+      "avgPrice": null
+    },
+    {
+      "name": "Palitaw / Unda-unday",
+      "category": "Rice cake / kakanin",
+      "localities": [
+        "Bayambang",
+        "Pangasinan"
+      ],
+      "description": "Traditional rice-based snack recorded in local Pangasinan culinary surveys.",
+      "source_page": 6,
+      "avgPrice": null
+    },
+    {
+      "name": "Buchi / Butsi",
+      "category": "Fried rice snack",
+      "localities": [
+        "Bayambang",
+        "Pangasinan"
+      ],
+      "description": "Traditional fried rice snack recorded in local culinary surveys.",
+      "source_page": 6,
+      "avgPrice": null
+    },
+    {
+      "name": "Kulambo",
+      "category": "Rice sweet",
+      "localities": [
+        "Bayambang"
+      ],
+      "description": "White, extra-gooey tikoy-like local sweet recorded in Bayambang culinary references.",
+      "source_page": 6,
+      "avgPrice": null
+    },
+    {
+      "name": "Sapin-sapin",
+      "category": "Rice cake / kakanin",
+      "localities": [
+        "Urbiztondo",
+        "Pangasinan"
+      ],
+      "description": "Layered native rice cake included in local Kanen Festival food traditions.",
+      "source_page": 6,
+      "avgPrice": null
+    }
+  ]
+}

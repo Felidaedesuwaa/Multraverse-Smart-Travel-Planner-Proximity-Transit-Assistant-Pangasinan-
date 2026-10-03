@@ -5,38 +5,82 @@ const { itineraryCatalog } = require('../dist/data/itineraryCatalog')
 const { guidedSnapshot } = require('../dist/lib/guidedSnapshot')
 const { planSchema } = require('../dist/models/_plan')
 const Snapshot = require('mongoose').model('CostTestSnapshot', planSchema)
-const base = { areaId:'dagupan', date:'2026-09-28', travelers:2, days:2, budget:10000, tripTypes:['Beach & Sea'], activities:['Swimming'], travelerType:'couple', travelStyle:'adventurous', transportModes:['Jeepney','Tricycle'], preferences:[], returnToOrigin:true, startTime:'07:00', mealBudget:300, hotelRooms:2,
-  fareInputs:[{mode:'Jeepney',tableId:'jeepney',km:5,rides:4,referenceAccepted:true},{mode:'Tricycle',allowance:30,rides:2}] }
+const base = { areaId:'dagupan', date:new Date(Date.now()+8*3600000).toISOString().slice(0,10), travelers:2, days:2, budget:10000, tripTypes:['Beach & Sea'], activities:['Swimming'], travelerType:'couple', travelStyle:'adventurous', transportModes:['Jeepney','Tricycle'], preferences:[], returnToOrigin:true, startTime:'07:00', mealBudget:300, hotelRooms:2,lodgingId:null,
+  fareInputs:[{mode:'Jeepney',tableId:'jeepney',km:5,rides:4,referenceAccepted:true},{mode:'Tricycle',tableId:'tricycle',km:3,rides:2}] }
 const hotel = itineraryCatalog.find(a=>a.id==='dagupan').lodging.find(h=>h.name==='Star Plaza Hotel')
 const plan = buildGroundedItinerary(validateItinerary({...base,lodgingId:hotel.id}),new Set())
+assert.equal(plan.costEstimate.emergency,1000)
 assert.equal(plan.costEstimate.meals,1200)
+const reused = buildGroundedItinerary(validateItinerary({...base,lodgingId:hotel.id}),new Set([hotel.id]))
+assert(reused.stops.filter(s=>s.tag==='Lodging').every(s=>s.entryId===hotel.id))
+assert.equal(reused.costEstimate.lodging.min,5000)
+assert(require('../dist/lib/groundedItinerary').candidatesFor(plan.request,new Set()).filter(e=>e.tag==='Lodging').every(e=>e.id===hotel.id))
 assert.equal(plan.costEstimate.transportTotal,238) // 14.75*4*2 + 30*2*2
 assert.equal(plan.costEstimate.lodging.min,5000)
 assert.equal(plan.costEstimate.lodging.max,9000)
-assert.equal(plan.costEstimate.min,6438)
-assert.equal(plan.costEstimate.max,10438)
-assert.equal(plan.costEstimate.remainingMin,-438)
-assert.equal(plan.costEstimate.perPersonMax,5219)
+assert.equal(plan.costEstimate.min,7438)
+assert.equal(plan.costEstimate.max,11438)
+assert.equal(plan.costEstimate.remainingMin,-1438)
+assert.equal(plan.costEstimate.perPersonMax,5719)
 assert(plan.stops.filter(s=>s.tag==='Attraction').every(s=>/beach/i.test(s.title)))
 assert.equal(new Snapshot(guidedSnapshot(plan)).validateSync(),undefined)
-const dayTrip=buildGroundedItinerary(validateItinerary({...base,days:1,lodgingId:hotel.id}),new Set())
+const dayTrip=buildGroundedItinerary(validateItinerary({...base,days:1,lodgingId:null}),new Set())
 assert.equal(dayTrip.costEstimate.lodging,null)
 assert.equal(dayTrip.costEstimate.meals,600)
-const noRides=buildGroundedItinerary(validateItinerary({...base,fareInputs:[]}),new Set())
-assert(noRides.costEstimate.transport.every(t=>t.total===null))
+assert.throws(()=>validateItinerary({...base,fareInputs:[]}),/fare or travel allowance/)
 const scoped=estimateTransport({...base,fareInputs:[{mode:'Tricycle',tableId:'tricycle',km:1.5,rides:2},{mode:'Jeepney',tableId:'jeepney',km:5,rides:2}]})
-assert(scoped.every(t=>t.total===null))
-const alaminos=estimateTransport({...base,areaId:'alaminos',transportModes:['Tricycle'],fareInputs:[{mode:'Tricycle',tableId:'tricycle',km:2.5,rides:2}]})
-assert.equal(alaminos[0].total,48)
-for(const [date,expected] of [['2026-09-27',82],['2026-09-28',92]]) {
+assert.equal(scoped.find(t=>t.mode==='Tricycle').total,null); assert.equal(scoped.find(t=>t.mode==='Jeepney').total,59)
+const alaminos=estimateTransport({...base,areaId:'dagupan',transportModes:['Tricycle'],fareInputs:[{mode:'Tricycle',tableId:'tricycle',km:2,rides:2}]})
+assert.equal(alaminos[0].total,80)
+for(const [date,expected] of [['2026-09-28',92]]) {
  const bus=estimateTransport({...base,date,transportModes:['Bus'],fareInputs:[{mode:'Bus',tableId:'bus-ordinary',km:10,rides:2}]})
  assert.equal(bus[0].total,expected)
 }
 assert.equal(fareTables.find(t=>t.id==='jeepney').rows.length,50)
-assert.equal(fareTables.find(t=>t.id==='tricycle').rows.length,15)
+assert.equal(fareTables.find(t=>t.id==='tricycle').rows.length,20)
 for(const table of fareTables.filter(t=>t.mode==='Bus')) assert.equal(table.rows.length,120)
 assert.throws(()=>validateItinerary({...base,hotelRooms:0}))
 assert.throws(()=>validateItinerary({...base,fareInputs:[{mode:'Tricycle',rides:0}]}))
 assert.throws(()=>validateItinerary({...base,fareInputs:[{mode:'Tricycle',rides:2,allowance:-1}]}))
 assert.throws(()=>validateItinerary({...base,fareInputs:[base.fareInputs[0],base.fareInputs[0]]}))
 console.log('PASS: meal/group/night/room totals, fare matrix rows, date boundaries, scope guards, unknown fares, category matching, input validation and persisted cost estimates.')
+
+assert.throws(()=>validateItinerary({...base,fareInputs:[{mode:'Jeepney',allowance:1,rides:2},base.fareInputs[1]]}),/supplied fare matrix/)
+
+assert.equal(plan.breakdown.Transit, plan.costEstimate.transportTotal)
+assert.equal(plan.estimated, plan.costEstimate.max)
+const { calculateTransport } = require('../dist/lib/fareCalculation')
+for (const [mode, tableId, km, perRide] of [['Bus','bus-ordinary',10,23], ['Bus','bus-aircon',10,24.5], ['Jeepney','jeepney',5,14.75], ['Tricycle','tricycle',3,30]]) {
+ const request = {...base, transportModes:[mode], fareInputs:[{mode,tableId,km,rides:3}]}
+ const selected = calculateTransport(request, fareTables)[0]
+ assert.equal(selected.perRide, perRide)
+ assert.equal(selected.total, perRide * 3 * base.travelers)
+ assert.deepEqual(estimateTransport(request)[0], selected)
+}
+console.log('PASS: selector calculator matches server for every matrix; transport included in breakdown and total.')
+
+const { calculateBudgetTotals } = require('../dist/lib/fareCalculation')
+assert.equal(plan.breakdown.Emergency, 1000)
+assert.equal(Object.values(plan.breakdown).reduce((sum, value) => sum + value, 0), plan.estimated)
+for (const budget of [10000, 1234.56]) {
+ const costs = {meals:600,transportTotal:92,entryFees:50,lodging:null}
+ const totals = calculateBudgetTotals(budget, 2, costs)
+ assert.equal(totals.emergency, Math.round(budget * 10) / 100)
+ assert.equal(totals.max, 742 + totals.emergency)
+ assert.equal(totals.remainingMin, Math.round((budget - totals.emergency - 742) * 100) / 100)
+}
+console.log('PASS: 10% emergency reserve included once in breakdown, trip total and remaining budget.')
+
+const missing = calculateBudgetTotals(10000,2,{meals:600,transportTotal:92})
+assert.equal(missing.max,1692)
+assert.equal(missing.remainingMin,8308)
+const strings = calculateBudgetTotals('10000','2',{meals:'600',transportTotal:'92',entryFees:'50'})
+assert.equal(strings.max,1742)
+assert.equal(strings.perPersonMax,871)
+assert.equal(calculateBudgetTotals(10000,0,{}).perPersonMax,null)
+const invalid = calculateBudgetTotals(NaN,undefined,{meals:NaN,transportTotal:Infinity})
+assert(Object.values(invalid).every(value => typeof value !== 'number' || Number.isFinite(value)))
+assert.equal(calculateBudgetTotals(10000,2,{meals:0.1,transportTotal:0.2}).max,1000.3)
+const badRide = calculateTransport({...base,transportModes:['Bus'],fareInputs:[{mode:'Bus',tableId:'bus-ordinary',km:10,rides:NaN}]},fareTables)
+assert.equal(badRide[0].total,null)
+console.log('PASS: missing fields, numeric strings, zero travelers, invalid inputs and cent rounding.')

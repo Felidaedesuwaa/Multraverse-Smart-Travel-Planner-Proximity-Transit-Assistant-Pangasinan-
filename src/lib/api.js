@@ -60,6 +60,7 @@ async function request(path, options = {}) {
   if (!res.ok) {
     if (res.status === 401 && token && (!path.startsWith('/api/auth/') || path === '/api/auth/password/change') && await getToken() === token) await unauthorizedHandler?.();
     const error = new Error(data.error || "Request failed");
+    error.code = data.code;
     error.fieldErrors = data.fieldErrors;
     error.status = res.status;
     error.retryAfter = Number(res.headers.get('Retry-After')) || 0;

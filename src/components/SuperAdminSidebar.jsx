@@ -19,7 +19,7 @@ export default function SuperAdminSidebar({ activeScreen, onNavigate, compact })
   const { palette } = useAppTheme()
   const user = useAuthStore(state => state.user)
   const foreground = { color: palette.onPrimary }
-  return <ScrollView horizontal={compact} showsVerticalScrollIndicator={false}
+  return <ScrollView horizontal={compact} showsHorizontalScrollIndicator={false} showsVerticalScrollIndicator={false}
     style={[compact ? styles.compact : styles.sidebar, { backgroundColor: palette.sidebar, borderRightWidth: compact ? 0 : 1, borderBottomWidth: compact ? 1 : 0, borderColor: palette.sidebarBorder }]}
     contentContainerStyle={[styles.content, compact && styles.mobileContent]}>
     {!compact && <>
@@ -48,10 +48,10 @@ export default function SuperAdminSidebar({ activeScreen, onNavigate, compact })
 }
 
 const styles = StyleSheet.create({
-  sidebar: { width: 260, minWidth: 260, maxWidth: 260 },
-  compact: { width: '100%', flexGrow: 0, flexShrink: 0 },
+  sidebar: { width: 260, minWidth: 260, maxWidth: 260, flexGrow: 0, flexShrink: 0, alignSelf: 'stretch' },
+  compact: { width: '100%', height: 100, minHeight: 100, maxHeight: 100, flexGrow: 0, flexShrink: 0 },
   content: { flexGrow: 1, padding: 18, gap: 20 },
-  mobileContent: { padding: 16, gap: 14, alignItems: 'center' },
+  mobileContent: { flexDirection: 'row', padding: 16, gap: 14, alignItems: 'center' },
   grow: { flex: 1, minWidth: 0 },
   brand: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 6 },
   brandIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },

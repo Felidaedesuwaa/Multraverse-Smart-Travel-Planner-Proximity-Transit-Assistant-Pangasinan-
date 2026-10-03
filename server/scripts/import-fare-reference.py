@@ -5,6 +5,7 @@ Run with a PDF path; --check compares the retained extraction without writing.
 import argparse
 import hashlib
 import json
+import re
 from pathlib import Path
 from pypdf import PdfReader
 
@@ -30,6 +31,26 @@ def main():
     parser.add_argument('--check', action='store_true')
     args = parser.parse_args()
     pages = [p.extract_text() for p in PdfReader(args.pdf).pages]
+    if len(pages) == 13 and 'LGU-BASED FARES' in pages[3]:
+        sections = []
+        for key, start, end, scope in [('jeepney', 2, 3, 'Traditional PUJ reference; effective October 8, 2023.'), ('tricycle', 4, 4, 'Dagupan City only; shared fare per passenger. Ordinance 2355-2025. Special hire and night differential require a separate quote.'), ('bus-ordinary', 5, 8, 'Provincial ordinary bus; effective September 28, 2026.'), ('bus-aircon', 9, 12, 'Provincial regular aircon bus; effective September 28, 2026.')]:
+            text = '\n'.join(pages[start-1:end])
+            pattern = r'(\d+) km\s+\u25a0([\d,]+(?:\.\d+)?)\s+\u25a0([\d,]+(?:\.\d+)?)\s+\u25a0([\d,]+(?:\.\d+)?)\s+\u25a0([\d,]+(?:\.\d+)?)' if key == 'tricycle' else r'(?:^|\n)(\d+)\s+\u25a0([\d,]+\.\d+)\s+\u25a0([\d,]+\.\d+)'
+            rows = [dict(km=int(m[0]), regular=float(m[1].replace(',', '')), discounted=round(float(m[1].replace(',', '')) * .8, 2) if key == 'tricycle' else float(m[2].replace(',', ''))) for m in re.findall(pattern, text)]
+            expected = 20 if key == 'tricycle' else 50 if key == 'jeepney' else 120
+            if len(rows) != expected or len({r['km'] for r in rows}) != expected:
+                raise ValueError(f'Unexpected {key} rows; review extraction')
+            sections.append(dict(id=key, first_page=start, last_page=end, scope=scope, text=text, rows=rows))
+        reference = dict(source_file=args.pdf.name, sha256=hashlib.sha256(args.pdf.read_bytes()).hexdigest(), currency='PHP', availability='All Pangasinan cities and municipalities', current_rate_verified=False, note='Use exact listed fares and billed route distance. Dagupan shared tricycle fares apply only in Dagupan. Missing local fares are unverified; never invent a provincial rate.', conventions=pages[0], sections=sections)
+        output = json.dumps(reference, ensure_ascii=False, indent=2) + '\n'
+        target = ROOT / 'server/src/data/pangasinanFares.json'
+        if args.check:
+            assert target.read_text(encoding='utf-8') == output, 'Retained reference differs from PDF'
+        else:
+            target.write_text(output, encoding='utf-8')
+            (ROOT / 'ai-service/data/pangasinan_fares.jsonl').write_text('\n'.join(json.dumps(dict(instruction=f"Show supplied Pangasinan fare matrix {s['id']} in kilometers.", response=s['scope'] + '\nDistance is in kilometers (km).\n' + s['text']), ensure_ascii=False) for s in sections) + '\n', encoding='utf-8')
+        print(f'{len(pages)} pages; {len(sections)} sections; extracted rows verified')
+        return
     if len(pages) != 18 or 'NEW TRICYCLE FARE RATE' not in pages[1] or 'MODERN UV EXPRESS' not in pages[15]:
         raise ValueError('Unexpected PDF layout; review extraction before importing')
     reference = dict(source_file=args.pdf.name, sha256=hashlib.sha256(args.pdf.read_bytes()).hexdigest(),

@@ -151,7 +151,7 @@ router.post('/planner/:id/save', async (req: AuthRequest<{ id: string }>, res) =
     // The complete bounded itinerary is one atomic document write.
     const result = await Trip.create({
       userId: req.userId, plannerId,
-      title: plan.request.destinations.map((d: any) => areas.find(a => a.id === d.areaId)?.name).join(' / ') + ' trip',
+      title: `${plan.request.destinations.map((d: any) => areas.find(a => a.id === d.areaId)?.name).join(' / ')} ${plan.guided?.request.tripTypes?.slice(0, 2).join(' & ') || 'Discovery'} | ${new Date(`${plan.request.dates.start}T00:00:00+08:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'Asia/Manila' })} | ${plan.request.days} ${plan.request.days === 1 ? 'day' : 'days'}`,
       location: 'Pangasinan', date: plan.request.dates.start, budget: plan.request.budget,
       plan, icon: 'landmark', status: 'UPCOMING',
     })
