@@ -3,14 +3,14 @@ import { AuthRequest } from '../middleware/auth'
 import { PlannerDraft } from '../models/PlannerDraft'
 import { Trip } from '../models/Trip'
 import { AISettings } from '../models/AISettings'
-import { itineraryCatalog } from '../data/itineraryCatalog'
+import { publishedItineraryCatalog } from '../lib/publishedItineraryCatalog'
 import { validateItinerary, ItineraryInputError, buildGroundedItinerary, candidatesFor, validateModelOrder } from '../lib/groundedItinerary'
 import { guidedSnapshot } from '../lib/guidedSnapshot'
-import { fareTables } from '../lib/itineraryCosts'
+import { estimateCosts, fareTables } from '../lib/itineraryCosts'
 
 const router = Router()
 const inFlight = new Set<string>()
-router.get('/itinerary/catalog', (_req, res) => res.json({ areas: itineraryCatalog, fareTables }))
+router.get('/itinerary/catalog', async (_req, res) => res.json({ areas: await publishedItineraryCatalog(), fareTables }))
 router.post('/itinerary/grounded', async (req: AuthRequest, res) => {
   const userId = req.userId!
   if (inFlight.has(userId)) return res.status(409).json({ error: 'A plan is already being generated for your account.' })
@@ -27,22 +27,26 @@ router.post('/itinerary/grounded', async (req: AuthRequest, res) => {
     const history = [...drafts, ...trips].map(d => d.plan.guided).sort((a,b) => b.generatedAt.localeCompare(a.generatedAt))
       .filter((p,i,all) => all.findIndex(other => other.generatedAt === p.generatedAt) === i).slice(0,3)
     const used = new Set<string>(history.flatMap(p => p.chosenIds))
-    const candidates = candidatesFor(request, used)
+    const catalog = await publishedItineraryCatalog()
+    const candidates = candidatesFor(request, used, catalog)
     let order: string[] = []
-    let modelStatus = 'No unused options remain.'
+    const baseline = estimateCosts(request, catalog.find(a => a.id === request.areaId)?.lodging.find(e => e.id === request.lodgingId)?.lodgingDetails)
+    let modelStatus = 'No matching options are available.'
     if (candidates.length && (await AISettings.findById('global').lean())?.itineraryNarrative !== false) {
       try {
         const response = await fetch(`${process.env.AI_SERVICE_URL || 'http://localhost:8000'}/itinerary/rank`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(25000),
           body: JSON.stringify({ areaId: request.areaId, tripTypes: request.tripTypes, activities: request.activities, travelStyle: request.travelStyle,
-            candidates: candidates.map(e => ({ id: e.id, name: e.name, category: e.category,
+            budget: request.budget, visitAllowance: Math.max(0, baseline.remainingMin), mealBudget: request.mealBudget, travelers: request.travelers, days: request.days,
+            candidates: candidates.map(e => ({ id: e.id, name: e.name, category: e.category, tag: e.tag, description: (e.description || '').slice(0, 1000),
+              estimated_group_cost: e.entryFee == null ? null : e.entryFee * (e.feeBasis === 'group' ? 1 : request.travelers),
               lodging_context: e.lodgingDetails ? JSON.stringify(e.lodgingDetails) : '' })) }),
         })
         if (!response.ok) throw new Error('Model unavailable')
         order = validateModelOrder(await response.json(), candidates)
       } catch { modelStatus = 'The AI model was unavailable or returned an invalid selection. This plan uses catalog matching only.' }
     } else if (candidates.length) modelStatus = 'AI assistance is disabled. This plan uses catalog matching only.'
-    const plan = buildGroundedItinerary(request, used, order)
+    const plan = buildGroundedItinerary(request, used, order, catalog)
     if (!order.length) plan.warnings.push(modelStatus)
     const draft = await PlannerDraft.create({ userId, plan: guidedSnapshot(plan), expiresAt: new Date(Date.now() + 365*86400000) })
     return res.json({ ...plan, id: String(draft._id) })

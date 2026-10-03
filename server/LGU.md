@@ -114,3 +114,46 @@ Run `node scripts/check-lgu-municipalities.cjs` to check all 48 geographic viewp
 zoom, aliases, four cities, and parity with the existing backend catalog. The LGU
 API suite additionally exercises all five resource types for each of six scopes,
 including foreign IDs and municipality injection through both body and query.
+
+## Itinerary images and emergency reserve
+
+Places and local food accept an optional compressed JPEG image (up to 700,000
+characters). New images follow the existing Admin approval workflow. Approved
+entries in the seven supported planner areas appear in Step 3; uploaded photos
+replace guide photos for matching names. Descriptions come from approved LGU
+entries or the source guide. The planner keeps the selected hotel even across
+repeat plans and multiplies the Step 2 reference rate by rooms and nights.
+Emergency reserve is 10% of the total trip budget and is included in totals.
+
+For existing databases with strict validators, build the server, then run:
+
+```sh
+node server/scripts/migrate-itinerary-media.cjs
+node server/scripts/migrate-itinerary-media.cjs --apply --database=EXACT_NAME
+```
+
+The first command validates without changing data. The second adds only photo
+and guided snapshot fields to existing validators after checking stored records.
+
+## Category and budget selection
+
+Recent itinerary history is a preference for variety, not a permanent exclusion.
+Matching visits can be reused so repeat generation does not leave only a hotel.
+Food Trip or Local Food shows every food listed for the selected area, including
+approved LGU entries. The schedule uses a small tasting shortlist; the complete
+list is preserved in the guided snapshot and PDF. Food-only trips exclude
+unrelated attractions. Mixed selections include attractions matching selected
+categories. Known group admission costs must fit the allowance remaining after
+meals, transport, the selected hotel and the 10% emergency reserve; unpriced
+visits stay explicitly unconfirmed. The model receives this budget context, and
+the server enforces categories and costs even when AI ranking is unavailable.
+
+The planner starts with no traveler type, travel style, budget tier or lodging
+selection. No lodging is an explicit user choice. Trip types and activities each
+require 1?3 selections. Step validation blocks empty or invalid required fields
+without silently replacing numeric input, and the API repeats the validation.
+Dates must be today or later in Manila; travelers/rooms are whole numbers 1?30,
+trip length is 1?7 days, and every selected transport needs a complete fare or
+allowance estimate. Success feedback appears after steps, generation, saving and
+starting a PDF download. Run `node scripts/check-itinerary-validation.cjs` after
+building the server to verify the form and API rules.

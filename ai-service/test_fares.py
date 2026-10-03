@@ -10,20 +10,22 @@ class FareTests(unittest.TestCase):
             result = main.generate(main.GenerateRequest(prompt=f'Bus fares in {town}'))
             self.assertEqual(result['source'], 'pangasinan-fare-reference')
             reference = json.loads(result['response'])['fare_reference']
-            self.assertEqual(len(reference['sections']), 5)
+            self.assertEqual(len(reference['sections']), 2)
             self.assertIn('September 28, 2026', reference['sections'][0]['text'])
             result = main.itinerary(main.ItineraryRequest(destination=town, days=1))
-            self.assertEqual(len(result['fare_reference']['sections']), 11)
+            self.assertEqual(len(result['fare_reference']['sections']), 4)
             self.assertFalse(result['budgetVerified'])
 
-    def test_local_and_historical_scope_preserved(self):
-        self.assertIn('Alaminos City only', fare_reference('tricycle')['sections'][0]['scope'])
-        self.assertIn('Mega Manila', fare_reference('jeepney')['sections'][0]['scope'])
-        islands = fare_reference('Hundred Islands')['sections']
-        self.assertEqual(len(islands), 2)
-        self.assertIn('Day tour PHP 40.00', islands[0]['text'])
-        self.assertIn('total registration PHP 100.00', islands[1]['text'])
-        self.assertFalse(fare_reference()['current_rate_verified'])
+    def test_updated_matrix_scope_and_exact_rows(self):
+        reference = fare_reference()
+        self.assertEqual(reference['source_file'], 'Pangasinan_Fare_Reference_Updated_Tricycle.pdf')
+        tricycle = fare_reference('tricycle')['sections'][0]
+        self.assertIn('Dagupan City only', tricycle['scope'])
+        self.assertEqual(tricycle['rows'][0], {'km': 1, 'regular': 20, 'discounted': 16})
+        jeep = fare_reference('jeepney')['sections'][0]
+        self.assertEqual(jeep['rows'][4]['discounted'], 12)
+        self.assertEqual(len(jeep['rows']), 50)
+        self.assertFalse(reference['current_rate_verified'])
 
 
 if __name__ == '__main__':

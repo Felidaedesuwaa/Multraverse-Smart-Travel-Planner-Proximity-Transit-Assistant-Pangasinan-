@@ -64,3 +64,15 @@ and refuses oversized examples instead of silently truncating facts. Successful
 training saves the knowledge manifest beside the adapter. Preparing data does not
 claim that TinyLlama has been retrained. Keep equivalent translations and records
 from the same LGU together when building evaluation splits.
+
+### Itinerary ranking rules
+
+`/itinerary/rank` receives total budget, remaining visit allowance, daily meal
+allowance, group size, days and listed admission costs. Its prompt prioritizes
+selected categories and affordable visits without treating unknown prices as
+free. Food Trip / Local Food includes the full destination food list; the Express
+planner enforces this independently of model output and uses recent history only
+to prefer variety. These are runtime selection and prompt changes; model weights
+do not need retraining. Restart the AI service after updating `main.py`.
+
+The itinerary fare reference is imported from `Pangasinan_Fare_Reference_Updated_Tricycle.pdf` (13 pages). `fares.py` reads the shared JSON at runtime; no model retraining is needed. The planner uses exact regular-fare rows for traditional jeepneys, ordinary/aircon buses (effective 2026-09-28), and Dagupan shared tricycles. Discount columns are shown separately; trip totals assume regular passengers. Special tricycle hire and night surcharges need separate confirmation. Other LGUs have no listed tricycle prices in this reference.

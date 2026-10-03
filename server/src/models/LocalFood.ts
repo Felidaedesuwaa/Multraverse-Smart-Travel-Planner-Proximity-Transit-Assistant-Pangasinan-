@@ -4,6 +4,7 @@ import { apiSchemaOptions } from './_helpers'
 import { moderationFields } from './_moderation'
 const localFoodSchema = new Schema({
   ...moderationFields,
+  photo: { type: String, default: '', maxlength: 700000, match: /^(?:data:image\/jpeg;base64,[A-Za-z0-9+/=]+)?$/ },
   municipality: { type: String, trim: true, index: true },
   name: { type: String, required: true }, description: { type: String, required: true }, avgPrice: { type: Number, default: null, min: 0 },
   where: { type: String, required: true }, category: { type: String, required: true },

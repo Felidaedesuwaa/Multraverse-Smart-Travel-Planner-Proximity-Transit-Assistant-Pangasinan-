@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native'
 import { FeedbackPressable } from './WorkspaceMotion'
 import { useAppTheme } from '../theme/useAppTheme'
@@ -21,12 +22,17 @@ export function WorkspacePanel({ children, style }) {
   const { palette: p } = useAppTheme()
   return <View style={[ui.panel, { backgroundColor: p.surface, borderColor: p.line }, style]}>{children}</View>
 }
-export function WorkspaceTable({ columns, rows, empty = 'No matching records.', renderActions }) {
+export function WorkspaceTable({ columns, rows, empty = 'No matching records.', renderActions, columnWidths }) {
   const { palette: p } = useAppTheme()
+  const [availableWidth, setAvailableWidth] = useState(0)
+  const columnsWidth = columnWidths?.reduce((total, width) => total + width, 0)
+  const minimumWidth = columnsWidth ? columnsWidth + (renderActions ? 230 : 0) : undefined
+  const tableWidth = columnWidths ? Math.max(availableWidth, minimumWidth) : undefined
+  const cellSize = index => ({ width: columnWidths ? columnWidths[index] / columnsWidth * (tableWidth - (renderActions ? 230 : 0)) : index === 0 ? 260 : 220, flexGrow: 0, flexShrink: 0 })
   if (!rows.length) return <View style={ui.empty}><Text style={[ui.body, { color: p.muted }]}>{empty}</Text></View>
-  return <ScrollView horizontal contentContainerStyle={{ flexGrow: 1 }}><View style={{ flexGrow: 1 }}>
-    <View style={[ui.tableRow, { backgroundColor: p.tint }]}>{columns.map((label, index) => <Text key={label} style={[ui.cell, ui.eyebrow, { width: index === 0 ? 260 : 220, color: p.muted }]}>{label.toUpperCase()}</Text>)}{renderActions && <Text style={[ui.cell, ui.eyebrow, { width: 230, color: p.muted }]}>ACTIONS</Text>}</View>
-    {rows.map(row => <View key={row.id} style={[ui.tableRow, { borderBottomWidth: 1, borderColor: p.line }]}>{row.cells.map((value, index) => <Text key={index} selectable style={[ui.cell, ui.body, { width: index === 0 ? 260 : 220, color: p.ink }]}>{value}</Text>)}{renderActions && <View style={[ui.cell, { width: 230 }]}>{renderActions(row)}</View>}</View>)}
+  return <ScrollView horizontal style={{ width: '100%', minWidth: 0, flexGrow: 0, flexShrink: 0 }} onLayout={event => setAvailableWidth(event.nativeEvent.layout.width)} contentContainerStyle={{ flexGrow: 1 }}><View style={{ flexGrow: columnWidths ? 0 : 1, width: tableWidth, minWidth: minimumWidth }}>
+    <View style={[ui.tableRow, { backgroundColor: p.tint }]}>{columns.map((label, index) => <Text key={label} style={[ui.cell, ui.eyebrow, cellSize(index), { color: p.muted }]}>{label.toUpperCase()}</Text>)}{renderActions && <Text style={[ui.cell, ui.eyebrow, { width: 230, color: p.muted }]}>ACTIONS</Text>}</View>
+    {rows.map(row => <View key={row.id} style={[ui.tableRow, { borderBottomWidth: 1, borderColor: p.line }]}>{row.cells.map((value, index) => <Text key={index} selectable style={[ui.cell, ui.body, cellSize(index), { color: p.ink }]}>{value}</Text>)}{renderActions && <View style={[ui.cell, { width: 230 }]}>{renderActions(row)}</View>}</View>)}
   </View></ScrollView>
 }
 export const ui = StyleSheet.create({

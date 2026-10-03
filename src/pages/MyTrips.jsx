@@ -1,4 +1,3 @@
-import NewTripDialog from "../components/NewTripDialog";
 import { FeedbackPressable } from "../components/WorkspaceMotion";
 import MoneyAmount from "../components/MoneyAmount";
 import { useAppTheme } from "../theme/useAppTheme";
@@ -20,7 +19,6 @@ import {
   Calendar,
   ChevronRight,
   MapPin,
-  Plus,
   Search,
   Trash2,
   X,
@@ -33,15 +31,17 @@ const TABS = [
   { key: "all", label: "All" },
   { key: "UPCOMING", label: "Upcoming" },
   { key: "COMPLETED", label: "Completed" },
+  { key: "CANCELED", label: "Canceled" },
 ];
 
 const STATUS_STYLE = {
   UPCOMING: { bg: colors.coralLight, text: colors.sunsetCoral },
   COMPLETED: { bg: colors.palmGreenLight, text: colors.palmGreen },
+  CANCELED: { bg: "#E2EBF3", text: "#6B8CA8" },
 };
 
 // ── Trip Detail Modal ───────────────────────────────────
-function TripDetailModal({ trip, onClose, onDelete }) {
+function TripDetailModal({ trip, onClose, onDelete, onCancel, canceling, error }) {
   const { themeStyle, themeColor } = useAppTheme();
 
   if (!trip) return null;
@@ -149,6 +149,13 @@ function TripDetailModal({ trip, onClose, onDelete }) {
             </View>
           </View>
 
+          {error && <Text accessibilityRole="alert" style={themeStyle({ color: colors.sunsetCoral })}>{error}</Text>}
+          {trip.status === "UPCOMING" && (
+            <FeedbackPressable onPress={() => onCancel(trip)} disabled={canceling} style={themeStyle(styles.deleteBtn)}>
+              <X size={15} color={themeColor(colors.sunsetCoral, "color")} />
+              <Text style={themeStyle(styles.deleteBtnText)}>{canceling ? "Canceling..." : "Cancel Trip"}</Text>
+            </FeedbackPressable>
+          )}
           {/* Actions */}
           <View style={themeStyle(styles.modalActions)}>
             <FeedbackPressable
@@ -250,17 +257,19 @@ function TripCard({ trip, onView, onDelete, compact }) {
 }
 
 // ── Main Screen ─────────────────────────────────────────
-export default function MyTrips() {
+export default function MyTrips({ route }) {
   const { themeStyle, themeColor } = useAppTheme();
   const { width } = useWindowDimensions();
   const compact = (width >= 768 ? width - 280 : width) < 680;
 
+  const successMessage = route?.params?.successMessage;
   const [filter, setFilter] = useState("all");
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedTrip, setSelectedTrip] = useState(null);
-  const [showNewTrip, setShowNewTrip] = useState(false);
+  const [canceling, setCanceling] = useState(false);
+  const [cancelError, setCancelError] = useState(null);
 
   useFocusEffect(useCallback(() => {
     let alive = true;
@@ -281,8 +290,19 @@ export default function MyTrips() {
     }
   };
 
-  const handleCreated = (newTrip) => {
-    setTrips((prev) => [newTrip, ...prev]);
+  const handleCancel = async (trip) => {
+    setCanceling(true);
+    setCancelError(null);
+    try {
+      const updated = await api.updateTrip(trip._id ?? trip.id, { status: "CANCELED" });
+      const canceled = { ...trip, ...updated };
+      setTrips(prev => prev.map(item => (item._id ?? item.id) === (trip._id ?? trip.id) ? canceled : item));
+      setSelectedTrip(canceled);
+    } catch (cause) {
+      setCancelError(cause instanceof Error ? cause.message : "Could not cancel trip. Please try again.");
+    } finally {
+      setCanceling(false);
+    }
   };
 
   const filtered = trips.filter((t) => {
@@ -296,6 +316,7 @@ export default function MyTrips() {
 
   const upcoming = trips.filter((t) => t.status === "UPCOMING").length;
   const completed = trips.filter((t) => t.status === "COMPLETED").length;
+  const canceled = trips.filter((t) => t.status === "CANCELED").length;
 
   return (
     <ScrollView
@@ -304,20 +325,14 @@ export default function MyTrips() {
       showsVerticalScrollIndicator={false}
     >
       {/* Header */}
+      {successMessage && <View accessibilityRole="alert" style={{ padding: 14, marginBottom: 16, borderRadius: 12, backgroundColor: '#EAF5EE' }}><Text style={{ color: '#246346' }}>{successMessage}</Text></View>}
       <View style={themeStyle(styles.header)}>
         <View>
           <Text style={themeStyle(styles.title)}>My Trips</Text>
           <Text style={themeStyle(styles.headerSub)}>
-            {upcoming} upcoming · {completed} completed
+            {upcoming} upcoming · {completed} completed ? {canceled} canceled
           </Text>
         </View>
-        <FeedbackPressable
-          onPress={() => setShowNewTrip(true)}
-          style={themeStyle(styles.newTripBtn)}
-        >
-          <Plus size={16} color={themeColor("#fff", "color")} />
-          <Text style={themeStyle(styles.newTripText)}>New Trip</Text>
-        </FeedbackPressable>
       </View>
 
       {/* Search */}
@@ -361,7 +376,7 @@ export default function MyTrips() {
                     filter === key && styles.tabBadgeTextActive,
                   ])}
                 >
-                  {key === "UPCOMING" ? upcoming : completed}
+                  {key === "UPCOMING" ? upcoming : key === "COMPLETED" ? completed : canceled}
                 </Text>
               </View>
             )}
@@ -387,17 +402,8 @@ export default function MyTrips() {
           <Text style={themeStyle(styles.emptyDesc)}>
             {search
               ? "Try a different search term."
-              : "Generate an itinerary with AI or create a trip manually."}
+              : "Add trips by saving an itinerary in AI Itinerary."}
           </Text>
-          {!search && (
-            <FeedbackPressable
-              onPress={() => setShowNewTrip(true)}
-              style={themeStyle(styles.emptyBtn)}
-            >
-              <Plus size={14} color={themeColor("#fff", "color")} />
-              <Text style={themeStyle(styles.emptyBtnText)}>Create your first trip</Text>
-            </FeedbackPressable>
-          )}
         </View>
       ) : (
         <View style={themeStyle([styles.grid, compact && styles.gridCompact])}>
@@ -405,7 +411,7 @@ export default function MyTrips() {
             <TripCard
               key={trip._id ?? trip.id}
               trip={trip}
-              onView={setSelectedTrip}
+              onView={(trip) => { setCancelError(null); setSelectedTrip(trip); }}
               onDelete={handleDelete}
               compact={compact}
             />
@@ -418,8 +424,10 @@ export default function MyTrips() {
         trip={selectedTrip}
         onClose={() => setSelectedTrip(null)}
         onDelete={handleDelete}
+        onCancel={handleCancel}
+        canceling={canceling}
+        error={cancelError}
       />
-      {showNewTrip && <NewTripDialog onClose={() => setShowNewTrip(false)} onCreated={handleCreated} />}
     </ScrollView>
   );
 }
@@ -437,16 +445,6 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 26, fontWeight: "700", color: "#1A2E40" },
   headerSub: { fontSize: 13, color: "#6B8CA8", marginTop: 4 },
-  newTripBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderRadius: 12,
-    backgroundColor: colors.sunsetCoral,
-  },
-  newTripText: { fontSize: 14, fontWeight: "700", color: "#fff" },
 
   // Search
   searchBox: {
@@ -464,7 +462,7 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, fontSize: 14, color: "#1A2E40" },
 
   // Tabs
-  tabs: { flexDirection: "row", gap: 8, marginBottom: 24 },
+  tabs: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 24 },
   tab: {
     flexDirection: "row",
     alignItems: "center",
@@ -492,17 +490,6 @@ const styles = StyleSheet.create({
   emptyBox: { alignItems: "center", marginTop: 60, gap: 10 },
   emptyTitle: { fontSize: 18, fontWeight: "700", color: "#1A2E40" },
   emptyDesc: { fontSize: 14, color: "#6B8CA8", textAlign: "center", maxWidth: 300 },
-  emptyBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginTop: 8,
-    paddingHorizontal: 18,
-    paddingVertical: 11,
-    borderRadius: 10,
-    backgroundColor: colors.oceanBlue,
-  },
-  emptyBtnText: { fontSize: 13, fontWeight: "700", color: "#fff" },
 
   // Grid
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 16, alignItems: "stretch" },

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
-import { Mail, RefreshCw, Search, ShieldCheck, Users, UserPlus, Route } from 'lucide-react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
+import { RefreshCw, Search, ShieldCheck, Users, UserPlus, Route } from 'lucide-react-native';
 import AdminPage from '../components/AdminPage';
 import Card from '../components/Card';
 import WovenDivider from '../components/WovenDivider';
@@ -48,10 +48,6 @@ export default function AdminUsers() {
   function action(label, Icon, onPress, tint = colors.oceanBlueLight, color = colors.oceanBlue) {
     return <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={({ pressed }) => [t(styles.action), { backgroundColor: themeColor(tint, 'backgroundColor'), opacity: pressed ? 0.65 : 1 }]}><Icon size={15} color={themeColor(color, 'color')} /></Pressable>;
   }
-  async function email(user) {
-    try { await Linking.openURL('mailto:' + encodeURIComponent(user.email)); }
-    catch { setError('Unable to open your email application. Email address: ' + user.email); }
-  }
   return <AdminPage title="User Management" subtitle="Explorer accounts and their recorded travel activity" actions={action('Refresh Explorer accounts', RefreshCw, () => setRefresh(v => v + 1))}>
     {!!notice && <Text accessibilityRole="alert" style={[t(styles.muted), { marginBottom: 16 }]}>{notice}</Text>}
     <View style={styles.stats}>{metrics.map(({ label, value, detail, Icon, color, tint }) => <Card key={label} style={t(styles.stat)}>
@@ -75,7 +71,7 @@ export default function AdminUsers() {
             <Text style={[t(styles.tripCount), { width: (tableWidth - 48) * columns[3][1] }]}>{number(user.tripCount)}</Text>
             <View style={{ width: (tableWidth - 48) * columns[4][1] }}><Text style={t([styles.badge, user.emailVerifiedAt ? styles.verified : styles.unverified])}>{user.emailVerifiedAt ? 'Verified' : 'Not verified'}</Text></View>
             <Text style={[t(styles.joined), { width: (tableWidth - 48) * columns[5][1] }]}>{date(user.createdAt)}</Text>
-            <View style={[styles.actions, { width: (tableWidth - 48) * columns[6][1] }]}><AccountActionButton mode="edit" label={'Edit information for ' + user.name} onPress={() => { setNotice(''); setAccountAction({ account: user, mode: 'edit' }); }} />{action('Compose email to ' + user.name, Mail, () => email(user), colors.goldLight, colors.gold)}{canDelete && <AccountActionButton mode="delete" label={'Delete account ' + user.name} onPress={() => { setNotice(''); setAccountAction({ account: user, mode: 'delete' }); }} />}</View>
+            <View style={[styles.actions, { width: (tableWidth - 48) * columns[6][1] }]}><AccountActionButton mode="edit" label={'Edit information for ' + user.name} onPress={() => { setNotice(''); setAccountAction({ account: user, mode: 'edit' }); }} />{canDelete && <AccountActionButton mode="delete" label={'Delete account ' + user.name} onPress={() => { setNotice(''); setAccountAction({ account: user, mode: 'delete' }); }} />}</View>
           </View>)}
         </View></ScrollView>
         {!users.length && <View style={styles.empty}><Users size={28} color={themeColor(colors.slate, 'color')} /><Text style={t(styles.userName)}>{search ? 'No matching Explorers' : 'No Explorer accounts yet'}</Text><Text style={t(styles.muted)}>{search ? 'Try a different name or email.' : 'Registered Explorer accounts will appear here.'}</Text></View>}

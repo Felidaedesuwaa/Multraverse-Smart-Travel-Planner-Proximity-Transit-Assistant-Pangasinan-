@@ -8,7 +8,7 @@ const tripSchema = new Schema({
   plan: { type: planSchema, default: undefined },
   userId: { ...objectId(), ref: 'User', index: true },
   title: { type: String, required: true }, location: { type: String, required: true }, date: { type: String, required: true },
-  status: { type: String, enum: ['UPCOMING', 'COMPLETED'], default: 'UPCOMING' },
+  status: { type: String, enum: ['UPCOMING', 'COMPLETED', 'CANCELED'], default: 'UPCOMING' },
   budget: { type: Number, min: 0, default: 0 }, icon: { type: String, default: 'landmark' },
 }, apiSchemaOptions)
 tripSchema.virtual('tripStops').get(function(this: any) {

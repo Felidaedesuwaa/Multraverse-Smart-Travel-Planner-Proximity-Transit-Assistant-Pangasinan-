@@ -1,3 +1,5 @@
+import { downloadItineraryPdf } from '../lib/itineraryPdf';
+import { useState } from 'react';
 import { Bus, Utensils, BedDouble, Wallet, Users, CalendarDays, MapPin, Clock, Info, BookmarkPlus, Download, Pencil, Compass } from 'lucide-react-native';
 
 const money = n => `₱${Number(n).toLocaleString('en-PH', { maximumFractionDigits: 2 })}`;
@@ -6,26 +8,32 @@ const range = (min, max) => min === max ? money(min) : `${money(min)}–${money(
 export default function ItineraryResults({ plan, areaName, onEdit, onSave, saved, saving }) {
   const r = plan.request;
   const c = plan.costEstimate;
+  const [exportMessage, setExportMessage] = useState('');
+  const [exportFailed, setExportFailed] = useState(false);
   const exportPlan = () => {
-    const blob = new Blob([JSON.stringify(plan, (key, value) => key === 'Icon' ? undefined : value, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a'); link.href = url; link.download = `${r.areaId}-itinerary.json`; link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    try { downloadItineraryPdf(plan, areaName); setExportFailed(false); setExportMessage('Your itinerary PDF download has started.'); }
+    catch { setExportFailed(true); setExportMessage('The PDF could not be downloaded. Please try again.'); }
   };
   return <section className="air-results">
     <style>{styles}</style>
+    {exportMessage && <p role={exportFailed ? 'alert' : 'status'} className={exportFailed ? 'aip-error' : 'aip-success'}>{exportMessage}</p>}
     <header className="air-header">
       <div><span className="air-eyebrow">YOUR TRIP PLAN</span><h2>{areaName || r.areaId}</h2><p>{[...r.tripTypes, ...r.activities].join(' · ') || 'Explore local highlights'}</p></div>
-      <div className="air-actions"><button className="aip-btn aip-btn-outline" onClick={onEdit}><Pencil size={16} />Edit trip</button><button className="aip-btn aip-btn-outline" onClick={exportPlan}><Download size={16} />Export</button></div>
+      <div className="air-actions"><button className="aip-btn aip-btn-outline" onClick={onEdit}><Pencil size={16} />Edit trip</button><button className="aip-btn aip-btn-outline" onClick={exportPlan}><Download size={16} />Export PDF</button></div>
     </header>
     <div className="air-meta"><span><CalendarDays size={16} />{r.date} · {r.days} day{r.days === 1 ? '' : 's'}</span><span><Users size={16} />{r.travelers} traveler{r.travelers === 1 ? '' : 's'}</span><span><Bus size={16} />{r.transportModes.join(' + ') || 'Transport pending'}</span></div>
     <div className="air-stats">
       <Stat Icon={Wallet} label="Trip budget" value={money(r.budget)} />
-      <Stat Icon={Compass} label="Planned total" value={c ? range(c.min, c.max) : 'Pending'} note="Meals + priced transport + hotel estimate" />
+      <Stat Icon={Compass} label="Planned total" value={c ? range(c.min, c.max) : 'Pending'} note="Meals + transport + hotel + listed entry fees + emergency reserve" />
       <Stat Icon={Users} label="Per person · full trip" value={c ? range(c.perPersonMin, c.perPersonMax) : 'Pending'} />
       <Stat Icon={Wallet} label={c?.remainingMin < 0 ? 'Budget shortfall' : 'Available after estimates'} value={c ? c.remainingMin < 0 ? `Up to ${money(-c.remainingMin)}` : range(c.remainingMin, c.remainingMax) : 'Pending'} note="Unpriced costs still need covering" alert={c?.remainingMin < 0} />
     </div>
     <p className="air-notice"><Info size={16} /><span>{c?.note || 'Unpriced costs are not included.'}</span></p>
+    {plan.foodOptions?.length > 0 && <section className="air-panel air-food-options">
+      <h3><Utensils size={18} />All local foods to try in {areaName || r.areaId} ({plan.foodOptions.length})</h3>
+      <p>Choose tastings within your {money(r.mealBudget)} per person daily meal allowance. This list includes every listed local food; the schedule below highlights a few to try.</p>
+      <div className="air-food-grid">{plan.foodOptions.map(food => <article key={food.id} className="air-food-card"><h4>{food.name}</h4><p>{food.description}</p>{food.where && <p><strong>Where:</strong> {food.where}</p>}<p>{food.listedAveragePrice == null ? 'Menu price to confirm' : `Listed average: ${money(food.listedAveragePrice)} · confirm portions and current price`}</p><details><summary>Source</summary><p>{food.source}</p></details></article>)}</div>
+    </section>}
     <div className="air-layout">
       <div className="air-days">
         {Array.from({ length: r.days }, (_, i) => i + 1).map(day => <section className="air-day" key={day}>
@@ -35,7 +43,7 @@ export default function ItineraryResults({ plan, areaName, onEdit, onSave, saved
             const summary = stop.tag === 'Food' ? 'Try this local specialty. Meals use your daily allowance.' : stop.tag === 'Lodging' ? 'Your selected overnight stay.' : stop.tag === 'Transit' ? `${r.transportModes.join(' / ')} · Confirm route and travel time.` : stop.subtitle.split(' Leave ')[0];
             return <article className="air-stop" key={`${stop.entryId || stop.tag}-${i}`}>
               <div className={`air-stop-icon air-${stop.tag.toLowerCase()}`}><Icon size={20} /></div>
-              <div className="air-stop-main"><div className="air-stop-top"><span><Clock size={12} />{stop.time.replace(/^Day \d+\s*·\s*/, '')}</span><span>{stop.tag === 'Food' ? 'Meal allowance' : stop.tag === 'Transit' ? 'See fare estimate' : stop.tag === 'Lodging' ? 'Estimated stay' : 'Entry fee to confirm'}</span></div>
+              <div className="air-stop-main"><div className="air-stop-top"><span><Clock size={12} />{stop.time.replace(/^Day \d+\s*·\s*/, '')}</span><span>{stop.tag === 'Food' ? 'Meal allowance' : stop.tag === 'Transit' ? 'See fare estimate' : stop.tag === 'Lodging' ? 'Estimated stay' : stop.price == null ? 'Entry fee to confirm' : `${money(stop.price)} group entry estimate`}</span></div>
                 <h4>{stop.title}</h4><p>{summary}</p>
                 <details><summary>Details</summary><p>{stop.subtitle}</p></details>
               </div>
@@ -48,7 +56,8 @@ export default function ItineraryResults({ plan, areaName, onEdit, onSave, saved
           <Cost Icon={Utensils} label="Meals" value={money(c?.meals ?? plan.mealAllocation)} note={`${money(r.mealBudget)} × ${r.travelers} people × ${r.days} days`} />
           <Cost Icon={Bus} label="Transport" value={c?.transport.some(t => t.total != null) ? money(c.transportTotal) : 'Not priced'} note="Entered rides for the entire trip" />
           <Cost Icon={BedDouble} label="Hotel" value={c?.lodging ? range(c.lodging.min, c.lodging.max) : r.days === 1 ? 'No overnight stay' : 'Not priced'} note={c?.lodging ? `${c.lodging.nights} nights × ${c.lodging.rooms} rooms · approximate` : undefined} />
-          <Cost Icon={MapPin} label="Entry fees & extras" value="To confirm" />
+          <Cost Icon={Wallet} label="Emergency allowance" value={money(c?.emergency ?? 0)} note="10% of trip budget reserved for emergencies" />
+          <Cost Icon={MapPin} label="Listed entry fees" value={c?.entryFees > 0 ? money(c.entryFees) : 'No priced entries'} note="Only listed fees included; unpriced visits and extras need confirmation" />
           <div className="air-total"><span>Planned total</span><strong>{c ? range(c.min, c.max) : 'Pending'}</strong></div>
           <button className="aip-btn aip-btn-dark aip-btn-block" disabled={saved || saving} onClick={onSave}><BookmarkPlus size={16} />{saved ? 'Saved to My Trips' : saving ? 'Saving…' : 'Save plan'}</button>
         </section>
@@ -69,6 +78,7 @@ export default function ItineraryResults({ plan, areaName, onEdit, onSave, saved
 function Stat({ Icon, label, value, note, alert }) { return <div className={`air-stat ${alert ? 'air-alert' : ''}`}><span><Icon size={16} />{label}</span><strong>{value}</strong>{note && <small>{note}</small>}</div>; }
 function Cost({ Icon, label, value, note }) { return <div className="air-cost"><Icon size={17} /><div><span>{label}</span>{note && <small>{note}</small>}</div><strong>{value}</strong></div>; }
 const styles = `
+.air-food-options { margin-bottom:24px; }.air-food-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr)); gap:12px; margin-top:16px; }.air-food-card { background:#F5F8F4; border:1px solid #E4E9DF; border-radius:12px; padding:16px; }.air-food-card h4 { margin:0 0 8px; font-size:15px; }
 .air-results { color: #16324A; }
 .air-header, .air-actions, .air-meta { display:flex; align-items:center; flex-wrap:wrap; gap:12px; }
 .air-header { justify-content:space-between; margin:0 0 16px; }

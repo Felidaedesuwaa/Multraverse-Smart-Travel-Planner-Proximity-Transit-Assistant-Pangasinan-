@@ -1,11 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { Image as NativeImage, useWindowDimensions } from "react-native";
+import { useAppTheme } from "../theme/useAppTheme";
+import { coastalLight } from "../theme/coastalPalette";
+import { lguMunicipalities } from "../data/lguMunicipalities";
 import AIToolHeader from "../components/AIToolHeader";
 import { api } from "../lib/api";
 import { dagupanPhotos } from "../lib/dagupanPhotos";
 import { alaminosPhotos } from "../lib/alaminosPhotos";
 import { sanCarlosPhotos } from "../lib/sanCarlosPhotos";
 import { urdanetaPhotos } from "../lib/urdanetaPhotos";
+import { itineraryErrors, itineraryErrorStep, itineraryFailureMessage } from "../lib/itineraryValidation";
 import ItineraryResults from "../components/ItineraryResults";
 import ItineraryFareInputs from "../components/ItineraryFareInputs";
 import {
@@ -20,21 +24,21 @@ import {
 /*  Design tokens — pulled from the Figma "DESIGN TOKENS" footer       */
 /* ------------------------------------------------------------------ */
 const colors = {
-  oceanBlue: "#123A5E",
-  oceanBlueDark: "#0C2740",
-  sunsetCoral: "#E8613F",
-  palmGreen: "#2E7D5B",
-  warmSand: "#F6F1E7",
-  seafoam: "#8FD1C7",
-  golden: "#E7A93E",
-  ink: "#16324A",
-  border: "#E4E1D8",
-  muted: "#8A8F98",
-  page: "#FAF9F5",
+  oceanBlue: coastalLight.primary,
+  oceanBlueDark: coastalLight.deep,
+  sunsetCoral: coastalLight.accent,
+  palmGreen: coastalLight.brand,
+  warmSand: coastalLight.paper,
+  seafoam: coastalLight.tint,
+  golden: "#916D2C",
+  ink: coastalLight.ink,
+  border: coastalLight.line,
+  muted: coastalLight.muted,
+  page: coastalLight.background,
 };
 
 const fonts = {
-  display: '"Playfair Display", Georgia, serif',
+  display: '"Poppins", "DM Sans", -apple-system, sans-serif',
   body: '"DM Sans", -apple-system, sans-serif',
   mono: '"JetBrains Mono", ui-monospace, monospace',
 };
@@ -46,11 +50,11 @@ const fonts = {
 const TRIP_TYPES = [
   "Beach & Sea", "Nature", "Waterfalls", "Adventure", "Relaxing", "Pilgrimage",
   "History & Culture", "Food Trip", "Farm Experience", "Scenic / Photography",
-  "Family Trip", "Couple Trip", "Barkada Trip", "Shopping & Pasalubong", "Festivals & Events",
+  "Shopping & Pasalubong", "Festivals & Events",
 ];
 
 const ACTIVITIES = [
-  "Swimming", "Boating", "Kayaking", "Bamboo / Craft Experience", "Farm Visit",
+  "Swimming", "Boating", "Farm Visit",
   "Beach Relaxation", "Outdoor Exploration", "Photography", "Local Food",
   "Church / Pilgrimage", "Resort / Staycation",
 ];
@@ -79,13 +83,49 @@ const peso = (n) => `₱${Number(n).toLocaleString()}`;
 /* ------------------------------------------------------------------ */
 /*  Small building blocks                                              */
 /* ------------------------------------------------------------------ */
-function DestinationCard({ name, photo, Icon }) {
+function AreaDropdown({ areas, value, onChange, invalid }) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const trigger = useRef(null);
+  const selected = areas.find(area => area.id === value);
+  const matches = areas.filter(area => area.name.toLowerCase().includes(query.trim().toLowerCase()));
+  const close = () => { setOpen(false); setQuery(""); };
+  return <div className="aip-area-picker" onKeyDown={event => {
+    if (event.key === "Escape") { event.preventDefault(); close(); trigger.current?.focus(); }
+  }} onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) close(); }}>
+    <button ref={trigger} id="aip-destination" type="button" className={`aip-area-trigger ${invalid ? "has-error" : ""}`} aria-expanded={open} aria-controls="aip-area-options" aria-invalid={invalid} onClick={() => { setOpen(!open); setQuery(""); }}>
+      <span className="aip-area-icon"><MapPin size={20} /></span>
+      <span className="aip-area-copy"><small>YOUR DESTINATION</small><strong>{selected ? `${selected.name}${selected.group === "Cities" ? " City" : ""}` : "Choose a city or municipality"}</strong></span>
+      <ChevronDown size={18} style={{ transform: open ? "rotate(180deg)" : "none" }} />
+    </button>
+    {open && <div className="aip-area-panel" id="aip-area-options">
+      <input autoFocus className="aip-area-search" aria-label="Search cities and municipalities" placeholder="Search a destination..." value={query} onChange={event => setQuery(event.target.value)} />
+      <div className="aip-area-options">
+        {["Cities", "Municipalities"].map(group => {
+          const items = matches.filter(area => area.group === group);
+          return !!items.length && <section key={group} aria-label={group}>
+            <h3>{group}<span>{items.length}</span></h3>
+            {items.map(area => <button type="button" className={`aip-area-option ${value === area.id ? "is-selected" : ""}`} key={area.id} aria-pressed={value === area.id} onClick={() => { onChange(area.id); close(); trigger.current?.focus(); }}>
+              <span>{area.name}{group === "Cities" ? " City" : ""}</span>{value === area.id && <Check size={17} />}
+            </button>)}
+          </section>;
+        })}
+        {!matches.length && <p className="aip-area-empty" role="status">No destinations found. Try another name.</p>}
+      </div>
+    </div>}
+  </div>;
+}
+
+function DestinationCard({ name, photo, Icon, entry }) {
+  const [open, setOpen] = useState(false);
   const [failed, setFailed] = useState(false);
   return <article className="aip-discovery-card">
-    <div className="aip-discovery-image">
+    <button type="button" className="aip-discovery-image" aria-label={`View ${name} details`} onClick={() => setOpen(true)} style={{ border: 0, padding: 0, width: '100%', cursor: 'pointer' }}>
       {photo && !failed ? <NativeImage source={photo.asset} accessibilityLabel={photo.alt} resizeMode="cover" style={{ width: "100%", height: "100%" }} onError={() => setFailed(true)} /> : <div className="aip-photo-placeholder"><Icon size={28} /><span>{failed ? "Photo unavailable" : "Photo coming soon"}</span></div>}
-    </div>
+    </button>
     <div className="aip-discovery-caption"><Icon size={16} /><h4>{name}</h4></div>
+    {open && <div className="aip-description-backdrop" onClick={() => setOpen(false)}><section role="dialog" aria-modal="true" aria-label={name} className="aip-description-card" onClick={event => event.stopPropagation()}><button autoFocus className="aip-btn aip-btn-outline" onClick={() => setOpen(false)}>Close</button><h2>{name}</h2>{photo && <NativeImage source={photo.asset} resizeMode="cover" style={{ width: '100%', height: 240, borderRadius: 14 }} />}<p>{entry?.description || `${name} is listed in this destination's local travel guide. Confirm visiting details locally.`}</p>{entry?.location && <p><strong>Where to find it</strong><br />{entry.location}</p>}</section></div>}
+
   </article>;
 }
 
@@ -96,12 +136,14 @@ const destinationPhotoGuides = {
   urdaneta: { photos: urdanetaPhotos, filePrefix: 'Urdaneta' },
 };
 
-function DestinationGallery({ title, names, Icon, photos }) {
+function DestinationGallery({ title, names, Icon, photos, entries = [] }) {
+  photos = { ...photos };
+  entries.forEach(entry => { if (entry.photo) photos[entry.name] = { asset: { uri: entry.photo }, alt: entry.name }; });
   const illustrated = names.filter((name) => photos[name]);
   const remaining = names.filter((name) => !photos[name]);
   return <section className="aip-discovery-section">
     <h3 className="aip-heading-sm">{title}</h3>
-    <div className="aip-discovery-grid">{illustrated.map((name) => <DestinationCard key={name} name={name} Icon={Icon} photo={photos[name]} />)}</div>
+    <div className="aip-discovery-grid">{illustrated.map((name) => <DestinationCard key={name} name={name} Icon={Icon} photo={photos[name]} entry={entries.find(entry => entry.name === name)} />)}</div>
     {remaining.length > 0 && <details className="aip-more-discoveries"><summary>More to explore ({remaining.length})</summary><p>Photos are not yet verified for these entries.</p><div className="aip-chip-row">{remaining.map((name) => <span key={name} className="aip-summary-chip">{name}</span>)}</div></details>}
   </section>;
 }
@@ -176,41 +218,74 @@ function LodgingCard({ lodging: l, selected, onSelect, comparison }) {
   );
 }
 
-function Chip({ selected, onClick, children }) {
+function Chip({ selected, onClick, children, disabled = false }) {
   return (
-    <button type="button" className={`aip-chip ${selected ? "is-selected" : ""}`} onClick={onClick}>
+    <button type="button" className={`aip-chip ${selected ? "is-selected" : ""}`} disabled={disabled} aria-pressed={selected} onClick={onClick}>
       {children}
     </button>
   );
 }
 
-function MultiSelectField({ label, placeholder, options, values, onChange }) {
+const EXPERIENCE_DETAILS = {
+  "Beach & Sea": { Icon: Waves, detail: "Coastal escapes", tone: "blue" },
+  "Nature": { Icon: Wind, detail: "Fresh air & green views", tone: "green" },
+  "Waterfalls": { Icon: Waves, detail: "Cascades & cool waters", tone: "blue" },
+  "Adventure": { Icon: Compass, detail: "An active getaway", tone: "coral" },
+  "Relaxing": { Icon: BedDouble, detail: "Take it slow", tone: "green" },
+  "Pilgrimage": { Icon: Home, detail: "Faith & reflection", tone: "gold" },
+  "History & Culture": { Icon: Building2, detail: "Stories & local heritage", tone: "gold" },
+  "Food Trip": { Icon: Utensils, detail: "Taste local favorites", tone: "coral" },
+  "Farm Experience": { Icon: Wind, detail: "Countryside discoveries", tone: "green" },
+  "Scenic / Photography": { Icon: Eye, detail: "Views worth capturing", tone: "blue" },
+  "Shopping & Pasalubong": { Icon: ShoppingBag, detail: "Bring something home", tone: "coral" },
+  "Festivals & Events": { Icon: Sparkles, detail: "Local celebrations", tone: "gold" },
+  "Swimming": { Icon: Waves, detail: "A refreshing dip", tone: "blue" },
+  "Boating": { Icon: Compass, detail: "Explore from the water", tone: "blue" },
+  "Farm Visit": { Icon: Wind, detail: "Discover rural life", tone: "green" },
+  "Beach Relaxation": { Icon: Waves, detail: "Unwind by the shore", tone: "blue" },
+  "Outdoor Exploration": { Icon: Compass, detail: "Head into the outdoors", tone: "green" },
+  "Photography": { Icon: Eye, detail: "Capture your favorites", tone: "gold" },
+  "Local Food": { Icon: Utensils, detail: "Try regional flavors", tone: "coral" },
+  "Church / Pilgrimage": { Icon: Home, detail: "Visit sacred landmarks", tone: "gold" },
+  "Resort / Staycation": { Icon: BedDouble, detail: "Rest & recharge", tone: "green" },
+};
+
+function MultiSelectField({ label, options, values, onChange, error }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="aip-field">
-      <label className="aip-label">{label}</label>
-      <button type="button" className="aip-select-trigger" onClick={() => setOpen((v) => !v)}>
-        <span className={values.length ? "" : "aip-placeholder"}>
-          {values.length ? values.join(", ") : placeholder}
-        </span>
-        <ChevronRight size={16} style={{ transform: open ? "rotate(90deg)" : "none", transition: "transform .15s" }} />
+    <fieldset className="aip-experience-field">
+      <legend className="aip-label">{label}</legend>
+      <div className="aip-experience-heading">
+        <p>Choose up to 3 favorites to shape your itinerary.</p>
+        <span className={`aip-experience-count ${values.length ? "has-selection" : ""}`}>{values.length} / 3 selected</span>
+      </div>
+      <button type="button" className="aip-select-trigger aip-experience-trigger" aria-label={label} aria-expanded={open} onClick={() => setOpen(value => !value)}>
+        <span className={values.length ? "" : "aip-placeholder"}>{values.length ? values.join(", ") : "Click to choose your favorites"}</span>
+        <ChevronDown size={18} style={{ flexShrink: 0, transform: open ? "rotate(180deg)" : "none", transition: "transform .15s" }} />
       </button>
-      {open && (
-        <div className="aip-multiselect-panel">
-          <div className="aip-chip-row">
-            {options.map((opt) => (
-              <Chip key={opt} selected={values.includes(opt)} onClick={() => onChange(toggleValue(values, opt))}>
-                {opt}
-              </Chip>
-            ))}
-          </div>
-          <div className="aip-multiselect-footer">
-            <span className="aip-muted">{values.length} selected</span>
-            <button type="button" className="aip-btn aip-btn-dark aip-btn-sm" onClick={() => setOpen(false)}>Done</button>
-          </div>
-        </div>
-      )}
-    </div>
+      {error && <p className="aip-error" role="alert">{error}</p>}
+      {open && <>
+      <div className="aip-experience-grid">
+        {options.map(option => {
+          const selected = values.includes(option);
+          const disabled = !selected && values.length >= 3;
+          const { Icon, detail, tone } = EXPERIENCE_DETAILS[option];
+          return (
+            <button type="button" key={option}
+              className={`aip-experience-card ${selected ? "is-selected" : ""}`}
+              data-tone={tone} aria-pressed={selected} disabled={disabled}
+              onClick={() => onChange(toggleValue(values, option))}>
+              <span className="aip-experience-icon"><Icon size={21} /></span>
+              <span className="aip-experience-copy"><strong>{option}</strong><span>{detail}</span></span>
+              <span className="aip-experience-check" aria-hidden="true">{selected && <Check size={13} color="#fff" />}</span>
+            </button>
+          );
+        })}
+      </div>
+      {values.length === 3 && <p className="aip-experience-limit" role="status">All 3 choices selected. Deselect one to try another.</p>}
+      <div className="aip-experience-footer"><button type="button" className="aip-btn aip-btn-dark aip-btn-sm" onClick={() => setOpen(false)}>Done</button></div>
+      </>}
+    </fieldset>
   );
 }
 
@@ -229,30 +304,31 @@ const initialForm = () => ({
   areaId: "",
   tripTypes: [],
   activities: [],
-  travelerType: "couple",
-  travelStyle: "balanced",
+  travelerType: "",
+  travelStyle: "",
   date: todayInManila(),
   travelers: 2,
-  budget: "2000",
+  budget: "",
   days: 1,
-  lodgingId: null,
+  lodgingId: "",
   startTime: "07:00",
   mealBudget: "300",
   fareInputs: [],
-  transportModes: ["Bus", "Jeepney"],
+  transportModes: [],
   preferences: [],
   returnToOrigin: true,
 });
 
-export default function AIItinerary() {
+export default function AIItinerary({ navigation }) {
+  const { palette, themeColor } = useAppTheme();
   const { width } = useWindowDimensions();
   const contentWidth = width >= 768 ? width - 280 : width;
   const [step, setStep] = useState(1);
   const [form, setForm] = useState(initialForm);
-  const [budgetTier, setBudgetTier] = useState("budget");
+  const [budgetTier, setBudgetTier] = useState("");
   const [hotelRooms, setHotelRooms] = useState(1);
   const selectedBudget = BUDGET_PACKAGES.find((tier) => tier.id === budgetTier);
-  const budgetRate = selectedBudget.rate;
+  const budgetRate = selectedBudget?.rate || 0;
   const [today, setToday] = useState(todayInManila);
   const [showAdvanced, setShowAdvanced] = useState(true);
   const [attemptedNext, setAttemptedNext] = useState(false);
@@ -266,13 +342,21 @@ export default function AIItinerary() {
   const [catalog, setCatalog] = useState([]);
   const [fareTables, setFareTables] = useState([]);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const [saving, setSaving] = useState(false);
-  const AREAS = catalog;
+  const AREAS = lguMunicipalities.map(area => ({
+    famousPlaces: [], foods: [], entries: [], lodging: [],
+    ...catalog.find(entry => entry.id === area.id),
+    id: area.id,
+    name: area.name,
+    group: area.kind === "City" ? "Cities" : "Municipalities",
+  })).sort((a, b) => a.name.localeCompare(b.name, "en"));
   useEffect(() => {
     const controller = new AbortController();
     api.getItineraryCatalog({ signal: controller.signal })
       .then(data => { setCatalog(data.areas); setFareTables(data.fareTables || []); })
-      .catch(err => { if (!controller.signal.aborted) setError(err.message); });
+      .catch(err => { if (!controller.signal.aborted) setError(itineraryFailureMessage(err, "Unable to load destinations. Please try again.")); });
     return () => controller.abort();
   }, []);
 
@@ -281,37 +365,44 @@ export default function AIItinerary() {
     return () => clearInterval(timer);
   }, []);
 
-  const set = (key, value) => setForm((f) => {
-    const next = { ...f, [key]: value, ...(key === "areaId" ? { lodgingId: null } : {}) };
+  const set = (key, value) => {
+    setNotice("");
+    setFieldErrors(current => { const next = { ...current }; delete next[key]; return next; });
+    setForm((f) => {
+    const next = { ...f, [key]: value, ...(key === "areaId" ? { lodgingId: "" } : {}) };
     if (key === 'areaId') next.fareInputs = [];
-    if (key === 'transportModes') next.fareInputs = f.fareInputs.filter(item => value.includes(item.mode));
-    if (key === 'travelers' && Number(value) === 1) next.travelerType = 'solo';
-    if (key === 'travelers' && Number(value) > 1 && f.travelerType === 'solo') next.travelerType = Number(value) === 2 ? 'couple' : 'group';
+    if (key === 'transportModes') next.fareInputs = value.map(mode => f.fareInputs.find(item => item.mode === mode) || { mode, rides: 2, tableId: fareTables.find(t => t.mode === mode && (mode !== 'Tricycle' || f.areaId === 'dagupan'))?.id });
     if (key === "travelerType" && ["solo", "couple"].includes(value)) next.travelers = value === "solo" ? 1 : 2;
-    if (["travelers", "days", "travelerType"].includes(key)) {
+    if (budgetTier && ["travelers", "days", "travelerType"].includes(key)) {
       next.budget = String(budgetRate * Math.max(1, Number(next.travelers) || 1) * next.days);
     }
     return next;
-  });
+    });
+  };
   const chooseBudget = ({ id, rate }) => {
+    setNotice("");
+    setFieldErrors(current => { const next = { ...current }; delete next.budget; return next; });
     setBudgetTier(id);
     setForm((f) => ({ ...f, budget: String(rate * Math.max(1, Number(f.travelers) || 1) * f.days) }));
   };
-  const dateError = !form.date ? "Choose a travel date." : form.date < today ? "Choose today or a future date." : "";
-  const validateTripDetails = () => {
-    if (!form.date || form.date < todayInManila()) {
-      setToday(todayInManila());
-      setAttemptedNext(true);
-      setStep(2);
+  const dateError = fieldErrors.date;
+  const validateStep = (targetStep) => {
+    const errors = itineraryErrors(form, { catalog, hotelRooms, budgetTier, today: todayInManila(), step: targetStep, fareTables });
+    if (targetStep >= 2 && stayBudget?.blocked) errors.lodgingId = 'This hotel costs more than your trip budget. Choose a cheaper hotel, increase your budget, or select no lodging.';
+    setFieldErrors(errors);
+    setAttemptedNext(true);
+    if (Object.keys(errors).length) {
+      setError('Please check the highlighted fields before continuing.');
+      setStep(itineraryErrorStep(Object.keys(errors)[0]));
+      setShowAdvanced(true);
+      requestAnimationFrame(() => document.querySelector(".aip-error")?.scrollIntoView({ behavior: "smooth", block: "center" }));
       return false;
     }
-    if (stayBudget?.blocked) {
-      setAttemptedNext(true);
-      setStep(2);
-      return false;
-    }
+    setError('');
+    setFieldErrors({});
     return true;
   };
+  const fieldError = key => fieldErrors[key] && <p className="aip-error" role="alert">{fieldErrors[key]}</p>;
   const area = AREAS.find((a) => a.id === form.areaId);
   const info = area;
   const lodgingList = area?.lodging || [];
@@ -332,8 +423,8 @@ export default function AIItinerary() {
   const stepLabel = { 1: "Destination & preferences", 2: "Trip details & lodging", 3: "Review & personalize" }[step];
 
   const goNext = () => {
-    if (step === 1 && !form.areaId) { setAttemptedNext(true); return; }
-    if (step === 2 && !validateTripDetails()) return;
+    if (!validateStep(step)) return;
+    setNotice(`Step ${step} completed successfully.`);
     setAttemptedNext(false);
     setStep((s) => Math.min(3, s + 1));
   };
@@ -341,20 +432,22 @@ export default function AIItinerary() {
 
   const generate = async () => {
     if (generationRef.current) return;
-    if (!validateTripDetails()) return;
+    if (!validateStep(3)) return;
+    setNotice("");
     generationRef.current = true;
     setError("");
     setPhase("Planning from your area's catalog");
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 90000);
     try {
-      const built = await api.generateGroundedItinerary({ ...form, hotelRooms }, { signal: controller.signal });
+      const built = await api.generateGroundedItinerary({ ...form, travelers: Number(form.travelers), days: Number(form.days), budget: Number(form.budget), mealBudget: Number(form.mealBudget), hotelRooms: form.lodgingId ? Number(hotelRooms) : 1 }, { signal: controller.signal });
       const icons = { Bus, Compass, Utensils, Home, ShoppingBag };
       setPlan({ ...built, stops: built.stops.map(stop => ({ ...stop, Icon: icons[stop.iconKey] || Compass })) });
       setShowForm(false);
       setSaved(false);
+      setNotice("Your itinerary was created successfully. You can save it or download a PDF.");
     } catch (err) {
-      setError(controller.signal.aborted ? "Generation timed out. Please try again." : err.message || "Unable to generate your itinerary. Please try again.");
+      setError(controller.signal.aborted ? "Generation timed out. Please try again." : itineraryFailureMessage(err, "Unable to generate your itinerary. Please try again."));
     } finally {
       clearTimeout(timeout);
       setPhase("");
@@ -368,14 +461,15 @@ export default function AIItinerary() {
     try {
       await api.saveItinerary(plan.id, true);
       setSaved(true);
-    } catch (err) { setError(err.message); }
+      navigation.navigate("MyTrips", { successMessage: "Your itinerary was saved successfully." });
+    } catch (err) { setError(itineraryFailureMessage(err, "Your plan could not be saved. Please try again.")); }
     finally { setSaving(false); }
   };
 
   /* -------------------------- render -------------------------- */
   return (
     <div className="aip-shell">
-      <style>{CSS}</style>
+      <style>{plannerCSS(palette, themeColor)}</style>
 
       {/* Navigation is provided by the shared UserSidebar in App.jsx. */}
       {/* ---------------- Main ---------------- */}
@@ -392,6 +486,7 @@ export default function AIItinerary() {
             />
           </div>
           {error && <p className="aip-error" role="alert">{error}</p>}
+          {notice && <p className="aip-success" role="status">{notice}</p>}
           {showForm && (
             <>
               <div className="aip-progress-header">
@@ -409,23 +504,18 @@ export default function AIItinerary() {
                   <p className="aip-subtitle">Select an area and tell the AI what kind of experience you want.</p>
 
                   <div className="aip-field">
-                    <label className="aip-label">Where in Pangasinan?</label>
-                    <select className="aip-select" value={form.areaId} onChange={(e) => set("areaId", e.target.value)}>
-                      <option value="">— Pick a city or municipality —</option>
-                      <optgroup label="Cities">
-                        {AREAS.filter((a) => a.group === "Cities").map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
-                      </optgroup>
-                      <optgroup label="Municipalities">
-                        {AREAS.filter((a) => a.group === "Municipalities").map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
-                      </optgroup>
-                    </select>
+                    <label className="aip-label" htmlFor="aip-destination">Where in Pangasinan?</label>
+                    <AreaDropdown areas={AREAS} value={form.areaId} invalid={!!fieldErrors.areaId} onChange={value => set("areaId", value)} />
+                    <p className="aip-destination-hint">4 cities and 44 municipalities</p>
+                    {fieldError("areaId")}
                   </div>
 
-                  <MultiSelectField label="What kind of trip do you want?" placeholder="Select trip type(s)..." options={TRIP_TYPES} values={form.tripTypes} onChange={(v) => set("tripTypes", v)} />
-                  <MultiSelectField label="What activities do you want?" placeholder="Select activities..." options={ACTIVITIES} values={form.activities} onChange={(v) => set("activities", v)} />
+                  <MultiSelectField label="What kind of trip do you want?" error={fieldErrors.tripTypes} options={TRIP_TYPES} values={form.tripTypes} onChange={(v) => set("tripTypes", v)} />
+                  <MultiSelectField label="What activities do you want?" error={fieldErrors.activities} options={ACTIVITIES} values={form.activities} onChange={(v) => set("activities", v)} />
 
                   <div className="aip-field">
                     <label className="aip-label">Who are you traveling with?</label>
+                    {fieldError("travelerType")}
                     <div className="aip-icon-grid">
                       {TRAVELER_TYPES.map(({ id, label, Icon }) => (
                         <button type="button" key={id} className={`aip-icon-card ${form.travelerType === id ? "is-selected" : ""}`} onClick={() => set("travelerType", id)}>
@@ -433,10 +523,12 @@ export default function AIItinerary() {
                         </button>
                       ))}
                     </div>
+                    {fieldError("travelerType")}
                   </div>
 
                   <div className="aip-field">
                     <label className="aip-label">What's your travel style?</label>
+                    {fieldError("travelStyle")}
                     <div className="aip-style-grid">
                       {TRAVEL_STYLES.map(({ id, label, desc, Icon }) => (
                         <button type="button" key={id} className={`aip-style-card ${form.travelStyle === id ? "is-selected" : ""}`} onClick={() => set("travelStyle", id)}>
@@ -444,9 +536,9 @@ export default function AIItinerary() {
                         </button>
                       ))}
                     </div>
+                    {fieldError("travelStyle")}
                   </div>
 
-                  {attemptedNext && !form.areaId && <p className="aip-error">Please select at least a destination to continue.</p>}
                   <button className={`aip-btn aip-btn-block ${form.areaId ? "aip-btn-dark" : "aip-btn-disabled"}`} onClick={goNext}>
                     Next: trip details →
                   </button>
@@ -465,12 +557,13 @@ export default function AIItinerary() {
                         <input id="aip-travel-date" type="date" required min={today} className="aip-input" value={form.date} aria-invalid={!!dateError && (attemptedNext || !!form.date)} aria-describedby={dateError ? "aip-date-error" : undefined} onFocus={() => setToday(todayInManila())} onChange={(e) => set("date", e.target.value)} />
                         {dateError && (attemptedNext || form.date) && <p id="aip-date-error" className="aip-error" role="alert">{dateError}</p>}
                       </div>
-                      <div className="aip-field"><label className="aip-label">Travelers</label><input type="number" min={1} step={1} className="aip-input" value={form.travelers} onChange={(e) => set("travelers", Math.max(1, Math.floor(Number(e.target.value) || 1)))} /></div>
+                      <div className="aip-field"><label className="aip-label">Travelers</label><input type="number" min={1} step={1} className="aip-input" value={form.travelers} max={30} required onChange={(e) => set("travelers", e.target.value)} />{fieldError("travelers")}</div>
                       <div className="aip-field">
                         <label className="aip-label" htmlFor="aip-trip-days">How many days?</label>
                         <select id="aip-trip-days" className="aip-select" value={form.days} onChange={(e) => set("days", Number(e.target.value))}>
                           {[1, 2, 3, 4, 5, 6, 7].map((n) => <option key={n} value={n}>{n} day{n === 1 ? "" : "s"}</option>)}
                         </select>
+                        {fieldError("days")}
                       </div>
                     </div>
                     <div className="aip-budget-heading">
@@ -491,8 +584,9 @@ export default function AIItinerary() {
                     </div>
                     <div className="aip-budget-summary" aria-live="polite">
                       <span>Selected tier</span>
-                      <strong>{selectedBudget.label} <span>·</span> {selectedBudget.max ? "Budget cap" : "Starting budget"}: {peso(form.budget)}</strong>
+                      <strong>{selectedBudget ? `${selectedBudget.label} - ${selectedBudget.max ? "Budget cap" : "Starting budget"}: ${peso(form.budget)}` : "Choose a budget above"}</strong>
                     </div>
+                    {fieldError("budget")}
                   </div>
 
                   <div className="aip-card">
@@ -503,7 +597,8 @@ export default function AIItinerary() {
                     <p className="aip-subtitle">Hotels and accommodations in {area?.name || "your destination"}</p>
                     <div className="aip-hotel-budget-panel">
                       <label className="aip-label" htmlFor="aip-hotel-rooms">Rooms needed</label>
-                      <input id="aip-hotel-rooms" className="aip-input" type="number" min={1} step={1} value={hotelRooms} onChange={(e) => setHotelRooms(Math.max(1, Math.floor(Number(e.target.value) || 1)))} />
+                      <input id="aip-hotel-rooms" className="aip-input" type="number" min={1} step={1} value={hotelRooms} max={30} disabled={!form.lodgingId} onChange={(e) => setHotelRooms(e.target.value)} />
+                      {fieldError("hotelRooms")}
                       <p>{form.days === 1 ? 'Day trip: no overnight stay is scheduled or charged. Choose 2 or more days to include a hotel.' : `Estimate: nightly rate × ${form.days - 1} nights × ${hotelRooms} rooms. Confirm room capacity with the hotel.`}</p>
                       {stayBudget && <div aria-live="polite">
                         {stayBudget.min != null && <p><strong>{lodging.name}: {peso(stayBudget.min)}–{peso(stayBudget.max)}</strong><br />Trip budget: {peso(form.budget)}. {stayBudget.min > Number(form.budget) ? `Minimum estimate exceeds it by ${peso(stayBudget.min - Number(form.budget))}.` : `Remaining after hotel: ${peso(Math.max(0, Number(form.budget) - stayBudget.max))}–${peso(Number(form.budget) - stayBudget.min)} for food, transport, and activities.`}</p>}
@@ -516,11 +611,12 @@ export default function AIItinerary() {
                       </div>}
                     </div>
 
-                    <button type="button" className={`aip-lodging-row ${!form.lodgingId ? "is-selected" : ""}`} onClick={() => set("lodgingId", null)}>
+                    <button type="button" className={`aip-lodging-row ${form.lodgingId === null ? "is-selected" : ""}`} onClick={() => set("lodgingId", null)}>
                       <Bus size={18} />
-                      <div><strong>Day trip — no lodging</strong><div className="aip-muted aip-small">No accommodation selected</div></div>
+                      <div><strong>{Number(form.days) === 1 ? "Day trip - no lodging" : "No lodging - I will arrange my own stay"}</strong><div className="aip-muted aip-small">Choose this to continue without a hotel allowance</div></div>
                     </button>
 
+                    {fieldError("lodgingId")}
                     {!lodgingList.length && <p>No verified accommodation on file for this area yet.</p>}
                     {lodgingList.map((l) => (
                       <LodgingCard key={l.id} lodging={l} comparison={hotelBudget(l, form.budget, form.days, hotelRooms)} selected={form.lodgingId === l.id} onSelect={() => set("lodgingId", l.id)} />
@@ -543,14 +639,9 @@ export default function AIItinerary() {
                   {info && (
                     <div className="aip-destination-review">
                       <div className="aip-review-destination"><MapPin size={18} /><strong>{area?.name}</strong></div>
-                      {destinationPhotoGuides[area?.id] ? <>
-                        <DestinationGallery title="Famous places nearby" names={info.famousPlaces} Icon={MapPin} photos={destinationPhotoGuides[area.id].photos} />
-                        <DestinationGallery title="Foods to try" names={info.foods} Icon={Utensils} photos={destinationPhotoGuides[area.id].photos} />
-                        <details className="aip-photo-credits"><summary>Image source</summary><p>{destinationPhotoGuides[area.id].filePrefix}_City_PLACES TO VISIT &amp; FOODS_IMAGES.pdf - supplied for this trip guide. Images shown as labeled in the document; original photographer marks retained.</p></details>
-                      </> : <>
-                        <h3 className="aip-heading-sm">Famous places nearby</h3><p>{info.famousPlaces.join(" · ")}</p>
-                        <h3 className="aip-heading-sm">Foods to try</h3><p>{info.foods.join(" · ")}</p>
-                      </>}
+                      <DestinationGallery title="Famous places nearby" names={info.famousPlaces} Icon={MapPin} photos={destinationPhotoGuides[area.id]?.photos || {}} entries={info.entries.filter(e => e.tag === 'Attraction')} />
+                      <DestinationGallery title="Foods to try" names={info.foods} Icon={Utensils} photos={destinationPhotoGuides[area.id]?.photos || {}} entries={info.entries.filter(e => e.tag === 'Food')} />
+
                     </div>
                   )}
 
@@ -568,8 +659,8 @@ export default function AIItinerary() {
                   {showAdvanced && (
                     <div className="aip-advanced">
                       <div className="aip-field-row">
-                        <div className="aip-field"><label className="aip-label">Start time (HH:MM)</label><input type="time" className="aip-input" value={form.startTime} onChange={(e) => set("startTime", e.target.value)} /></div>
-                        <div className="aip-field"><label className="aip-label" htmlFor="aip-meals">Meals per person per day (PHP)</label><select id="aip-meals" className="aip-select" value={form.mealBudget} onChange={(e) => set("mealBudget", e.target.value)}>{[200, 300, 500, 750, 1000, 1500].map((amount) => <option key={amount} value={amount}>{peso(amount)} / person / day</option>)}</select></div>
+                        <div className="aip-field"><label className="aip-label">Start time (HH:MM)</label><input type="time" className="aip-input" value={form.startTime} onChange={(e) => set("startTime", e.target.value)} />{fieldError("startTime")}</div>
+                        <div className="aip-field"><label className="aip-label" htmlFor="aip-meals">Meals per person per day (PHP)</label><select id="aip-meals" className="aip-select" value={form.mealBudget} onChange={(e) => set("mealBudget", e.target.value)}>{[200, 300, 500, 750, 1000, 1500].map((amount) => <option key={amount} value={amount}>{peso(amount)} / person / day</option>)}</select>{fieldError("mealBudget")}</div>
                       </div>
                       <div className="aip-meal-summary" aria-live="polite">
                         <div><span>Per person · full trip</span><strong>{peso(mealPerPerson)}</strong><small>{peso(form.mealBudget)} × {form.days} day{form.days === 1 ? "" : "s"}</small></div>
@@ -581,7 +672,8 @@ export default function AIItinerary() {
                       <div className="aip-chip-row">
                         {TRANSPORT_MODES.map((m) => <Chip key={m} selected={form.transportModes.includes(m)} onClick={() => set("transportModes", toggleValue(form.transportModes, m))}>{m}</Chip>)}
                       </div>
-                      <ItineraryFareInputs modes={form.transportModes} tables={fareTables} values={form.fareInputs} onChange={value => set('fareInputs', value)} areaId={form.areaId} />
+                      {fieldError("transportModes")}
+                      <ItineraryFareInputs errors={fieldErrors} modes={form.transportModes} tables={fareTables} values={form.fareInputs} onChange={value => set('fareInputs', value)} areaId={form.areaId} date={form.date} travelers={Number(form.travelers)} />
                     </div>
                   )}
 
@@ -614,20 +706,32 @@ export default function AIItinerary() {
 /*  Palm Green / Warm Sand / Seafoam / Golden, Playfair + DM Sans +     */
 /*  JetBrains Mono)                                                     */
 /* ------------------------------------------------------------------ */
-const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap');
+function plannerCSS(palette, themeColor) {
+  const colors = {
+    oceanBlue: palette.ink, oceanBlueDark: palette.primary,
+    sunsetCoral: palette.accent, palmGreen: palette.brand,
+    warmSand: palette.paper, seafoam: palette.tint, golden: palette.accent,
+    ink: palette.ink, border: palette.line, muted: palette.muted, page: palette.background,
+  };
+  const css = `
+.aip-success { padding:12px 16px; border-radius:10px; color:#246346; background:#EAF5EE; font-size:14px; }.aip-chip:disabled { opacity:.45; cursor:not-allowed; }
+.aip-description-backdrop { position:fixed; inset:0; z-index:1000; background:rgba(12,39,64,.6); display:flex; align-items:center; justify-content:center; padding:24px; }
+.aip-description-card { background:white; border-radius:20px; padding:24px; width:100%; max-width:540px; max-height:85vh; overflow:auto; box-shadow:0 24px 70px #0003; }
+.aip-description-card > button { float:right; }.aip-description-card h2 { padding-right:90px; }.aip-description-card p { line-height:1.75; color:#5C6D7A; white-space:pre-wrap; }
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap');
 
 .aip-shell, .aip-shell * { box-sizing: border-box; }
-.aip-shell { display: flex; flex: 1; min-height: 0; overflow-y: auto; background: ${colors.page}; font-family: ${fonts.body}; font-size: 16px; line-height: 1.5; color: ${colors.ink}; }
+.aip-shell { display: flex; flex: 1; height: 100%; min-height: 0; overflow-y: auto; overflow-x: hidden; background: ${colors.page}; font-family: ${fonts.body}; font-size: 16px; line-height: 1.5; color: ${colors.ink}; }
 .aip-shell svg { flex-shrink: 0; }
 .aip-shell button, .aip-shell input, .aip-shell select { font-family: inherit; }
 .aip-shell button { overflow-wrap: anywhere; }
 .aip-shell button:focus-visible, .aip-shell input:focus-visible, .aip-shell select:focus-visible { outline: 3px solid ${colors.seafoam}; outline-offset: 3px; }
 
-.aip-main { flex: 1; width: 100%; display: flex; flex-direction: column; min-width: 0; }
-.aip-tool-header { margin-bottom: 32px; }
+.aip-main { flex: 1; flex-shrink: 0; width: 100%; display: flex; flex-direction: column; min-width: 0; }
+.aip-tool-header { position: relative; flex-shrink: 0; margin-bottom: 32px; }
 
-.aip-content { max-width: 1200px; width: 100%; margin: 0 auto; padding: clamp(16px, 3vw, 36px) clamp(16px, 3vw, 40px) 60px; }
+.aip-content { flex-shrink: 0; max-width: 1200px; width: 100%; margin: 0 auto; padding: clamp(16px, 3vw, 36px) clamp(16px, 3vw, 40px) 60px; }
 .aip-progress-header { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px 20px; margin-bottom: 12px; }
 .aip-step-title { font-family: ${fonts.display}; font-size: 20px; font-weight: 700; color: ${colors.oceanBlue}; }
 .aip-progress-bars { display: flex; gap: 8px; margin-bottom: 28px; }
@@ -643,7 +747,18 @@ const CSS = `
 .aip-field-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 24px; margin-bottom: 28px; }
 .aip-field-row .aip-field { margin-bottom: 0; }
 .aip-label { display: block; font-size: 15px; font-weight: 600; color: ${colors.oceanBlue}; margin-bottom: 10px; }
-.aip-input, .aip-select, .aip-select-trigger {
+.aip-input, .aip-select, .aip-destination-select { position: relative; display: flex; align-items: center; border: 1px solid #D8E3E6; border-radius: 15px; background: #fff; box-shadow: 0 3px 12px #123A5E05; transition: border-color .15s, box-shadow .15s; }
+.aip-destination-select:hover { border-color: #88AAA9; }
+.aip-destination-select:focus-within { border-color: ${colors.oceanBlue}; box-shadow: 0 0 0 3px #123A5E18; }
+.aip-destination-select.has-selection { border-color: #9DBDB0; background: #F8FCFA; }
+.aip-destination-select.has-error { border-color: ${colors.sunsetCoral}; }
+.aip-destination-icon { position: absolute; left: 14px; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: #EAF3EF; color: ${colors.palmGreen}; pointer-events: none; }
+.aip-destination-select .aip-select { appearance: none; border: 0; border-radius: 15px; background: transparent; min-height: 64px; padding: 18px 46px 18px 64px; color: ${colors.oceanBlue}; font-size: 15px; font-weight: 600; cursor: pointer; outline: none; }
+.aip-destination-select:not(.has-selection) .aip-select { color: #71838F; font-weight: 400; }
+.aip-destination-select option { background: #fff; color: ${colors.ink}; }
+.aip-destination-chevron { position: absolute; right: 17px; pointer-events: none; color: #71838F; }
+.aip-destination-hint { margin: 9px 2px 0; color: #71838F; font-size: 12px; }
+.aip-select-trigger {
   width: 100%; min-width: 0; max-width: 100%; min-height: 52px; padding: 14px 16px; border-radius: 10px; border: 1px solid ${colors.border};
   font-family: ${fonts.body}; font-size: 16px; background: #fff; color: ${colors.ink};
 }
@@ -651,8 +766,32 @@ const CSS = `
 .aip-select-trigger > span { min-width: 0; overflow-wrap: anywhere; }
 .aip-placeholder { color: ${colors.muted}; }
 
-.aip-multiselect-panel { border: 1px solid ${colors.border}; border-radius: 12px; padding: 20px; margin-top: 12px; }
-.aip-multiselect-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+.aip-experience-field { min-width: 0; padding: 18px; margin: 0 0 28px; border: 1px solid #E3E9E5; border-radius: 20px; background: transparent; }
+.aip-experience-field legend { padding: 0 8px; margin-bottom: 0; }
+.aip-experience-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 16px; }
+.aip-experience-heading p { margin: 0; font-size: 13px; color: #607482; }
+.aip-experience-count { padding: 5px 10px; border-radius: 999px; background: #E9EEED; color: #607482; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.aip-experience-count.has-selection { background: #DDEEE6; color: ${colors.palmGreen}; }
+.aip-experience-trigger { margin-bottom: 12px; }
+.aip-experience-trigger:focus-visible { outline: 3px solid ${colors.oceanBlue}; outline-offset: 3px; }
+.aip-experience-footer { display: flex; justify-content: flex-end; margin-top: 14px; }
+.aip-experience-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); gap: 10px; }
+.aip-experience-card { --experience-color: #236789; --experience-tint: #E6F2F8; position: relative; display: flex; align-items: center; gap: 11px; min-width: 0; min-height: 88px; padding: 14px 12px; border: 1px solid #E1E8E7; border-radius: 15px; background: #fff; color: ${colors.ink}; text-align: left; cursor: pointer; box-shadow: 0 2px 5px #16324A04; transition: border-color .15s, box-shadow .15s, background .15s; }
+.aip-experience-card[data-tone="green"] { --experience-color: #2E7D5B; --experience-tint: #E7F3EC; }
+.aip-experience-card[data-tone="coral"] { --experience-color: #BA5136; --experience-tint: #FCEDE7; }
+.aip-experience-card[data-tone="gold"] { --experience-color: #906719; --experience-tint: #FAF1DB; }
+.aip-experience-card:hover:not(:disabled) { border-color: var(--experience-color); box-shadow: 0 4px 12px #16324A0C; }
+.aip-experience-card:focus-visible { outline: 3px solid ${colors.oceanBlue}; outline-offset: 3px; }
+.aip-experience-card.is-selected { background: var(--experience-tint); border-color: var(--experience-color); box-shadow: inset 0 0 0 1px var(--experience-color); }
+.aip-experience-card:disabled { opacity: .48; cursor: not-allowed; }
+.aip-experience-icon { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex-shrink: 0; border-radius: 12px; background: var(--experience-tint); color: var(--experience-color); }
+.aip-experience-card.is-selected .aip-experience-icon { background: #FFFFFFB3; }
+.aip-experience-copy { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 4px; }
+.aip-experience-copy strong { font-size: 13px; line-height: 1.35; }
+.aip-experience-copy > span { font-size: 11px; line-height: 1.4; color: #607482; }
+.aip-experience-check { width: 18px; height: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: 1px solid #CDD8DB; border-radius: 6px; background: #fff; }
+.aip-experience-card.is-selected .aip-experience-check { background: var(--experience-color); border-color: var(--experience-color); }
+.aip-experience-limit { margin: 12px 0 0; color: #607482; font-size: 12px; }
 .aip-chip-row { display: flex; flex-wrap: wrap; gap: 10px; }
 .aip-chip {
   border: 1px solid ${colors.border}; background: #fff; border-radius: 22px; min-height: 44px; max-width: 100%; padding: 10px 16px;
@@ -816,3 +955,34 @@ const CSS = `
   .aip-stop-row { flex-wrap: wrap; }
 }
 `;
+
+  return css.replace(/(background(?:-color)?|color|border(?:-(?:top|bottom|left|right))?(?:-color)?|outline)\s*:\s*([^;{}]+)/g, (declaration, property, value) => {
+    const role = property.startsWith("background") ? "backgroundColor" : property.startsWith("border") || property === "outline" ? "borderColor" : "color";
+    const themed = value.replace(/#[0-9a-f]{6}\b|#fff\b/gi, hex => hex.toLowerCase() === "#fff" && role === "backgroundColor" ? palette.surface : themeColor(hex, role));
+    return `${property}: ${themed}`;
+  }) + `
+.aip-shell { color-scheme: ${palette.dark ? "dark" : "light"}; }
+.aip-btn-coral, .aip-btn-primary, .aip-btn-gradient { background: ${palette.button}; color: ${palette.onButton}; }
+.aip-btn-dark { background: ${palette.primary}; color: ${palette.onPrimary}; }
+.aip-destination-select, .aip-input, .aip-select-trigger { border-color: ${palette.line}; }
+.aip-destination-select.has-selection { background: ${palette.tint}; }
+.aip-destination-select option, .aip-destination-select optgroup { background: ${palette.surface}; color: ${palette.ink}; }
+.aip-destination-hint, .aip-destination-chevron, .aip-destination-select:not(.has-selection) .aip-select { color: ${palette.muted}; }
+
+.aip-area-picker { width: 100%; min-width: 0; }
+.aip-area-trigger { display: flex; align-items: center; gap: 14px; width: 100%; padding: 14px 16px; min-height: 72px; border: 1px solid ${palette.line}; border-radius: 16px; background: ${palette.surface}; color: ${palette.ink}; cursor: pointer; text-align: left; }
+.aip-area-trigger:hover, .aip-area-trigger[aria-expanded="true"] { border-color: ${palette.brand}; }
+.aip-area-trigger.has-error { border-color: ${palette.accent}; }
+.aip-area-icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: ${palette.tint}; color: ${palette.ink}; flex-shrink: 0; }
+.aip-area-copy { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+.aip-area-copy small { font-size: 10px; letter-spacing: 1px; color: ${palette.muted}; }
+.aip-area-copy strong { font-size: 15px; overflow-wrap: anywhere; }
+.aip-area-panel { margin-top: 8px; padding: 10px; border: 1px solid ${palette.line}; border-radius: 16px; background: ${palette.surface}; box-shadow: 0 8px 24px #0000000a; }
+.aip-area-search { width: 100%; min-width: 0; padding: 12px 14px; border: 1px solid ${palette.line}; border-radius: 10px; font-size: 14px; background: ${palette.background}; color: ${palette.ink}; }
+.aip-area-options { max-height: 300px; overflow-y: auto; overscroll-behavior: contain; margin-top: 8px; }
+.aip-area-options h3 { display: flex; justify-content: space-between; margin: 0; padding: 12px; font-size: 11px; letter-spacing: .8px; color: ${palette.muted}; }
+.aip-area-option { display: flex; justify-content: space-between; align-items: center; gap: 12px; width: 100%; padding: 12px; border: 0; border-radius: 9px; background: transparent; color: ${palette.ink}; text-align: left; font-size: 14px; cursor: pointer; }
+.aip-area-option:hover, .aip-area-option:focus-visible, .aip-area-option.is-selected { background: ${palette.tint}; }
+.aip-area-empty { padding: 12px; color: ${palette.muted}; font-size: 14px; }
+`;
+}

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { ActivityIndicator, Pressable, Text, TextInput, View } from 'react-native'
+import { ActivityIndicator, Image, Pressable, Text, TextInput, View } from 'react-native'
 import AdminPage from '../components/AdminPage'
 import Card from '../components/Card'
 import StatusBadge from '../components/StatusBadge'
@@ -40,8 +40,9 @@ function ApprovalQueue({ resource }) {
     {loading ? <ActivityIndicator /> : rows.map(row => <Card key={row.id} style={{ gap: 12 }}>
       <Text style={{ color: textColor, fontSize: 18 }}>{row.name || row.location || `${row.from} ? ${row.to}`} ? {row.municipality}</Text>
       <StatusBadge status={row.approvalStatus} />
+      {row.photo ? <Image source={{ uri: row.photo }} style={{ width: 280, maxWidth: '100%', height: 180, borderRadius: 12 }} resizeMode="cover" /> : null}
       {row.pendingDeletion ? <Text style={{ color: textColor }}>Deletion request ? approving permanently deletes this entry.</Text> : null}
-      {Object.entries(row).filter(([key]) => !['id', '_id', '__v', 'submittedBy', 'reviewedBy', 'reviewRevision', 'pendingDeletion', 'approvalStatus', 'municipality'].includes(key)).map(([key, value]) => <Text key={key} style={{ color: textColor }}>{lguResources[resource].fields.find(([field]) => field === key)?.[1] || key.replace(/([A-Z])/g, ' $1')}: {typeof value === 'object' ? JSON.stringify(value) : String(value)}</Text>)}
+      {Object.entries(row).filter(([key]) => !['photo', 'id', '_id', '__v', 'submittedBy', 'reviewedBy', 'reviewRevision', 'pendingDeletion', 'approvalStatus', 'municipality'].includes(key)).map(([key, value]) => <Text key={key} style={{ color: textColor }}>{lguResources[resource].fields.find(([field]) => field === key)?.[1] || key.replace(/([A-Z])/g, ' $1')}: {typeof value === 'object' ? JSON.stringify(value) : String(value)}</Text>)}
       <TextInput accessibilityLabel="Rejection reason" placeholder="Reason required for rejection" placeholderTextColor={textColor} value={reasons[row.id] || ''} onChangeText={value => setReasons({ ...reasons, [row.id]: value })} maxLength={1000} style={{ backgroundColor: surface, color: textColor, padding: 12, borderWidth: 1, borderColor: textColor, borderRadius: 10 }} />
       <GradientButton label={row.pendingDeletion ? 'Approve deletion' : 'Approve publication'} disabled={busy} onPress={() => review(row, 'approve')} />
       <GradientButton label="Reject" disabled={busy || !reasons[row.id]?.trim()} onPress={() => review(row, 'reject')} />

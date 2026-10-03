@@ -41,7 +41,27 @@ const CATEGORIES = [
   "Activities", "Shopping", "Emergency", "Others",
 ];
 
-// ── Stat Card ───────────────────────────────────────────
+const EXPENSE_LABELS = [
+  { label: "Bus fare", category: "Transport" },
+  { label: "Jeepney fare", category: "Transport" },
+  { label: "Tricycle fare", category: "Transport" },
+  { label: "Boat rental", category: "Transport" },
+  { label: "Fuel", category: "Transport" },
+  { label: "Parking", category: "Transport" },
+  { label: "Breakfast", category: "Food" },
+  { label: "Lunch", category: "Food" },
+  { label: "Dinner", category: "Food" },
+  { label: "Snacks and drinks", category: "Food" },
+  { label: "Accommodation", category: "Accommodation" },
+  { label: "Entrance fee", category: "Entrance Fees" },
+  { label: "Tour or activity", category: "Activities" },
+  { label: "Equipment rental", category: "Activities" },
+  { label: "Souvenirs", category: "Shopping" },
+  { label: "Emergency expense", category: "Emergency" },
+  { label: "Other expense", category: "Others" },
+];
+
+// â”€â”€ Stat Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function StatCard({ label, value, sub, icon, iconBg, valueColor, onPress }) {
   const { themeStyle, themeColor } = useAppTheme();
 
@@ -60,7 +80,7 @@ function StatCard({ label, value, sub, icon, iconBg, valueColor, onPress }) {
   );
 }
 
-// ── Progress Bar ────────────────────────────────────────
+// â”€â”€ Progress Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function ProgressBar({ label, amount, total, color, rightLabel }) {
   const { themeStyle, themeColor } = useAppTheme();
 
@@ -78,13 +98,14 @@ function ProgressBar({ label, amount, total, color, rightLabel }) {
   );
 }
 
-// ── Add Expense Modal ───────────────────────────────────
+// â”€â”€ Add Expense Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function AddExpenseModal({ visible, trips, onClose, onAdded }) {
   const { currency } = useCurrency();
 
   const { themeStyle, themeColor } = useAppTheme();
 
   const [label, setLabel] = useState("");
+  const [labelOpen, setLabelOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("Transport");
   const [tripId, setTripId] = useState(null);
@@ -93,12 +114,12 @@ function AddExpenseModal({ visible, trips, onClose, onAdded }) {
   const [error, setError] = useState(null);
 
   const reset = () => {
-    setLabel(""); setAmount(""); setCategory("Transport");
+    setLabelOpen(false); setLabel(""); setAmount(""); setCategory("Transport");
     setTripId(null); setColor(EXPENSE_COLORS[0]); setError(null);
   };
 
   const handleAdd = async () => {
-    if (!label.trim()) { setError("Please enter an expense label."); return; }
+    if (!EXPENSE_LABELS.some(option => option.label === label)) { setError("Please select an expense label."); return; }
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
       setError("Please enter a valid amount."); return;
     }
@@ -126,6 +147,7 @@ function AddExpenseModal({ visible, trips, onClose, onAdded }) {
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable style={themeStyle(styles.overlay)} onPress={onClose}>
         <Pressable style={themeStyle(styles.modalBox)} onPress={() => {}}>
+          <ScrollView contentContainerStyle={{ gap: 16 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           {/* Header */}
           <View style={themeStyle(styles.modalHeader)}>
             <Text style={themeStyle(styles.modalTitle)}>Add Expense</Text>
@@ -137,13 +159,31 @@ function AddExpenseModal({ visible, trips, onClose, onAdded }) {
           {/* Label */}
           <View style={themeStyle(styles.formGroup)}>
             <Text style={themeStyle(styles.formLabel)}>Expense Label *</Text>
-            <TextInput
-              value={label}
-              onChangeText={setLabel}
-              placeholder="e.g. Boat rental, Lunch at Lucap"
-              placeholderTextColor={themeColor("#A8BECC", "color")}
-              style={themeStyle(styles.formInput)}
-            />
+            <FeedbackPressable
+              accessibilityRole="button"
+              accessibilityLabel="Expense label"
+              accessibilityState={{ expanded: labelOpen }}
+              onPress={() => setLabelOpen(open => !open)}
+              style={themeStyle([styles.formInput, styles.labelSelect])}
+            >
+              <Text style={themeStyle({ flex: 1, fontSize: 14, color: label ? "#1A2E40" : "#6B8CA8" })}>{label || "Select an expense"}</Text>
+              <ChevronDown size={16} color={themeColor("#6B8CA8", "color")} />
+            </FeedbackPressable>
+            {labelOpen && (
+              <ScrollView style={themeStyle(styles.labelOptions)} nestedScrollEnabled>
+                {EXPENSE_LABELS.map(option => (
+                  <FeedbackPressable
+                    key={option.label}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: label === option.label }}
+                    onPress={() => { setLabel(option.label); setCategory(option.category); setLabelOpen(false); setError(null); }}
+                    style={themeStyle([styles.labelOption, label === option.label && styles.categoryChipActive])}
+                  >
+                    <Text style={themeStyle({ fontSize: 14, color: "#1A2E40" })}>{option.label}</Text>
+                  </FeedbackPressable>
+                ))}
+              </ScrollView>
+            )}
           </View>
 
           {/* Amount */}
@@ -264,6 +304,7 @@ function AddExpenseModal({ visible, trips, onClose, onAdded }) {
               </Text>
             </FeedbackPressable>
           </View>
+          </ScrollView>
         </Pressable>
       </Pressable>
     </Modal>
@@ -284,7 +325,7 @@ function BudgetSettingsModal({ visible, settings, onClose, onSaved }) {
   return <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}><Pressable style={themeStyle(styles.overlay)} onPress={onClose}><Pressable style={themeStyle(styles.modalBox)} onPress={() => {}}><View style={themeStyle(styles.modalHeader)}><View><Text style={themeStyle(styles.modalTitle)}>Budget settings</Text><Text style={themeStyle(styles.modalSub)}>Set your own monthly limit and savings goal.</Text></View><FeedbackPressable onPress={onClose} style={themeStyle(styles.closeBtn)}><X size={18} color={themeColor("#6B8CA8", "color")} /></FeedbackPressable></View><View style={themeStyle(styles.formGroup)}><Text style={themeStyle(styles.formLabel)}>Monthly budget</Text><MoneyInput value={monthlyBudget} onChangeText={setMonthlyBudget} keyboardType="numeric" placeholder="0" style={themeStyle(styles.formInput)} /></View><View style={themeStyle(styles.formGroup)}><Text style={themeStyle(styles.formLabel)}>Savings target (%)</Text><TextInput value={savingsTarget} onChangeText={setSavingsTarget} keyboardType="numeric" placeholder="20" style={themeStyle(styles.formInput)} /></View><Text style={themeStyle(styles.settingsNote)}>Amount spent and remaining are calculated from your recorded expenses, so your balance always stays accurate.</Text>{error && <View style={themeStyle(styles.errorBox)}><Text style={themeStyle(styles.errorText)}>{error}</Text></View>}<View style={themeStyle(styles.modalActions)}><FeedbackPressable onPress={onClose} style={themeStyle(styles.cancelBtn)}><Text style={themeStyle(styles.cancelText)}>Cancel</Text></FeedbackPressable><FeedbackPressable onPress={save} disabled={saving} style={themeStyle(styles.addBtn)}>{saving && <ActivityIndicator size="small" color="#fff" style={{ marginRight: 6 }} />}<Text style={themeStyle(styles.addBtnText)}>{saving ? "Saving..." : "Save settings"}</Text></FeedbackPressable></View></Pressable></Pressable></Modal>;
 }
 
-// ── Trip Budget Section ─────────────────────────────────
+// â”€â”€ Trip Budget Section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function TripBudgetRow({ trip, entries }) {
   const { themeStyle, themeColor } = useAppTheme();
 
@@ -308,7 +349,7 @@ function TripBudgetRow({ trip, entries }) {
         <View style={themeStyle(styles.tripSectionLeft)}>
           <Text style={themeStyle(styles.tripSectionName)}>{trip.title}</Text>
           <Text style={themeStyle(styles.tripSectionMeta)}>
-            {trip.location} · {trip.status.toLowerCase()}
+            {trip.location} Â· {trip.status.toLowerCase()}
           </Text>
         </View>
         <View style={themeStyle(styles.tripSectionRight)}>
@@ -370,7 +411,7 @@ function TripBudgetRow({ trip, entries }) {
   );
 }
 
-// ── Main Screen ─────────────────────────────────────────
+// â”€â”€ Main Screen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function Budget() {
   const { width } = useWindowDimensions();
   const contentWidth = width >= 768 ? width - 280 : width;
@@ -429,15 +470,15 @@ export default function Budget() {
   return (
     <ScrollView
       style={themeStyle(styles.container)}
-      contentContainerStyle={themeStyle(styles.screen)}
+      contentContainerStyle={themeStyle([styles.screen, contentWidth < 520 && { padding: 16 }])}
       showsVerticalScrollIndicator={false}
     >
       {/* Header */}
       <View style={themeStyle([styles.header, contentWidth < 520 && { flexDirection: "column", gap: 16 }])}>
-        <View>
+        <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={themeStyle(styles.title)}>Budget Tracker</Text>
           <Text style={themeStyle(styles.subtitle)}>
-            {new Date().toLocaleString("en-PH", { month: "long", year: "numeric" })} · Pangasinan travels
+            {new Date().toLocaleString("en-PH", { month: "long", year: "numeric" })} Â· Pangasinan travels
           </Text>
         </View>
         <FeedbackPressable
@@ -570,7 +611,7 @@ export default function Budget() {
                         <View style={themeStyle(styles.entryInfo)}>
                           <Text style={themeStyle(styles.entryLabel)}>{entry.label}</Text>
                           <Text style={themeStyle(styles.entrySub)}>
-                            {entry.category || "Others"} · {" "}
+                            {entry.category || "Others"} Â· {" "}
                             {spent > 0
                               ? Math.round((entry.amount / spent) * 100)
                               : 0}
@@ -616,7 +657,7 @@ export default function Budget() {
                         amount={entry.amount}
                         total={maxAmount}
                         color={entry.color}
-                        rightLabel={<MoneyAmount value={entry.amount} prefix={`${spent > 0 ? Math.round((entry.amount / spent) * 100) : 0}% · `} />}
+                        rightLabel={<MoneyAmount value={entry.amount} prefix={`${spent > 0 ? Math.round((entry.amount / spent) * 100) : 0}% Â· `} />}
                       />
                     ))
                   )}
@@ -657,7 +698,7 @@ export default function Budget() {
 
           {/* Tips */}
           <View style={themeStyle(styles.tipsCard)}>
-            <Text style={themeStyle(styles.tipsTitle)}>💡 Budget Tips</Text>
+            <Text style={themeStyle(styles.tipsTitle)}>Budget Tips</Text>
             <View style={themeStyle(styles.tipsList)}>
               {[
                 "Use the AI Itinerary planner to estimate costs before your trip.",
@@ -688,7 +729,7 @@ export default function Budget() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F7F9FB" },
+  container: { flex: 1, backgroundColor: colors.warmSand },
   screen: { flexGrow: 1, padding: 28, paddingBottom: 48 },
 
   // Header
@@ -697,8 +738,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "flex-start",
     marginBottom: 24,
+    gap: 16,
+    flexWrap: "wrap",
+    flexShrink: 0,
   },
-  title: { fontSize: 26, fontWeight: "700", color: "#1A2E40" },
+  title: { fontFamily: "Poppins", fontSize: 30, lineHeight: 40, fontWeight: "700", color: colors.oceanBlue },
   subtitle: { fontSize: 13, color: "#6B8CA8", marginTop: 4 },
   addExpenseBtn: {
     flexDirection: "row",
@@ -707,9 +751,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 12,
     borderRadius: 12,
-    backgroundColor: colors.palmGreen,
+    backgroundColor: "#F4B183",
   },
-  addExpenseBtnText: { fontSize: 14, fontWeight: "700", color: "#fff" },
+  addExpenseBtnText: { fontSize: 14, fontWeight: "700", color: "#153C45" },
 
   loadingBox: { alignItems: "center", marginTop: 60, gap: 12 },
   loadingText: { fontSize: 14, color: "#6B8CA8" },
@@ -726,7 +770,9 @@ const styles = StyleSheet.create({
     gap: 6,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
+    borderWidth: 1,
+    borderColor: colors.border,
+    shadowOpacity: 0.03,
     shadowRadius: 8,
     elevation: 2,
   },
@@ -753,7 +799,9 @@ const styles = StyleSheet.create({
     gap: 10,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
+    borderWidth: 1,
+    borderColor: colors.border,
+    shadowOpacity: 0.03,
     shadowRadius: 8,
     elevation: 2,
   },
@@ -784,7 +832,9 @@ const styles = StyleSheet.create({
     padding: 22,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
+    borderWidth: 1,
+    borderColor: colors.border,
+    shadowOpacity: 0.03,
     shadowRadius: 10,
     elevation: 3,
     marginBottom: 20,
@@ -811,9 +861,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 10,
-    backgroundColor: colors.palmGreen,
+    backgroundColor: "#F4B183",
   },
-  emptyBtnText: { fontSize: 13, fontWeight: "700", color: "#fff" },
+  emptyBtnText: { fontSize: 13, fontWeight: "700", color: "#153C45" },
 
   // Entry rows
   entryRow: {
@@ -949,6 +999,7 @@ const styles = StyleSheet.create({
   modalBox: {
     width: "100%",
     maxWidth: 500,
+    maxHeight: "90%",
     backgroundColor: "#fff",
     borderRadius: 20,
     padding: 28,
@@ -987,6 +1038,9 @@ const styles = StyleSheet.create({
     color: "#1A2E40",
     backgroundColor: "#fff",
   },
+  labelSelect: { flexDirection: "row", alignItems: "center", gap: 12, minHeight: 52, borderRadius: 14 },
+  labelOptions: { maxHeight: 200, borderWidth: 1, borderColor: colors.border, borderRadius: 14, backgroundColor: colors.white, padding: 6 },
+  labelOption: { padding: 12, borderRadius: 9, marginBottom: 2 },
   categoryGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   categoryChip: {
     paddingHorizontal: 12,
@@ -1053,7 +1107,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingVertical: 12,
     borderRadius: 10,
-    backgroundColor: colors.palmGreen,
+    backgroundColor: "#F4B183",
   },
-  addBtnText: { fontSize: 13, fontWeight: "700", color: "#fff" },
+  addBtnText: { fontSize: 13, fontWeight: "700", color: "#153C45" },
 });
