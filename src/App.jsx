@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useFonts } from "expo-font";
 import { Poppins_600SemiBold } from "@expo-google-fonts/poppins/600SemiBold";
 import { DMSans_400Regular } from "@expo-google-fonts/dm-sans/400Regular";
-import { ActivityIndicator, AppState, Modal, Pressable, StatusBar, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { ActivityIndicator, AppState, Modal, Platform, Pressable, StatusBar, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { SafeAreaProvider, SafeAreaView, initialWindowMetrics } from "react-native-safe-area-context";
 import { Menu, X } from "lucide-react-native";
 import { DarkTheme, DefaultTheme, NavigationContainer } from "@react-navigation/native";
@@ -31,7 +31,7 @@ import AdminApprovals from "./pages/AdminApprovals";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminRoutes from "./pages/AdminRoutes";
 import AdminGeofences from "./pages/AdminGeofences";
-import GeofenceTracking from "./components/GeofenceTracking";
+import UserStackLayout from "./components/UserStackLayout";
 import AdminUsers from "./pages/AdminUsers";
 import AdminAIControls from "./pages/AdminAIControls";
 import AdminAnalytics from "./pages/AdminAnalytics";
@@ -119,7 +119,7 @@ function UserScreens() {
       <View style={themeStyle(styles.content)}>
         <UserStack.Navigator
           initialRouteName="InteractiveMap"
-          layout={({ children }) => <View style={{ flex: 1 }}><GeofenceTracking />{children}</View>}
+          layout={({ children }) => <UserStackLayout>{children}</UserStackLayout>}
           screenLayout={({ children }) => <ScreenMotion>{children}</ScreenMotion>}
           screenListeners={({ route }) => ({ focus: () => setActiveScreen(route.name) })}
           screenOptions={{
@@ -242,7 +242,9 @@ export default function App() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    Promise.all([init(), usePreferencesStore.getState().init()]).finally(() => setReady(true));
+    // A fresh mobile launch requires sign-in; ordinary background/resume keeps
+    // the current session so permission prompts and transit alerts still work.
+    Promise.all([init({ restoreSession: Platform.OS === "web" }), usePreferencesStore.getState().init()]).finally(() => setReady(true));
     const listener = AppState.addEventListener("change", state => {
       if (state === "active" && usePreferencesStore.getState().currency !== "PHP") usePreferencesStore.getState().refreshRates();
     });
@@ -256,14 +258,16 @@ export default function App() {
     <WorkspaceMotionProvider>
     <NavigationContainer
       theme={{ ...(isDark ? DarkTheme : DefaultTheme), colors: { ...(isDark ? DarkTheme : DefaultTheme).colors, background, card: surface, text, primary: colors.sunsetCoral } }}
-      linking={linking}
+      linking={Platform.OS === "web" ? linking : undefined}
       ref={(ref) => {
         navigationRef.current = ref;
       }}
     >
       <View style={{ flex: 1, backgroundColor: background }}>
-      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={background} />
-      <RootStack.Navigator screenOptions={{ headerShown: false }}>
+      {/* Expo uses app-wide status-bar control on iOS. Native-stack statusBar
+          options require a different Info.plist setting and trigger an error. */}
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={background} hidden={false} />
+      <RootStack.Navigator initialRouteName={isAuthenticated ? undefined : Platform.OS === "web" ? "Landing" : "Login"} screenOptions={{ headerShown: false }}>
         {isAuthenticated ? (
           user?.role === "SUPERADMIN" ? (
             <RootStack.Screen name="SuperAdmin" component={SuperAdminLayout} />

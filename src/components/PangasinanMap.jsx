@@ -57,7 +57,7 @@ export default function PangasinanMap({ mode = "explore", selectedIds = [], onTo
   }, []);
   useEffect(() => {
     pop.setValue(0);
-    const animation = Animated.timing(pop, { toValue: 1, duration: reduceMotion ? 0 : 180, useNativeDriver: true });
+    const animation = Animated.timing(pop, { toValue: 1, duration: reduceMotion ? 0 : 180, useNativeDriver: Platform.OS !== "web" });
     animation.start();
     return () => animation.stop();
   }, [preview?.id, pop, reduceMotion]);
@@ -100,10 +100,11 @@ export default function PangasinanMap({ mode = "explore", selectedIds = [], onTo
         <View style={themeStyle(StyleSheet.absoluteFill)} {...responder.panHandlers}>
           <Svg width="100%" height="100%" viewBox={`${vx} ${vy} ${geometry.width / zoom} ${geometry.height / zoom}`} preserveAspectRatio="xMidYMid meet">
             <SvgText x="400" y="140" textAnchor="middle" fill={mapColors.gulf} fontSize="18" fontStyle="italic">Lingayen Gulf</SvgText>
+            {/* SVG requires an explicit null onPress on web to preserve onClick and skip native responder handlers. */}
             {geometry.areas.map((area, i) => (
               <Path key={area.id} testID={`map-area-${area.id}`} d={area.d} fill={selectedIds.includes(area.id) ? mapColors.active : query && !matches.includes(area) ? mapColors.muted : mapColors.regions[i % 4]}
-                fillRule="evenodd" stroke={mapColors.border} strokeWidth={1.2 / zoom} strokeLinejoin="round" onPress={() => select(area)}
-                {...(Platform.OS === "web" ? { onMouseEnter: () => hover(area), onMouseLeave: () => setHovered(null), style: { cursor: "pointer" } } : {})} />
+                fillRule="evenodd" stroke={mapColors.border} strokeWidth={1.2 / zoom} strokeLinejoin="round" onPress={Platform.OS === "web" ? null : () => select(area)}
+                {...(Platform.OS === "web" ? { onClick: () => select(area), onMouseEnter: () => hover(area), onMouseLeave: () => setHovered(null), style: { cursor: "pointer" } } : {})} />
             ))}
             {routePoints.length > 1 && <Polyline points={routePoints.map(s => s.point.join(",")).join(" ")} fill="none" stroke={mapColors.route} strokeWidth={3 / zoom} strokeDasharray="6 4" pointerEvents="none" />}
             {routePoints.map(stop => <G key={`${stop.placeId}-${stop.index}`} pointerEvents="none"><Circle cx={stop.point[0]} cy={stop.point[1]} r={10 / zoom} fill={mapColors.route} /><SvgText x={stop.point[0]} y={stop.point[1] + 4 / zoom} fontSize={11 / zoom} textAnchor="middle" fill={mapColors.routeText}>{stop.index + 1}</SvgText></G>)}

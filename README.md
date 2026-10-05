@@ -44,7 +44,7 @@ Backend:
 
 - Node.js 20.19.4 or newer
 - MongoDB Atlas or a local MongoDB server
-- Expo Go for physical-device testing, or Android Studio/Xcode for native emulators
+- Expo Go for native previews where supported, a browser for free Android/iPhone previews, or Android Studio/Xcode for native emulators
 
 ## Installation
 
@@ -108,6 +108,16 @@ npm run android
 npm run ios
 ```
 
+For a shared Android, iOS, and web preview, run `npm.cmd run preview`. It starts
+one Expo server and a local API connection: scan the Expo QR code in Android
+Expo Go, use a compatible installed Expo Go client on iOS, or open the printed
+HTTP link in Chrome/Safari on either phone. Both devices must use the computer's
+Wi-Fi network. Browser previews are free on both platforms; SDK 57's physical
+iPhone Expo Go setup requires Apple membership. `npm run preview:android`
+also opens Android, and `npm run preview:ios` opens the iOS simulator on a Mac.
+See [Android and iOS testing setup](docs/MOBILE_TESTING.md) for native builds,
+Apple signing requirements, and browser limitations.
+
 For an Android Studio emulator, start a virtual device in Device Manager, then run:
 
 ```bash
@@ -124,10 +134,15 @@ If Metro's default port is already occupied, use
 For an Android phone, install [Expo Go for SDK 57](https://expo.dev/go?platform=android&device=true&sdkVersion=57), and connect the phone and computer to the same Wi-Fi network. From the repository root, run:
 
 ```powershell
-npm.cmd run dev:clear
+npm.cmd run preview
 ```
 
-Open Expo Go on the phone and scan the terminal's QR code. Keep the backend running in a separate terminal. The client detects the Expo development host for native development. For a deployed API or a backend on another machine, set this before starting Expo:
+Open Expo Go on the phone and scan the terminal's QR code. The preview command
+connects to the local API automatically. If Expo account requests fail, use
+`npm.cmd run preview -- --offline`. For `npm start` or `npm run dev:clear`, keep
+the backend running in a separate terminal; the client detects the Expo
+development host. For a deployed API or a backend on another machine, set this
+before using those standard Expo commands:
 
 ```env
 EXPO_PUBLIC_API_URL=http://YOUR_API_HOST:3001
@@ -158,6 +173,14 @@ Root frontend scripts:
 | `npm run web`     | Start Expo for web               |
 | `npm run android` | Start Expo and open Android      |
 | `npm run ios`     | Start Expo and open iOS          |
+| `npm run preview` | Share Expo Go and browser previews across Android/iOS |
+| `npm run preview:web` | Start a browser preview for either phone and local API |
+| `npm run preview:android` | Start shared preview and open Android |
+| `npm run preview:ios` | Start shared preview and open iOS simulator (Mac) |
+| `npm run android:web` / `npm run ios:web` | Aliases for the shared browser preview |
+| `npm run build:preview:android` | Request an installable Android APK |
+| `npm run build:preview:ios` | Request a signed iPhone preview build |
+| `npm run build:preview:ios-simulator` | Request an iOS Simulator build |
 | `npm run build`   | Export the app for all platforms |
 | `npm run lint`    | Run ESLint                       |
 

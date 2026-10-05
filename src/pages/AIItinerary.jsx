@@ -1,23 +1,22 @@
+import { useItineraryPlanner, TRIP_TYPES, ACTIVITIES, TRAVELER_TYPES, TRAVEL_STYLES, TRANSPORT_MODES, BUDGET_PACKAGES, todayInManila, hotelBudget } from "../hooks/useItineraryPlanner";
 import { useEffect, useRef, useState } from "react";
 import { useAppTheme } from "../theme/useAppTheme";
+import { EXPERIENCE_DETAILS } from "../lib/itineraryIcons";
 import { darkPalette } from "../theme/darkPalette";
 import { Image as NativeImage, useWindowDimensions } from "react-native";
-import { lguMunicipalities } from "../data/lguMunicipalities";
 import AIToolHeader from "../components/AIToolHeader";
-import { api } from "../lib/api";
 import { dagupanPhotos } from "../lib/dagupanPhotos";
 import { alaminosPhotos } from "../lib/alaminosPhotos";
 import { sanCarlosPhotos } from "../lib/sanCarlosPhotos";
 import { urdanetaPhotos } from "../lib/urdanetaPhotos";
-import { itineraryErrors, itineraryErrorStep, itineraryFailureMessage } from "../lib/itineraryValidation";
 import ItineraryResults from "../components/ItineraryResults";
 import ItineraryFareInputs from "../components/ItineraryFareInputs";
 import {
   Home,
   Sparkles, ChevronDown, ChevronRight, Check,
-  Clock, Activity, Zap, User, Users, Star, Globe, Bus, Wifi, Wind, Waves,
+  Zap, Users, Star, Globe, Bus, Wifi, Wind, Waves,
   Eye, BedDouble, Utensils, Compass, ShoppingBag,
-  MapPin, Phone, Info, Building2, Receipt, LogIn, LogOut, Wallet, TrendingUp, PiggyBank,
+  MapPin, Phone, Info, Building2, Receipt, LogIn, LogOut,
 } from "lucide-react-native";
 
 /* ------------------------------------------------------------------ */
@@ -29,36 +28,8 @@ const fonts = {
 };
 
 /* ------------------------------------------------------------------ */
-/*  Static reference data (would come from the catalog API)            */
+/*  Icons and display helpers                                         */
 /* ------------------------------------------------------------------ */
-
-const TRIP_TYPES = [
-  "Beach & Sea", "Nature", "Waterfalls", "Adventure", "Relaxing", "Pilgrimage",
-  "History & Culture", "Food Trip", "Farm Experience", "Scenic / Photography",
-  "Shopping & Pasalubong", "Festivals & Events",
-];
-
-const ACTIVITIES = [
-  "Swimming", "Boating", "Farm Visit",
-  "Beach Relaxation", "Outdoor Exploration", "Photography", "Local Food",
-  "Church / Pilgrimage", "Resort / Staycation",
-];
-
-const TRAVELER_TYPES = [
-  { id: "solo", label: "Solo", Icon: User },
-  { id: "couple", label: "Couple", Icon: Users },
-  { id: "family", label: "Family", Icon: Home },
-  { id: "barkada", label: "Barkada", Icon: Star },
-  { id: "group", label: "Group", Icon: Globe },
-];
-
-const TRAVEL_STYLES = [
-  { id: "relaxed", label: "Relaxed", desc: "Slow pace, lots of breaks", Icon: Clock },
-  { id: "balanced", label: "Balanced", desc: "Mix of rest & activity", Icon: Activity },
-  { id: "adventurous", label: "Adventurous", desc: "Full day, max experiences", Icon: Zap },
-];
-
-const TRANSPORT_MODES = ["Bus", "Jeepney", "Tricycle", "Van", "Own Vehicle"];
 
 const AMENITY_ICON = { "Wi-Fi": Wifi, "A/C": Wind, "Restaurant": Utensils, "Pool": Waves, "Sea View": Eye, "Fan room": BedDouble };
 
@@ -133,19 +104,6 @@ function DestinationGallery({ title, names, Icon, photos, entries = [] }) {
   </section>;
 }
 
-function hotelBudget(lodging, budget, days, rooms) {
-  const rate = lodging?.lodgingDetails?.reference_rate;
-  const nights = Math.max(0, Number(days) - 1);
-  if (!nights) return { status: 'day-trip', nights, blocked: false };
-  if (!rate || rate.period !== "night" || rate.min == null || rate.max == null || /flat rate|group basis|per.head|per.person/i.test(rate.basis)) return { status: "unknown", nights, blocked: false };
-  const min = Number(rate.min) * nights * rooms;
-  const max = Number(rate.max) * nights * rooms;
-  if (!Number.isFinite(min) || !Number.isFinite(max)) return { status: "unknown", nights, blocked: false };
-  const knownBasis = /^(per[ _-])?room\b/i.test(rate.basis || "");
-  const status = min > Number(budget) ? "over" : max > Number(budget) ? "possible" : "within";
-  return { min, max, nights, status, knownBasis, blocked: status === "over" && knownBasis };
-}
-
 function LodgingCard({ lodging: l, selected, onSelect, comparison }) {
   const d = l.lodgingDetails;
   const rate = d?.reference_rate;
@@ -211,30 +169,6 @@ function Chip({ selected, onClick, children, disabled = false }) {
   );
 }
 
-const EXPERIENCE_DETAILS = {
-  "Beach & Sea": { Icon: Waves, detail: "Coastal escapes", tone: "blue" },
-  "Nature": { Icon: Wind, detail: "Fresh air & green views", tone: "green" },
-  "Waterfalls": { Icon: Waves, detail: "Cascades & cool waters", tone: "blue" },
-  "Adventure": { Icon: Compass, detail: "An active getaway", tone: "coral" },
-  "Relaxing": { Icon: BedDouble, detail: "Take it slow", tone: "green" },
-  "Pilgrimage": { Icon: Home, detail: "Faith & reflection", tone: "gold" },
-  "History & Culture": { Icon: Building2, detail: "Stories & local heritage", tone: "gold" },
-  "Food Trip": { Icon: Utensils, detail: "Taste local favorites", tone: "coral" },
-  "Farm Experience": { Icon: Wind, detail: "Countryside discoveries", tone: "green" },
-  "Scenic / Photography": { Icon: Eye, detail: "Views worth capturing", tone: "blue" },
-  "Shopping & Pasalubong": { Icon: ShoppingBag, detail: "Bring something home", tone: "coral" },
-  "Festivals & Events": { Icon: Sparkles, detail: "Local celebrations", tone: "gold" },
-  "Swimming": { Icon: Waves, detail: "A refreshing dip", tone: "blue" },
-  "Boating": { Icon: Compass, detail: "Explore from the water", tone: "blue" },
-  "Farm Visit": { Icon: Wind, detail: "Discover rural life", tone: "green" },
-  "Beach Relaxation": { Icon: Waves, detail: "Unwind by the shore", tone: "blue" },
-  "Outdoor Exploration": { Icon: Compass, detail: "Head into the outdoors", tone: "green" },
-  "Photography": { Icon: Eye, detail: "Capture your favorites", tone: "gold" },
-  "Local Food": { Icon: Utensils, detail: "Try regional flavors", tone: "coral" },
-  "Church / Pilgrimage": { Icon: Home, detail: "Visit sacred landmarks", tone: "gold" },
-  "Resort / Staycation": { Icon: BedDouble, detail: "Rest & recharge", tone: "green" },
-};
-
 function MultiSelectField({ label, options, values, onChange, error }) {
   const [open, setOpen] = useState(false);
   return (
@@ -277,35 +211,9 @@ function MultiSelectField({ label, options, values, onChange, error }) {
 /* ------------------------------------------------------------------ */
 /*  Main component                                                     */
 /* ------------------------------------------------------------------ */
-const todayInManila = () => new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10);
-const BUDGET_PACKAGES = [
-  { id: "economy", min: 200, max: 500, rate: 500, label: "Economy", Icon: PiggyBank, color: "#246B73" },
-  { id: "budget", min: 500, max: 1000, rate: 1000, label: "Budget", Icon: Wallet, color: "#2A7B4C" },
-  { id: "standard", min: 1000, max: 2000, rate: 2000, label: "Standard", Icon: Star, color: "#0B3C5D" },
-  { id: "comfortable", min: 2000, max: 4000, rate: 4000, label: "Comfortable", Icon: TrendingUp, color: "#946516" },
-  { id: "premium", min: 4000, max: null, rate: 4000, label: "Premium", Icon: Zap, color: "#B7472B" },
-];
-const initialForm = () => ({
-  areaId: "",
-  tripTypes: [],
-  activities: [],
-  travelerType: "",
-  travelStyle: "",
-  date: todayInManila(),
-  travelers: 2,
-  budget: "",
-  days: 1,
-  lodgingId: "",
-  startTime: "07:00",
-  mealBudget: "300",
-  fareInputs: [],
-  transportModes: [],
-  preferences: [],
-  returnToOrigin: true,
-});
-
 export default function AIItinerary({ navigation }) {
   const { isDark, palette, themeColor } = useAppTheme();
+  const scroll = useRef(null);
   // Share semantic colors with the fare inputs and generated itinerary.
   const themeVariables = {
     colorScheme: isDark ? "dark" : "light",
@@ -331,152 +239,20 @@ export default function AIItinerary({ navigation }) {
   };
   const { width } = useWindowDimensions();
   const contentWidth = width >= 768 ? width - 280 : width;
-  const [step, setStep] = useState(1);
-  const [form, setForm] = useState(initialForm);
-  const [budgetTier, setBudgetTier] = useState("");
-  const [hotelRooms, setHotelRooms] = useState(1);
-  const selectedBudget = BUDGET_PACKAGES.find((tier) => tier.id === budgetTier);
-  const budgetRate = selectedBudget?.rate || 0;
-  const [today, setToday] = useState(todayInManila);
-  const [showAdvanced, setShowAdvanced] = useState(true);
-  const [attemptedNext, setAttemptedNext] = useState(false);
-  const [phase, setPhase] = useState("");
-  const [elapsed, setElapsed] = useState(0);
-  const [plan, setPlan] = useState(null);
-  const [showForm, setShowForm] = useState(true);
-  const [saved, setSaved] = useState(false);
-  const timerRef = useRef(null);
-  const generationRef = useRef(false);
-  const [catalog, setCatalog] = useState([]);
-  const [fareTables, setFareTables] = useState([]);
-  const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
-  const [fieldErrors, setFieldErrors] = useState({});
-  const [saving, setSaving] = useState(false);
-  const AREAS = lguMunicipalities.map(area => ({
-    famousPlaces: [], foods: [], entries: [], lodging: [],
-    ...catalog.find(entry => entry.id === area.id),
-    id: area.id,
-    name: area.name,
-    group: area.kind === "City" ? "Cities" : "Municipalities",
-  })).sort((a, b) => a.name.localeCompare(b.name, "en"));
-  useEffect(() => {
-    const controller = new AbortController();
-    api.getItineraryCatalog({ signal: controller.signal })
-      .then(data => { setCatalog(data.areas); setFareTables(data.fareTables || []); })
-      .catch(err => { if (!controller.signal.aborted) setError(itineraryFailureMessage(err, "Unable to load destinations. Please try again.")); });
-    return () => controller.abort();
-  }, []);
-
-  useEffect(() => {
-    const timer = setInterval(() => setToday(todayInManila()), 30000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const set = (key, value) => {
-    setNotice("");
-    setFieldErrors(current => { const next = { ...current }; delete next[key]; return next; });
-    setForm((f) => {
-    const next = { ...f, [key]: value, ...(key === "areaId" ? { lodgingId: "" } : {}) };
-    if (key === 'areaId') next.fareInputs = [];
-    if (key === 'transportModes') next.fareInputs = value.map(mode => f.fareInputs.find(item => item.mode === mode) || { mode, rides: 2, tableId: fareTables.find(t => t.mode === mode && (mode !== 'Tricycle' || f.areaId === 'dagupan'))?.id });
-    if (key === "travelerType" && ["solo", "couple"].includes(value)) next.travelers = value === "solo" ? 1 : 2;
-    if (budgetTier && ["travelers", "days", "travelerType"].includes(key)) {
-      next.budget = String(budgetRate * Math.max(1, Number(next.travelers) || 1) * next.days);
-    }
-    return next;
-    });
-  };
-  const chooseBudget = ({ id, rate }) => {
-    setNotice("");
-    setFieldErrors(current => { const next = { ...current }; delete next.budget; return next; });
-    setBudgetTier(id);
-    setForm((f) => ({ ...f, budget: String(rate * Math.max(1, Number(f.travelers) || 1) * f.days) }));
-  };
-  const dateError = fieldErrors.date;
-  const validateStep = (targetStep) => {
-    const errors = itineraryErrors(form, { catalog, hotelRooms, budgetTier, today: todayInManila(), step: targetStep, fareTables });
-    if (targetStep >= 2 && stayBudget?.blocked) errors.lodgingId = 'This hotel costs more than your trip budget. Choose a cheaper hotel, increase your budget, or select no lodging.';
-    setFieldErrors(errors);
-    setAttemptedNext(true);
-    if (Object.keys(errors).length) {
-      setError('Please check the highlighted fields before continuing.');
-      setStep(itineraryErrorStep(Object.keys(errors)[0]));
-      setShowAdvanced(true);
-      requestAnimationFrame(() => document.querySelector(".aip-error")?.scrollIntoView({ behavior: "smooth", block: "center" }));
-      return false;
-    }
-    setError('');
-    setFieldErrors({});
-    return true;
-  };
+  const { step, form, budgetTier, hotelRooms, setHotelRooms, selectedBudget, today, setToday, showAdvanced, setShowAdvanced, attemptedNext, phase, elapsed, plan, showForm, setShowForm, saved, catalog, fareTables, error, notice, fieldErrors, saving, AREAS, set, chooseBudget, dateError, area, info, lodgingList, lodging, mealPerPerson, mealTotal, mealRemaining, stayBudget, higherBudget, stepLabel, goNext, goBack, generate, savePlan } = useItineraryPlanner({
+    navigation,
+    onInvalid: () => requestAnimationFrame(() => document.querySelector(".aip-error")?.scrollIntoView({ behavior: "smooth", block: "center" })),
+  });
   const fieldError = key => fieldErrors[key] && <p className="aip-error" role="alert">{fieldErrors[key]}</p>;
-  const area = AREAS.find((a) => a.id === form.areaId);
-  const info = area;
-  const lodgingList = area?.lodging || [];
-  const lodging = lodgingList.find((l) => l.id === form.lodgingId);
-  const mealPerPerson = Number(form.mealBudget) * Number(form.days);
-  const mealTotal = mealPerPerson * Number(form.travelers);
-  const mealRemaining = Number(form.budget) - mealTotal;
-  const stayBudget = lodging ? hotelBudget(lodging, form.budget, form.days, hotelRooms) : null;
-  const higherBudget = stayBudget?.max != null ? BUDGET_PACKAGES.find((tier) => tier.rate * form.travelers * form.days >= stayBudget.max && tier.rate > budgetRate) : null;
-
   useEffect(() => {
-    if (!phase) return;
-    setElapsed(0);
-    timerRef.current = setInterval(() => setElapsed((n) => n + 1), 1000);
-    return () => clearInterval(timerRef.current);
-  }, [phase]);
-
-  const stepLabel = { 1: "Destination & preferences", 2: "Trip details & lodging", 3: "Review & personalize" }[step];
-
-  const goNext = () => {
-    if (!validateStep(step)) return;
-    setNotice(`Step ${step} completed successfully.`);
-    setAttemptedNext(false);
-    setStep((s) => Math.min(3, s + 1));
-  };
-  const goBack = () => setStep((s) => Math.max(1, s - 1));
-
-  const generate = async () => {
-    if (generationRef.current) return;
-    if (!validateStep(3)) return;
-    setNotice("");
-    generationRef.current = true;
-    setError("");
-    setPhase("Planning from your area's catalog");
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 90000);
-    try {
-      const built = await api.generateGroundedItinerary({ ...form, travelers: Number(form.travelers), days: Number(form.days), budget: Number(form.budget), mealBudget: Number(form.mealBudget), hotelRooms: form.lodgingId ? Number(hotelRooms) : 1 }, { signal: controller.signal });
-      const icons = { Bus, Compass, Utensils, Home, ShoppingBag };
-      setPlan({ ...built, stops: built.stops.map(stop => ({ ...stop, Icon: icons[stop.iconKey] || Compass })) });
-      setShowForm(false);
-      setSaved(false);
-      setNotice("Your itinerary was created successfully. You can save it or download a PDF.");
-    } catch (err) {
-      setError(controller.signal.aborted ? "Generation timed out. Please try again." : itineraryFailureMessage(err, "Unable to generate your itinerary. Please try again."));
-    } finally {
-      clearTimeout(timeout);
-      setPhase("");
-      generationRef.current = false;
-    }
-  };
-  const savePlan = async () => {
-    if (saving || !plan?.id) return;
-    setSaving(true);
-    setError("");
-    try {
-      await api.saveItinerary(plan.id, true);
-      setSaved(true);
-      navigation.navigate("MyTrips", { successMessage: "Your itinerary was saved successfully." });
-    } catch (err) { setError(itineraryFailureMessage(err, "Your plan could not be saved. Please try again.")); }
-    finally { setSaving(false); }
-  };
+    if (showForm || !plan) return;
+    const frame = requestAnimationFrame(() => scroll.current?.scrollTo({ top: 0, behavior: 'auto' }));
+    return () => cancelAnimationFrame(frame);
+  }, [plan, showForm]);
 
   /* -------------------------- render -------------------------- */
   return (
-    <div className="aip-shell" style={themeVariables}>
+    <div ref={scroll} className="aip-shell" style={themeVariables}>
       <style>{plannerCSS(palette, themeColor)}</style>
 
       {/* Navigation is provided by the shared UserSidebar in App.jsx. */}

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, AppState, Linking, Platform, ScrollView, StyleSheet, Text, Vibration, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, AppState, Linking, Platform, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import * as Location from 'expo-location';
 import { Bell, Bus, MapPin, Search, Vibrate, Volume2, Smartphone } from 'lucide-react-native';
 import { FeedbackPressable } from '../components/WorkspaceMotion';
@@ -15,6 +15,11 @@ import { useAuthStore } from '../store/authStore';
 import { estimateTraditionalJeepneyFare } from '../lib/transitFare';
 import TransitStopPreview from '../components/TransitStopPreview';
 import TransitPinMap from '../components/TransitPinMap';
+import TransitAlertTester from '../components/TransitAlertTester';
+import TransitNotificationGate from '../components/TransitNotificationGate';
+import { useTransitNotificationPermission } from '../hooks/useTransitNotificationPermission';
+import { prepareTransitAlert, deliverTransitAlert, stopTransitAlertPlayback } from '../lib/transitAlerts';
+import { transitArrivalMessage } from '../lib/transitArrivalMessage';
 
 const modes = [{ key: 'vibrate', label: 'Vibrate', Icon: Vibrate }, { key: 'sound', label: 'Sound', Icon: Volume2 }, { key: 'push', label: 'Notify', Icon: Smartphone }];
 
@@ -22,6 +27,7 @@ export default function TransitAlarm() {
   const { width } = useWindowDimensions();
   const compact = width < 1100;
   const { themeStyle: t, themeColor, palette } = useAppTheme();
+  const notificationAccess = useTransitNotificationPermission();
   const [from, setFrom] = useState('dagupan'), [to, setTo] = useState('alaminos');
   const [routes, setRoutes] = useState([]), [route, setRoute] = useState(null), [stopIndex, setStopIndex] = useState(0);
   const [referenceRoutes, setReferenceRoutes] = useState([]);
@@ -29,9 +35,10 @@ export default function TransitAlarm() {
   const [alarm, setAlarm] = useState(false), [tracking, setTracking] = useState(false), [busyGPS, setBusyGPS] = useState(false);
   const [position, setPosition] = useState(null), [now, setNow] = useState(Date.now());
   const [loading, setLoading] = useState(false), [searched, setSearched] = useState(false), [message, setMessage] = useState('');
-  const watcher = useRef(null), generation = useRef(0), requestId = useRef(0), audio = useRef(null);
+  const watcher = useRef(null), generation = useRef(0), requestId = useRef(0);
   const background = useRef(false), fired = useRef(false);
   const [arming, setArming] = useState(false);
+  const [testingAlert, setTestingAlert] = useState(false);
   const setupBusy = useRef(false), screen = useRef(null), alarmPanelY = useRef(0), columnsY = useRef(0);
   const alarmConfig = useRef(null);
   const [originPin, setOriginPin] = useState(null), [destinationPin, setDestinationPin] = useState(null);
@@ -43,6 +50,11 @@ export default function TransitAlarm() {
   const options = map.areas.map(a => ({ value: a.id, label: a.name }));
   const disarm = () => { if (background.current && !watcher.current) setTracking(false); background.current = false; fired.current = true; setAlarm(false); stopTransitAlarm().catch(() => setMessage('Could not stop background tracking. Retry Stop Tracking.')); };
   const halt = () => { generation.current++; watcher.current?.remove(); watcher.current = null; setTracking(false); disarm(); };
+  useEffect(() => {
+    if (notificationAccess.denied && alarm) {
+      halt(); setMessage('Turn on push notifications in Multraverse to use this feature.');
+    }
+  }, [notificationAccess.denied, alarm]);
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
     let mounted = true;
@@ -65,7 +77,7 @@ export default function TransitAlarm() {
       if (state === 'active') getTransitSession().then(restore).catch(() => {});
       else if (Platform.OS === 'web') { halt(); setMessage('Web tracking paused. Keep this page open and resume tracking for alerts.'); }
     });
-    return () => { mounted = false; clearInterval(timer); unsubscribe(); subscription.remove(); generation.current++; watcher.current?.remove(); audio.current?.close(); };
+    return () => { mounted = false; clearInterval(timer); unsubscribe(); subscription.remove(); generation.current++; watcher.current?.remove(); stopTransitAlertPlayback(); };
   }, []);
   async function gps(useOrigin = false) {
     const run = ++generation.current;
@@ -138,22 +150,15 @@ export default function TransitAlarm() {
   }
   async function enable() {
     if (alarm) { halt(); return; }
-    if (setupBusy.current || busyGPS) return;
+    if (notificationAccess.blocked) return;
+    if (setupBusy.current || busyGPS || testingAlert) return;
     if (!target) { setMessage('Select a route and stop first.'); return; }
     setupBusy.current = true;
     const config = alarmConfig.current, initialGeneration = generation.current;
     try {
       setArming(true);
       // Prepare browser alert APIs while the click still counts as a user gesture.
-      if (Platform.OS === 'web' && mode === 'sound') {
-        const AudioContext = globalThis.AudioContext || globalThis.webkitAudioContext;
-        if (!AudioContext) throw new Error('This browser does not support sound alerts.');
-        audio.current ||= new AudioContext(); await audio.current.resume();
-      }
-      if (Platform.OS === 'web' && mode === 'push') {
-        if (!globalThis.Notification) throw new Error('This browser does not support notifications.');
-        if (await globalThis.Notification.requestPermission() !== 'granted') throw new Error('Notification permission was denied.');
-      }
+      if (Platform.OS === 'web') await prepareTransitAlert(mode);
       if (initialGeneration !== generation.current || config !== alarmConfig.current) return;
       const fix = tracking && accurate ? position : await gps();
       if (!fix || config !== alarmConfig.current) return;
@@ -171,20 +176,15 @@ export default function TransitAlarm() {
       if (run !== generation.current) return;
       fired.current = false; setAlarm(true); setMessage('Alarm enabled. Keep this page open.');
     } catch (e) { setMessage(e.message); }
-    finally { setupBusy.current = false; setArming(false); }
+    finally { setupBusy.current = false; setArming(false); await notificationAccess.refresh(); }
   }
   useEffect(() => {
     if (Platform.OS !== 'web' || fired.current || !alarm || !target || !tracking || !isArrival(position, target, radius)) return;
     fired.current = true;
     setAlarm(false);
-    const text = `Approaching ${target.name}. Your stop is within ${radius} m.`;
+    const text = transitArrivalMessage(radius);
     setMessage(text);
-    if (mode === 'vibrate') Vibration.vibrate([0, 700, 250, 700]);
-    if (mode === 'push') new globalThis.Notification('Transit stop alert', { body: text });
-    if (mode === 'sound' && audio.current) {
-      const oscillator = audio.current.createOscillator(); oscillator.connect(audio.current.destination); oscillator.frequency.value = 880; oscillator.start(); oscillator.stop(audio.current.currentTime + 1.5);
-    }
-    Alert.alert('Your stop is approaching', text);
+    deliverTransitAlert({ mode, title: 'Your stop is approaching', body: text }).catch(error => setMessage(`Stop reached, but the alert failed: ${error.message}`));
   }, [alarm, target, tracking, accurate, position, radius, mode]);
   function button(label, onPress, Icon = MapPin, secondary = false, disabled = false) {
     const foreground = secondary ? palette.ink : palette.onPrimary;
@@ -214,6 +214,7 @@ export default function TransitAlarm() {
         badges={[{ label: 'Active route data' }, { label: 'Location-aware alerts' }, { label: 'Smart notifications', color: '#A78BFA' }]}
         Icon={Bell}
       />
+      {compact && <View style={{ marginTop: 20 }}><TransitAlertTester radius={radius} disabled={alarm || arming} notificationAccess={notificationAccess} onTestingChange={setTestingAlert} /></View>}
 
       {!!message && (
         <View accessibilityLiveRegion="polite" style={t(styles.banner)}>
@@ -368,6 +369,7 @@ export default function TransitAlarm() {
 
         {/* ---------- RIGHT COLUMN ---------- */}
         <View onLayout={event => { alarmPanelY.current = event.nativeEvent.layout.y; }} style={[styles.right, compact && { width: '100%' }]}>
+          {!compact && <TransitAlertTester radius={radius} disabled={alarm || arming} notificationAccess={notificationAccess} onTestingChange={setTestingAlert} />}
           <View style={t(styles.card)}>
             <View style={styles.row}>
               <Text style={t([styles.title, { flex: 1 }])}>Stop Alarm</Text>
@@ -392,25 +394,27 @@ export default function TransitAlarm() {
               {[100, 300, 500, 1000, 2000].map(n => (
                 <FeedbackPressable key={n} accessibilityRole="button" accessibilityState={{ selected: radius === n }}
                   onPress={() => { disarm(); setRadius(n); }}
-                  style={t([styles.chip, radius === n && styles.active])}>
-                  <Text style={t(styles.muted)}>{n} m</Text>
+                  style={state => choiceStyle(styles.chip, radius === n, state)}>
+                  <Text style={[styles.muted, { color: radius === n ? palette.onPrimary : palette.ink }]}>{n} m</Text>
                 </FeedbackPressable>
               ))}
             </View>
 
             <Text style={t(styles.fieldLabel)}>How to alert</Text>
+            <TransitNotificationGate access={notificationAccess}>
             <View style={styles.row}>
               {modes.map(({ key, label, Icon }) => (
-                <FeedbackPressable key={key} accessibilityRole="button" accessibilityState={{ selected: mode === key }}
+                <FeedbackPressable key={key} accessibilityRole="button" disabled={notificationAccess.blocked} accessibilityState={{ selected: mode === key, disabled: notificationAccess.blocked }}
                   onPress={() => { disarm(); setMode(key); }}
-                  style={t([styles.mode, mode === key && styles.active])}>
-                  <Icon size={16} color={themeColor('#103E53', 'color')} />
-                  <Text style={t(styles.muted)}>{label}</Text>
+                  style={state => choiceStyle(styles.mode, mode === key, state)}>
+                  <Icon size={16} color={mode === key ? palette.onPrimary : palette.ink} />
+                  <Text style={[styles.muted, { color: mode === key ? palette.onPrimary : palette.ink }]}>{label}</Text>
                 </FeedbackPressable>
               ))}
             </View>
+            </TransitNotificationGate>
 
-            {button(arming ? 'Setting up…' : alarm ? 'Disable Alarm' : 'Enable Alarm', enable, Bell, false, !target || arming || busyGPS)}
+            {button(arming ? 'Setting up…' : alarm ? 'Disable Alarm' : 'Enable Alarm', enable, Bell, false, !target || arming || busyGPS || testingAlert || (!alarm && notificationAccess.blocked))}
             {button(tracking ? 'Stop Tracking' : 'Resume GPS Tracking', tracking ? halt : () => gps(), MapPin, true, !route || busyGPS)}
 
             <Text style={t(styles.muted)}>
@@ -419,7 +423,7 @@ export default function TransitAlarm() {
                 : 'GPS tracking off'}
             </Text>
             <Text style={t(styles.muted)}>
-              {Platform.OS === 'web' ? 'Keep this page open for alerts. ' : 'Background alerts require an installed mobile build. Do not force-close the app. '}
+              {Platform.OS === 'web' ? 'Keep this page open for alerts. ' : 'An enabled alarm can alert with the screen locked or off. Keep the phone powered on and do not force-close the app. Allow background location and lock-screen notifications. '}
               Distances are GPS proximity, not road distance or live vehicle arrival times.
             </Text>
           </View>

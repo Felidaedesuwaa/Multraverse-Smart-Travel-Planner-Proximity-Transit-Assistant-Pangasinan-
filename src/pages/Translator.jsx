@@ -377,7 +377,7 @@ export default function Translator() {
                 >
                   {translation || "Your translation will appear here..."}
                 </Text>
-                {translation && (
+                {!!translation && (
                   <FeedbackPressable onPress={speak} style={themeStyle(styles.speakBtn)}>
                     {speaking ? (
                       <ActivityIndicator size="small" color={themeColor(colors.oceanBlue)} />

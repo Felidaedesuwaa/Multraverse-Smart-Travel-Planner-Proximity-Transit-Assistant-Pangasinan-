@@ -5,8 +5,25 @@
   },
   "build": {
     "preview": {
+      "distribution": "internal",
+      "environment": "preview",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://multraverse-backend.vercel.app"
+      },
       "android": {
         "buildType": "apk"
+      }
+    },
+    "android-device": {
+      "extends": "preview"
+    },
+    "ios-device": {
+      "extends": "preview"
+    },
+    "ios-simulator": {
+      "extends": "preview",
+      "ios": {
+        "simulator": true
       }
     },
     "production": {

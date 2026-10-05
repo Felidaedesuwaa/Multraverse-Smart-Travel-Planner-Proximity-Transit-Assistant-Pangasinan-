@@ -16,14 +16,23 @@
       ],
       "expo-secure-store",
       "expo-font",
-      ["expo-location", {
-        "locationWhenInUsePermission": "Allow Multraverse to show your location and check your selected transit stop.",
-        "locationAlwaysAndWhenInUsePermission": "Allow Multraverse to check your stop in the background during a trip you start.",
-        "isIosBackgroundLocationEnabled": true,
-        "isAndroidBackgroundLocationEnabled": true,
-        "isAndroidForegroundServiceEnabled": true
-      }],
-      "expo-notifications"
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow Multraverse to show your location and check your selected transit stop.",
+          "locationAlwaysAndWhenInUsePermission": "Allow Multraverse to check your stop in the background during a trip you start.",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "sounds": ["./assets/sounds/transit_vibrate.wav"]
+        }
+      ],
+      "expo-sharing"
     ],
     "assetBundlePatterns": [
       "**/*"
@@ -37,7 +46,22 @@
       }
     },
     "android": {
-      "package": "com.jolly18.multraverse"
+      "package": "com.jolly18.multraverse",
+      "permissions": [
+        "android.permission.VIBRATE",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_BACKGROUND_LOCATION",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_LOCATION"
+      ]
+    },
+    "ios": {
+      "bundleIdentifier": "com.jolly18.multraverse",
+      "infoPlist": {
+        "UIViewControllerBasedStatusBarAppearance": false,
+        "ITSAppUsesNonExemptEncryption": false
+      }
     }
   }
 }

@@ -2,16 +2,17 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs'), vm = require('node:vm'), babel = require('@babel/core');
 const map = require('../src/data/pangasinanMap.json');
-let slots = [], cursor = 0, alarms = [], watches = 0, denyGPS = false;
+let slots = [], cursor = 0, alarms = [], watches = 0, denyGPS = false, denyNotifications = false;
 const fix = { timestamp: Date.now(), coords: { latitude: 16.0424, longitude: 120.3375, accuracy: 10 } };
 const route = { id: 'test', name: 'Test route', lengthKm: 52.8, stops: [{ name: 'Dagupan', areaId: 'dagupan', lat: 16.0424, lng: 120.3375 }, { name: 'Alaminos', areaId: 'alaminos', lat: 16.1565, lng: 119.9804 }] };
 const h = (type, props, ...children) => ({ type, props: props || {}, children: children.flat(Infinity) });
 const hook = initial => { const i = cursor++; if (!(i in slots)) slots[i] = initial; return [slots[i], value => { slots[i] = typeof value === 'function' ? value(slots[i]) : value; }]; };
 const mocks = {
+  '../hooks/useTransitNotificationPermission': { useTransitNotificationPermission: () => ({ blocked: denyNotifications, denied: denyNotifications, refresh: async () => {} }) },
   react: { useState: hook, useRef: value => hook({ current: value })[0], useEffect() {} },
   'react-native': { Platform: { OS: 'android' }, useWindowDimensions: () => ({ width: 900 }) },
   'expo-location': { Accuracy: { High: 4 }, requestForegroundPermissionsAsync: async () => ({ granted: !denyGPS }), getCurrentPositionAsync: async () => ({ ...fix, timestamp: Date.now() }), watchPositionAsync: async () => { watches++; return { remove() {} }; } },
-  '../theme/useAppTheme': { useAppTheme: () => ({ themeStyle: s => s, themeColor: c => c }) },
+  '../theme/useAppTheme': { useAppTheme: () => ({ themeStyle: s => s, themeColor: c => c, palette: { ink: '#163F49', onPrimary: '#FFF9EF', paper: '#F4ECDD', primary: '#123F52', tint: '#E8F0E5', brand: '#256773', line: '#E4E6DB' } }) },
   '../data/pangasinanMap.json': map,
   '../lib/api': { api: { searchTransitRoutes: async () => ({ routes: [route] }) } },
   '../lib/transitFare': { estimateTraditionalJeepneyFare: km => Number.isFinite(km) && km >= 0 ? Math.round((14 + Math.max(0, km - 4) * 2) * 100) / 100 : null },
@@ -55,5 +56,13 @@ const click = async label => { const button = find(render(), label); assert(butt
   denyGPS = true;
   await click('Enable Alarm');
   assert.equal(alarms.length, 3, 'Denied GPS must not arm an alarm');
+  denyGPS = false; denyNotifications = true;
+  for (const mode of ['Vibrate', 'Sound', 'Notify']) assert.equal(find(render(), mode).props.disabled, true, `${mode} must be blocked when permission is denied`);
+  assert.equal(find(render(), 'Enable Alarm').props.disabled, true);
+  await find(render(), 'Enable Alarm').props.onPress();
+  assert.equal(alarms.length, 3, 'Handlers must reject denied permissions even if invoked directly');
+  denyNotifications = false;
+  await click('Enable Alarm');
+  assert.equal(alarms.length, 4, 'Allowing notification permission unlocks the alarm without restarting');
   console.log('Transit page checks passed: Set Stop Alert starts GPS; Enable Alarm starts GPS; all three modes reach the mobile service; denied GPS prevents arming.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

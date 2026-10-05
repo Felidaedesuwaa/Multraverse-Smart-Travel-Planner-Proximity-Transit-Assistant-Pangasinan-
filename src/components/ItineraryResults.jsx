@@ -65,7 +65,6 @@ export default function ItineraryResults({ plan, fareTables = [], areaName, onEd
           <Cost Icon={Wallet} label="Emergency allowance" value={money(c?.emergency ?? 0)} note={`${money(r.budget)} - 10% reserved; ${money(Number(r.budget) - (c?.emergency ?? 0))} available before trip costs`} />
           <Cost Icon={MapPin} label="Listed entry fees" value={c?.entryFees > 0 ? money(c.entryFees) : 'No priced entries'} note="Only listed fees included; unpriced visits and extras need confirmation" />
           <div className="air-total"><span>Planned total</span><strong>{c ? range(c.min, c.max) : 'Pending'}</strong></div>
-          <button className="aip-btn aip-btn-dark aip-btn-block" disabled={saved || saving} onClick={onSave}><BookmarkPlus size={16} />{saved ? 'Saved to My Trips' : saving ? 'Saving…' : 'Save plan'}</button>
         </section>
         <section className="air-panel"><h3><Bus size={18} />Transport fares</h3>
           {c?.transport.map(t => <div className="air-fare" key={t.mode}><div><strong>{t.mode}</strong><strong>{t.total == null ? 'Not priced' : money(t.total)}</strong></div>
@@ -79,6 +78,11 @@ export default function ItineraryResults({ plan, fareTables = [], areaName, onEd
         <details className="air-panel air-notes"><summary><Info size={16} />Plan notes ({plan.warnings.length})</summary><ul>{plan.warnings.map((w,i) => <li key={i}>{w}</li>)}</ul><p>{plan.mode === 'model-assisted' ? 'AI-ranked catalog matches' : 'Catalog-matched plan · AI ranking unavailable or disabled'}</p></details>
       </aside>
     </div>
+    <section className="air-panel" style={{ marginTop: 24 }}>
+      <h3>Keep this itinerary</h3>
+      <p>Save your plan to revisit it in My Trips.</p>
+      <button className="aip-btn aip-btn-dark aip-btn-block" disabled={saved || saving} onClick={onSave}><BookmarkPlus size={16} />{saved ? 'Saved to My Trips' : saving ? 'Saving…' : 'Save plan'}</button>
+    </section>
   </section>;
 }
 function Stat({ Icon, label, value, note, alert }) { return <div className={`air-stat ${alert ? 'air-alert' : ''}`}><span><Icon size={16} />{label}</span><strong>{value}</strong>{note && <small>{note}</small>}</div>; }

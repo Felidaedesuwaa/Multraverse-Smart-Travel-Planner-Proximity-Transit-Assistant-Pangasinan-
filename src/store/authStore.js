@@ -16,7 +16,11 @@ export const useAuthStore = create((set, get) => ({
   error: null,
   fieldErrors: {},
 
-  init: async () => {
+  init: async ({ restoreSession = true } = {}) => {
+    if (!restoreSession) {
+      await get().logout()
+      return
+    }
     const token = await storage.getItem('token')
     const user = await storage.getItem('user')
     if (token && user) {

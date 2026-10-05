@@ -1,5 +1,6 @@
 import { tripDisplayTitle } from '../lib/tripTitle';
 import TripActionConfirmation from '../components/TripActionConfirmation';
+import SuccessBanner from '../components/SuccessBanner';
 import SavedItineraryDetails, { savedTripActionStyle } from '../components/SavedItineraryDetails';
 import { FeedbackPressable } from "../components/WorkspaceMotion";
 import MoneyAmount from "../components/MoneyAmount";
@@ -262,7 +263,7 @@ function TripCard({ trip, onView, onDelete, compact }) {
 }
 
 // ── Main Screen ─────────────────────────────────────────
-export default function MyTrips({ route }) {
+export default function MyTrips({ route, navigation }) {
   const { themeStyle, themeColor } = useAppTheme();
   const { width } = useWindowDimensions();
   const compact = (width >= 768 ? width - 280 : width) < 680;
@@ -280,12 +281,13 @@ export default function MyTrips({ route }) {
 
   useFocusEffect(useCallback(() => {
     let alive = true;
+    if (route?.params?.successMessage) setActionMessage('');
     api.getTrips()
       .then(data => { if (alive) setTrips(data); })
       .catch(() => {})
       .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
-  }, []));
+  }, [route?.params?.successMessage]));
 
   const requestAction = (kind, trip) => {
     const copy = {
@@ -338,13 +340,17 @@ export default function MyTrips({ route }) {
   const canceled = trips.filter((t) => t.status === "CANCELED").length;
 
   return (
+    <View style={themeStyle(styles.container)}>
+      <SuccessBanner message={successMessage} onDismiss={() => {
+        setActionMessage('');
+        navigation?.setParams({ successMessage: undefined });
+      }} />
     <ScrollView
       style={themeStyle(styles.container)}
       contentContainerStyle={themeStyle(styles.screen)}
       showsVerticalScrollIndicator={false}
     >
       {/* Header */}
-      {successMessage && <View accessibilityRole="alert" style={{ padding: 14, marginBottom: 16, borderRadius: 12, backgroundColor: '#EAF5EE' }}><Text style={{ color: '#246346' }}>{successMessage}</Text></View>}
       <View style={themeStyle(styles.header)}>
         <View>
           <Text style={themeStyle(styles.title)}>My Trips</Text>
@@ -454,6 +460,7 @@ export default function MyTrips({ route }) {
         error={cancelError}
       />
     </ScrollView>
+    </View>
   );
 }
 
