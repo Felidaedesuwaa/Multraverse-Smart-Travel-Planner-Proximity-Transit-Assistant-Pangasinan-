@@ -316,69 +316,77 @@ function TripBudgetRow({ trip, entries }) {
   return (
     <View style={themeStyle(styles.tripSection)}>
       <FeedbackPressable
+        accessibilityRole="button"
+        accessibilityLabel={tripDisplayTitle(trip)}
+        accessibilityState={{ expanded }}
         onPress={() => setExpanded((v) => !v)}
         style={themeStyle(styles.tripSectionHeader)}
       >
         <View style={themeStyle(styles.tripSectionLeft)}>
           <Text style={themeStyle(styles.tripSectionName)}>{tripDisplayTitle(trip)}</Text>
-          <Text style={themeStyle(styles.tripSectionMeta)}>
-            {trip.location} Â· {trip.status.toLowerCase()}
-          </Text>
         </View>
         <View style={themeStyle(styles.tripSectionRight)}>
-          <Text style={themeStyle([styles.tripRemaining, over && { color: colors.sunsetCoral }])}>
-            <MoneyAmount value={Math.abs(remaining)} suffix={over ? " over" : " left"} />
-          </Text>
           {expanded
             ? <ChevronUp size={16} color={themeColor("#6B8CA8", "color")} />
             : <ChevronDown size={16} color={themeColor("#6B8CA8", "color")} />}
         </View>
       </FeedbackPressable>
 
-      {trip.plan?.guided ? <View style={{ padding: 16 }}><SavedItineraryDetails plan={trip.plan.guided} areaName={trip.location} compact /><Text style={themeStyle({ fontFamily: 'DMSans', color: colors.textMuted, marginTop: 10 })}>Actual expenses below update when you record spending for this trip.</Text></View> : trip.plan?.costs && <View style={themeStyle({ paddingHorizontal: 18, paddingBottom: 12 })}><Text style={themeStyle({ fontFamily: "DMSans", color: colors.textMuted })}>Planned known subtotal: <MoneyAmount value={trip.plan.costs.knownTotal} /> ({trip.plan.costs.status}). This is separate from actual expenses.</Text>{Object.entries(trip.plan.costs.categories).map(([category, amount]) => <Text key={category} style={themeStyle({ fontFamily: "DMSans", color: colors.textPrimary })}>{category}: <MoneyAmount value={amount} /></Text>)}</View>}
-      {/* Progress */}
-      <View style={themeStyle(styles.tripProgress)}>
-        <View style={themeStyle(styles.track)}>
-          <View
-            style={themeStyle([
-              styles.fill,
-              {
-                width: `${pct}%`,
-                backgroundColor: over ? colors.sunsetCoral : colors.oceanBlue,
-              },
-            ])}
-          />
-        </View>
-        <View style={themeStyle(styles.tripProgressLabels)}>
-          <Text style={themeStyle(styles.tripProgressSub)}>
-            <MoneyAmount value={actualSpent} suffix=" spent" />
-          </Text>
-          <Text style={themeStyle(styles.tripProgressSub)}>
-            <MoneyAmount value={trip.budget} suffix=" budget" />
-          </Text>
-        </View>
-      </View>
+      {expanded && (
+        <>
+          <View style={themeStyle(styles.tripSectionHeader)}>
+            <Text style={themeStyle(styles.tripSectionMeta)}>{trip.status?.toLowerCase()}</Text>
+            <Text style={themeStyle([styles.tripRemaining, over && { color: colors.sunsetCoral }])}>
+              <MoneyAmount value={Math.abs(remaining)} suffix={over ? " over" : " left"} />
+            </Text>
+          </View>
 
-      {/* Expanded entries */}
-      {expanded && tripEntries.length > 0 && (
-        <View style={themeStyle(styles.tripEntries)}>
-          {tripEntries.map((entry) => (
-            <View key={entry._id ?? entry.id} style={themeStyle(styles.tripEntry)}>
+          {trip.plan?.guided ? <View style={{ padding: 16 }}><SavedItineraryDetails plan={trip.plan.guided} areaName={trip.location} compact /><Text style={themeStyle({ fontFamily: 'DMSans', color: colors.textMuted, marginTop: 10 })}>Actual expenses below update when you record spending for this trip.</Text></View> : trip.plan?.costs && <View style={themeStyle({ paddingHorizontal: 18, paddingBottom: 12 })}><Text style={themeStyle({ fontFamily: "DMSans", color: colors.textMuted })}>Planned known subtotal: <MoneyAmount value={trip.plan.costs.knownTotal} /> ({trip.plan.costs.status}). This is separate from actual expenses.</Text>{Object.entries(trip.plan.costs.categories).map(([category, amount]) => <Text key={category} style={themeStyle({ fontFamily: "DMSans", color: colors.textPrimary })}>{category}: <MoneyAmount value={amount} /></Text>)}</View>}
+          {/* Progress */}
+          <View style={themeStyle(styles.tripProgress)}>
+            <View style={themeStyle(styles.track)}>
               <View
-                style={themeStyle([styles.entryDot, { backgroundColor: entry.color }])}
+                style={themeStyle([
+                  styles.fill,
+                  {
+                    width: `${pct}%`,
+                    backgroundColor: over ? colors.sunsetCoral : colors.oceanBlue,
+                  },
+                ])}
               />
-              <Text style={themeStyle(styles.tripEntryLabel)}>{entry.label}</Text>
-              <Text style={themeStyle(styles.tripEntryAmount)}>
-                <MoneyAmount value={entry.amount} />
+            </View>
+            <View style={themeStyle(styles.tripProgressLabels)}>
+              <Text style={themeStyle(styles.tripProgressSub)}>
+                <MoneyAmount value={actualSpent} suffix=" spent" />
+              </Text>
+              <Text style={themeStyle(styles.tripProgressSub)}>
+                <MoneyAmount value={trip.budget} suffix=" budget" />
               </Text>
             </View>
-          ))}
-        </View>
-      )}
-      {expanded && tripEntries.length === 0 && (
-        <Text style={themeStyle(styles.noEntriesText)}>
-          No expenses linked to this trip.
-        </Text>
+          </View>
+
+          {/* Expanded entries */}
+          {tripEntries.length > 0 && (
+            <View style={themeStyle(styles.tripEntries)}>
+              {tripEntries.map((entry) => (
+                <View key={entry._id ?? entry.id} style={themeStyle(styles.tripEntry)}>
+                  <View
+                    style={themeStyle([styles.entryDot, { backgroundColor: entry.color }])}
+                  />
+                  <Text style={themeStyle(styles.tripEntryLabel)}>{entry.label}</Text>
+                  <Text style={themeStyle(styles.tripEntryAmount)}>
+                    <MoneyAmount value={entry.amount} />
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+          {tripEntries.length === 0 && (
+            <Text style={themeStyle(styles.noEntriesText)}>
+              No expenses linked to this trip.
+            </Text>
+          )}
+        </>
       )}
     </View>
   );
@@ -453,7 +461,7 @@ export default function Budget() {
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={themeStyle(styles.title)}>Budget Tracker</Text>
           <Text style={themeStyle(styles.subtitle)}>
-            {new Date().toLocaleString("en-PH", { month: "long", year: "numeric" })} Â· Pangasinan travels
+            {new Date().toLocaleString("en-PH", { month: "long", year: "numeric" })}
           </Text>
         </View>
         <FeedbackPressable
@@ -586,7 +594,7 @@ export default function Budget() {
                         <View style={themeStyle(styles.entryInfo)}>
                           <Text style={themeStyle(styles.entryLabel)}>{entry.label}</Text>
                           <Text style={themeStyle(styles.entrySub)}>
-                            {entry.category || "Others"} Â· {" "}
+                            {entry.category || "Others"} · {" "}
                             {spent > 0
                               ? Math.round((entry.amount / spent) * 100)
                               : 0}
@@ -632,7 +640,7 @@ export default function Budget() {
                         amount={entry.amount}
                         total={maxAmount}
                         color={entry.color}
-                        rightLabel={<MoneyAmount value={entry.amount} prefix={`${spent > 0 ? Math.round((entry.amount / spent) * 100) : 0}% Â· `} />}
+                        rightLabel={<MoneyAmount value={entry.amount} prefix={`${spent > 0 ? Math.round((entry.amount / spent) * 100) : 0}% · `} />}
                       />
                     ))
                   )}

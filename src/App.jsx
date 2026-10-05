@@ -18,13 +18,13 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import RegisterPage from "./pages/RegisterPage";
 import LandingPage from "./pages/LandingPage";
 import UserDashboard from "./pages/UserDashboard";
+import InteractiveMap from "./pages/InteractiveMap";
 import TransitAlarm from "./pages/TransitAlarm";
 import AIItinerary from "./pages/AIItinerary";
 import Translator from "./pages/Translator";
 import MyTrips from "./pages/MyTrips";
 import Budget from "./pages/Budget";
 import SavedPlaces from "./pages/SavedPlaces";
-import OfflineMaps from "./pages/OfflineMaps";
 import SettingsPage from "./pages/SettingsPage";
 import LGUDashboard from "./pages/LGUDashboard";
 import AdminApprovals from "./pages/AdminApprovals";
@@ -61,10 +61,10 @@ const linking = {
       User: {
         screens: {
           Dashboard: "dashboard",
+          InteractiveMap: "interactive-map",
           MyTrips: "my-trips",
           Budget: "budget",
           SavedPlaces: "saved-places",
-          OfflineMaps: "offline-maps",
           Settings: "settings",
           AIItinerary: "ai-itinerary",
           TransitAlarm: "transit-alarm",
@@ -95,7 +95,7 @@ function UserScreens() {
 
   const { width } = useWindowDimensions();
   const isWide = width >= 768;
-  const [activeScreen, setActiveScreen] = useState("Dashboard");
+  const [activeScreen, setActiveScreen] = useState("InteractiveMap");
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -117,6 +117,7 @@ function UserScreens() {
       )}
       <View style={themeStyle(styles.content)}>
         <UserStack.Navigator
+          initialRouteName="InteractiveMap"
           layout={({ children }) => <View style={{ flex: 1 }}><GeofenceTracking />{children}</View>}
           screenLayout={({ children }) => <ScreenMotion>{children}</ScreenMotion>}
           screenListeners={({ route }) => ({ focus: () => setActiveScreen(route.name) })}
@@ -143,7 +144,7 @@ function UserScreens() {
           <UserStack.Screen name="MyTrips" component={MyTrips} />
           <UserStack.Screen name="Budget" component={Budget} />
           <UserStack.Screen name="SavedPlaces" component={SavedPlaces} />
-          <UserStack.Screen name="OfflineMaps" component={OfflineMaps} />
+          <UserStack.Screen name="InteractiveMap" component={InteractiveMap} />
           <UserStack.Screen name="Settings" component={SettingsPage} />
           <UserStack.Screen name="AIItinerary" component={AIItinerary} />
           <UserStack.Screen name="TransitAlarm" component={TransitAlarm} />

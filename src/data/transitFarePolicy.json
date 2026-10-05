@@ -1,0 +1,8 @@
+{
+  "traditional_jeepney": {
+    "base_fare": 14.00,
+    "base_distance_km": 4,
+    "succeeding_rate_per_km": 2.00,
+    "basis": "User-specified traditional-jeepney planning estimate; not a confirmed fare for modern jeepneys, vans or buses."
+  }
+}

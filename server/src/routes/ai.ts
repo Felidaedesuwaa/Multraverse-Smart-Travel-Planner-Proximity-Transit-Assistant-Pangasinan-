@@ -9,6 +9,9 @@ import plannerRoutes from './planner'
 import groundedItineraryRoutes from './groundedItinerary'
 import { AISettings } from '../models/AISettings'
 import phrasebookV2 from '../data/phrasebookV2.json'
+import transitReference from '../data/pangasinanTransitReference.json'
+import corridorReferences from '../data/transitCorridorReferences.json'
+import transitFarePolicy from '../../../src/data/transitFarePolicy.json'
 import { rateLimit } from '../middleware/security'
 
 const router = Router()
@@ -23,6 +26,24 @@ const expressJsonAudio = express.json({ limit: '12mb' })
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000'
 const supportedLanguages = ['Filipino', 'Pangasinan', 'English'] as const
 
+for (const action of ['plan', 'check']) {
+  router.post(`/transit/alarm/${action}`, async (req: AuthRequest, res: Response) => {
+    const body = req.body
+    const point = (p: any) => p && typeof p.lat === 'number' && typeof p.lng === 'number'
+      && Number.isFinite(p.lat) && Number.isFinite(p.lng) && !!transitMunicipality(p.lat, p.lng)
+    if (!point(body.destination) || !point(action === 'plan' ? body.origin : body.position)
+      || ![100, 300, 500, 1000, 2000].includes(body.radius)
+      || (action === 'check' && (!Number.isFinite(body.accuracy) || body.accuracy < 0 || !Number.isFinite(body.timestamp) || body.timestamp < 0)))
+      return res.status(400).json({ error: 'Choose Pangasinan coordinates and valid GPS/alarm settings.' })
+    try {
+      const payload = action === 'plan'
+        ? { origin: body.origin, destination: body.destination, radius: body.radius }
+        : { position: body.position, destination: body.destination, radius: body.radius, accuracy: body.accuracy, timestamp: body.timestamp }
+      return res.json(await callAI(`/transit/alarm/${action}`, payload, 10000))
+    } catch (error) { return sendAIError(res, error, 'Unable to calculate your transit alarm.') }
+  })
+}
+
 router.post('/transit/search', async (req: AuthRequest, res: Response) => {
   const { from, to } = req.body
   if (!areas.some(a => a.id === from) || !areas.some(a => a.id === to) || from === to) return res.status(400).json({ error: 'Choose two different Pangasinan municipalities.' })
@@ -36,7 +57,21 @@ router.post('/transit/search', async (req: AuthRequest, res: Response) => {
       return [{ id: String(r._id), name: r.name, type: r.type, frequency: r.frequency, sourceUrl: r.sourceUrl, verifiedAt: r.verifiedAt, firstDeparture: r.firstDeparture, lastDeparture: r.lastDeparture, stops: stops.slice(start, end + 1).map((s: any) => ({ name: s.name, areaId: s.areaId, lat: s.lat, lng: s.lng })) }]
     })
     // Transit selection is deterministic; no language model or Python service is needed.
-    res.json({ routes: candidates.sort((a, b) => a.stops.length - b.stops.length || a.id.localeCompare(b.id)) })
+    const gpsRoutes = transitReference.routes.flatMap(r => {
+      const farePolicy = transitFarePolicy.traditional_jeepney
+      const estimatedFare = Math.round((farePolicy.base_fare + Math.max(0, r.lengthKm - farePolicy.base_distance_km) * farePolicy.succeeding_rate_per_km) * 100) / 100
+      const stops: { name: string; areaId: string; lat: number; lng: number; coordinateType: string }[] = r.stopLocations
+      const start = stops.findIndex(s => s.areaId === from)
+      const end = stops.findIndex((s, i) => i > start && s.areaId === to)
+      if (start < 0 || end <= start || !stops.every(s => transitMunicipality(s.lat, s.lng) === s.areaId)) return []
+      return [{ ...r, id: `lptrp-2022-${r.routeNumber}`, sourceUrl: transitReference.sourceUrl,
+        sourceFile: transitReference.sourceFile, planYear: transitReference.planYear,
+        type: r.authorizedMode, frequency: 'Schedule unconfirmed', gpsReference: true,
+        estimatedFare, fareCalculation: { ...farePolicy, vehicle_basis: 'traditional_jeepney', distance_km: r.lengthKm, scope: 'full_route' },
+        corridorReferences: corridorReferences.filter(reference => reference.waypoint_labels.some(label => r.unmappedWaypoints.includes(label))),
+        stops: stops.slice(start, end + 1) }]
+    })
+    res.json({ routes: [...candidates, ...gpsRoutes].sort((a, b) => a.stops.length - b.stops.length || a.id.localeCompare(b.id)), referenceRoutes: [] })
   } catch (error) { sendAIError(res, error, 'Unable to search transit routes.') }
 })
 
@@ -47,14 +82,14 @@ class AIServiceError extends Error {
   }
 }
 
-async function callAI(endpoint: string, body: object) {
+async function callAI(endpoint: string, body: object, timeout = 120_000) {
   let response: globalThis.Response
   try {
     response = await fetch(`${AI_SERVICE_URL}${endpoint}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
-      signal: AbortSignal.timeout(120_000),
+      signal: AbortSignal.timeout(timeout),
     })
   } catch (error) {
     throw new AIServiceError('AI service is unavailable. Please try again later.', 503)

@@ -1,0 +1,1886 @@
+{
+  "sourceFile": "Pangasinan_Rationalized_Routes_44_with_GPS_Stops.pdf",
+  "sourceSha256": "253433d76822c3aa6bbd6ef72ffd1fc0db896d07a85ee8116fc1f7376fb9a026",
+  "sourceUrl": "https://www.pangasinan.gov.ph/wp-content/uploads/2024/10/284-2022_opt.pdf",
+  "sourceTitle": "Pangasinan Provincial Ordinance No. 284-2022, Section 5",
+  "planYear": 2022,
+  "note": "User-supplied GPS reference layer. Municipal/locality coordinates are approximate waypoints, not verified loading bays. Current operations are unconfirmed. Unmapped corridor/locality labels are preserved without fabricated coordinates.",
+  "routes": [
+    {
+      "routeNumber": 1,
+      "name": "Alaminos City - Bani",
+      "roadAlignment": "Alaminos-Bolinao Road",
+      "lengthKm": 14.4,
+      "authorizedMode": "MPUJ - Class 2",
+      "authorizedUnits": 13,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "alaminos",
+        "bani"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Alaminos City \u2192 Bani",
+      "stopLocations": [
+        {
+          "name": "Alaminos City",
+          "lat": 16.1565,
+          "lng": 119.9804,
+          "areaId": "alaminos",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Bani",
+          "lat": 16.1833,
+          "lng": 119.8625,
+          "areaId": "bani",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": []
+    },
+    {
+      "routeNumber": 2,
+      "name": "Alaminos City - Agno",
+      "roadAlignment": "Alaminos-Bolinao Road; Bani-Agno Road",
+      "lengthKm": 28.3,
+      "authorizedMode": "MPUJ - Class 2",
+      "authorizedUnits": 6,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "alaminos",
+        "agno"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Alaminos City \u2192 Bani \u2192 Agno",
+      "stopLocations": [
+        {
+          "name": "Alaminos City",
+          "lat": 16.1565,
+          "lng": 119.9804,
+          "areaId": "alaminos",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Bani",
+          "lat": 16.1833,
+          "lng": 119.8625,
+          "areaId": "bani",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Agno",
+          "lat": 16.1142,
+          "lng": 119.8028,
+          "areaId": "agno",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": []
+    },
+    {
+      "routeNumber": 3,
+      "name": "Alaminos City - Anda",
+      "roadAlignment": "Alaminos-Bolinao Road; Bolinao-Anda Road",
+      "lengthKm": 35.3,
+      "authorizedMode": "MPUJ - Class 2",
+      "authorizedUnits": 10,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "alaminos",
+        "anda"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Alaminos City \u2192 Bolinao/Anda corridor \u2192 Anda",
+      "stopLocations": [
+        {
+          "name": "Alaminos City",
+          "lat": 16.1565,
+          "lng": 119.9804,
+          "areaId": "alaminos",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Anda",
+          "lat": 16.29,
+          "lng": 119.9513,
+          "areaId": "anda",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": [
+        "Bolinao/Anda corridor"
+      ]
+    },
+    {
+      "routeNumber": 4,
+      "name": "Alaminos City - Bolinao via Bani",
+      "roadAlignment": "Alaminos-Bolinao Road",
+      "lengthKm": 39.2,
+      "authorizedMode": "MPUJ - Class 2",
+      "authorizedUnits": 22,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "alaminos",
+        "bolinao"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Alaminos City \u2192 Bani \u2192 Bolinao",
+      "stopLocations": [
+        {
+          "name": "Alaminos City",
+          "lat": 16.1565,
+          "lng": 119.9804,
+          "areaId": "alaminos",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Bani",
+          "lat": 16.1833,
+          "lng": 119.8625,
+          "areaId": "bani",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Bolinao",
+          "lat": 16.3856,
+          "lng": 119.8945,
+          "areaId": "bolinao",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": []
+    },
+    {
+      "routeNumber": 5,
+      "name": "Alaminos City - Dasol",
+      "roadAlignment": "Pangasinan-Zambales Road; Dasol Diversion Road",
+      "lengthKm": 31.9,
+      "authorizedMode": "MPUJ - Class 2",
+      "authorizedUnits": 15,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "alaminos",
+        "dasol"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Alaminos City \u2192 Dasol",
+      "stopLocations": [
+        {
+          "name": "Alaminos City",
+          "lat": 16.1565,
+          "lng": 119.9804,
+          "areaId": "alaminos",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Dasol",
+          "lat": 15.9902,
+          "lng": 119.8811,
+          "areaId": "dasol",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": []
+    },
+    {
+      "routeNumber": 6,
+      "name": "Wedgewood Subd. - Malasiqui via Wedgewood Heights",
+      "roadAlignment": "Malasiqui-Catablan Road",
+      "lengthKm": 13.0,
+      "authorizedMode": "MPUJ - Class 2",
+      "authorizedUnits": 5,
+      "sourcePage": 1,
+      "endpointAreaIds": [],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Wedgewood Subd. \u2192 Malasiqui",
+      "stopLocations": [
+        {
+          "name": "Malasiqui",
+          "lat": 15.9191,
+          "lng": 120.4139,
+          "areaId": "malasiqui",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": [
+        "Wedgewood Subd."
+      ]
+    },
+    {
+      "routeNumber": 7,
+      "name": "Dagupan City - Basista via San Carlos City",
+      "roadAlignment": "Urdaneta Junction-Dagupan-Lingayen Road; San Carlos-Calasiao Road; Carmen Junction-Bayambang-Manat Road",
+      "lengthKm": 25.4,
+      "authorizedMode": "MPUJ - Class 2",
+      "authorizedUnits": 9,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "dagupan",
+        "basista"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Dagupan City \u2192 Calasiao \u2192 San Carlos City \u2192 Basista",
+      "stopLocations": [
+        {
+          "name": "Dagupan City",
+          "lat": 16.0424,
+          "lng": 120.3375,
+          "areaId": "dagupan",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Calasiao",
+          "lat": 16.0089,
+          "lng": 120.3571,
+          "areaId": "calasiao",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "San Carlos City",
+          "lat": 15.9277,
+          "lng": 120.3478,
+          "areaId": "san-carlos",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Basista",
+          "lat": 15.8523,
+          "lng": 120.4025,
+          "areaId": "basista",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": []
+    },
+    {
+      "routeNumber": 8,
+      "name": "Dagupan City - Calasiao",
+      "roadAlignment": "Urdaneta Junction-Dagupan-Lingayen Road; WA Jones St.; F. Sison St.; Malong St.; Tesoro Road",
+      "lengthKm": 5.6,
+      "authorizedMode": "MPUJ - Class 2",
+      "authorizedUnits": 199,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "dagupan",
+        "calasiao"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Dagupan City \u2192 Calasiao",
+      "stopLocations": [
+        {
+          "name": "Dagupan City",
+          "lat": 16.0424,
+          "lng": 120.3375,
+          "areaId": "dagupan",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Calasiao",
+          "lat": 16.0089,
+          "lng": 120.3571,
+          "areaId": "calasiao",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": []
+    },
+    {
+      "routeNumber": 9,
+      "name": "Dagupan City - Lingayen",
+      "roadAlignment": "Pangasinan-Zambales Road; Perez Blvd.; AB Fernandez Avenue",
+      "lengthKm": 14.4,
+      "authorizedMode": "MPUJ - Class 2",
+      "authorizedUnits": 70,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "dagupan",
+        "lingayen"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Dagupan City \u2192 Binmaley \u2192 Lingayen",
+      "stopLocations": [
+        {
+          "name": "Dagupan City",
+          "lat": 16.0424,
+          "lng": 120.3375,
+          "areaId": "dagupan",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Binmaley",
+          "lat": 16.0305,
+          "lng": 120.2695,
+          "areaId": "binmaley",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Lingayen",
+          "lat": 16.0206,
+          "lng": 120.2306,
+          "areaId": "lingayen",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": []
+    },
+    {
+      "routeNumber": 10,
+      "name": "Dagupan City - Aguilar",
+      "roadAlignment": "Perez Blvd.; AB Fernandez Ave.; Pangasinan-Zambales Road; Pangasinan-Tarlac Road",
+      "lengthKm": 31.0,
+      "authorizedMode": "MPUJ - Class 2",
+      "authorizedUnits": 31,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "dagupan",
+        "aguilar"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Dagupan City \u2192 Lingayen/Bugallon corridor \u2192 Aguilar",
+      "stopLocations": [
+        {
+          "name": "Dagupan City",
+          "lat": 16.0424,
+          "lng": 120.3375,
+          "areaId": "dagupan",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Aguilar",
+          "lat": 15.8887,
+          "lng": 120.2395,
+          "areaId": "aguilar",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": [
+        "Lingayen/Bugallon corridor"
+      ]
+    },
+    {
+      "routeNumber": 11,
+      "name": "Lingayen - Mangatarem",
+      "roadAlignment": "Pangasinan-Zambales Road; Pangasinan-Tarlac Road",
+      "lengthKm": 29.2,
+      "authorizedMode": "MPUJ - Class 2",
+      "authorizedUnits": 12,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "lingayen",
+        "mangatarem"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Lingayen \u2192 Mangatarem",
+      "stopLocations": [
+        {
+          "name": "Lingayen",
+          "lat": 16.0206,
+          "lng": 120.2306,
+          "areaId": "lingayen",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Mangatarem",
+          "lat": 15.7885,
+          "lng": 120.2938,
+          "areaId": "mangatarem",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": []
+    },
+    {
+      "routeNumber": 12,
+      "name": "Dagupan City - Bayambang via Malasiqui",
+      "roadAlignment": "Perez Blvd.; AB Fernandez Ave.; Urdaneta Junction-Dagupan-Lingayen Road; San Carlos-Calasiao Road; Carmen Junction-Bayambang-Manat Road",
+      "lengthKm": 32.3,
+      "authorizedMode": "MPUJ - Class 2",
+      "authorizedUnits": 55,
+      "sourcePage": 1,
+      "endpointAreaIds": [],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Dagupan City \u2192 Calasiao \u2192 San Carlos City \u2192 Malasiqui \u2192 Bayambang",
+      "stopLocations": [
+        {
+          "name": "Dagupan City",
+          "lat": 16.0424,
+          "lng": 120.3375,
+          "areaId": "dagupan",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Calasiao",
+          "lat": 16.0089,
+          "lng": 120.3571,
+          "areaId": "calasiao",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "San Carlos City",
+          "lat": 15.9277,
+          "lng": 120.3478,
+          "areaId": "san-carlos",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Malasiqui",
+          "lat": 15.9191,
+          "lng": 120.4139,
+          "areaId": "malasiqui",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": [
+        "Bayambang"
+      ]
+    },
+    {
+      "routeNumber": 13,
+      "name": "Malasiqui - San Carlos City",
+      "roadAlignment": "Villasis-Malasiqui-San Carlos Road",
+      "lengthKm": 7.8,
+      "authorizedMode": "MPUJ - Class 2",
+      "authorizedUnits": 12,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "malasiqui",
+        "san-carlos"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Malasiqui \u2192 San Carlos City",
+      "stopLocations": [
+        {
+          "name": "Malasiqui",
+          "lat": 15.9191,
+          "lng": 120.4139,
+          "areaId": "malasiqui",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "San Carlos City",
+          "lat": 15.9277,
+          "lng": 120.3478,
+          "areaId": "san-carlos",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": []
+    },
+    {
+      "routeNumber": 14,
+      "name": "Dagupan City - Mapandan",
+      "roadAlignment": "Perez Blvd.; AB Fernandez Ave.; Pangasinan-La Union Road; Sta. Barbara-Mangaldan Road; Gueguesangen-Mapandan Road",
+      "lengthKm": 17.7,
+      "authorizedMode": "MPUJ - Class 2",
+      "authorizedUnits": 25,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "dagupan",
+        "mapandan"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Dagupan City \u2192 Santa Barbara \u2192 Mapandan",
+      "stopLocations": [
+        {
+          "name": "Dagupan City",
+          "lat": 16.0424,
+          "lng": 120.3375,
+          "areaId": "dagupan",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Santa Barbara",
+          "lat": 15.9999,
+          "lng": 120.4051,
+          "areaId": "santa-barbara",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Mapandan",
+          "lat": 16.024,
+          "lng": 120.4535,
+          "areaId": "mapandan",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": []
+    },
+    {
+      "routeNumber": 15,
+      "name": "Dagupan City - San Carlos City",
+      "roadAlignment": "Perez Blvd.; AB Fernandez Ave.; Urdaneta Junction-Dagupan-Lingayen Road; San Carlos City-Calasiao Road",
+      "lengthKm": 15.6,
+      "authorizedMode": "MPUJ - Class 2",
+      "authorizedUnits": 40,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "dagupan",
+        "san-carlos"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Dagupan City \u2192 Calasiao \u2192 San Carlos City",
+      "stopLocations": [
+        {
+          "name": "Dagupan City",
+          "lat": 16.0424,
+          "lng": 120.3375,
+          "areaId": "dagupan",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Calasiao",
+          "lat": 16.0089,
+          "lng": 120.3571,
+          "areaId": "calasiao",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "San Carlos City",
+          "lat": 15.9277,
+          "lng": 120.3478,
+          "areaId": "san-carlos",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": []
+    },
+    {
+      "routeNumber": 16,
+      "name": "Dagupan City - San Fabian",
+      "roadAlignment": "Perez Blvd.; AB Fernandez Ave.; Pangasinan-La Union Road",
+      "lengthKm": 15.9,
+      "authorizedMode": "MPUJ - Class 2",
+      "authorizedUnits": 47,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "dagupan",
+        "san-fabian"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Dagupan City \u2192 San Fabian",
+      "stopLocations": [
+        {
+          "name": "Dagupan City",
+          "lat": 16.0424,
+          "lng": 120.3375,
+          "areaId": "dagupan",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "San Fabian",
+          "lat": 16.1265,
+          "lng": 120.4033,
+          "areaId": "san-fabian",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": []
+    },
+    {
+      "routeNumber": 17,
+      "name": "Dagupan City - Sta. Barbara",
+      "roadAlignment": "Perez Blvd.; AB Fernandez Ave.; Urdaneta Junction-Dagupan-Lingayen Road; Camiling-Wawa-Bayambang-Malasiqui-Sta. Barbara Road",
+      "lengthKm": 14.1,
+      "authorizedMode": "MPUJ - Class 2",
+      "authorizedUnits": 43,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "dagupan",
+        "santa-barbara"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Dagupan City \u2192 Santa Barbara",
+      "stopLocations": [
+        {
+          "name": "Dagupan City",
+          "lat": 16.0424,
+          "lng": 120.3375,
+          "areaId": "dagupan",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Santa Barbara",
+          "lat": 15.9999,
+          "lng": 120.4051,
+          "areaId": "santa-barbara",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": []
+    },
+    {
+      "routeNumber": 18,
+      "name": "Dagupan City - Tebag Villa Sta. Barbara",
+      "roadAlignment": "Perez Blvd.; AB Fernandez Ave.; Urdaneta Junction-Dagupan City-Lingayen Road",
+      "lengthKm": 17.3,
+      "authorizedMode": "MPUJ - Class 2",
+      "authorizedUnits": 55,
+      "sourcePage": 1,
+      "endpointAreaIds": [],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Dagupan City \u2192 Santa Barbara \u2192 Tebag Villa",
+      "stopLocations": [
+        {
+          "name": "Dagupan City",
+          "lat": 16.0424,
+          "lng": 120.3375,
+          "areaId": "dagupan",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Santa Barbara",
+          "lat": 15.9999,
+          "lng": 120.4051,
+          "areaId": "santa-barbara",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": [
+        "Tebag Villa"
+      ]
+    },
+    {
+      "routeNumber": 19,
+      "name": "Dagupan City - Urbiztondo",
+      "roadAlignment": "Perez Blvd.; AB Fernandez Ave.; Urdaneta Junction-Dagupan-Lingayen Road; San Carlos-Calasiao Road; Urbiztondo-San Carlos Road",
+      "lengthKm": 30.8,
+      "authorizedMode": "MPUJ - Class 2",
+      "authorizedUnits": 50,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "dagupan",
+        "urbiztondo"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Dagupan City \u2192 Calasiao \u2192 San Carlos City \u2192 Urbiztondo",
+      "stopLocations": [
+        {
+          "name": "Dagupan City",
+          "lat": 16.0424,
+          "lng": 120.3375,
+          "areaId": "dagupan",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Calasiao",
+          "lat": 16.0089,
+          "lng": 120.3571,
+          "areaId": "calasiao",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "San Carlos City",
+          "lat": 15.9277,
+          "lng": 120.3478,
+          "areaId": "san-carlos",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Urbiztondo",
+          "lat": 15.8232,
+          "lng": 120.3294,
+          "areaId": "urbiztondo",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": []
+    },
+    {
+      "routeNumber": 20,
+      "name": "Dagupan City - Laoac",
+      "roadAlignment": "Perez Blvd.; AB Fernandez Ave.; Pangasinan-La Union Road; Mangaldan-Manaoag-Binalonan Road; Agbayani Road",
+      "lengthKm": 27.6,
+      "authorizedMode": "MPUJ - Class 2",
+      "authorizedUnits": 31,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "dagupan",
+        "laoac"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Dagupan City \u2192 Mangaldan/Manaoag corridor \u2192 Laoac",
+      "stopLocations": [
+        {
+          "name": "Dagupan City",
+          "lat": 16.0424,
+          "lng": 120.3375,
+          "areaId": "dagupan",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Laoac",
+          "lat": 16.048,
+          "lng": 120.5471,
+          "areaId": "laoac",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": [
+        "Mangaldan/Manaoag corridor"
+      ]
+    },
+    {
+      "routeNumber": 21,
+      "name": "Dagupan City - Pozorrubio",
+      "roadAlignment": "Perez Blvd.; AB Fernandez Ave.; Pangasinan-La Union Road; Mangaldan-Manaoag-Binalonan Road; Pao-Pozorrubio Road",
+      "lengthKm": 30.9,
+      "authorizedMode": "MPUJ - Class 2",
+      "authorizedUnits": 36,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "dagupan",
+        "pozorrubio"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Dagupan City \u2192 Mangaldan \u2192 Manaoag \u2192 Laoac \u2192 Pozorrubio",
+      "stopLocations": [
+        {
+          "name": "Dagupan City",
+          "lat": 16.0424,
+          "lng": 120.3375,
+          "areaId": "dagupan",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Mangaldan",
+          "lat": 16.0666,
+          "lng": 120.401,
+          "areaId": "mangaldan",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Manaoag",
+          "lat": 16.0427,
+          "lng": 120.4874,
+          "areaId": "manaoag",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Laoac",
+          "lat": 16.048,
+          "lng": 120.5471,
+          "areaId": "laoac",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Pozorrubio",
+          "lat": 16.1104,
+          "lng": 120.5458,
+          "areaId": "pozorrubio",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": []
+    },
+    {
+      "routeNumber": 22,
+      "name": "Dagupan City - Sta. Maria via Urdaneta City",
+      "roadAlignment": "Perez Blvd.; AB Fernandez Ave.; Urdaneta Junction-Dagupan-Lingayen Road; Binalonan-Asingan-Sta. Maria Road; Pangasinan-Nueva Vizcaya Road",
+      "lengthKm": 46.9,
+      "authorizedMode": "MPUJ - Class 2",
+      "authorizedUnits": 50,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "dagupan",
+        "santa-maria"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Dagupan City \u2192 Urdaneta City \u2192 Santa Maria",
+      "stopLocations": [
+        {
+          "name": "Dagupan City",
+          "lat": 16.0424,
+          "lng": 120.3375,
+          "areaId": "dagupan",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Urdaneta City",
+          "lat": 15.9753,
+          "lng": 120.567,
+          "areaId": "urdaneta",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Santa Maria",
+          "lat": 15.9792,
+          "lng": 120.7003,
+          "areaId": "santa-maria",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": []
+    },
+    {
+      "routeNumber": 23,
+      "name": "Dagupan City - Manaoag",
+      "roadAlignment": "Perez Blvd.; AB Fernandez Ave.; Pangasinan-La Union Road; Mangaldan-Manaoag-Binalonan Road",
+      "lengthKm": 19.8,
+      "authorizedMode": "MPUJ - Class 2",
+      "authorizedUnits": 29,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "dagupan",
+        "manaoag"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Dagupan City \u2192 Mangaldan \u2192 Manaoag",
+      "stopLocations": [
+        {
+          "name": "Dagupan City",
+          "lat": 16.0424,
+          "lng": 120.3375,
+          "areaId": "dagupan",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Mangaldan",
+          "lat": 16.0666,
+          "lng": 120.401,
+          "areaId": "mangaldan",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Manaoag",
+          "lat": 16.0427,
+          "lng": 120.4874,
+          "areaId": "manaoag",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": []
+    },
+    {
+      "routeNumber": 24,
+      "name": "Bayambang - Rosales",
+      "roadAlignment": "Carmen Junction-Bayambang-Manat Road; Manila North Road",
+      "lengthKm": 19.3,
+      "authorizedMode": "MPUJ - Class 2",
+      "authorizedUnits": 17,
+      "sourcePage": 1,
+      "endpointAreaIds": [],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Bayambang \u2192 Rosales",
+      "stopLocations": [
+        {
+          "name": "Rosales",
+          "lat": 15.8915,
+          "lng": 120.6331,
+          "areaId": "rosales",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": [
+        "Bayambang"
+      ]
+    },
+    {
+      "routeNumber": 25,
+      "name": "Tayug - Urdaneta City via Asingan",
+      "roadAlignment": "Urdaneta-Asingan-Tayug Road; L. Soloria Road; Binalonan-Asingan-Sta. Maria Road; Pangasinan-Nueva Vizcaya Road",
+      "lengthKm": 26.0,
+      "authorizedMode": "MPUJ - Class 2",
+      "authorizedUnits": 15,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "tayug",
+        "urdaneta"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Tayug \u2192 Asingan \u2192 Urdaneta City",
+      "stopLocations": [
+        {
+          "name": "Tayug",
+          "lat": 16.0278,
+          "lng": 120.7447,
+          "areaId": "tayug",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Asingan",
+          "lat": 16.0037,
+          "lng": 120.6702,
+          "areaId": "asingan",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Urdaneta City",
+          "lat": 15.9753,
+          "lng": 120.567,
+          "areaId": "urdaneta",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": []
+    },
+    {
+      "routeNumber": 26,
+      "name": "Carmen - Tayug",
+      "roadAlignment": "Pangasinan-Nueva Vizcaya Road; Pangasinan-Nueva Ecija Road",
+      "lengthKm": 25.7,
+      "authorizedMode": "MPUJ - Class 2",
+      "authorizedUnits": 12,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "rosales",
+        "tayug"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Carmen (Rosales) \u2192 Tayug",
+      "stopLocations": [
+        {
+          "name": "Carmen (Rosales)",
+          "lat": 15.88642,
+          "lng": 120.59984,
+          "areaId": "rosales",
+          "coordinateType": "mapped_locality"
+        },
+        {
+          "name": "Tayug",
+          "lat": 16.0278,
+          "lng": 120.7447,
+          "areaId": "tayug",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": []
+    },
+    {
+      "routeNumber": 27,
+      "name": "Carmen - Urdaneta City",
+      "roadAlignment": "Manila North Road",
+      "lengthKm": 11.7,
+      "authorizedMode": "MPUJ - Class 2",
+      "authorizedUnits": 16,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "rosales",
+        "urdaneta"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Carmen (Rosales) \u2192 Urdaneta City",
+      "stopLocations": [
+        {
+          "name": "Carmen (Rosales)",
+          "lat": 15.88642,
+          "lng": 120.59984,
+          "areaId": "rosales",
+          "coordinateType": "mapped_locality"
+        },
+        {
+          "name": "Urdaneta City",
+          "lat": 15.9753,
+          "lng": 120.567,
+          "areaId": "urdaneta",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": []
+    },
+    {
+      "routeNumber": 28,
+      "name": "San Manuel - Urdaneta City",
+      "roadAlignment": "Manila North Road; Binalonan-San Manuel Road",
+      "lengthKm": 16.8,
+      "authorizedMode": "MPUJ - Class 2",
+      "authorizedUnits": 13,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "san-manuel",
+        "urdaneta"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "San Manuel \u2192 Urdaneta City",
+      "stopLocations": [
+        {
+          "name": "San Manuel",
+          "lat": 16.0643,
+          "lng": 120.6681,
+          "areaId": "san-manuel",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Urdaneta City",
+          "lat": 15.9753,
+          "lng": 120.567,
+          "areaId": "urdaneta",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": []
+    },
+    {
+      "routeNumber": 29,
+      "name": "Carmen - Umingan",
+      "roadAlignment": "Manila North Road; Bakit-Bakit Junction-Umingan Road; Pangasinan-Nueva Ecija Road",
+      "lengthKm": 28.3,
+      "authorizedMode": "MPUJ - Class 2",
+      "authorizedUnits": 15,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "rosales",
+        "umingan"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Carmen (Rosales) \u2192 Umingan",
+      "stopLocations": [
+        {
+          "name": "Carmen (Rosales)",
+          "lat": 15.88642,
+          "lng": 120.59984,
+          "areaId": "rosales",
+          "coordinateType": "mapped_locality"
+        },
+        {
+          "name": "Umingan",
+          "lat": 15.9267,
+          "lng": 120.8406,
+          "areaId": "umingan",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": []
+    },
+    {
+      "routeNumber": 30,
+      "name": "Urdaneta City - Pozorrubio",
+      "roadAlignment": "Manila North Road; Pozorrubio Plaza Diversion Road",
+      "lengthKm": 19.1,
+      "authorizedMode": "MPUJ - Class 2",
+      "authorizedUnits": 28,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "urdaneta",
+        "pozorrubio"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Urdaneta City \u2192 Pozorrubio",
+      "stopLocations": [
+        {
+          "name": "Urdaneta City",
+          "lat": 15.9753,
+          "lng": 120.567,
+          "areaId": "urdaneta",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Pozorrubio",
+          "lat": 16.1104,
+          "lng": 120.5458,
+          "areaId": "pozorrubio",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": []
+    },
+    {
+      "routeNumber": 31,
+      "name": "Urdaneta City - Manaoag",
+      "roadAlignment": "Urdaneta-Manaoag Road",
+      "lengthKm": 13.3,
+      "authorizedMode": "MPUJ - Class 2",
+      "authorizedUnits": 7,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "urdaneta",
+        "manaoag"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Urdaneta City \u2192 Manaoag",
+      "stopLocations": [
+        {
+          "name": "Urdaneta City",
+          "lat": 15.9753,
+          "lng": 120.567,
+          "areaId": "urdaneta",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Manaoag",
+          "lat": 16.0427,
+          "lng": 120.4874,
+          "areaId": "manaoag",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": []
+    },
+    {
+      "routeNumber": 32,
+      "name": "Binalonan - Manaoag",
+      "roadAlignment": "Mangaldan-Manaoag-Binalonan Road",
+      "lengthKm": 12.1,
+      "authorizedMode": "MPUJ - Class 2",
+      "authorizedUnits": 5,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "binalonan",
+        "manaoag"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Binalonan \u2192 Manaoag",
+      "stopLocations": [
+        {
+          "name": "Binalonan",
+          "lat": 16.0444,
+          "lng": 120.5917,
+          "areaId": "binalonan",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Manaoag",
+          "lat": 16.0427,
+          "lng": 120.4874,
+          "areaId": "manaoag",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": []
+    },
+    {
+      "routeNumber": 33,
+      "name": "Alaminos City - Infanta",
+      "roadAlignment": "Pangasinan-Zambales Road; Dasol Diversion Road",
+      "lengthKm": 51.8,
+      "authorizedMode": "MPUJ - Class 3",
+      "authorizedUnits": 31,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "alaminos",
+        "infanta"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Alaminos City \u2192 Dasol/Infanta corridor \u2192 Infanta",
+      "stopLocations": [
+        {
+          "name": "Alaminos City",
+          "lat": 16.1565,
+          "lng": 119.9804,
+          "areaId": "alaminos",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Infanta",
+          "lat": 15.825,
+          "lng": 119.9056,
+          "areaId": "infanta",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": [
+        "Dasol/Infanta corridor"
+      ]
+    },
+    {
+      "routeNumber": 34,
+      "name": "Lingayen - Alaminos City",
+      "roadAlignment": "Pangasinan-Zambales Road",
+      "lengthKm": 38.7,
+      "authorizedMode": "MPUJ - Class 3",
+      "authorizedUnits": 47,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "lingayen",
+        "alaminos"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Lingayen \u2192 Labrador \u2192 Alaminos City",
+      "stopLocations": [
+        {
+          "name": "Lingayen",
+          "lat": 16.0206,
+          "lng": 120.2306,
+          "areaId": "lingayen",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Labrador",
+          "lat": 16.0255,
+          "lng": 120.1453,
+          "areaId": "labrador",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Alaminos City",
+          "lat": 16.1565,
+          "lng": 119.9804,
+          "areaId": "alaminos",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": []
+    },
+    {
+      "routeNumber": 35,
+      "name": "Lingayen - Bayambang via San Carlos City",
+      "roadAlignment": "Pangasinan-Zambales Road; Carmen Junction-Bayambang-Manat Road",
+      "lengthKm": 37.3,
+      "authorizedMode": "MPUJ - Class 3",
+      "authorizedUnits": 24,
+      "sourcePage": 1,
+      "endpointAreaIds": [],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Lingayen \u2192 San Carlos City \u2192 Bayambang",
+      "stopLocations": [
+        {
+          "name": "Lingayen",
+          "lat": 16.0206,
+          "lng": 120.2306,
+          "areaId": "lingayen",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "San Carlos City",
+          "lat": 15.9277,
+          "lng": 120.3478,
+          "areaId": "san-carlos",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": [
+        "Bayambang"
+      ]
+    },
+    {
+      "routeNumber": 36,
+      "name": "Dagupan City - Urdaneta City",
+      "roadAlignment": "Perez Blvd.; AB Fernandez Ave.; Urdaneta Junction-Dagupan-Lingayen Road",
+      "lengthKm": 27.9,
+      "authorizedMode": "MUVe - Class 3",
+      "authorizedUnits": 12,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "dagupan",
+        "urdaneta"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Dagupan City \u2192 Urdaneta City",
+      "stopLocations": [
+        {
+          "name": "Dagupan City",
+          "lat": 16.0424,
+          "lng": 120.3375,
+          "areaId": "dagupan",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Urdaneta City",
+          "lat": 15.9753,
+          "lng": 120.567,
+          "areaId": "urdaneta",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": []
+    },
+    {
+      "routeNumber": 37,
+      "name": "Dagupan City - Mangatarem",
+      "roadAlignment": "Perez Blvd.; AB Fernandez Ave.; Pangasinan-Zambales Road; Pangasinan-Tarlac Road",
+      "lengthKm": 34.5,
+      "authorizedMode": "MUVe - Class 3",
+      "authorizedUnits": 9,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "dagupan",
+        "mangatarem"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Dagupan City \u2192 Lingayen \u2192 Mangatarem",
+      "stopLocations": [
+        {
+          "name": "Dagupan City",
+          "lat": 16.0424,
+          "lng": 120.3375,
+          "areaId": "dagupan",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Lingayen",
+          "lat": 16.0206,
+          "lng": 120.2306,
+          "areaId": "lingayen",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Mangatarem",
+          "lat": 15.7885,
+          "lng": 120.2938,
+          "areaId": "mangatarem",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": []
+    },
+    {
+      "routeNumber": 38,
+      "name": "Dagupan City - Alaminos City",
+      "roadAlignment": "Perez Blvd.; AB Fernandez Ave.; Pangasinan-Zambales Road; Lingayen-Binmaley Road; Labrador-Lingayen Road",
+      "lengthKm": 52.8,
+      "authorizedMode": "MUVe - Class 3",
+      "authorizedUnits": 43,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "dagupan",
+        "alaminos"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Dagupan City \u2192 Lingayen/Labrador corridor \u2192 Alaminos City",
+      "stopLocations": [
+        {
+          "name": "Dagupan City",
+          "lat": 16.0424,
+          "lng": 120.3375,
+          "areaId": "dagupan",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Alaminos City",
+          "lat": 16.1565,
+          "lng": 119.9804,
+          "areaId": "alaminos",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": [
+        "Lingayen/Labrador corridor"
+      ]
+    },
+    {
+      "routeNumber": 39,
+      "name": "Dagupan City - Bolinao",
+      "roadAlignment": "Perez Blvd.; AB Fernandez Ave.; Pangasinan-Zambales Road; Lingayen-Binmaley Road; Alaminos-Bolinao Road; Labrador-Lingayen Road",
+      "lengthKm": 92.1,
+      "authorizedMode": "MUVe - Class 3",
+      "authorizedUnits": 12,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "dagupan",
+        "bolinao"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Dagupan City \u2192 Lingayen/Labrador \u2192 Alaminos City \u2192 Bolinao",
+      "stopLocations": [
+        {
+          "name": "Dagupan City",
+          "lat": 16.0424,
+          "lng": 120.3375,
+          "areaId": "dagupan",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Alaminos City",
+          "lat": 16.1565,
+          "lng": 119.9804,
+          "areaId": "alaminos",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Bolinao",
+          "lat": 16.3856,
+          "lng": 119.8945,
+          "areaId": "bolinao",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": [
+        "Lingayen/Labrador"
+      ]
+    },
+    {
+      "routeNumber": 40,
+      "name": "Dagupan City - Tayug",
+      "roadAlignment": "Perez Blvd.; AB Fernandez Ave.; Urdaneta Junction-Dagupan-Lingayen Road",
+      "lengthKm": 54.0,
+      "authorizedMode": "MUVe - Class 3",
+      "authorizedUnits": 5,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "dagupan",
+        "tayug"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Dagupan City \u2192 Urdaneta City \u2192 Tayug",
+      "stopLocations": [
+        {
+          "name": "Dagupan City",
+          "lat": 16.0424,
+          "lng": 120.3375,
+          "areaId": "dagupan",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Urdaneta City",
+          "lat": 15.9753,
+          "lng": 120.567,
+          "areaId": "urdaneta",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Tayug",
+          "lat": 16.0278,
+          "lng": 120.7447,
+          "areaId": "tayug",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": []
+    },
+    {
+      "routeNumber": 41,
+      "name": "Urdaneta City - Umingan",
+      "roadAlignment": "Manila North Road; Bakit-Bakit Junction-Umingan Road; Pangasinan-Nueva Ecija Road",
+      "lengthKm": 38.8,
+      "authorizedMode": "MUVe - Class 3",
+      "authorizedUnits": 6,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "urdaneta",
+        "umingan"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Urdaneta City \u2192 Umingan",
+      "stopLocations": [
+        {
+          "name": "Urdaneta City",
+          "lat": 15.9753,
+          "lng": 120.567,
+          "areaId": "urdaneta",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Umingan",
+          "lat": 15.9267,
+          "lng": 120.8406,
+          "areaId": "umingan",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": []
+    },
+    {
+      "routeNumber": 42,
+      "name": "Dagupan City - Anda",
+      "roadAlignment": "Perez Blvd.; AB Fernandez Ave.; Urdaneta Junction-Dagupan-Lingayen Road; Pangasinan-Zambales Road; Labrador-Lingayen Road; Alaminos-Bolinao Road; Bolinao-Anda Road",
+      "lengthKm": 87.1,
+      "authorizedMode": "Mini-Bus",
+      "authorizedUnits": 25,
+      "sourcePage": 1,
+      "endpointAreaIds": [
+        "dagupan",
+        "anda"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Dagupan City \u2192 Lingayen/Labrador \u2192 Alaminos City \u2192 Anda",
+      "stopLocations": [
+        {
+          "name": "Dagupan City",
+          "lat": 16.0424,
+          "lng": 120.3375,
+          "areaId": "dagupan",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Alaminos City",
+          "lat": 16.1565,
+          "lng": 119.9804,
+          "areaId": "alaminos",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Anda",
+          "lat": 16.29,
+          "lng": 119.9513,
+          "areaId": "anda",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": [
+        "Lingayen/Labrador"
+      ]
+    },
+    {
+      "routeNumber": 43,
+      "name": "Dagupan City - Bolinao",
+      "roadAlignment": "Perez Blvd.; AB Fernandez Ave.; Pangasinan-Zambales Road; Lingayen-Binmaley Road; Alaminos-Bolinao Road; Labrador-Lingayen Road",
+      "lengthKm": 93.3,
+      "authorizedMode": "Mini-Bus",
+      "authorizedUnits": 27,
+      "sourcePage": 2,
+      "endpointAreaIds": [
+        "dagupan",
+        "bolinao"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Dagupan City \u2192 Lingayen/Labrador \u2192 Alaminos City \u2192 Bolinao",
+      "stopLocations": [
+        {
+          "name": "Dagupan City",
+          "lat": 16.0424,
+          "lng": 120.3375,
+          "areaId": "dagupan",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Alaminos City",
+          "lat": 16.1565,
+          "lng": 119.9804,
+          "areaId": "alaminos",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Bolinao",
+          "lat": 16.3856,
+          "lng": 119.8945,
+          "areaId": "bolinao",
+          "coordinateType": "municipal_reference"
+        }
+      ],
+      "unmappedWaypoints": [
+        "Lingayen/Labrador"
+      ]
+    },
+    {
+      "routeNumber": 44,
+      "name": "Dagupan City - Carmen via Urdaneta City",
+      "roadAlignment": "Perez Blvd.; AB Fernandez Ave.; Urdaneta Junction-Dagupan-Lingayen Road; Manila North Road",
+      "lengthKm": 39.9,
+      "authorizedMode": "Mini-Bus",
+      "authorizedUnits": 28,
+      "sourcePage": 2,
+      "endpointAreaIds": [
+        "dagupan",
+        "rosales"
+      ],
+      "nameUnclear": false,
+      "namedWaypointSequence": "Dagupan City \u2192 Urdaneta City \u2192 Carmen (Rosales)",
+      "stopLocations": [
+        {
+          "name": "Dagupan City",
+          "lat": 16.0424,
+          "lng": 120.3375,
+          "areaId": "dagupan",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Urdaneta City",
+          "lat": 15.9753,
+          "lng": 120.567,
+          "areaId": "urdaneta",
+          "coordinateType": "municipal_reference"
+        },
+        {
+          "name": "Carmen (Rosales)",
+          "lat": 15.88642,
+          "lng": 120.59984,
+          "areaId": "rosales",
+          "coordinateType": "mapped_locality"
+        }
+      ],
+      "unmappedWaypoints": []
+    }
+  ],
+  "gpsPoints": [
+    {
+      "name": "Agno",
+      "lat": 16.1142,
+      "lng": 119.8028,
+      "areaId": "agno",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Aguilar",
+      "lat": 15.8887,
+      "lng": 120.2395,
+      "areaId": "aguilar",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Alaminos City",
+      "lat": 16.1565,
+      "lng": 119.9804,
+      "areaId": "alaminos",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Anda",
+      "lat": 16.29,
+      "lng": 119.9513,
+      "areaId": "anda",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Asingan",
+      "lat": 16.0037,
+      "lng": 120.6702,
+      "areaId": "asingan",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Bani",
+      "lat": 16.1833,
+      "lng": 119.8625,
+      "areaId": "bani",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Basista",
+      "lat": 15.8523,
+      "lng": 120.4025,
+      "areaId": "basista",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Binalonan",
+      "lat": 16.0444,
+      "lng": 120.5917,
+      "areaId": "binalonan",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Binmaley",
+      "lat": 16.0305,
+      "lng": 120.2695,
+      "areaId": "binmaley",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Bolinao",
+      "lat": 16.3856,
+      "lng": 119.8945,
+      "areaId": "bolinao",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Bugallon",
+      "lat": 15.954,
+      "lng": 120.2149,
+      "areaId": "bugallon",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Calasiao",
+      "lat": 16.0089,
+      "lng": 120.3571,
+      "areaId": "calasiao",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Carmen (Rosales)",
+      "lat": 15.88642,
+      "lng": 120.59984,
+      "areaId": "rosales",
+      "coordinateType": "mapped_locality"
+    },
+    {
+      "name": "Dagupan City",
+      "lat": 16.0424,
+      "lng": 120.3375,
+      "areaId": "dagupan",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Dasol",
+      "lat": 15.9902,
+      "lng": 119.8811,
+      "areaId": "dasol",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Infanta",
+      "lat": 15.825,
+      "lng": 119.9056,
+      "areaId": "infanta",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Labrador",
+      "lat": 16.0255,
+      "lng": 120.1453,
+      "areaId": "labrador",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Laoac",
+      "lat": 16.048,
+      "lng": 120.5471,
+      "areaId": "laoac",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Lingayen",
+      "lat": 16.0206,
+      "lng": 120.2306,
+      "areaId": "lingayen",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Malasiqui",
+      "lat": 15.9191,
+      "lng": 120.4139,
+      "areaId": "malasiqui",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Manaoag",
+      "lat": 16.0427,
+      "lng": 120.4874,
+      "areaId": "manaoag",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Mangaldan",
+      "lat": 16.0666,
+      "lng": 120.401,
+      "areaId": "mangaldan",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Mangatarem",
+      "lat": 15.7885,
+      "lng": 120.2938,
+      "areaId": "mangatarem",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Mapandan",
+      "lat": 16.024,
+      "lng": 120.4535,
+      "areaId": "mapandan",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Natividad",
+      "lat": 16.0427,
+      "lng": 120.7946,
+      "areaId": "natividad",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Pozorrubio",
+      "lat": 16.1104,
+      "lng": 120.5458,
+      "areaId": "pozorrubio",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Rosales",
+      "lat": 15.8915,
+      "lng": 120.6331,
+      "areaId": "rosales",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "San Carlos City",
+      "lat": 15.9277,
+      "lng": 120.3478,
+      "areaId": "san-carlos",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "San Fabian",
+      "lat": 16.1265,
+      "lng": 120.4033,
+      "areaId": "san-fabian",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "San Jacinto",
+      "lat": 16.0735,
+      "lng": 120.437,
+      "areaId": "san-jacinto",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "San Manuel",
+      "lat": 16.0643,
+      "lng": 120.6681,
+      "areaId": "san-manuel",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "San Nicolas",
+      "lat": 16.0703,
+      "lng": 120.7624,
+      "areaId": "san-nicolas",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "San Quintin",
+      "lat": 15.9843,
+      "lng": 120.8131,
+      "areaId": "san-quintin",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Santa Barbara",
+      "lat": 15.9999,
+      "lng": 120.4051,
+      "areaId": "santa-barbara",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Santa Maria",
+      "lat": 15.9792,
+      "lng": 120.7003,
+      "areaId": "santa-maria",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Santo Tomas",
+      "lat": 15.8782,
+      "lng": 120.586,
+      "areaId": "santo-tomas",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Sison",
+      "lat": 16.1724,
+      "lng": 120.5103,
+      "areaId": "sison",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Sual",
+      "lat": 16.0666,
+      "lng": 120.0951,
+      "areaId": "sual",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Tayug",
+      "lat": 16.0278,
+      "lng": 120.7447,
+      "areaId": "tayug",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Umingan",
+      "lat": 15.9267,
+      "lng": 120.8406,
+      "areaId": "umingan",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Urbiztondo",
+      "lat": 15.8232,
+      "lng": 120.3294,
+      "areaId": "urbiztondo",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Urdaneta City",
+      "lat": 15.9753,
+      "lng": 120.567,
+      "areaId": "urdaneta",
+      "coordinateType": "municipal_reference"
+    },
+    {
+      "name": "Villasis",
+      "lat": 15.9015,
+      "lng": 120.5883,
+      "areaId": "villasis",
+      "coordinateType": "municipal_reference"
+    }
+  ]
+}
