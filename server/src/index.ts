@@ -18,7 +18,7 @@ import aiRoutes from './routes/ai'
 import knowledgeRoutes from './routes/knowledge'
 import analyticsRoutes from './routes/analytics'
 import notificationRoutes from './routes/notifications'
-import { connectDatabase, verifyDatabaseLayout } from './lib/db'
+import { connectDatabase, verifyDatabaseLayout, databaseStartupMessage } from './lib/db'
 import { User, AuditLog } from './models'
 import { PendingRegistration } from './models/PendingRegistration'
 import { AuthLimit } from './lib/authLimits'
@@ -40,8 +40,8 @@ async function prepareDatabase() {
   // Share initialization between concurrent cold-start requests. Retry a
   // failed attempt instead of leaving this function instance unusable.
   // Keep the database-layout check from the latest application startup.
-  // Existing indexes are provisioned separately. Only the new password-reset
-  // collection and its indexes are added here, without changing account data.
+  // Existing indexes are provisioned separately. Password reset and geofence
+  // storage create missing collections without changing account data.
   indexesReady ??= preparePasswordResetStorage().then(() => prepareGeofenceStorage()).then(() => verifyDatabaseLayout())
     .then(() => Promise.all([User.init(), AuditLog.init(), PendingRegistration.init(), AuthLimit.init()]))
     .catch((error) => { indexesReady = undefined; throw error })
@@ -116,8 +116,8 @@ if (require.main === module && process.env.VERCEL !== '1') {
   prepareDatabase().then(() => {
     app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`))
   })
-  .catch(() => {
-    console.error('Unable to start server. Check database configuration and network access.')
+  .catch((error) => {
+    console.error(`Unable to start server. ${databaseStartupMessage(error)}`)
     process.exit(1)
   })
 }

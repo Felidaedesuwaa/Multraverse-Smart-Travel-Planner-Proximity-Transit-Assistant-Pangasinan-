@@ -8,6 +8,7 @@ require.cache[environmentPath] = { id: environmentPath, filename: environmentPat
 const mongoose = require('mongoose');
 const db = require('../dist/lib/db');
 require('../dist/models/PasswordReset').preparePasswordResetStorage = async () => {};
+require('../dist/models/GeofenceMonitor').prepareGeofenceStorage = async () => {};
 let server;
 
 (async () => {
