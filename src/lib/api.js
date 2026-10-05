@@ -168,6 +168,8 @@ export const api = {
 
   // Transit Routes
   searchTransitRoutes: data => request('/api/ai/transit/search', { method: 'POST', body: JSON.stringify(data) }),
+  planTransitAlarm: data => request('/api/ai/transit/alarm/plan', { method: 'POST', body: JSON.stringify(data) }),
+  checkTransitAlarm: data => request('/api/ai/transit/alarm/check', { method: 'POST', body: JSON.stringify(data) }),
   getTransitRoutes: () => requestList('/api/transit-routes'),
 
   // Geofences

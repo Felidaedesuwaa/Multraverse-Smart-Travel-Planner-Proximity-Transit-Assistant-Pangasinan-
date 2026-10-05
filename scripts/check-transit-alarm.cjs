@@ -4,13 +4,13 @@ const fs = require('node:fs'), path = require('node:path'), vm = require('node:v
 const babel = require('@babel/core');
 const cache = new Map();
 const values = new Map([['user', JSON.stringify({ id: 'traveler' })]]);
-let task, started = false, notifications = [], failNotify = false, denyBackground = false;
+let task, started = false, notifications = [], failNotify = false, denyBackground = false, handler, channels = [], vibrations = [];
 const mocks = {
   '@react-native-async-storage/async-storage': { getItem: async key => values.get(key) || null, setItem: async (key, value) => values.set(key, value), removeItem: async key => values.delete(key) },
-  'react-native': { Platform: { OS: 'android' } },
+  'react-native': { Platform: { OS: 'android' }, Vibration: { vibrate: pattern => vibrations.push(pattern) } },
   'expo-task-manager': { defineTask: (_name, fn) => { task = fn; }, isAvailableAsync: async () => true },
   'expo-location': { Accuracy: { High: 4 }, ActivityType: { AutomotiveNavigation: 1 }, requestForegroundPermissionsAsync: async () => ({ granted: true }), requestBackgroundPermissionsAsync: async () => ({ granted: !denyBackground }), hasStartedLocationUpdatesAsync: async () => started, startLocationUpdatesAsync: async () => { started = true; }, stopLocationUpdatesAsync: async () => { started = false; } },
-  'expo-notifications': { AndroidImportance: { HIGH: 4 }, setNotificationHandler() {}, setNotificationChannelAsync: async () => {}, requestPermissionsAsync: async () => ({ granted: true }), scheduleNotificationAsync: async value => { if (failNotify) throw Error('OS failure'); notifications.push(value); } },
+  'expo-notifications': { AndroidImportance: { HIGH: 4 }, setNotificationHandler(value) { handler = value; }, setNotificationChannelAsync: async (id, config) => channels.push({ id, ...config }), requestPermissionsAsync: async () => ({ granted: true }), scheduleNotificationAsync: async value => { if (failNotify) throw Error('OS failure'); notifications.push(value); } },
 };
 function load(file) {
   const filename = path.resolve(__dirname, '..', file);
@@ -23,12 +23,22 @@ function load(file) {
   return module.exports;
 }
 const geometry = load('src/lib/transitGeometry.js');
+const { estimateTraditionalJeepneyFare } = load('src/lib/transitFare.js');
+assert.equal(estimateTraditionalJeepneyFare(1), 14);
+assert.equal(estimateTraditionalJeepneyFare(4), 14);
+assert.equal(estimateTraditionalJeepneyFare(5), 16);
+assert.equal(estimateTraditionalJeepneyFare(52.8), 111.6);
+for (const km of [-1, undefined, NaN, Infinity]) assert.equal(estimateTraditionalJeepneyFare(km), null);
 const service = load('src/lib/transitTracking.native.js');
 const stop = { name: 'Test stop', lat: 16.043, lng: 120.334, areaId: 'dagupan' };
 const position = (accuracy = 10, timestamp = Date.now()) => ({ timestamp, coords: { latitude: stop.lat, longitude: stop.lng, accuracy } });
 const options = { ownerId: 'traveler', route: { id: 'test', stops: [stop] }, stopIndex: 0, radius: 500, mode: 'vibrate' };
 (async () => {
   assert.equal(geometry.municipality(stop), 'dagupan');
+  assert.equal(geometry.municipality({ lat: 14.5995, lng: 120.9842 }), undefined);
+  assert.equal(geometry.distanceMeters({ latitude: stop.lat, longitude: stop.lng }, stop), 0);
+  const pinned = { ...stop, name: 'Pinned destination' };
+  assert.equal(geometry.isArrival(position(), pinned, 100), true);
   assert.equal(geometry.isArrival(position(), stop, 500), true);
   for (const p of [position(200), position(-1), position(10, Date.now() - 31000), position(10, Date.now() + 10000)]) assert.equal(geometry.isArrival(p, stop, 500), false);
   assert.equal(geometry.isArrival(position(), { ...stop, areaId: 'alaminos' }, 500), false);
@@ -49,6 +59,21 @@ const options = { ownerId: 'traveler', route: { id: 'test', stops: [stop] }, sto
   values.set('user', JSON.stringify({ id: 'traveler' }));
   await service.startTransitAlarm(options); const key = 'multraverse.transit-session.v1'; const session = JSON.parse(values.get(key)); values.set(key, JSON.stringify({ ...session, expiresAt: 1 }));
   await task({ data: { locations: [position()] } }); assert.equal(started, false); assert.match((await service.getTransitSession()).message, /expired/);
+  for (const mode of ['vibrate', 'sound', 'push']) {
+    await service.startTransitAlarm({ ...options, mode });
+    const channel = channels.at(-1);
+    assert.equal(channel.enableVibrate, mode === 'vibrate');
+    assert.equal(channel.sound, mode === 'sound' ? 'default' : null);
+    await task({ data: { locations: [position()] } });
+    const notification = notifications.at(-1);
+    assert.equal(notification.content.sound, mode === 'sound' ? 'default' : false);
+    assert.equal(notification.trigger.channelId, `transit-${mode}-v1`);
+    assert.equal((await handler.handleNotification({ request: notification })).shouldPlaySound, true);
+  }
+  mocks['react-native'].Platform.OS = 'ios';
+  await handler.handleNotification({ request: { content: { data: { mode: 'vibrate' } } } });
+  assert.equal(vibrations.length, 1);
+  assert.equal((await handler.handleNotification({ request: { content: { data: { mode: 'push' } } } })).shouldPlaySound, false);
   values.delete('user'); await assert.rejects(service.startTransitAlarm(options));
   console.log('Transit alarm checks passed: accuracy, stale fixes, permissions, one-shot delivery, cancellation, logout ownership, notification errors and expiry.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

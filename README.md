@@ -250,3 +250,18 @@ Profile API checks: `npm run build --prefix server`, then `node server/scripts/c
 
 AI knowledge uses Phrasebook V2 and the uploaded guides for Dagupan, Alaminos, Urdaneta, San Carlos, Lingayen, Manaoag and Bolinao.
 See [AI service setup and source workflow](ai-service/README.md).
+# Transit Alarm map pins
+
+Open Transit Alarm, pin your current location (A), then your destination (B).
+Both pins are checked against the bundled Pangasinan municipality boundaries.
+The displayed kilometers are straight-line distance between the coordinates.
+Select **Track pinned destination**, allow GPS access, then **Enable Alarm**.
+The alarm fires once when a fresh, accurate GPS fix is within the selected radius.
+A manually placed current-location pin never substitutes for live GPS tracking.
+
+For Google Maps on web, set `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` in the root `.env`
+and restart Expo. Enable the Maps JavaScript API and restrict the browser key to
+your application's HTTP referrers. See [Google Maps setup](https://developers.google.com/maps/documentation/javascript/get-api-key).
+Without a key, and in the native app, the bundled interactive Pangasinan map is used.
+Web alerts require the page to stay open; installed mobile builds use the existing
+background location and notification permissions for destination alerts.

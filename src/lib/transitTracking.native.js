@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
 import * as Notifications from 'expo-notifications';
-import { Platform } from 'react-native';
+import { Platform, Vibration } from 'react-native';
 import { isArrival, municipality } from './transitGeometry';
 
 const TASK = 'multraverse-transit-location-v1';
@@ -28,10 +28,16 @@ async function save(session) {
   else await AsyncStorage.removeItem(KEY);
   publish(session);
 }
-Notifications.setNotificationHandler({ handleNotification: async notification => ({
-  shouldShowBanner: true, shouldShowList: true,
-  shouldPlaySound: notification.request.content.data?.mode === 'sound', shouldSetBadge: false,
-}) });
+Notifications.setNotificationHandler({ handleNotification: async notification => {
+  const mode = notification.request.content.data?.mode;
+  if (Platform.OS === 'ios' && mode === 'vibrate') Vibration.vibrate([0, 700, 250, 700]);
+  return {
+    shouldShowBanner: true, shouldShowList: true,
+    // Android uses channel sound/vibration settings. Suppressing sound here also
+    // suppresses its foreground heads-up alert, even for a silent channel.
+    shouldPlaySound: Platform.OS === 'android' || mode === 'sound', shouldSetBadge: false,
+  };
+} });
 
 TaskManager.defineTask(TASK, ({ data, error }) => serial(async () => {
   const session = await read();

@@ -20,14 +20,3 @@ export const placeDetails = {
   lingayen: { name: "Lingayen Capitol", address: "Lingayen, Pangasinan", tags: ["Provincial Gov."] },
   sancarlos: { name: "San Carlos City", address: "San Carlos, Pangasinan", tags: ["City Center"] },
 };
-
-export const offlineRegions = [
-  { id: "dagupan-region", name: "Dagupan City", description: "City Core", sizeMB: 24, downloaded: true },
-  { id: "alaminos-region", name: "Alaminos", description: "Hundred Islands", sizeMB: 38, downloaded: true },
-  { id: "bolinao-region", name: "Bolinao", description: "Patar Coast", sizeMB: 31, downloaded: false },
-  { id: "lingayen-region", name: "Lingayen", description: "Gulf Province", sizeMB: 18, downloaded: false },
-  { id: "manaoag-region", name: "Manaoag", description: "Shrine District", sizeMB: 12, downloaded: false },
-  { id: "sancarlos-region", name: "San Carlos City", description: "Eastern Pan.", sizeMB: 22, downloaded: false },
-];
-
-export const offlineStorageCapMB = 500;

@@ -1,0 +1,18 @@
+[
+  {
+    "route": "Lingayen–Labrador",
+    "waypoint_labels": ["Lingayen/Labrador corridor", "Lingayen/Labrador"],
+    "origin_reference_lat": 16.021820,
+    "origin_reference_lon": 120.231940,
+    "corridor_waypoint_lat": 16.023300,
+    "corridor_waypoint_lon": 120.173900,
+    "destination_reference_lat": 15.999200,
+    "destination_reference_lon": 120.112800,
+    "mapped_boarding_stop_lat": 16.017840,
+    "mapped_boarding_stop_lon": 120.231040,
+    "gps_status": "reference/mapped",
+    "exact_stop_verified": false,
+    "source_date": 2026,
+    "provenance": "User-supplied corridor reference; independent verification and a public GPS source URL have not been provided."
+  }
+]

@@ -4,7 +4,7 @@ import { useAppTheme } from "../theme/useAppTheme";
 import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import {
-  Bell, Bookmark, Compass, Download, Home,
+  Bell, Bookmark, Compass, Map, Home,
   Languages, MapPin, Settings, Sparkles, Wallet,
 } from "lucide-react-native";
 import { colors } from "../theme/colors";
@@ -20,7 +20,7 @@ const navigationItems = [
   { label: "My Trips", icon: MapPin, screen: "MyTrips" },
   { label: "Budget", icon: Wallet, screen: "Budget" },
   { label: "Saved Places", icon: Bookmark, screen: "SavedPlaces" },
-  { label: "Offline Maps", icon: Download, screen: "OfflineMaps" },
+  { label: "Interactive Map", icon: Map, screen: "InteractiveMap" },
   { label: "Settings", icon: Settings, screen: "Settings" },
 ];
 
@@ -30,8 +30,8 @@ const aiItems = [
   { label: "Translator", icon: Languages, screen: "Translator" },
 ];
 
-export default function UserSidebar({ activeScreen = "Dashboard", onNavigate, compact = false }) {
-  const { themeStyle, themeColor, palette } = useAppTheme();
+export default function UserSidebar({ activeScreen = "InteractiveMap", onNavigate, compact = false }) {
+  const { themeStyle, themeColor, isDark, palette } = useAppTheme();
 
   const user = useAuthStore((state) => state.user);
   const entries = useBudgetStore(state => state.entries);
