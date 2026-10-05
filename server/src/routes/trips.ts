@@ -35,8 +35,11 @@ router.put('/:id', async (req: AuthRequest<{ id: string }>, res: Response) => {
 })
 
 router.delete('/:id', async (req: AuthRequest<{ id: string }>, res: Response) => {
+  const existing = await Trip.findOne({ _id: req.params.id, userId: req.userId }).select('status')
+  if (!existing) return res.status(404).json({ error: 'Trip not found' })
+  if (!['COMPLETED', 'CANCELED'].includes(existing.status)) return res.status(409).json({ error: 'Complete or cancel this trip before deleting it.' })
   const trip = await mongoose.connection.transaction(async session => {
-    const removed = await Trip.findOneAndDelete({ _id: req.params.id, userId: req.userId }, { session })
+    const removed = await Trip.findOneAndDelete({ _id: req.params.id, userId: req.userId, status: { $in: ['COMPLETED', 'CANCELED'] } }, { session })
     if (removed) await BudgetEntry.updateMany({ tripId: removed._id }, { $set: { tripId: null } }, { session })
     return removed
   })

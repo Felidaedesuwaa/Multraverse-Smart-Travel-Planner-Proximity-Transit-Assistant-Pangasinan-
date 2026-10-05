@@ -4,6 +4,7 @@ import * as TaskManager from 'expo-task-manager';
 import { isArrival, municipality } from './transitGeometry';
 import { prepareTransitAlert, deliverTransitAlert } from './transitAlerts';
 import { transitArrivalMessage } from './transitArrivalMessage';
+import { recordArrival } from './notificationEvents';
 
 const TASK = 'multraverse-transit-location-v1';
 const KEY = 'multraverse.transit-session.v1';
@@ -42,6 +43,7 @@ TaskManager.defineTask(TASK, ({ data, error }) => serial(async () => {
   // Persist the one-shot claim before invoking the OS notification API.
   const message = transitArrivalMessage(session.radius);
   await save({ ...session, active: false, message });
+  await recordArrival(session.ownerId, session.id, session.target.name, message).catch(() => {});
   try {
     await deliverTransitAlert({ mode: session.mode, title: 'Your stop is approaching', body: message, identifier: session.id, background: true });
   } catch {

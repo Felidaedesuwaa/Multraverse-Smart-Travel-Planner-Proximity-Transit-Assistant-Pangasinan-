@@ -12,6 +12,7 @@ import ToggleSwitch from '../components/ToggleSwitch'
 import { CheckCircle2, Clock3, FileText, AlertCircle, Search, RefreshCw, Pencil, Trash2, Inbox, ShieldCheck } from 'lucide-react-native'
 import MunicipalStatCard from '../components/MunicipalStatCard'
 import LGUOverview from '../components/LGUOverview'
+import NotificationHeader from '../components/NotificationHeader'
 import { chooseProfilePhoto } from '../lib/profilePhoto'
 import { api } from '../lib/api'
 import { lguResources } from '../data/lguResources'
@@ -25,7 +26,7 @@ export default function LGUDashboard() {
   const { width } = useWindowDimensions()
   return <View style={{ flex: 1, flexDirection: width >= 768 ? 'row' : 'column' }}>
     <LGUSidebar compact={width < 768} activeResource={resource} onNavigate={setResource} />
-    <View style={{ flex: 1, minWidth: 0 }}>{municipality ? resource === 'dashboard' ? <LGUOverview key={`${user.id}:${user.municipality}`} municipality={municipality} onNavigate={setResource} /> : <MunicipalEditor key={`${user.id}:${user.municipality}:${resource}`} resource={resource} municipality={municipality} /> : <LGUPage title="Municipality unavailable"><Text>Your account needs a valid Pangasinan municipality. Contact an administrator.</Text></LGUPage>}</View>
+    <View style={{ flex: 1, minWidth: 0 }}><NotificationHeader />{municipality ? resource === 'dashboard' ? <LGUOverview key={`${user.id}:${user.municipality}`} municipality={municipality} onNavigate={setResource} /> : <MunicipalEditor key={`${user.id}:${user.municipality}:${resource}`} resource={resource} municipality={municipality} /> : <LGUPage title="Municipality unavailable"><Text>Your account needs a valid Pangasinan municipality. Contact an administrator.</Text></LGUPage>}</View>
   </View>
 }
 

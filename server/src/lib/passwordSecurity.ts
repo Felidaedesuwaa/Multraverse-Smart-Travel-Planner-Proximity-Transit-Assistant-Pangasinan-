@@ -1,6 +1,7 @@
 import { createHmac, randomBytes, randomInt } from 'node:crypto'
 import bcrypt from 'bcryptjs'
 import mongoose from 'mongoose'
+import jwt from 'jsonwebtoken'
 import { setTimeout as delay } from 'node:timers/promises'
 import { AuditLog, User } from '../models'
 import { PasswordReset } from '../models/PasswordReset'
@@ -56,6 +57,41 @@ export async function resetPassword(challengeId: unknown, code: unknown, newPass
   const reset = await PasswordReset.findOneAndUpdate({ challengeId, expiresAt: { $gt: new Date() }, attempts: { $lt: 5 } },
     { $inc: { attempts: 1 } }, { returnDocument: 'after' }).select('+codeHash +credential')
   if (!reset || !equalDigest(reset.codeHash, otpHash(challengeId, code))) throw invalidCode()
+  await applyPasswordReset(reset, challengeId, newPassword)
+  return { message: 'Password reset. Sign in with your new password. All previous sessions have been signed out.' }
+}
+
+// Exchange the email code for a short-lived, single-use grant. Password entry
+// happens only after verification; the grant is bound to the current credential.
+export async function verifyPasswordReset(challengeId: unknown, code: unknown) {
+  if (typeof challengeId !== 'string' || !/^[a-f0-9]{64}$/.test(challengeId) || typeof code !== 'string' || !/^\d{6}$/.test(code)) throw invalidCode()
+  const reset = await PasswordReset.findOneAndUpdate({ challengeId, expiresAt: { $gt: new Date() }, attempts: { $lt: 5 } }, { $inc: { attempts: 1 } }, { returnDocument: 'after' }).select('+codeHash +credential')
+  if (!reset || !equalDigest(reset.codeHash, otpHash(challengeId, code))) throw invalidCode()
+  const user = await User.findById(reset.userId).select('+passwordHash')
+  if (!user || !equalDigest(reset.credential, sessionCredential(user.passwordHash))) throw invalidCode()
+  const nonce = randomBytes(32).toString('hex')
+  const grantHash = otpHash(challengeId, nonce)
+  const exchanged = await PasswordReset.updateOne({ _id: reset._id, codeHash: reset.codeHash, expiresAt: { $gt: new Date() } }, { $set: { codeHash: grantHash } })
+  if (exchanged.modifiedCount !== 1) throw invalidCode()
+  const grantToken = jwt.sign({ purpose: 'password-recovery', challengeId, nonce, userId: String(user._id) }, process.env.JWT_SECRET!, { algorithm: 'HS256', expiresIn: '5m' })
+  return { grantToken, message: 'Email verified. Choose your new password.' }
+}
+
+export async function recoverPassword(grantToken: unknown, newPassword: unknown) {
+  validateNewPassword(newPassword)
+  let grant: jwt.JwtPayload
+  try {
+    if (typeof grantToken !== 'string') throw invalidCode()
+    const decoded = jwt.verify(grantToken, process.env.JWT_SECRET!, { algorithms: ['HS256'] })
+    if (typeof decoded === 'string' || decoded.purpose !== 'password-recovery' || !/^[a-f\d]{24}$/i.test(decoded.userId || '') || !/^[a-f0-9]{64}$/.test(decoded.challengeId || '') || !/^[a-f0-9]{64}$/.test(decoded.nonce || '')) throw invalidCode()
+    grant = decoded
+  } catch { throw invalidCode() }
+  const reset = await PasswordReset.findOne({ challengeId: grant.challengeId, userId: grant.userId, codeHash: otpHash(grant.challengeId, grant.nonce), expiresAt: { $gt: new Date() } }).select('+codeHash +credential')
+  if (!reset) throw invalidCode()
+  return applyPasswordReset(reset, grant.challengeId, newPassword)
+}
+
+async function applyPasswordReset(reset: any, challengeId: string, newPassword: string) {
   const user = await User.findById(reset.userId).select('+passwordHash')
   if (!user || !equalDigest(reset.credential, sessionCredential(user.passwordHash))) throw invalidCode()
   if (await bcrypt.compare(newPassword, user.passwordHash)) throw new RegistrationError({ newPassword: 'Choose a password different from your current password.' })
@@ -68,7 +104,7 @@ export async function resetPassword(challengeId: unknown, code: unknown, newPass
     if (updated.modifiedCount !== 1) throw invalidCode()
     await AuditLog.create([{ actor: user._id, targetUser: user._id, action: 'password_reset', metadata: { method: 'email_otp' } }], { session })
   })
-  return { message: 'Password reset. Sign in with your new password. All previous sessions have been signed out.' }
+  return User.findById(user._id).select('+passwordHash')
 }
 
 export async function changePassword(userId: string, currentPassword: unknown, newPassword: unknown) {
@@ -85,5 +121,5 @@ export async function changePassword(userId: string, currentPassword: unknown, n
     await PasswordReset.deleteMany({ userId }, { session })
     await AuditLog.create([{ actor: userId, targetUser: userId, action: 'password_changed', metadata: { method: 'current_password' } }], { session })
   })
-  return { message: 'Password changed. Sign in again with your new password.' }
+  return { message: 'Password changed successfully.' }
 }

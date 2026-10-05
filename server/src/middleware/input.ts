@@ -112,9 +112,10 @@ export function validateRouter(scope: string): RequestHandler {
       object(body)
       const create = req.method === 'POST'
       if (scope === 'auth') {
-        const rules: Record<string, Rule> = { email: string, password: string, firstName: string, middleName: string, surname: string, challengeId: string, code: string, currentPassword: string, newPassword: string }
+        const rules: Record<string, Rule> = { email: string, password: string, firstName: string, middleName: string, surname: string, challengeId: string, code: string, currentPassword: string, newPassword: string, grantToken: string }
         const keys = req.path === '/password/forgot' ? ['email'] : req.path === '/password/reset' ? ['challengeId', 'code', 'newPassword'] : req.path === '/password/change' ? ['currentPassword', 'newPassword'] : req.path === '/login' ? ['email', 'password'] : req.path === '/register' ? ['firstName', 'middleName', 'surname', 'email', 'password'] : req.path === '/register/resend' ? ['challengeId'] : ['challengeId', 'code']
-        fields(body, Object.fromEntries(keys.map(k => [k, rules[k]])), keys.filter(k => k !== 'middleName'))
+        const passwordKeys = req.path === '/password/recovery-code' ? [] : req.path === '/password/recover' ? ['grantToken', 'newPassword'] : keys
+        fields(body, Object.fromEntries(passwordKeys.map(k => [k, rules[k]])), passwordKeys.filter(k => k !== 'middleName'))
       } else if (scope === 'users') {
         const rules: Record<string, Rule> = /^\/explorers\//.test(req.path) ? { name: string, location: string } : req.path === '/me' ? { name: string, firstName: string, middleName: string, surname: string, location: string, photo: (v: any) => v === null || (typeof v === 'string' && v.length <= 700000) } : { email: string, password: string, municipality: string }
         fields(body, rules)

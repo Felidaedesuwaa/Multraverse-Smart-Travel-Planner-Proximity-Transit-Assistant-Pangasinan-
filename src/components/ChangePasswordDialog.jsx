@@ -1,5 +1,8 @@
 import { FeedbackPressable } from "./WorkspaceMotion";
 import { useRef, useState } from "react";
+import { useNavigation } from '@react-navigation/native';
+import { returnToDashboard } from '../lib/dashboardNavigation';
+import { notifyUpdates } from '../lib/notificationEvents';
 import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import FormField from "./FormField";
@@ -10,15 +13,15 @@ import { colors } from "../theme/colors";
 import { validatePassword, validateConfirmPassword } from "../utils/validation";
 
 export default function ChangePasswordDialog({ onClose }) {
+  const navigation = useNavigation();
   const { themeStyle, themeColor } = useAppTheme();
   const [fields, setFields] = useState({ currentPassword: "", newPassword: "", confirm: "" });
   const [errors, setErrors] = useState({});
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [done, setDone] = useState(false);
   const lock = useRef(false), inputs = useRef({});
   const focus = errors => inputs.current[Object.keys(errors).find(key => errors[key])]?.focus();
-  const close = () => { if (!lock.current) { if (done) useAuthStore.getState().logout(); else onClose(); } };
+  const close = () => { if (!lock.current) onClose(); };
   const submit = async () => {
     if (lock.current) return;
     const next = { currentPassword: fields.currentPassword ? null : "Enter your current password.", newPassword: validatePassword(fields.newPassword), confirm: validateConfirmPassword(fields.newPassword, fields.confirm) };
@@ -26,22 +29,27 @@ export default function ChangePasswordDialog({ onClose }) {
     setErrors(next); setError("");
     if (Object.values(next).some(Boolean)) { focus(next); return; }
     lock.current = true; setBusy(true);
-    try { await api.changePassword(fields.currentPassword, fields.newPassword); setFields({ currentPassword: "", newPassword: "", confirm: "" }); setDone(true); }
+    try {
+      const session = await api.changePassword(fields.currentPassword, fields.newPassword);
+      await useAuthStore.getState().acceptSession(session);
+      setFields({ currentPassword: "", newPassword: "", confirm: "" });
+      onClose(); notifyUpdates(); returnToDashboard(navigation, session.user.role);
+    }
     catch (failure) { setError(failure.message); setErrors(failure.fieldErrors || {}); focus(failure.fieldErrors || {}); }
     finally { lock.current = false; setBusy(false); }
   };
   return <Modal transparent animationType="fade" onRequestClose={close}>
     <SafeAreaView style={styles.overlay}><KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.center}>
       <View accessibilityViewIsModal style={themeStyle(styles.dialog)}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
-        <Text accessibilityRole="header" style={themeStyle(styles.title)}>{done ? "Password changed" : "Change password"}</Text>
-        <Text accessibilityLiveRegion="polite" style={themeStyle(styles.description)}>{done ? "All previous sessions have been signed out. Sign in again with your new password." : "Confirm your current password to choose a new one. Updating it signs out all existing sessions."}</Text>
-        {!done && <>
+        <Text accessibilityRole="header" style={themeStyle(styles.title)}>Change password</Text>
+        <Text accessibilityLiveRegion="polite" style={themeStyle(styles.description)}>Confirm your current password to choose a new one. Other sessions will be signed out.</Text>
+        <>
           {[["currentPassword", "Current password", "Enter your current password"], ["newPassword", "New password", "Create a new password"], ["confirm", "Confirm new password", "Re-enter your new password"]].map(([key, label, placeholder]) => <FormField key={key} ref={node => { inputs.current[key] = node; }} label={label} placeholder={placeholder} password value={fields[key]} onChangeText={value => setFields(previous => ({ ...previous, [key]: value }))} autoCapitalize="none" autoCorrect={false} autoComplete={key === "currentPassword" ? "current-password" : "new-password"} maxLength={key === "currentPassword" ? 256 : 72} error={errors[key]} editable={!busy} hint={key === "newPassword" ? "8–72 characters, an uppercase letter and a number. Use only letters, numbers, _, - and @." : undefined} returnKeyType={key === "confirm" ? "done" : "next"} onSubmitEditing={() => key === "confirm" ? submit() : inputs.current[key === "currentPassword" ? "newPassword" : "confirm"]?.focus()} />)}
           {!!error && <Text accessibilityRole="alert" style={themeStyle(styles.error)}>{error}</Text>}
-        </>}
+        </>
         <View style={styles.actions}>
-          {!done && <FeedbackPressable accessibilityRole="button" disabled={busy} onPress={close} style={themeStyle(styles.cancel)}><Text style={themeStyle(styles.cancelText)}>Cancel</Text></FeedbackPressable>}
-          <FeedbackPressable accessibilityRole="button" accessibilityState={{ busy, disabled: busy }} disabled={busy} onPress={done ? close : submit} style={themeStyle(styles.save)}>{busy ? <ActivityIndicator color={themeColor(colors.white)} /> : <Text style={themeStyle(styles.saveText)}>{done ? "Sign out" : "Update password"}</Text>}</FeedbackPressable>
+          <FeedbackPressable accessibilityRole="button" disabled={busy} onPress={close} style={themeStyle(styles.cancel)}><Text style={themeStyle(styles.cancelText)}>Cancel</Text></FeedbackPressable>
+          <FeedbackPressable accessibilityRole="button" accessibilityState={{ busy, disabled: busy }} disabled={busy} onPress={submit} style={themeStyle(styles.save)}>{busy ? <ActivityIndicator color={themeColor(colors.white)} /> : <Text style={themeStyle(styles.saveText)}>Update password</Text>}</FeedbackPressable>
         </View>
       </ScrollView></View>
     </KeyboardAvoidingView></SafeAreaView>

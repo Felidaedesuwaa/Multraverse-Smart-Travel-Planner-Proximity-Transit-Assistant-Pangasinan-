@@ -17,6 +17,7 @@ import locationRoutes from './routes/locations'
 import aiRoutes from './routes/ai'
 import knowledgeRoutes from './routes/knowledge'
 import analyticsRoutes from './routes/analytics'
+import notificationRoutes from './routes/notifications'
 import { connectDatabase, verifyDatabaseLayout } from './lib/db'
 import { User, AuditLog } from './models'
 import { PendingRegistration } from './models/PendingRegistration'
@@ -99,6 +100,7 @@ app.use('/api/locations', locationRoutes)
 app.use('/api/ai', aiRoutes)
 app.use('/api/knowledge', knowledgeRoutes)
 app.use('/api/analytics', analyticsRoutes)
+app.use('/api/notifications', notificationRoutes)
 
 app.get('/api/health', (_, res) => res.json({ status: 'ok' }))
 

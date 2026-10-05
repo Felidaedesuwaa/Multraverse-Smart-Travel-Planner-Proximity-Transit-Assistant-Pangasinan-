@@ -15,6 +15,11 @@ export const useAuthStore = create((set, get) => ({
   isLoading: false,
   error: null,
   fieldErrors: {},
+  acceptSession: async data => {
+    await storage.setItem('token', data.token)
+    await storage.setItem('user', JSON.stringify(data.user))
+    set({ ...accountState(data.user), isAuthenticated: true, isLoading: false, error: null })
+  },
 
   init: async ({ restoreSession = true } = {}) => {
     if (!restoreSession) {

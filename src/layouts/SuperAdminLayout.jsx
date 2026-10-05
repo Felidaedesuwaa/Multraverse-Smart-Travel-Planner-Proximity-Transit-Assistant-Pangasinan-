@@ -9,6 +9,7 @@ import SuperAdminCreateLGU from '../pages/SuperAdminCreateLGU'
 import SuperAdminCreateAdmin from '../pages/SuperAdminCreateAdmin'
 import SuperAdminAuditLog from '../pages/SuperAdminAuditLog'
 import SuperAdminSettings from '../pages/SuperAdminSettings'
+import NotificationHeader from '../components/NotificationHeader'
 const Stack = createNativeStackNavigator()
 export default function SuperAdminLayout({ navigation }) {
   const { width } = useWindowDimensions()
@@ -16,6 +17,7 @@ export default function SuperAdminLayout({ navigation }) {
   return <View style={{ flex: 1, flexDirection: width >= 768 ? 'row' : 'column' }}>
     <SuperAdminSidebar compact={width < 768} activeScreen={activeScreen} onNavigate={screen => navigation.navigate('SuperAdmin', { screen })} />
     <View style={{ flex: 1, minWidth: 0 }}>
+      <NotificationHeader />
       <Stack.Navigator screenOptions={{ headerShown: false }} screenListeners={({ route }) => ({ focus: () => setActiveScreen(route.name) })}>
         <Stack.Screen name="SuperAdminDashboard" component={SuperAdminDashboard} />
         <Stack.Screen name="SuperAdminUsers" component={SuperAdminUsers} />

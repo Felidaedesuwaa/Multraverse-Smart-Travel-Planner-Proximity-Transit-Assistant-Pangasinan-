@@ -1,4 +1,6 @@
 export const typography = {
+  // Keep numeric summaries on the platform font used by Budget Tracker.
+  number: { fontWeight: "700" },
   h1: { fontFamily: "Poppins", fontWeight: "700", fontSize: 28 },
   h2: { fontFamily: "Poppins", fontWeight: "600", fontSize: 20 },
   body: { fontFamily: "DMSans", fontWeight: "400", fontSize: 15 },

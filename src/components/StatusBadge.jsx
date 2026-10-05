@@ -11,6 +11,7 @@ const statusStyles = {
   rejected: { bg: colors.coralLight, text: colors.sunsetCoral },
   upcoming: { bg: colors.coralLight, text: colors.sunsetCoral },
   completed: { bg: colors.palmGreenLight, text: colors.palmGreen },
+  canceled: { bg: "#EFEFEF", text: colors.textMuted },
   active: { bg: colors.palmGreenLight, text: colors.palmGreen },
   inactive: { bg: "#EFEFEF", text: colors.textMuted },
   suspended: { bg: colors.coralLight, text: colors.sunsetCoral },

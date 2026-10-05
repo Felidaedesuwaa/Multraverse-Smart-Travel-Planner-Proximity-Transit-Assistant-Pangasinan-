@@ -5,6 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "test:security": "npm run build && node scripts/check-password-security.cjs --isolated-database",
+    "test:recovery": "npm run build && node scripts/check-recovery-grants.cjs",
+    "test:notifications": "npm run build && node scripts/check-notification-feed.cjs",
     "test:self-delete": "npm run build && node scripts/check-self-delete.cjs",
     "dev": "nodemon --watch src --watch .env --ext ts,json,env --exec ts-node src/index.ts",
     "build": "tsc",

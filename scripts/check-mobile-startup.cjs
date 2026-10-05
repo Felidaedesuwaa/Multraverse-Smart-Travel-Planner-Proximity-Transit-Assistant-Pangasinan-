@@ -70,12 +70,15 @@ async function check(platform, role, cached, dark) {
       },
     },
     'react-native': {
-      Platform: { OS: platform }, View: 'View', StatusBar: 'StatusBar',
+      Platform: { OS: platform }, View: 'View', Modal: 'Modal', StatusBar: 'StatusBar',
       useWindowDimensions: () => ({ width: 390 }),
       StyleSheet: { create: value => value },
       AppState: { addEventListener: (_, listener) => { appStateListener = listener; return { remove() {} }; } },
     },
-    'react-native-safe-area-context': { SafeAreaProvider: 'SafeAreaProvider' },
+    'react-native-safe-area-context': {
+      SafeAreaProvider: 'SafeAreaProvider',
+      useSafeAreaInsets: () => ({ top: platform === 'ios' ? 59 : platform === 'android' ? 24 : 0, bottom: 34, left: 0, right: 0 }),
+    },
     'expo-font': { useFonts: () => [true] },
     '@react-navigation/native': { NavigationContainer: 'NavigationContainer', DarkTheme: { colors: {} }, DefaultTheme: { colors: {} } },
     '@react-navigation/native-stack': { createNativeStackNavigator() {
@@ -123,8 +126,19 @@ async function check(platform, role, cached, dark) {
   const expected = { SUPERADMIN: 'SuperAdmin', ADMIN: 'Admin', LGU: 'LGU', EXPLORER: 'User' }[role];
   assert.equal(find(render(), 'RootScreen').props.name, expected, 'Successful login must open the correct workspace');
   if (role === 'EXPLORER') {
-    const userStack = find(find(render(), 'RootScreen').props.component(), 'NestedNavigator');
+    const userTree = find(render(), 'RootScreen').props.component();
+    const userStack = find(userTree, 'NestedNavigator');
     assert(userStack);
+    assert.equal(userStack.props.initialRouteName, 'Home', 'Travelers must start on Home');
+    const userRouteNames = userStack.children.map(screen => screen.props.name);
+    const userRouter = StackRouter({ initialRouteName: userStack.props.initialRouteName });
+    const userState = userRouter.getInitialState({ routeNames: userRouteNames, routeParamList: {}, routeGetIdList: {} });
+    assert.equal(userState.routes[0].name, 'Home', 'The initial user navigation state must open Home');
+    const drawer = find(userTree, 'Modal').children[0].children[1];
+    const drawerStyle = Object.assign({}, ...drawer.props.style);
+    assert.equal(drawerStyle.paddingTop, (platform === 'ios' ? 59 : platform === 'android' ? 24 : 0) + 8,
+      'The menu title and close button must clear the phone status bar');
+    assert.equal(drawerStyle.paddingBottom, 34, 'The drawer must clear the home indicator');
     for (const option of ['statusBarStyle', 'statusBarHidden', 'statusBarAnimation']) {
       assert.equal(userStack.props.screenOptions[option], undefined, `${option} must not invoke iOS controller-based status-bar APIs`);
     }

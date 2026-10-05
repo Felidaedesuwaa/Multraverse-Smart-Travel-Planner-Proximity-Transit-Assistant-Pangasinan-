@@ -5,7 +5,7 @@ import { useFonts } from "expo-font";
 import { Poppins_600SemiBold } from "@expo-google-fonts/poppins/600SemiBold";
 import { DMSans_400Regular } from "@expo-google-fonts/dm-sans/400Regular";
 import { ActivityIndicator, AppState, Modal, Platform, Pressable, StatusBar, StyleSheet, Text, View, useWindowDimensions } from "react-native";
-import { SafeAreaProvider, SafeAreaView, initialWindowMetrics } from "react-native-safe-area-context";
+import { SafeAreaProvider, initialWindowMetrics, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Menu, X } from "lucide-react-native";
 import { DarkTheme, DefaultTheme, NavigationContainer } from "@react-navigation/native";
 import { usePreferencesStore } from "./store/preferencesStore";
@@ -15,6 +15,7 @@ import { colors } from "./theme/colors";
 import { useAuthStore } from "./store/authStore";
 import LoginPage from "./pages/LoginPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import PasswordRecoveryPage from './pages/PasswordRecoveryPage';
 import RegisterPage from "./pages/RegisterPage";
 import LandingPage from "./pages/LandingPage";
 import UserDashboard from "./pages/UserDashboard";
@@ -32,6 +33,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminRoutes from "./pages/AdminRoutes";
 import AdminGeofences from "./pages/AdminGeofences";
 import UserStackLayout from "./components/UserStackLayout";
+import NotificationHeader from './components/NotificationHeader';
 import AdminUsers from "./pages/AdminUsers";
 import AdminAIControls from "./pages/AdminAIControls";
 import AdminAnalytics from "./pages/AdminAnalytics";
@@ -57,10 +59,11 @@ const linking = {
       Landing: "",
       Login: "login",
       ForgotPassword: "forgot-password",
+      PasswordRecovery: 'secure-password',
       Register: "register",
       User: {
         screens: {
-          Dashboard: "dashboard",
+          Home: { path: "home", alias: ["dashboard"] },
           InteractiveMap: "interactive-map",
           MyTrips: "my-trips",
           Budget: "budget",
@@ -92,10 +95,11 @@ const linking = {
 // ── User screens with sidebar ───────────────────────────
 function UserScreens() {
   const { themeStyle, themeColor, palette } = useAppTheme();
+  const insets = useSafeAreaInsets();
 
   const { width } = useWindowDimensions();
   const isWide = width >= 768;
-  const [activeScreen, setActiveScreen] = useState("InteractiveMap");
+  const [activeScreen, setActiveScreen] = useState("Home");
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -112,13 +116,13 @@ function UserScreens() {
     <UserInteractionProvider>
     <View style={themeStyle(styles.layout)}>
       {isWide && (
-        <View style={themeStyle(styles.userSidebarContainer)}>
+        <View style={[themeStyle(styles.userSidebarContainer), { paddingTop: insets.top, paddingBottom: insets.bottom, paddingLeft: insets.left }]}>
           <UserSidebar activeScreen={activeScreen} onNavigate={handleNavigate} />
         </View>
       )}
       <View style={themeStyle(styles.content)}>
         <UserStack.Navigator
-          initialRouteName="InteractiveMap"
+          initialRouteName="Home"
           layout={({ children }) => <UserStackLayout>{children}</UserStackLayout>}
           screenLayout={({ children }) => <ScreenMotion>{children}</ScreenMotion>}
           screenListeners={({ route }) => ({ focus: () => setActiveScreen(route.name) })}
@@ -141,7 +145,7 @@ function UserScreens() {
             ),
           }}
         >
-          <UserStack.Screen name="Dashboard" component={UserDashboard} />
+          <UserStack.Screen name="Home" component={UserDashboard} />
           <UserStack.Screen name="MyTrips" component={MyTrips} />
           <UserStack.Screen name="Budget" component={Budget} />
           <UserStack.Screen name="SavedPlaces" component={SavedPlaces} />
@@ -165,7 +169,18 @@ function UserScreens() {
             accessibilityLabel="Close navigation menu"
             onPress={() => setMenuOpen(false)}
           />
-          <SafeAreaView style={[styles.drawer, { width: Math.min(320, width - 32), backgroundColor: palette.sidebar, borderRightWidth: 1, borderRightColor: palette.sidebarBorder }]}>
+          <View style={[styles.drawer, {
+            width: Math.min(320, width - 32),
+            backgroundColor: palette.sidebar,
+            borderRightWidth: 1,
+            borderRightColor: palette.sidebarBorder,
+            // Read the app's insets outside the modal: a modal's native safe
+            // area can report zero even while the phone status bar is visible.
+            paddingTop: insets.top + 8,
+            paddingBottom: insets.bottom,
+            paddingLeft: insets.left,
+            paddingRight: insets.right,
+          }]}>
             <View style={themeStyle(styles.drawerHeader)}>
               <Text style={themeStyle(styles.drawerTitle)}>Menu</Text>
               <FeedbackPressable
@@ -178,7 +193,7 @@ function UserScreens() {
               </FeedbackPressable>
             </View>
             <UserSidebar compact activeScreen={activeScreen} onNavigate={handleNavigate} />
-          </SafeAreaView>
+          </View>
         </View>
       </Modal>
     </View>
@@ -208,6 +223,7 @@ function AdminScreens() {
       )}
       <View style={themeStyle(styles.content)}>
         {!isWide && <AdminSidebar compact activeScreen={activeScreen} onNavigate={handleNavigate} />}
+        <NotificationHeader />
         <AdminStack.Navigator screenListeners={({ route }) => ({ focus: () => setActiveScreen(route.name) })} screenLayout={({ children }) => <ScreenMotion>{children}</ScreenMotion>} screenOptions={{ headerShown: false }}>
           <AdminStack.Screen name="AdminDashboard" component={AdminDashboard} />
           <AdminStack.Screen name="AdminApprovals" component={AdminApprovals} />
@@ -286,6 +302,7 @@ export default function App() {
             <RootStack.Screen name="Register" component={RegisterPage} />
           </>
         )}
+        {isAuthenticated && <RootStack.Screen name="PasswordRecovery" component={PasswordRecoveryPage} />}
       </RootStack.Navigator>
       <CurrencyNotice />
       </View>

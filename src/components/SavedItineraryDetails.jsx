@@ -19,7 +19,7 @@ const stopCopy = stop => {
   return clean(stop.subtitle).split(/ Leave | Listed entry estimate:| Confirm access/i)[0];
 };
 
-export default function SavedItineraryDetails({ plan, areaName, compact = false }) {
+export default function SavedItineraryDetails({ plan, areaName, compact = false, onRequestExportConfirmation }) {
   const { themeStyle, themeColor } = useAppTheme();
   const [message, setMessage] = useState('');
   const [confirmExport, setConfirmExport] = useState(false);
@@ -30,6 +30,20 @@ export default function SavedItineraryDetails({ plan, areaName, compact = false 
   const r = plan.request;
   const hotel = plan.stops?.find(s => s.tag === 'Lodging')?.title || catalog?.areas?.find(a => a.id === r.areaId)?.lodging?.find(h => h.id === r.lodgingId)?.name;
   const fares = c.transport.filter(f => f.total != null && Number.isFinite(Number(f.total)));
+  const exportAction = {
+    title: 'Export itinerary PDF?',
+    message: 'Download your saved schedule, selected hotel, transport fares and cost summary as a PDF.',
+    label: 'Export PDF',
+    onConfirm: async () => {
+      setConfirmExport(false);
+      try {
+        await downloadItineraryPdf({ ...plan, costEstimate: c }, areaName);
+        setMessage('Your itinerary PDF is ready.');
+      } catch {
+        setMessage('The PDF could not be downloaded. Please try again.');
+      }
+    },
+  };
   const text = themeStyle({ fontFamily: 'DMSans', color: '#16324A', fontSize: 13, lineHeight: 21 });
   const muted = themeStyle({ ...text, color: '#6B8CA8', fontSize: 12 });
   const heading = themeStyle({ ...text, fontSize: 18, fontWeight: '700' });
@@ -48,12 +62,11 @@ export default function SavedItineraryDetails({ plan, areaName, compact = false 
       {row('Emergency reserve (10%)', money(c.emergency))}
       {row('Listed entry fees', money(c.entryFees))}
       {row('Remaining after plan and reserve', range(c.remainingMin,c.remainingMax))}
-      <TripActionConfirmation action={confirmExport ? { title:'Export itinerary PDF?', message:'Download your saved schedule, selected hotel, transport fares and cost summary as a PDF.', label:'Export PDF' } : null} onDismiss={() => setConfirmExport(false)} onConfirm={() => {
-        setConfirmExport(false);
-        try { downloadItineraryPdf({ ...plan, costEstimate: c }, areaName); setMessage('Your itinerary PDF download has started.'); }
-        catch { setMessage('The PDF could not be downloaded. Please try again.'); }
-      }} />
-      <FeedbackPressable accessibilityRole="button" onPress={() => { setMessage(''); setConfirmExport(true);
+      <TripActionConfirmation action={!onRequestExportConfirmation && confirmExport ? exportAction : null} onDismiss={() => setConfirmExport(false)} onConfirm={exportAction.onConfirm} />
+      <FeedbackPressable accessibilityRole="button" onPress={() => {
+        setMessage('');
+        if (onRequestExportConfirmation) onRequestExportConfirmation(exportAction);
+        else setConfirmExport(true);
  }} style={themeStyle({ ...savedTripActionStyle, backgroundColor: '#0B3C5D' })}><Download size={16} color="#fff" /><Text style={{ color: '#fff', fontWeight: '700', fontSize:13 }}>Export PDF</Text></FeedbackPressable>
       {!!message && <Text accessibilityRole="alert" style={text}>{message}</Text>}
     </View>

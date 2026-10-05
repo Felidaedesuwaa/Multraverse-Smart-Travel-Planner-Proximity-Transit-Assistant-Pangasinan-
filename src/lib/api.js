@@ -1,6 +1,7 @@
 import Constants from "expo-constants";
 import { Platform } from "react-native";
 import { storage } from "./storage";
+import { notifyUpdates } from './notificationEvents';
 
 function getExpoDevHost() {
   const hostUri =
@@ -39,6 +40,7 @@ function getBaseUrl() {
 
 export const BASE_URL = getBaseUrl();
 let unauthorizedHandler;
+let passwordTransition = 0;
 export const onUnauthorized = handler => { unauthorizedHandler = handler; };
 
 async function getToken() {
@@ -58,7 +60,7 @@ async function request(path, options = {}) {
 
   const data = await res.json();
   if (!res.ok) {
-    if (res.status === 401 && token && (!path.startsWith('/api/auth/') || path === '/api/auth/password/change') && await getToken() === token) await unauthorizedHandler?.();
+    if (res.status === 401 && token && !passwordTransition && (!path.startsWith('/api/auth/') || path === '/api/auth/password/change') && await getToken() === token) await unauthorizedHandler?.();
     const error = new Error(data.error || "Request failed");
     error.code = data.code;
     error.fieldErrors = data.fieldErrors;
@@ -66,7 +68,17 @@ async function request(path, options = {}) {
     error.retryAfter = Number(res.headers.get('Retry-After')) || 0;
     throw error;
   }
+  if (res.ok && ['POST', 'PUT', 'DELETE'].includes(options.method) && (path === '/api/budget' || path.startsWith('/api/admin/approvals/') || path.startsWith('/api/lgu/'))) notifyUpdates();
   return data;
+}
+
+async function passwordSessionRequest(path, body) {
+  passwordTransition++;
+  try {
+    const session = await request(path, { method: 'POST', body: JSON.stringify(body) });
+    await storage.setItem('token', session.token);
+    return session;
+  } finally { passwordTransition--; }
 }
 
 async function profileRequest(method, data) {
@@ -106,6 +118,10 @@ async function requestCatalog(options = {}) {
 }
 
 export const api = {
+  getNotifications: signal => request('/api/notifications', { signal }),
+  requestRecoveryCode: () => request('/api/auth/password/recovery-code', { method: 'POST', body: '{}' }),
+  verifyPasswordReset: (challengeId, code) => request('/api/auth/password/verify', { method: 'POST', body: JSON.stringify({ challengeId, code }) }),
+  recoverPassword: (grantToken, newPassword) => passwordSessionRequest('/api/auth/password/recover', { grantToken, newPassword }),
   getItineraryCatalog: (options = {}) => request('/api/ai/itinerary/catalog', options),
   generateGroundedItinerary: (data, options = {}) => request('/api/ai/itinerary/grounded', { ...options, method: 'POST', body: JSON.stringify(data) }),
   updateManagedAccount: (type, id, data) => request('/api/users/' + type + '-accounts/' + id, { method: 'PUT', body: JSON.stringify(data) }),
@@ -121,7 +137,7 @@ export const api = {
   // Auth
   requestPasswordReset: email => request('/api/auth/password/forgot', { method: 'POST', body: JSON.stringify({ email }) }),
   resetPassword: (challengeId, code, newPassword) => request('/api/auth/password/reset', { method: 'POST', body: JSON.stringify({ challengeId, code, newPassword }) }),
-  changePassword: (currentPassword, newPassword) => request('/api/auth/password/change', { method: 'POST', body: JSON.stringify({ currentPassword, newPassword }) }),
+  changePassword: (currentPassword, newPassword) => passwordSessionRequest('/api/auth/password/change', { currentPassword, newPassword }),
   login: (email, password) =>
     request('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }),
 

@@ -16,7 +16,7 @@ import ProfileAvatar from "./ProfileAvatar";
 import SidebarLogoutButton from "./SidebarLogoutButton";
 
 const navigationItems = [
-  { label: "Dashboard", icon: Home, screen: "Dashboard" },
+  { label: "Home", icon: Home, screen: "Home" },
   { label: "My Trips", icon: MapPin, screen: "MyTrips" },
   { label: "Budget", icon: Wallet, screen: "Budget" },
   { label: "Saved Places", icon: Bookmark, screen: "SavedPlaces" },
@@ -30,7 +30,7 @@ const aiItems = [
   { label: "Translator", icon: Languages, screen: "Translator" },
 ];
 
-export default function UserSidebar({ activeScreen = "InteractiveMap", onNavigate, compact = false }) {
+export default function UserSidebar({ activeScreen = "Home", onNavigate, compact = false }) {
   const { themeStyle, themeColor, isDark, palette } = useAppTheme();
 
   const user = useAuthStore((state) => state.user);

@@ -14,6 +14,7 @@ import { startTransitAlarm, stopTransitAlarm, getTransitSession, subscribeTransi
 import { useAuthStore } from '../store/authStore';
 import { estimateTraditionalJeepneyFare } from '../lib/transitFare';
 import TransitStopPreview from '../components/TransitStopPreview';
+import { recordArrival } from '../lib/notificationEvents';
 import TransitPinMap from '../components/TransitPinMap';
 import TransitAlertTester from '../components/TransitAlertTester';
 import TransitNotificationGate from '../components/TransitNotificationGate';
@@ -184,6 +185,7 @@ export default function TransitAlarm() {
     setAlarm(false);
     const text = transitArrivalMessage(radius);
     setMessage(text);
+    recordArrival(useAuthStore.getState().user?.id, `transit:${Date.now()}`, target.name, text).catch(() => {});
     deliverTransitAlert({ mode, title: 'Your stop is approaching', body: text }).catch(error => setMessage(`Stop reached, but the alert failed: ${error.message}`));
   }, [alarm, target, tracking, accurate, position, radius, mode]);
   function button(label, onPress, Icon = MapPin, secondary = false, disabled = false) {

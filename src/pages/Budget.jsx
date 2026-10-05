@@ -34,6 +34,7 @@ import {
 } from "lucide-react-native";
 import { api } from "../lib/api";
 import { colors } from "../theme/colors";
+import { typography } from "../theme/typography";
 
 const EXPENSE_COLORS = [
   "#0B3C5D", "#F16B4E", "#2A7B4C", "#C89B3C",
@@ -768,7 +769,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   statLabel: { fontSize: 12, color: "#6B8CA8", fontWeight: "500" },
-  statValue: { fontSize: 20, fontWeight: "700", color: "#1A2E40" },
+  statValue: { ...typography.number, fontSize: 20, color: "#1A2E40" },
   statSub: { fontSize: 11, color: "#6B8CA8" },
   editHint: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 },
   editHintText: { fontSize: 11, color: "#6B8CA8", fontWeight: "600" },

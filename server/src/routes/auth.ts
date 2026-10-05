@@ -8,7 +8,7 @@ import { AuthError, authLimit } from '../lib/authLimits'
 import { beginRegistration, resendRegistration, verifyRegistration } from '../lib/registrationVerification'
 import { authenticate, AuthRequest } from '../middleware/auth'
 import { sessionCredential } from '../lib/sessionCredential'
-import { requestPasswordReset, resetPassword, changePassword } from '../lib/passwordSecurity'
+import { requestPasswordReset, resetPassword, changePassword, verifyPasswordReset, recoverPassword } from '../lib/passwordSecurity'
 
 const router = Router()
 router.param('id', validateId)
@@ -77,7 +77,28 @@ router.post('/password/change', authenticate, async (req: AuthRequest, res) => {
   try {
     await authLimit('password-change-user', req.userId!, 5, 15 * 60 * 1000)
     await authLimit('password-change-ip', req.ip || 'unknown', 20, 15 * 60 * 1000)
-    res.json(await changePassword(req.userId!, req.body.currentPassword, req.body.newPassword))
+    const result = await changePassword(req.userId!, req.body.currentPassword, req.body.newPassword)
+    res.json({ ...result, ...authResponse(await User.findById(req.userId).select('+passwordHash')) })
+  } catch (error) { authFailure(error, res) }
+})
+router.post('/password/recovery-code', authenticate, async (req: AuthRequest, res) => {
+  try {
+    await authLimit('reset-request-ip', req.ip || 'unknown', 10, 60 * 60 * 1000)
+    const user = await User.findById(req.userId).select('email')
+    if (!user) return res.status(401).json({ error: 'Please sign in again.' })
+    res.status(202).json(await requestPasswordReset(user.email))
+  } catch (error) { authFailure(error, res) }
+})
+router.post('/password/verify', async (req, res) => {
+  try {
+    await authLimit('reset-verify-ip', req.ip || 'unknown', 20, 10 * 60 * 1000)
+    res.json(await verifyPasswordReset(req.body.challengeId, req.body.code))
+  } catch (error) { authFailure(error, res) }
+})
+router.post('/password/recover', async (req, res) => {
+  try {
+    await authLimit('reset-verify-ip', req.ip || 'unknown', 20, 10 * 60 * 1000)
+    res.json({ message: 'Password changed successfully.', ...authResponse(await recoverPassword(req.body.grantToken, req.body.newPassword)) })
   } catch (error) { authFailure(error, res) }
 })
 export default router

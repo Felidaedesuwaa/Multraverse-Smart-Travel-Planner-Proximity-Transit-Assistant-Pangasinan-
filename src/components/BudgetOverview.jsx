@@ -2,6 +2,7 @@ import MoneyAmount from "./MoneyAmount";
 import { useAppTheme } from "../theme/useAppTheme";
 import { StyleSheet, Text, View } from "react-native";
 import { colors } from "../theme/colors";
+import { typography } from "../theme/typography";
 import WovenDivider from "./WovenDivider";
 
 export default function BudgetOverview({ entries, settings }) {
@@ -59,7 +60,7 @@ const styles = StyleSheet.create({
   card: { backgroundColor: "rgba(255,255,255,0.05)", borderRadius: 14, padding: 16 },
   eyebrow: { fontFamily: "DMSans", fontSize: 12, color: "#8FB0C2" },
   totalRow: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 10, marginTop: 4, marginBottom: 16 },
-  total: { fontFamily: "Poppins", fontSize: 26, fontWeight: "700", color: colors.white },
+  total: { ...typography.number, fontSize: 26, color: colors.white },
   status: { fontFamily: "DMSans", fontSize: 11, fontWeight: "600", color: colors.palmGreen, backgroundColor: colors.palmGreenLight, paddingHorizontal: 10, paddingVertical: 3, borderRadius: 999 },
   summary: { gap: 8, marginBottom: 16 },
   entries: { gap: 12 },
@@ -68,7 +69,7 @@ const styles = StyleSheet.create({
   entryLabelRow: { flexDirection: "row", alignItems: "center", gap: 8, flex: 1 },
   dot: { width: 7, height: 7, borderRadius: 4 },
   entryLabel: { fontFamily: "DMSans", fontSize: 13, color: "#C9DAE3", flexShrink: 1 },
-  amount: { fontFamily: "DMSans", fontSize: 13, color: colors.white },
+  amount: { ...typography.number, fontSize: 13, color: colors.white },
   track: { height: 4, borderRadius: 999, backgroundColor: "rgba(255,255,255,0.08)", overflow: "hidden" },
   progress: { height: "100%", borderRadius: 999 },
 });

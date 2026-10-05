@@ -5,8 +5,7 @@ import * as Location from 'expo-location';
 import { api } from '../lib/api';
 import { useAppTheme } from '../theme/useAppTheme';
 
-export default function GeofenceTracking({ onEvents }) {
-  const { palette } = useAppTheme();
+export function useGeofenceTracking(onEvents) {
   const [enabled, setEnabled] = useState(false), [message, setMessage] = useState('Enable GPS alerts to detect entry, exit and dwell in Pangasinan zones.');
   const [lastAlert, setLastAlert] = useState('');
   const run = useRef(0), listener = useRef(onEvents);
@@ -43,9 +42,20 @@ export default function GeofenceTracking({ onEvents }) {
       setEnabled(true);
     } catch (e) { setMessage(e.message); }
   }
+  return { enabled, message, lastAlert, toggle };
+}
+
+export function GeofenceControls({ tracking }) {
+  const { palette } = useAppTheme();
+  const { enabled, message, lastAlert, toggle } = tracking;
   return <View style={{ padding: 14, gap: 8, backgroundColor: palette.surface, borderColor: palette.line, borderWidth: 1, borderRadius: 14, marginBottom: 16 }}>
     <FeedbackPressable accessibilityRole="button" onPress={toggle} style={{ alignSelf: 'flex-start', padding: 10, borderRadius: 20, backgroundColor: palette.tint }}><Text style={{ color: palette.ink, fontFamily: 'DMSans', fontWeight: '700' }}>{enabled ? 'Stop GPS alerts' : 'Enable GPS alerts'}</Text></FeedbackPressable>
     <Text accessibilityLiveRegion="polite" style={{ color: palette.muted, fontFamily: 'DMSans', fontSize: 12 }}>{message}</Text>
     {!!lastAlert && <Text accessibilityLiveRegion="assertive" style={{ color: palette.ink, fontFamily: 'DMSans', fontWeight: '700', fontSize: 13 }}>Latest alert: {lastAlert}</Text>}
   </View>;
+}
+
+export default function GeofenceTracking({ onEvents }) {
+  const tracking = useGeofenceTracking(onEvents);
+  return <GeofenceControls tracking={tracking} />;
 }

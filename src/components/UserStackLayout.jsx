@@ -1,9 +1,9 @@
 import { Platform, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme } from '../theme/useAppTheme';
-import GeofenceTracking from './GeofenceTracking';
+import NotificationHeader from './NotificationHeader';
 
-// This persistent banner is outside the native header, so it must reserve its
+// This notification header is outside the native header, so it must reserve its
 // own space for the status bar and camera before rendering either element.
 export default function UserStackLayout({ children }) {
   const insets = useSafeAreaInsets();
@@ -16,7 +16,7 @@ export default function UserStackLayout({ children }) {
     paddingLeft: native ? insets.left : 0,
     paddingRight: native ? insets.right : 0,
   }}>
-    <GeofenceTracking />
+    <NotificationHeader />
     {children}
   </View>;
 }
