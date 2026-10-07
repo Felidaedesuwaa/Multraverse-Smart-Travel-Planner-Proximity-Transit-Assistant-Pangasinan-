@@ -10,7 +10,7 @@ import { useAuthStore } from '../store/authStore';
 import { useAppTheme } from '../theme/useAppTheme';
 import { GeofenceControls, useGeofenceTracking } from './GeofenceTracking';
 
-export default function NotificationHeader() {
+export default function NotificationHeader({ compact = false } = {}) {
   const { palette: p } = useAppTheme();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
@@ -69,7 +69,7 @@ export default function NotificationHeader() {
     else if (role === 'SUPERADMIN') navigation.navigate('SuperAdmin', { screen: item.type === 'review' ? 'SuperAdminAuditLog' : 'SuperAdminDashboard' });
     else if (!['ADMIN', 'SUPERADMIN'].includes(role)) navigation.navigate('User', { screen: item.screen });
   };
-  return <View style={{ backgroundColor: p.surface, borderBottomWidth: 1, borderColor: p.line, paddingHorizontal: 16, paddingVertical: 4, alignItems: 'flex-end' }}>
+  return <View style={compact ? { alignItems: 'flex-end' } : { backgroundColor: p.surface, borderBottomWidth: 1, borderColor: p.line, paddingHorizontal: 16, paddingVertical: 4, alignItems: 'flex-end' }}>
     <Pressable accessibilityRole="button" accessibilityLabel={`Notifications, ${unread} unread`} accessibilityState={{ expanded: open }} onPress={() => { setOpen(true); refresh(); }} style={styles.bell}>
       <Bell size={24} color={p.ink} />
       {unread > 0 && <View style={[styles.badge, { backgroundColor: p.primary }]}><Text style={{ color: p.onPrimary, fontSize: 10, fontWeight: '700' }}>{unread > 99 ? '99+' : unread}</Text></View>}

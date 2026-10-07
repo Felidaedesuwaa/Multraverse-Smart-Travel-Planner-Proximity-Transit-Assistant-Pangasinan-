@@ -173,16 +173,26 @@ async function check(platform, role, cached, dark) {
     ['web', { top: 59, left: 0, right: 0 }],
   ]) {
     const Layout = load('src/components/UserStackLayout.jsx', {
-      'react-native': { Platform: { OS: platform }, View: 'View' },
+      'react-native': { Platform: { OS: platform }, View: 'View', Text: 'Text' },
+      'lucide-react-native': { Menu: 'Menu' },
+      '../components/WorkspaceMotion': { FeedbackPressable: 'Pressable' },
+      './WorkspaceMotion': { FeedbackPressable: 'Pressable' },
       'react-native-safe-area-context': { useSafeAreaInsets: () => insets },
       '../theme/useAppTheme': { useAppTheme: () => ({ palette: { background: '#102d35' } }) },
     }).default;
     const content = h('Screen');
-    const layout = Layout({ children: content });
+    let menuOpened = false;
+    const layout = Layout({ children: content, isWide: false, menuOpen: false, onOpenMenu: () => { menuOpened = true; } });
     assert.equal(layout.props.style.paddingTop, platform === 'web' ? 0 : insets.top + 8);
     assert.equal(layout.props.style.paddingLeft, platform === 'web' ? 0 : insets.left);
     assert.equal(layout.props.style.paddingRight, platform === 'web' ? 0 : insets.right);
     assert.equal(layout.children.at(-1), content);
+    const toolbar = layout.children[0];
+    assert.equal(toolbar.props.style.flexDirection, 'row');
+    const menu = toolbar.children.find(child => child?.props?.accessibilityLabel === 'Open navigation menu');
+    assert(menu, 'The navigation button lives in the shared toolbar');
+    menu.props.onPress(); assert(menuOpened);
+    assert(toolbar.children.some(child => child?.props?.compact === true), 'Notifications share the same toolbar row');
   }
   console.log('Startup checks passed: mobile login, all account roles, resume, logout, and saved data; light/dark app-wide status bar without conflicting iOS stack options; safe-area spacing on iOS, Android, and web.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

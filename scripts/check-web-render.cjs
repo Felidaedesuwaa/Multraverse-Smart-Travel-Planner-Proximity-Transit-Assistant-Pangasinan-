@@ -50,6 +50,7 @@ function load(file) {
     };
     if (name === 'react-native') return native;
     if (name === 'react-native-svg') return svg;
+    if (name === 'react-native-safe-area-context') return { useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }) };
     if (name === '@react-navigation/native') return { useNavigation: () => ({ navigate() {} }), useIsFocused: () => true };
     if (name === 'lucide-react-native') return new Proxy({}, { get: () => () => null });
     if (name.endsWith('/theme/useAppTheme')) return { useAppTheme: () => load(path.resolve(__dirname, '../src/theme/theme.js')).createTheme(false) };

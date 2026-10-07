@@ -1,4 +1,5 @@
 import TripActionConfirmation from './TripActionConfirmation';
+import { typography } from '../theme/typography';
 import { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
 import { Download, Bus, BedDouble, MapPin, Utensils, CalendarDays, Users, Clock, Wallet } from 'lucide-react-native';
@@ -49,13 +50,13 @@ export default function SavedItineraryDetails({ plan, areaName, compact = false,
   const heading = themeStyle({ ...text, fontSize: 18, fontWeight: '700' });
   const section = themeStyle({ padding: 20, borderRadius: 16, backgroundColor: '#fff', borderWidth: 1, borderColor: '#E2EBF3', gap: 14 });
   const badge = (label, Icon = MapPin) => <View key={label} style={themeStyle({ flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 7, backgroundColor: '#EAF3F8' })}><Icon size={13} color={themeColor('#0B3C5D','color')} /><Text style={text}>{clean(label)}</Text></View>;
-  const row = (label, value) => <View key={label} style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}><Text style={muted}>{label}</Text><Text style={[text, { fontWeight: '600' }]}>{value}</Text></View>;
+  const row = (label, value) => <View key={label} style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}><Text style={muted}>{label}</Text><Text style={[themeStyle({ color: '#16324A', fontSize: 13, lineHeight: 21 }), typography.number, { fontWeight: '600' }]}>{value}</Text></View>;
   return <View style={{ gap: 18 }}>
     <View style={section}>
       <Text style={heading}>Saved itinerary summary</Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{badge(r.date,CalendarDays)}{badge(`${r.days} days`,Clock)}{badge(`${r.travelers} travelers`,Users)}{badge(`Start ${r.startTime}`,Clock)}</View>
       {!compact && <><Text style={muted}>YOUR TRAVEL PREFERENCES</Text><View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{[r.travelerType, `${r.travelStyle} pace`, ...(r.tripTypes || []), ...(r.activities || []), ...(r.preferences || [])].filter(Boolean).map(label=>badge(label))}</View></>}
-      <View style={themeStyle({ flexDirection: 'row', flexWrap: 'wrap', gap: 12 })}>{[['Trip budget',money(r.budget)],['Planned total',range(c.min,c.max)],['Per person',range(c.perPersonMin,c.perPersonMax)]].map(([label,value])=><View key={label} style={themeStyle({flexGrow:1,flexBasis:150,padding:16,borderRadius:12,backgroundColor:'#F4F7FB',gap:6})}><Text style={muted}>{label}</Text><Text style={[heading,{fontSize:20}]}>{value}</Text></View>)}</View>
+      <View style={themeStyle({ flexDirection: 'row', flexWrap: 'wrap', gap: 12 })}>{[['Trip budget',money(r.budget)],['Planned total',range(c.min,c.max)],['Per person',range(c.perPersonMin,c.perPersonMax)]].map(([label,value])=><View key={label} style={themeStyle({flexGrow:1,flexBasis:150,padding:16,borderRadius:12,backgroundColor:'#F4F7FB',gap:6})}><Text style={muted}>{label}</Text><Text style={[themeStyle({ color: '#16324A' }), typography.number, { fontSize: 20 }]}>{value}</Text></View>)}</View>
       {row('Meals', money(c.meals))}
       {!!fares.length && row('Transport', money(c.transportTotal))}
       <View style={themeStyle({ padding: 14, borderRadius: 12, backgroundColor: '#F4F7FB', gap: 6 })}><View style={{flexDirection:'row',gap:8,alignItems:'center'}}><BedDouble size={17} color={themeColor('#0B3C5D','color')} /><Text style={[text,{fontWeight:'700'}]}>{Number(r.days) === 1 ? 'No overnight stay' : !r.lodgingId ? 'No overnight stay' : hotel || 'Selected accommodation'}</Text></View>{c.lodging && <Text style={text}>{range(c.lodging.min,c.lodging.max)} | {c.lodging.nights} nights x {c.lodging.rooms} rooms</Text>}</View>

@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   photoFallback: { padding: 32, alignItems: "center", gap: 12 },
   photoBadge: { position: "absolute", bottom: 14, right: 16, flexDirection: "row", alignItems: "center", gap: 7, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20, backgroundColor: "rgba(8,35,51,0.75)" },
   photoBadgeText: { color: colors.white, fontSize: 12, fontWeight: "600" },
-  photoArrow: { position: "absolute", width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.94)" },
+  photoArrow: { position: "absolute", top: "50%", marginTop: -22, zIndex: 2, width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center", backgroundColor: "#FFFDFA", borderWidth: 1, borderColor: "#D1DCE5", elevation: 3 },
   dots: { flexDirection: "row", justifyContent: "center", paddingTop: 4 },
   dotTarget: { width: 36, height: 36, alignItems: "center", justifyContent: "center" },
   dot: { width: 7, height: 7, borderRadius: 4, backgroundColor: "#D1DCE5" },

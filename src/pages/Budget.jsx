@@ -1,5 +1,6 @@
 import { useBudgetStore } from "../store/budgetStore";
 import BudgetDropdown from '../components/BudgetDropdown';
+import TripActionConfirmation from '../components/TripActionConfirmation';
 import { tripDisplayTitle } from '../lib/tripTitle';
 import SavedItineraryDetails from '../components/SavedItineraryDetails';
 import { FeedbackPressable } from "../components/WorkspaceMotion";
@@ -407,6 +408,9 @@ export default function Budget() {
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [notice, setNotice] = useState('');
 
   useFocusEffect(useCallback(() => {
     let alive = true;
@@ -426,13 +430,23 @@ export default function Budget() {
     setEntries((prev) => [entry, ...prev]);
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = id => {
+    const entry = entries.find(item => (item._id ?? item.id) === id);
+    setNotice('');
+    setDeleteConfirmation({ id, title: 'Delete this expense?', message: `Remove "${entry?.label || 'this expense'}" from your budget? Your saved trip itinerary will remain available.`, label: 'Delete expense', destructive: true });
+  };
+  const confirmDelete = async () => {
+    if (deleting || !deleteConfirmation) return;
+    const { id } = deleteConfirmation;
+    setDeleting(true);
     try {
       await api.deleteBudgetEntry(id);
       setEntries((prev) => prev.filter((e) => (e._id ?? e.id) !== id));
-    } catch {
-      // silent
-    }
+      setDeleteConfirmation(null);
+      setNotice('Expense deleted. Your budget totals have been updated.');
+    } catch (cause) {
+      setDeleteConfirmation(previous => ({ ...previous, message: cause.message || 'Could not delete this expense. Please try again.' }));
+    } finally { setDeleting(false); }
   };
 
   const hasBudget = settings.monthlyBudget != null;
@@ -458,6 +472,7 @@ export default function Budget() {
       showsVerticalScrollIndicator={false}
     >
       {/* Header */}
+      {!!notice && <Text accessibilityRole="alert" style={themeStyle({ color: colors.palmGreen, textAlign: 'center', padding: 12 })}>{notice}</Text>}
       <View style={themeStyle([styles.header, contentWidth < 520 && { flexDirection: "column", gap: 16 }])}>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={themeStyle(styles.title)}>Budget Tracker</Text>
@@ -606,6 +621,8 @@ export default function Budget() {
                           <MoneyAmount value={entry.amount} />
                         </Text>
                         <FeedbackPressable
+                          accessibilityRole="button"
+                          accessibilityLabel={`Delete expense ${entry.label}`}
                           onPress={() => handleDelete(entry._id ?? entry.id)}
                           style={themeStyle(styles.deleteEntryBtn)}
                         >
@@ -632,7 +649,7 @@ export default function Budget() {
                 <Text style={themeStyle(styles.sectionTitle)}>Expense Breakdown</Text>
                 <View style={themeStyle({ marginTop: 16, gap: 14 })}>
                   {entries.length === 0 ? (
-                    <Text style={themeStyle(styles.emptyDesc)}>No expenses to show.</Text>
+                    <View style={themeStyle(styles.emptyBox)}><Text style={themeStyle(styles.emptyDesc)}>No expenses to show.</Text></View>
                   ) : (
                     entries.map((entry) => (
                       <ProgressBar
@@ -701,6 +718,7 @@ export default function Budget() {
       )}
 
       {/* Add Expense Modal */}
+      <TripActionConfirmation action={deleteConfirmation} busy={deleting} onDismiss={() => setDeleteConfirmation(null)} onConfirm={confirmDelete} />
       <AddExpenseModal
         visible={showAdd}
         trips={trips}

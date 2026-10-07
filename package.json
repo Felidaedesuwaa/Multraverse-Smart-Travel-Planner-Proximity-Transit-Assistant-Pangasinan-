@@ -27,7 +27,9 @@
     "test:itinerary": "node scripts/check-itinerary-render.cjs",
     "test:trips": "node scripts/check-my-trips-render.cjs",
     "test:notifications": "node scripts/check-notifications-recovery.cjs",
-    "test:transit": "node scripts/check-transit-map.cjs && node scripts/check-transit-page.cjs && node scripts/check-transit-alarm.cjs && node scripts/check-transit-alerts.cjs && node scripts/check-transit-permission.cjs && npm run build --prefix server && node server/scripts/check-transit-search.cjs"
+    "test:transit": "node scripts/check-transit-map.cjs && node scripts/check-transit-page.cjs && node scripts/check-transit-alarm.cjs && node scripts/check-transit-alerts.cjs && node scripts/check-transit-permission.cjs && npm run build --prefix server && node server/scripts/check-transit-search.cjs",
+    "test:saved-places": "node scripts/check-saved-places-render.cjs",
+    "test:maps": "node scripts/check-transit-map.cjs && node scripts/check-google-map.cjs"
   },
   "dependencies": {
     "@expo-google-fonts/dm-sans": "^0.4.2",

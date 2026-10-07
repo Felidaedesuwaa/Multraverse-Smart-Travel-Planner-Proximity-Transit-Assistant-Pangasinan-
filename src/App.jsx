@@ -6,7 +6,7 @@ import { Poppins_600SemiBold } from "@expo-google-fonts/poppins/600SemiBold";
 import { DMSans_400Regular } from "@expo-google-fonts/dm-sans/400Regular";
 import { ActivityIndicator, AppState, Modal, Platform, Pressable, StatusBar, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { SafeAreaProvider, initialWindowMetrics, useSafeAreaInsets } from "react-native-safe-area-context";
-import { Menu, X } from "lucide-react-native";
+import { X } from "lucide-react-native";
 import { DarkTheme, DefaultTheme, NavigationContainer } from "@react-navigation/native";
 import { usePreferencesStore } from "./store/preferencesStore";
 import CurrencyNotice from "./components/CurrencyNotice";
@@ -123,27 +123,10 @@ function UserScreens() {
       <View style={themeStyle(styles.content)}>
         <UserStack.Navigator
           initialRouteName="Home"
-          layout={({ children }) => <UserStackLayout>{children}</UserStackLayout>}
+          layout={({ children }) => <UserStackLayout isWide={isWide} menuOpen={menuOpen} onOpenMenu={() => setMenuOpen(true)}>{children}</UserStackLayout>}
           screenLayout={({ children }) => <ScreenMotion>{children}</ScreenMotion>}
           screenListeners={({ route }) => ({ focus: () => setActiveScreen(route.name) })}
-          screenOptions={{
-            headerShown: !isWide,
-            headerTitle: "Multraverse",
-            headerTintColor: themeColor(colors.oceanBlue),
-            headerStyle: themeStyle({ backgroundColor: colors.warmSand }),
-            headerBackVisible: false,
-            headerLeft: () => (
-              <FeedbackPressable
-                accessibilityRole="button"
-                accessibilityLabel="Open navigation menu"
-                accessibilityState={{ expanded: menuOpen }}
-                onPress={() => setMenuOpen(true)}
-                style={themeStyle(styles.menuButton)}
-              >
-                <Menu size={24} color={themeColor(colors.oceanBlue, "color")} />
-              </FeedbackPressable>
-            ),
-          }}
+          screenOptions={{ headerShown: false }}
         >
           <UserStack.Screen name="Home" component={UserDashboard} />
           <UserStack.Screen name="MyTrips" component={MyTrips} />

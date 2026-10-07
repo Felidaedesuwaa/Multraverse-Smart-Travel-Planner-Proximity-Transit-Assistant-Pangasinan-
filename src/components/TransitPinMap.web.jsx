@@ -1,5 +1,6 @@
 import { createElement, useEffect, useRef, useState } from 'react';
 import TransitJourneyMap from './TransitJourneyMap';
+import FullscreenMap from './FullscreenMap';
 
 let loading;
 function loadMaps(key) {
@@ -18,6 +19,8 @@ function loadMaps(key) {
 export default function TransitPinMap({ origin, destination, pinMode, onPick, onMovePin }) {
   const node = useRef(null), instance = useRef(null), markers = useRef([]), pick = useRef(onPick);
   const [error, setError] = useState(''), [ready, setReady] = useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
+  const viewport = useRef(null), lastPins = useRef('');
   const move = useRef(onMovePin);
   move.current = onMovePin;
   pick.current = onPick;
@@ -25,24 +28,30 @@ export default function TransitPinMap({ origin, destination, pinMode, onPick, on
   useEffect(() => {
     if (!key) return;
     let active = true, listener;
+    setReady(false);
     loadMaps(key).then(maps => {
       if (!active) return;
       instance.current = new maps.Map(node.current, {
-        center: { lat: 15.98, lng: 120.3 }, zoom: 10,
+        center: viewport.current?.center || { lat: 15.98, lng: 120.3 }, zoom: viewport.current?.zoom || 10,
         restriction: { latLngBounds: { north: 16.65, south: 15.55, east: 120.95, west: 119.7 }, strictBounds: true },
-        streetViewControl: false, mapTypeControl: false,
+        streetViewControl: false, mapTypeControl: false, zoomControl: false,
+        fullscreenControl: false, gestureHandling: 'greedy', keyboardShortcuts: true,
       });
       listener = instance.current.addListener('click', event => {
         if (event.latLng) pick.current(event.latLng.toJSON());
       });
       setError(''); setReady(true);
     }).catch(e => { if (active) setError(e.message); });
-    return () => { active = false; listener?.remove(); markers.current.forEach(m => m.setMap(null)); instance.current = null; };
-  }, [key]);
+    return () => {
+      active = false;
+      if (instance.current) viewport.current = { center: instance.current.getCenter()?.toJSON(), zoom: instance.current.getZoom() };
+      listener?.remove(); markers.current.forEach(m => m.setMap(null)); instance.current = null;
+    };
+  }, [key, fullscreen]);
   // Reconcile pins after the asynchronous map initialization as well as edits.
   useEffect(() => {
     let active = true;
-    if (!key) return;
+    if (!key || !ready) return;
     loadMaps(key).then(maps => {
       if (!active || !instance.current) return;
       markers.current.forEach(m => m.setMap(null));
@@ -57,13 +66,18 @@ export default function TransitPinMap({ origin, destination, pinMode, onPick, on
         });
         return marker;
       }).filter(Boolean);
+      const pins = JSON.stringify([origin, destination]);
+      if (lastPins.current === pins) return;
+      lastPins.current = pins;
       if (origin && destination) {
         const bounds = new maps.LatLngBounds();
         bounds.extend(origin); bounds.extend(destination); instance.current.fitBounds(bounds, 60);
       } else if (origin || destination) instance.current.panTo(origin || destination);
     }).catch(() => {});
     return () => { active = false; };
-  }, [key, ready, origin, destination]);
+  }, [key, ready, origin, destination, fullscreen]);
   if (!key || error) return <TransitJourneyMap origin={origin} destination={destination} pinMode={pinMode} onPick={onPick} />;
-  return createElement('div', { ref: node, role: 'region', 'aria-label': 'Google Maps: click to pin your current location or destination', style: { width: '100%', height: 420, borderRadius: 16, overflow: 'hidden' } });
+  return <FullscreenMap fullscreen={fullscreen} onFullscreenChange={setFullscreen} height={420} style={{ borderRadius: 16 }}>
+    {createElement('div', { ref: node, role: 'region', 'aria-label': 'Google Maps: click to pin your current location or destination, pinch to zoom and drag to pan', style: { width: '100%', height: '100%' } })}
+  </FullscreenMap>;
 }

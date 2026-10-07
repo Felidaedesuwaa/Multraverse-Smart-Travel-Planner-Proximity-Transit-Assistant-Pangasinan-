@@ -2,15 +2,15 @@ import TripActionConfirmation from '../components/TripActionConfirmation';
 import { completedTripPlaces } from '../lib/completedTripPlaces';
 import BudgetDropdown from '../components/BudgetDropdown';
 import * as ImagePicker from 'expo-image-picker';
-import * as ImageManipulator from 'expo-image-manipulator';
+import { preparePlacePhoto } from '../lib/placePhotos';
 import { FeedbackPressable } from "../components/WorkspaceMotion";
 import { useAppTheme } from "../theme/useAppTheme";
 import { useEffect, useRef, useState } from "react";
-import FormField from "../components/FormField";
 import {
   ActivityIndicator,
   Image,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -79,7 +79,7 @@ function StarRating({ rating, size = 14, onRate }) {
 
 // ── Add/Edit Place Modal ────────────────────────────────
 function PlaceFormModal({ visible, place, onClose, onSaved }) {
-  const { themeStyle, themeColor } = useAppTheme();
+  const { themeStyle, themeColor, isDark } = useAppTheme();
 
   const [confirmation, setConfirmation] = useState(null);
   const [feedback, setFeedback] = useState("");
@@ -88,6 +88,7 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
   const [choicesError, setChoicesError] = useState(false);
   const [photos, setPhotos] = useState(place?.photos || []);
   const [uploading, setUploading] = useState(false);
+  const uploadingRef = useRef(false);
   useEffect(() => {
     if (!visible) return;
     let alive = true;
@@ -98,24 +99,24 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
     return () => { alive = false; };
   }, [visible]);
   const pickPhotos = async () => {
-    if (photos.length >= 3 || uploading) return;
+    if (photos.length >= 3 || uploadingRef.current || savingRef.current) return;
+    uploadingRef.current = true;
     setError(null); setUploading(true);
     try {
+      if (Platform.OS !== 'web') {
+        const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!permission.granted) throw new Error('Allow photo library access to upload photos. You can change this in your device settings.');
+      }
       const selected = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsMultipleSelection: true, selectionLimit: 3 - photos.length });
-      if (!selected.canceled) {
-        if (selected.assets.length > 3 - photos.length) throw new Error('You can upload a maximum of 3 photos.');
+      if (!selected.canceled && selected.assets?.length) {
+        const assets = selected.assets.slice(0, 3 - photos.length);
         const images = [];
-        for (const asset of selected.assets) {
-          const image = await ImageManipulator.manipulateAsync(asset.uri, [{ resize: { width: 900 } }], { compress: 0.65, format: ImageManipulator.SaveFormat.JPEG, base64: true });
-          const uri = `data:image/jpeg;base64,${image.base64}`;
-          if (!image.base64 || uri.length > 250000) throw new Error('This photo is too large. Please choose a smaller image.');
-          images.push(uri);
-        }
+        for (const asset of assets) images.push(await preparePlacePhoto(asset));
         setPhotos(previous => [...previous, ...images].slice(0, 3));
         setFeedback(`${images.length} photo(s) added. Save your experience to keep them.`);
       }
     } catch (cause) { setError(cause.message || 'Could not upload photos.'); }
-    finally { setUploading(false); }
+    finally { uploadingRef.current = false; setUploading(false); }
   };
   const isEdit = !!place;
   const [name, setName] = useState(place?.name ?? "");
@@ -127,7 +128,6 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [nameError, setNameError] = useState(null);
-  const nameInput = useRef(null);
   const savingRef = useRef(false);
   const close = () => { if (!savingRef.current && !uploading) setConfirmation({title:'Discard changes?',message:'Unsaved changes and photo selections will be discarded.',label:'Discard changes',destructive:true,run:()=>onClose('Changes discarded. Your saved experience was not changed.')}); };
 
@@ -135,7 +135,7 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
 
   const handleSave = async (confirmed = false) => {
     if (savingRef.current) return;
-    if (uploading || choicesLoading) return;
+    if (uploadingRef.current || choicesLoading) return;
     if (!categories.length) { setError('Choose at least one category.'); return; }
     const invalid = !name || (!catalog.some(p => p.name === name) && name !== place?.name);
     setNameError(invalid ? 'Choose a place from the dropdown.' : null);
@@ -181,10 +181,10 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
   };
 
   return (
-    <>
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={close}>
-      <Pressable style={themeStyle(styles.overlay)} onPress={close}>
-        <Pressable style={themeStyle(styles.modalBox)} onPress={() => {}}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={() => confirmation ? setConfirmation(null) : close()}>
+      <View style={themeStyle(styles.overlay)}>
+        <Pressable style={StyleSheet.absoluteFillObject} onPress={close} accessibilityLabel="Close place form" />
+        <View style={themeStyle(styles.modalBox)} pointerEvents={confirmation ? 'none' : 'auto'} accessibilityElementsHidden={!!confirmation} importantForAccessibility={confirmation ? 'no-hide-descendants' : 'auto'}>
           <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
       {/* Header */}
             <View style={themeStyle(styles.modalHeader)}>
@@ -199,7 +199,7 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
             {/* Name */}
             <View style={themeStyle(styles.formGroup)}>
               <Text style={themeStyle(styles.formLabel)}>Completed plan *</Text>
-              <BudgetDropdown value={name} onChange={value => { setName(value); setNameError(null); }} options={[...new Set([...catalog.map(p => p.name), ...(place?.name ? [place.name] : [])])].sort().map(value => ({value,label:value}))} placeholder={choicesLoading ? 'Loading completed plans...' : 'Select a completed plan'} />
+              <BudgetDropdown value={name} disabled={choicesLoading || saving} onChange={value => { setName(value); setNameError(null); }} options={[...new Set([...catalog.map(p => p.name), ...(place?.name ? [place.name] : [])])].sort().map(value => ({value,label:value}))} placeholder={choicesLoading ? 'Loading completed plans...' : 'Select a completed plan'} />
               <Text style={themeStyle(styles.photoHint)}>Share your experience for a completed plan. Write your own description and notes.</Text>
               {!choicesLoading && !choicesError && !catalog.length && <Text style={themeStyle(styles.photoHint)}>Complete a saved trip in My Trips to select its plan here.</Text>}
               {nameError && <Text accessibilityRole="alert" style={{color:colors.sunsetCoral}}>{nameError}</Text>}
@@ -278,27 +278,45 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
               </View>
             </View>
 
-            <View style={themeStyle(styles.formGroup)}><Text style={themeStyle(styles.formLabel)}>Photos ({photos.length}/3)</Text><View style={{flexDirection:'row',flexWrap:'wrap',gap:10}}>{photos.map((uri,index)=><View key={index} style={styles.photoPreview}><Image source={{uri}} style={styles.photoThumbnail} /><FeedbackPressable accessibilityRole="button" accessibilityLabel={`Remove photo ${index + 1}`} style={themeStyle(styles.photoRemoveButton)} disabled={saving || uploading} onPress={()=>setConfirmation({title:'Remove this photo?',message:'This photo will be removed from your selection. Save changes to update the shared experience.',label:'Remove photo',destructive:true,run:()=>{setPhotos(previous=>previous.filter((_,i)=>i!==index));setFeedback('Photo removed from your selection.');}})}><X size={16} color={themeColor(colors.sunsetCoral, "color")} /></FeedbackPressable></View>)}</View><FeedbackPressable disabled={saving || uploading || photos.length===3} onPress={()=>setConfirmation({title:'Add photos?',message:'Choose up to 3 photos for this experience. Public experiences share these photos with other travelers.',label:'Choose photos',run:pickPhotos})} style={themeStyle(styles.visBtn)}><Camera size={16} color={themeColor(colors.oceanBlue,'color')} /><Text style={themeStyle(styles.visBtnText)}>{uploading?'Uploading...':'Upload photos'}</Text></FeedbackPressable><Text style={themeStyle(styles.photoHint)}>Up to 3 photos. Public photos are visible to other travelers.</Text></View>
+            <View style={themeStyle(styles.formGroup)}>
+              <Text style={themeStyle(styles.formLabel)}>Photos ({photos.length}/3)</Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+                {photos.map((uri, index) => <View key={index} style={styles.photoPreview}>
+                  <Image source={{ uri }} style={styles.photoThumbnail} />
+                  <FeedbackPressable accessibilityRole="button" accessibilityLabel={`Remove photo ${index + 1}`} style={themeStyle(styles.photoRemoveButton)} disabled={saving || uploading}
+                    onPress={() => setConfirmation({ title: 'Remove this photo?', message: 'This photo will be removed from your selection. Save changes to update the experience.', label: 'Remove photo', destructive: true, run: () => { setPhotos(previous => previous.filter((_, i) => i !== index)); setFeedback('Photo removed from your selection.'); } })}>
+                    <X size={16} color={themeColor(colors.sunsetCoral, 'color')} />
+                  </FeedbackPressable>
+                </View>)}
+              </View>
+              <FeedbackPressable accessibilityRole="button" disabled={saving || uploading || photos.length >= 3} onPress={pickPhotos} style={[themeStyle(styles.visBtn), { flex: 0, minHeight: 44, marginTop: 10 }]}>
+                <Camera size={16} color={themeColor(colors.oceanBlue, 'color')} />
+                <Text style={themeStyle(styles.visBtnText)}>{uploading ? 'Uploading...' : 'Upload photos'}</Text>
+              </FeedbackPressable>
+              <Text style={themeStyle(styles.photoHint)}>{isPublic ? 'Up to 3 photos. Public photos are visible to other travelers.' : 'Up to 3 photos. Private photos are visible only to you.'}</Text>
+            </View>
             {!!feedback && <Text accessibilityRole="alert" style={{color:colors.palmGreen}}>{feedback}</Text>}
             {/* Visibility */}
             <View style={themeStyle(styles.formGroup)}>
               <Text style={themeStyle(styles.formLabel)}>Visibility</Text>
               <View style={themeStyle(styles.visibilityRow)}>
                 <FeedbackPressable
-                  onPress={() => { if (!isPublic) setConfirmation({title:'Make this experience public?',message:'Other travelers can see your experience and photos after you save.',label:'Make public',run:()=>{setIsPublic(true);setFeedback('Public visibility selected. Save to apply the change.');}}); }}
-                  style={themeStyle([styles.visBtn, isPublic && styles.visBtnActive])}
+                  accessibilityRole="button" accessibilityState={{ selected: isPublic }} disabled={saving}
+                  onPress={() => setIsPublic(true)}
+                  style={[themeStyle(styles.visBtn), isPublic && { backgroundColor: isDark ? '#A8E6CF' : '#D2F0E1', borderColor: '#60B99A' }]}
                 >
-                  <Globe size={14} color={themeColor(isPublic ? colors.oceanBlue : "#6B8CA8", "color")} />
-                  <Text style={themeStyle([styles.visBtnText, isPublic && styles.visBtnTextActive])}>
+                  <Globe size={14} color={isPublic ? '#174B38' : themeColor('#6B8CA8', 'color')} />
+                  <Text style={[themeStyle(styles.visBtnText), isPublic && { color: '#174B38' }]}>
                     Public
                   </Text>
                 </FeedbackPressable>
                 <FeedbackPressable
-                  onPress={() => { if (isPublic) setConfirmation({title:'Make this experience private?',message:'Only you will be able to see it after you save.',label:'Make private',run:()=>{setIsPublic(false);setFeedback('Private visibility selected. Save to apply the change.');}}); }}
-                  style={themeStyle([styles.visBtn, !isPublic && styles.visBtnActivePrivate])}
+                  accessibilityRole="button" accessibilityState={{ selected: !isPublic }} disabled={saving}
+                  onPress={() => setIsPublic(false)}
+                  style={[themeStyle(styles.visBtn), !isPublic && { backgroundColor: isDark ? '#F5B8BC' : '#FBE0E2', borderColor: '#DB9199' }]}
                 >
-                  <Lock size={14} color={themeColor(!isPublic ? colors.sunsetCoral : "#6B8CA8", "color")} />
-                  <Text style={themeStyle([styles.visBtnText, !isPublic && styles.visBtnTextPrivate])}>
+                  <Lock size={14} color={!isPublic ? '#692F36' : themeColor('#6B8CA8', 'color')} />
+                  <Text style={[themeStyle(styles.visBtnText), !isPublic && { color: '#692F36' }]}>
                     Private
                   </Text>
                 </FeedbackPressable>
@@ -317,13 +335,13 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
             )}
 
             <View style={themeStyle(styles.modalActions)}>
-              <FeedbackPressable onPress={close} disabled={saving} style={themeStyle(styles.cancelBtn)}>
+              <FeedbackPressable accessibilityRole="button" onPress={close} disabled={saving || uploading} style={themeStyle(styles.cancelBtn)}>
                 <Text style={themeStyle(styles.cancelText)}>Cancel</Text>
               </FeedbackPressable>
               <FeedbackPressable
-                onPress={handleSave}
-                disabled={saving}
-                style={themeStyle([styles.saveBtn, saving && { opacity: 0.7 }])}
+                accessibilityRole="button" onPress={() => handleSave()}
+                disabled={saving || uploading || choicesLoading}
+                style={themeStyle([styles.saveBtn, (saving || uploading || choicesLoading) && { opacity: 0.7 }])}
               >
                 {saving && (
                   <ActivityIndicator size="small" color={themeColor("#fff", "color")} style={themeStyle({ marginRight: 6 })} />
@@ -334,16 +352,15 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
               </FeedbackPressable>
             </View>
           </ScrollView>
-        </Pressable>
-      </Pressable>
+        </View>
+        <TripActionConfirmation presentation="inline" action={confirmation} busy={saving || uploading} onDismiss={()=>setConfirmation(null)} onConfirm={()=>{const action=confirmation;setConfirmation(null);action?.run();}} />
+      </View>
     </Modal>
-    <TripActionConfirmation action={confirmation} busy={saving || uploading} onDismiss={()=>setConfirmation(null)} onConfirm={()=>{const action=confirmation;setConfirmation(null);action?.run();}} />
-    </>
   );
 }
 
 // ── Place Detail Modal ──────────────────────────────────
-function PlaceDetailModal({ place, onClose, onEdit, onDelete }) {
+function PlaceDetailModal({ place, onClose, onEdit, onDelete, confirmation, deleting, onDismissConfirmation, onConfirmDelete }) {
   const { themeStyle, themeColor } = useAppTheme();
 
   if (!place) return null;
@@ -354,9 +371,10 @@ function PlaceDetailModal({ place, onClose, onEdit, onDelete }) {
   ];
 
   return (
-    <Modal visible transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={themeStyle(styles.overlay)} onPress={onClose}>
-        <Pressable style={themeStyle([styles.modalBox, styles.detailBox])} onPress={() => {}}>
+    <Modal visible transparent animationType="slide" onRequestClose={() => { if (!deleting) { if (confirmation) onDismissConfirmation(); else onClose(); } }}>
+      <View style={themeStyle(styles.overlay)}>
+        <Pressable style={StyleSheet.absoluteFillObject} onPress={() => !deleting && !confirmation && onClose()} accessibilityLabel="Close place details" />
+        <View style={themeStyle([styles.modalBox, styles.detailBox])} pointerEvents={confirmation ? 'none' : 'auto'} accessibilityElementsHidden={!!confirmation} importantForAccessibility={confirmation ? 'no-hide-descendants' : 'auto'}>
           {/* Artwork header */}
           <View style={themeStyle([styles.detailArt, { backgroundColor: bgColor }])}>
             <View style={themeStyle(styles.detailIconCircle)}>
@@ -452,8 +470,9 @@ function PlaceDetailModal({ place, onClose, onEdit, onDelete }) {
               </FeedbackPressable>
             </View>
           </ScrollView>
-        </Pressable>
-      </Pressable>
+        </View>
+        <TripActionConfirmation presentation="inline" action={confirmation} busy={deleting} onDismiss={onDismissConfirmation} onConfirm={onConfirmDelete} />
+      </View>
     </Modal>
   );
 }
@@ -629,7 +648,7 @@ export default function SavedPlaces() {
       </View>
 
       {/* Stats row */}
-      <View style={themeStyle(styles.statsRow)}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }} contentContainerStyle={themeStyle(styles.statsRow)}>
         <View style={themeStyle(styles.statChip)}>
           <Bookmark size={13} color={themeColor(colors.oceanBlue, "color")} />
           <Text style={themeStyle(styles.statChipText)}>{places.length} Saved</Text>
@@ -648,7 +667,7 @@ export default function SavedPlaces() {
             {places.length - publicCount} Private
           </Text>
         </View>
-      </View>
+      </ScrollView>
 
       {/* Search + Category filter */}
       <View style={themeStyle(styles.filterRow)}>
@@ -757,8 +776,12 @@ export default function SavedPlaces() {
         onClose={() => setViewingPlace(null)}
         onEdit={(p) => setEditingPlace(p)}
         onDelete={handleDelete}
+        confirmation={deleteConfirmation}
+        deleting={deleting}
+        onDismissConfirmation={() => setDeleteConfirmation(null)}
+        onConfirmDelete={confirmDelete}
       />
-      <TripActionConfirmation action={deleteConfirmation} busy={deleting} onDismiss={()=>setDeleteConfirmation(null)} onConfirm={confirmDelete} />
+      {!viewingPlace && <TripActionConfirmation action={deleteConfirmation} busy={deleting} onDismiss={()=>setDeleteConfirmation(null)} onConfirm={confirmDelete} />}
     </ScrollView>
   );
 }
@@ -790,17 +813,16 @@ const styles = StyleSheet.create({
   // Stats row
   statsRow: {
     flexDirection: "row",
-    gap: 10,
-    marginBottom: 16,
-    flexWrap: "wrap",
+    gap: 6,
+    alignItems: "center",
   },
   statChip: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 12,
     backgroundColor: "#fff",
     borderWidth: 1,
     borderColor: "#E2EBF3",
@@ -1203,17 +1225,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: "#E2EBF3",
   },
-  visBtnActive: {
-    borderColor: colors.oceanBlue,
-    backgroundColor: colors.oceanBlueLight,
-  },
-  visBtnActivePrivate: {
-    borderColor: colors.sunsetCoral,
-    backgroundColor: "#FFF1EE",
-  },
   visBtnText: { fontSize: 13, fontWeight: "600", color: "#6B8CA8" },
-  visBtnTextActive: { color: colors.oceanBlue },
-  visBtnTextPrivate: { color: colors.sunsetCoral },
   visHint: { fontSize: 12, color: "#6B8CA8", lineHeight: 16 },
   errorBox: {
     padding: 12,
@@ -1224,6 +1236,10 @@ const styles = StyleSheet.create({
   errorText: { fontSize: 13, color: colors.sunsetCoral },
   modalActions: { flexDirection: "row", gap: 10, marginTop: 4 },
   cancelBtn: {
+    flex: 1,
+    minHeight: 48,
+    alignItems: "center",
+    justifyContent: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 10,
@@ -1233,6 +1249,7 @@ const styles = StyleSheet.create({
   cancelText: { fontSize: 13, fontWeight: "600", color: "#4A6880" },
   saveBtn: {
     flex: 1,
+    minHeight: 48,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",

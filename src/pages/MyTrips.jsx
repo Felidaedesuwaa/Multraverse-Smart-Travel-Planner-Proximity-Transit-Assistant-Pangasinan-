@@ -21,6 +21,7 @@ import {
 } from "react-native";
 import {
   Calendar,
+  Check,
   ChevronRight,
   MapPin,
   Search,
@@ -46,7 +47,7 @@ const STATUS_STYLE = {
 
 // ── Trip Detail Modal ───────────────────────────────────
 function TripDetailModal({ trip, onClose, onDelete, onCancel, onComplete, onExport, confirmation, onDismissConfirmation, onConfirm, canceling, error, message }) {
-  const { themeStyle, themeColor } = useAppTheme();
+  const { themeStyle, themeColor, isDark } = useAppTheme();
   const { height } = useWindowDimensions();
 
   if (!trip) return null;
@@ -173,7 +174,7 @@ function TripDetailModal({ trip, onClose, onDelete, onCancel, onComplete, onExpo
               <Text style={themeStyle(styles.deleteBtnText)}>{canceling ? "Canceling..." : "Cancel Trip"}</Text>
             </FeedbackPressable>
           )}
-          {trip.status === "UPCOMING" && <FeedbackPressable onPress={() => onComplete(trip)} disabled={canceling} style={themeStyle(styles.doneBtn)}><Text style={themeStyle(styles.doneBtnText)}>Complete Trip</Text></FeedbackPressable>}
+          {trip.status === "UPCOMING" && <FeedbackPressable accessibilityRole="button" onPress={() => onComplete(trip)} disabled={canceling} style={[styles.doneBtn, { backgroundColor: isDark ? '#A8E6CF' : '#D2F0E1', gap: 6 }]}><Check size={15} color="#174B38" /><Text style={[styles.doneBtnText, { color: '#174B38' }]}>Complete Trip</Text></FeedbackPressable>}
           {/* Actions */}
             {['COMPLETED', 'CANCELED'].includes(trip.status) && <FeedbackPressable
               onPress={() => onDelete(trip._id ?? trip.id)}
@@ -578,7 +579,7 @@ const styles = StyleSheet.create({
   tripTop: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-start",
+    alignItems: "center",
     marginBottom: 6,
   },
   tripIconBox: {
