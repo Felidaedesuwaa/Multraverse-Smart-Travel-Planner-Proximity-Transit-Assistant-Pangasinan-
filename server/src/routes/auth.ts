@@ -9,13 +9,18 @@ import { beginRegistration, resendRegistration, verifyRegistration } from '../li
 import { authenticate, AuthRequest } from '../middleware/auth'
 import { sessionCredential } from '../lib/sessionCredential'
 import { requestPasswordReset, resetPassword, changePassword, verifyPasswordReset, recoverPassword } from '../lib/passwordSecurity'
+import { mfaChallenge, needsMfa, setupMfa, verifyMfa } from '../lib/mfa'
+import { RevokedSession } from '../models/AccountSecurity'
+import { tokenDigest } from '../lib/totp'
+import { randomUUID } from 'node:crypto'
 
 const router = Router()
 router.param('id', validateId)
 router.use(sanitizeRequest, validateRouter('auth'))
-function authResponse(user: any) {
+function authResponse(user: any, mfa = false): any {
+  if (needsMfa(user.role) && !mfa) return mfaChallenge(user)
   return {
-    token: jwt.sign({ userId: user._id.toString(), role: user.role, credential: sessionCredential(user.passwordHash) }, process.env.JWT_SECRET!, { algorithm: 'HS256', expiresIn: '7d' }),
+    token: jwt.sign({ userId: user._id.toString(), role: user.role, credential: sessionCredential(user.passwordHash), mfa }, process.env.JWT_SECRET!, { algorithm: 'HS256', jwtid: randomUUID(), expiresIn: needsMfa(user.role) ? '1h' : '7d' }),
     user: { id: user._id.toString(), name: user.name, firstName: user.firstName, middleName: user.middleName, surname: user.surname, email: user.email, role: user.role, municipality: user.municipality, location: user.location, photo: user.photo },
   }
 }
@@ -61,6 +66,26 @@ router.post('/login', async (req, res) => {
     res.json(authResponse(user))
   } catch (error) { authFailure(error, res) }
 })
+router.post('/mfa/setup', async (req, res) => {
+  try {
+    await authLimit('mfa-ip', req.ip || 'unknown', 20, 10 * 60 * 1000)
+    res.json(await setupMfa(req.body.challengeToken))
+  } catch (error) { authFailure(error, res) }
+})
+router.post('/mfa/verify', async (req, res) => {
+  try {
+    await authLimit('mfa-ip', req.ip || 'unknown', 20, 10 * 60 * 1000)
+    res.json(authResponse(await verifyMfa(req.body.challengeToken, req.body.code), true))
+  } catch (error) { authFailure(error, res) }
+})
+router.post('/logout', authenticate, async (req, res) => {
+  try {
+    const token = req.headers.authorization!.split(' ')[1]
+    const claims = jwt.decode(token) as jwt.JwtPayload
+    await RevokedSession.updateOne({ digest: tokenDigest(token) }, { $setOnInsert: { expiresAt: new Date(claims.exp! * 1000) } }, { upsert: true })
+    res.json({ message: 'Signed out.' })
+  } catch (error) { authFailure(error, res) }
+})
 router.post('/password/forgot', async (req, res) => {
   try {
     await authLimit('reset-request-ip', req.ip || 'unknown', 10, 60 * 60 * 1000)
@@ -78,7 +103,7 @@ router.post('/password/change', authenticate, async (req: AuthRequest, res) => {
     await authLimit('password-change-user', req.userId!, 5, 15 * 60 * 1000)
     await authLimit('password-change-ip', req.ip || 'unknown', 20, 15 * 60 * 1000)
     const result = await changePassword(req.userId!, req.body.currentPassword, req.body.newPassword)
-    res.json({ ...result, ...authResponse(await User.findById(req.userId).select('+passwordHash')) })
+    res.json({ ...result, ...authResponse(await User.findById(req.userId).select('+passwordHash'), true) })
   } catch (error) { authFailure(error, res) }
 })
 router.post('/password/recovery-code', authenticate, async (req: AuthRequest, res) => {

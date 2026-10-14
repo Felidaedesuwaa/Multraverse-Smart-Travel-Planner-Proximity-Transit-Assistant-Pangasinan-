@@ -13,6 +13,7 @@ import { deleteAccount } from '../lib/deleteAccount'
 import { AuthError, authLimit } from '../lib/authLimits'
 import { explorerDashboard } from '../lib/explorerUsers'
 import { GeofenceMonitor } from '../models/GeofenceMonitor'
+import { AccountFactor, PrivacyAcknowledgment } from '../models/AccountSecurity'
 
 const router = Router()
 router.param('id', validateId)
@@ -66,6 +67,8 @@ function permanentAccountDeletion(role: 'EXPLORER' | 'ADMIN' | 'LGU') {
         await PasswordReset.deleteMany({ userId }, { session })
         await PendingRegistration.deleteMany({ email: user.email }, { session })
         await GeofenceMonitor.deleteMany({ userId: String(userId) }, { session })
+        await AccountFactor.deleteMany({ userId }, { session })
+        await PrivacyAcknowledgment.deleteMany({ userId }, { session })
       })
       res.json({ message: 'Account deleted.' })
     } catch (error) {

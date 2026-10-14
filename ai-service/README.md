@@ -90,3 +90,12 @@ to prefer variety. These are runtime selection and prompt changes; model weights
 do not need retraining. Restart the AI service after updating `main.py`.
 
 The itinerary fare reference is imported from `Pangasinan_Fare_Reference_Updated_Tricycle.pdf` (13 pages). `fares.py` reads the shared JSON at runtime; no model retraining is needed. The planner uses exact regular-fare rows for traditional jeepneys, ordinary/aircon buses (effective 2026-09-28), and Dagupan shared tricycles. Discount columns are shown separately; trip totals assume regular passengers. Special tricycle hire and night surcharges need separate confirmation. Other LGUs have no listed tricycle prices in this reference.
+# Private service authentication
+
+The API and AI service now require matching `AI_SERVICE_TOKEN` values. Run
+`node server/scripts/configure-security-secrets.cjs` from the repository root
+to add local keys without printing or replacing existing secrets, then restart
+both services. For hosting, set the token in each service's secret environment.
+Direct requests need the `X-Service-Token` header; `/health` is public. The service
+binds to `127.0.0.1` by default; use `AI_SERVICE_HOST` only with private networking
+or an authenticated TLS proxy. See [the security rubric review](../docs/SECURITY-RUBRIC.md).

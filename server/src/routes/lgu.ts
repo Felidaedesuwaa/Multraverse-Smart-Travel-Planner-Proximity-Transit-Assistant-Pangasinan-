@@ -50,7 +50,7 @@ router.post('/:resource', async (req: AuthRequest<{ resource: string }>, res, ne
     res.status(201).json(item)
   } catch (error: any) {
     if (error.name === 'MongoServerError') return next(error)
-    res.status(400).json({ error: error.message })
+    res.status(400).json({ error: 'Invalid resource details. Check the supplied fields.' })
   }
 })
 
@@ -77,7 +77,7 @@ router.put('/:resource/:id', async (req: AuthRequest<{ resource: string; id: str
     res.json(item)
   } catch (error: any) {
     if (error.name === 'MongoServerError') return next(error)
-    res.status(400).json({ error: error.message })
+    res.status(400).json({ error: 'Invalid resource details. Check the supplied fields.' })
   }
 })
 

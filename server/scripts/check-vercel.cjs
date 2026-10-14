@@ -9,6 +9,7 @@ const mongoose = require('mongoose');
 const db = require('../dist/lib/db');
 require('../dist/models/PasswordReset').preparePasswordResetStorage = async () => {};
 require('../dist/models/GeofenceMonitor').prepareGeofenceStorage = async () => {};
+require('../dist/models/AccountSecurity').prepareAccountSecurityStorage = async () => {};
 let server;
 
 (async () => {

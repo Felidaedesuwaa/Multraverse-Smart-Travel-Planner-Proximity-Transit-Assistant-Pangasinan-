@@ -39,13 +39,13 @@ const fixtures = {
     }
     const account = async (role, municipality) => {
       const user = await User.create({ name: role, email: `${randomBytes(5).toString('hex')}@test.invalid`, passwordHash: await bcrypt.hash('Lgu123!', 4), emailVerifiedAt: new Date(), role, municipality })
-      return { user, token: jwt.sign({ userId: String(user._id), role: 'ADMIN', municipality: 'Bolinao', credential: sessionCredential(user.passwordHash) }, process.env.JWT_SECRET) }
+      return { user, token: jwt.sign({ userId: String(user._id), role: user.role, mfa: true, municipality: 'Bolinao', credential: sessionCredential(user.passwordHash) }, process.env.JWT_SECRET) }
     }
     const lgu = await account('lgu', 'Dagupan'), other = await account('LGU', 'Bolinao'), admin = await account('ADMIN'), explorer = await account('EXPLORER'), pro = await account('PRO')
     assert.equal(lgu.user.role, 'LGU')
     await assert.rejects(() => account('LGU'), /municipality/)
     const login = await call('auth/login', null, 'POST', { email: lgu.user.email, password: 'Lgu123!' })
-    assert.equal(login.status, 200); assert.equal(login.body.user.municipality, 'Dagupan'); assert.equal(login.body.user.role, 'LGU')
+    assert.equal(login.status, 200); assert.equal(login.body.mfaRequired, true); assert.equal(login.body.token, undefined)
     assert.equal((await call('users/me', lgu.token)).body.municipality, 'Dagupan')
     assert.equal((await call('users/me', lgu.token, 'PUT', { municipality: 'Bolinao', role: 'ADMIN' })).status, 400)
     assert.equal((await call('lgu/places')).status, 401)

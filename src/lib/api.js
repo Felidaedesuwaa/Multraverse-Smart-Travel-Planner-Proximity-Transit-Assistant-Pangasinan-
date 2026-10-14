@@ -58,7 +58,9 @@ async function request(path, options = {}) {
     },
   })
 
-  const data = await res.json();
+  let data;
+  try { data = await res.json(); }
+  catch { throw new Error('The service returned an invalid response. Please try again.'); }
   if (!res.ok) {
     if (res.status === 401 && token && !passwordTransition && (!path.startsWith('/api/auth/') || path === '/api/auth/password/change') && await getToken() === token) await unauthorizedHandler?.();
     const error = new Error(data.error || "Request failed");
@@ -76,7 +78,7 @@ async function passwordSessionRequest(path, body) {
   passwordTransition++;
   try {
     const session = await request(path, { method: 'POST', body: JSON.stringify(body) });
-    await storage.setItem('token', session.token);
+    if (session.token) await storage.setItem('token', session.token);
     return session;
   } finally { passwordTransition--; }
 }
@@ -90,6 +92,13 @@ async function profileRequest(method, data) {
     if (controller.signal.aborted) throw new Error('Request timed out. Check your connection and try again.');
     throw error;
   } finally { clearTimeout(timeout); }
+}
+
+async function logoutRequest() {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
+  try { return await request('/api/auth/logout', { method: 'POST', body: '{}', signal: controller.signal }); }
+  finally { clearTimeout(timeout); }
 }
 
 // Existing screens receive their complete lists while every server request is bounded.
@@ -118,6 +127,9 @@ async function requestCatalog(options = {}) {
 }
 
 export const api = {
+  logout: logoutRequest,
+  setupMfa: challengeToken => request('/api/auth/mfa/setup', { method: 'POST', body: JSON.stringify({ challengeToken }) }),
+  verifyMfa: (challengeToken, code) => request('/api/auth/mfa/verify', { method: 'POST', body: JSON.stringify({ challengeToken, code }) }),
   getNotifications: signal => request('/api/notifications', { signal }),
   requestRecoveryCode: () => request('/api/auth/password/recovery-code', { method: 'POST', body: '{}' }),
   verifyPasswordReset: (challengeId, code) => request('/api/auth/password/verify', { method: 'POST', body: JSON.stringify({ challengeId, code }) }),

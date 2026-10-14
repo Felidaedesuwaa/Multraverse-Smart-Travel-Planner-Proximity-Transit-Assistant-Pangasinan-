@@ -55,7 +55,7 @@ let server;
       });
       return { status: response.status, body: await response.json() };
     };
-    const valid = { firstName: 'Juan', middleName: 'Reyes', surname: 'dela Cruz', email: 'juan@gmail.com', password: 'Lakbay_2026' };
+    const valid = { firstName: 'Juan', middleName: 'Reyes', surname: 'dela Cruz', email: 'juan@gmail.com', password: 'Lakbay_2026', privacyConsent: true };
     const register = body => call('auth/register', { ...valid, ...body });
     const verify = (challengeId, code) => call('auth/register/verify', { challengeId, code });
     const resetLimits = () => AuthLimit.deleteMany({});

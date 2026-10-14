@@ -112,6 +112,15 @@ export function validateRouter(scope: string): RequestHandler {
       object(body)
       const create = req.method === 'POST'
       if (scope === 'auth') {
+        if (req.path === '/register') {
+          fields(body, { firstName: string, middleName: string, surname: string, email: string, password: string, privacyConsent: v => v === true }, ['firstName', 'surname', 'email', 'password', 'privacyConsent'])
+          return next()
+        }
+        if (req.path === '/logout') { fields(body, {}); return next() }
+        if (req.path === '/mfa/setup' || req.path === '/mfa/verify') {
+          fields(body, { challengeToken: string, ...(req.path.endsWith('/verify') ? { code: v => typeof v === 'string' && /^\d{6}$/.test(v) } : {}) }, req.path.endsWith('/verify') ? ['challengeToken', 'code'] : ['challengeToken'])
+          return next()
+        }
         const rules: Record<string, Rule> = { email: string, password: string, firstName: string, middleName: string, surname: string, challengeId: string, code: string, currentPassword: string, newPassword: string, grantToken: string }
         const keys = req.path === '/password/forgot' ? ['email'] : req.path === '/password/reset' ? ['challengeId', 'code', 'newPassword'] : req.path === '/password/change' ? ['currentPassword', 'newPassword'] : req.path === '/login' ? ['email', 'password'] : req.path === '/register' ? ['firstName', 'middleName', 'surname', 'email', 'password'] : req.path === '/register/resend' ? ['challengeId'] : ['challengeId', 'code']
         const passwordKeys = req.path === '/password/recovery-code' ? [] : req.path === '/password/recover' ? ['grantToken', 'newPassword'] : keys

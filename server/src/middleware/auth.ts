@@ -5,6 +5,9 @@ import jwt from 'jsonwebtoken'
 import { User } from '../models'
 import { isValidObjectId } from 'mongoose'
 import { equalDigest, sessionCredential } from '../lib/sessionCredential'
+import { RevokedSession } from '../models/AccountSecurity'
+import { tokenDigest } from '../lib/totp'
+import { needsMfa } from '../lib/mfa'
 
 export interface AuthRequest<P = ParamsDictionary> extends Request<P> {
   /** String serialization of the authenticated user's MongoDB ObjectId. */
@@ -23,16 +26,20 @@ export async function authenticate(req: AuthRequest, res: Response, next: NextFu
       userId: string
       role: string
       credential: string
+      purpose?: string
+      mfa?: boolean
     }
-    if (!isValidObjectId(decoded.userId)) throw new Error('Invalid user')
+    if (!isValidObjectId(decoded.userId) || decoded.purpose) throw new Error('Invalid user')
   } catch {
     return res.status(401).json({ error: 'Invalid token' })
   }
   try {
+    if (await RevokedSession.exists({ digest: tokenDigest(token) })) return res.status(401).json({ error: 'Your session has ended. Please sign in again.' })
     // A signed token cannot restore a deleted account or stale admin role.
     const user = await User.findById(decoded.userId).select('role municipality +passwordHash')
     if (!user) return res.status(401).json({ error: 'Your account is no longer available. Please sign in again.' })
     if (!equalDigest(decoded.credential, sessionCredential(user.passwordHash))) return res.status(401).json({ error: 'Your session has expired. Please sign in again.' })
+    if (needsMfa(user.role) && (decoded.mfa !== true || decoded.role !== user.role)) return res.status(401).json({ error: 'Sign in with your authenticator to access this account.' })
     req.userId = decoded.userId
     req.userRole = user.role
     // Scope comes only from the current database account, never JWT/body/query claims.

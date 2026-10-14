@@ -7,6 +7,7 @@ import LoginLayout from "../components/LoginLayout";
 import { TravelButton } from "../components/SummerUI";
 import { useAuthStore } from "../store/authStore";
 import { validateEmail } from "../utils/validation";
+import { api } from "../lib/api";
 
 export default function LoginPage() {
   const { themeStyle } = useAppTheme();
@@ -17,6 +18,9 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState(null);
+  const [mfa, setMfa] = useState(null);
+  const [code, setCode] = useState("");
+  const [verifying, setVerifying] = useState(false);
   const submitting = useRef(false);
 
   const handleSubmit = async () => {
@@ -30,12 +34,41 @@ export default function LoginPage() {
     submitting.current = true;
     try {
       const success = await login(email.trim(), password);
+      if (success?.mfaRequired) {
+        setPassword("");
+        const setup = await api.setupMfa(success.challengeToken);
+        setMfa({ ...success, ...setup });
+        return;
+      }
       if (success) {
         const role = useAuthStore.getState().user?.role;
         navigation.reset({ index: 0, routes: [{ name: role === "SUPERADMIN" ? "SuperAdmin" : role === "ADMIN" ? "Admin" : role === "LGU" ? "LGU" : "User" }] });
       } else setFormError(useAuthStore.getState().error);
-    } finally { submitting.current = false; }
+    } catch (error) { setFormError(error.message); }
+    finally { submitting.current = false; }
   };
+
+  const verify = async () => {
+    if (submitting.current) return;
+    submitting.current = true; setVerifying(true); setFormError(null);
+    try {
+      const session = await api.verifyMfa(mfa.challengeToken, code);
+      await useAuthStore.getState().acceptSession(session);
+      const role = session.user.role;
+      navigation.reset({ index: 0, routes: [{ name: role === "SUPERADMIN" ? "SuperAdmin" : role === "ADMIN" ? "Admin" : "LGU" }] });
+    } catch (error) { setFormError(error.message); }
+    finally { submitting.current = false; setVerifying(false); }
+  };
+
+  if (mfa) return <LoginLayout title="Verify your authenticator" subtitle="Administrator and LGU accounts require two-factor authentication." onBack={() => { setMfa(null); setCode(""); setFormError(null); }}>
+    {mfa.setupRequired && <>
+      <Text style={themeStyle(styles.footerText)}>Add an account in your authenticator app. Choose a time-based key and enter this setup key. Keep your authenticator backed up; password recovery does not remove this protection.</Text>
+      <Text selectable style={themeStyle(styles.footerText)}>{mfa.secret}</Text>
+      <Text style={themeStyle(styles.footerText)}>Account: Multraverse ({email})</Text>
+    </>}
+    <AuthInput label="Authenticator code" value={code} onChangeText={value => setCode(value.replace(/\D/g, "").slice(0, 6))} keyboardType="number-pad" maxLength={6} error={formError} editable={!verifying} onSubmitEditing={verify} />
+    <TravelButton label="Verify & Sign In" loading={verifying} onPress={verify} />
+  </LoginLayout>;
 
   return (
     <LoginLayout

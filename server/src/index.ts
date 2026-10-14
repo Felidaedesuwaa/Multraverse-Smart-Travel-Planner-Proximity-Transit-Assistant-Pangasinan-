@@ -24,6 +24,7 @@ import { PendingRegistration } from './models/PendingRegistration'
 import { AuthLimit } from './lib/authLimits'
 import { preparePasswordResetStorage } from './models/PasswordReset'
 import { prepareGeofenceStorage } from './models/GeofenceMonitor'
+import { prepareAccountSecurityStorage } from './models/AccountSecurity'
 import { rateLimit, securityHeaders } from './middleware/security'
 
 const app = express()
@@ -42,7 +43,7 @@ async function prepareDatabase() {
   // Keep the database-layout check from the latest application startup.
   // Existing indexes are provisioned separately. Password reset and geofence
   // storage create missing collections without changing account data.
-  indexesReady ??= preparePasswordResetStorage().then(() => prepareGeofenceStorage()).then(() => verifyDatabaseLayout())
+  indexesReady ??= preparePasswordResetStorage().then(() => prepareGeofenceStorage()).then(() => prepareAccountSecurityStorage()).then(() => verifyDatabaseLayout())
     .then(() => Promise.all([User.init(), AuditLog.init(), PendingRegistration.init(), AuthLimit.init()]))
     .catch((error) => { indexesReady = undefined; throw error })
   await indexesReady

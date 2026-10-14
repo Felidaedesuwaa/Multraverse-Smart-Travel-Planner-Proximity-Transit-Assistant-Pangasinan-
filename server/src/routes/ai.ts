@@ -13,6 +13,7 @@ import transitReference from '../data/pangasinanTransitReference.json'
 import corridorReferences from '../data/transitCorridorReferences.json'
 import transitFarePolicy from '../../../src/data/transitFarePolicy.json'
 import { rateLimit } from '../middleware/security'
+import { aiServiceHeaders } from '../lib/aiServiceAuth'
 
 const router = Router()
 router.param('id', validateId)
@@ -87,7 +88,7 @@ async function callAI(endpoint: string, body: object, timeout = 120_000) {
   try {
     response = await fetch(`${AI_SERVICE_URL}${endpoint}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: aiServiceHeaders(),
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(timeout),
     })
@@ -179,7 +180,7 @@ router.post('/translate', async (req: AuthRequest, res: Response) => {
     })
     return res.json(result)
   } catch (error: unknown) {
-    console.error('Translation route error:', error)
+    console.error('Translation service request failed')
     return sendAIError(res, error, 'Failed to translate text')
   }
 })

@@ -22,7 +22,9 @@ for cache_variable in ("HF_HOME", "TRANSFORMERS_CACHE", "HF_DATASETS_CACHE"):
 
 import torch
 from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from service_security import ServiceSecurity
 from peft import PeftModel
 from pydantic import BaseModel, Field
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -58,12 +60,12 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Multraverse AI Service", version="2.0.0", lifespan=lifespan)
 from transit import router as transit_router
 app.include_router(transit_router)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+app.add_middleware(ServiceSecurity)
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_error(_request, _error):
+    return JSONResponse(status_code=422, content={'detail': 'Invalid request fields'})
 
 
 class TranslateRequest(BaseModel):
@@ -240,7 +242,7 @@ def load_speech_model():
 
 def speech_error(error: Exception) -> HTTPException:
     if isinstance(error, ModelUnavailableError):
-        return HTTPException(status_code=503, detail=str(error))
+        return HTTPException(status_code=503, detail="Speech service is temporarily unavailable")
     return HTTPException(status_code=500, detail="Speech processing failed")
 
 
@@ -293,8 +295,8 @@ def narrate(request: NarrativeRequest):
 
 def generation_error(error: Exception) -> HTTPException:
     if isinstance(error, ModelUnavailableError):
-        print(f'AI generation unavailable: {error}', flush=True)
-        return HTTPException(status_code=503, detail=str(error))
+        print('AI generation is temporarily unavailable', flush=True)
+        return HTTPException(status_code=503, detail="Model service is temporarily unavailable")
     return HTTPException(status_code=500, detail="Model generation failed")
 
 
@@ -427,4 +429,4 @@ def phrasebook_by_category(category: str):
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("AI_SERVICE_PORT", "8000")))
+    uvicorn.run(app, host=os.getenv("AI_SERVICE_HOST", "127.0.0.1"), port=int(os.getenv("AI_SERVICE_PORT", "8000")))

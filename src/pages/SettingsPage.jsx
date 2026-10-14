@@ -76,6 +76,9 @@ export default function SettingsPage() {
       </View>
     </Card>
     {profileMessage && <Text accessibilityLiveRegion="polite" style={themeStyle(styles.success)}>{profileMessage}</Text>}
+    <Section title="Privacy controls">
+      <Text style={themeStyle(styles.rowDescription)}>Your name and email support account access and security messages. Trips, budgets and saved places support travel planning. Only places you choose to publish become public. Location, photos and microphone access are optional: revoke access in your device or browser settings, and stop transit monitoring to stop location updates. Delete your account below to remove private travel records. Security and moderation logs may remain for abuse investigation. Privacy notice: October 15, 2026.</Text>
+    </Section>
     <Section title="Notifications">
       <Row label="Push Notifications" description="Receive alerts on your device" control={<ToggleSwitch accessibilityLabel="Push notifications" checked={push} onChange={setPush} />} />
       <Row label="SMS Alerts" description="Transit alarm via text message" control={<ToggleSwitch accessibilityLabel="SMS alerts" checked={sms} onChange={setSms} />} />

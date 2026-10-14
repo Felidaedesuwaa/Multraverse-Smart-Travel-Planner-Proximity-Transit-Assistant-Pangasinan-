@@ -50,6 +50,12 @@ export default function PasswordRecoveryPage() {
         if (mounted.current) { setGrant(result.grantToken); setCode(''); setMessage(result.message); }
       } else {
         const session = await api.recoverPassword(grant, password);
+        if (session.mfaRequired) {
+          setPassword(''); setGrant(null);
+          await useAuthStore.getState().logout();
+          navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+          return;
+        }
         await useAuthStore.getState().acceptSession(session);
         setPassword(''); setGrant(null); notifyUpdates();
         returnToDashboard(navigation, session.user.role);

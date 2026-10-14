@@ -7,6 +7,7 @@ import { registrationDetails, registrationNameDetails, RegistrationError } from 
 import { ensureEmailDomain } from './emailDomain'
 import { AuthError, authLimit } from './authLimits'
 import { emailTransport, sendVerificationEmail } from './verificationEmail'
+import { PrivacyAcknowledgment } from '../models/AccountSecurity'
 
 const TEN_MINUTES = 10 * 60 * 1000
 const invalidCode = () => new AuthError('Invalid or expired code. Use the latest email, or request a new code.')
@@ -19,6 +20,7 @@ const response = (pending: any) => ({
 })
 
 export async function beginRegistration(body: Record<string, unknown>) {
+  if (body.privacyConsent !== true) throw new RegistrationError({ privacyConsent: 'Please read and accept the privacy notice.' })
   const { email, password } = registrationDetails(body)
   emailTransport().close() // Fail clearly before persisting anything if delivery is unconfigured.
   if (await User.findOne({ email })) throw new RegistrationError({ email: 'Email already in use' })
@@ -39,6 +41,7 @@ export async function beginRegistration(body: Record<string, unknown>) {
     if ((error as { code?: number }).code === 11000) throw new AuthError('A code was recently requested. Wait one minute before trying again.', 429)
     throw error
   }
+  await PrivacyAcknowledgment.create({ challengeId, noticeVersion: '2026-10-15', acceptedAt: new Date(now), expiresAt: new Date(now + TEN_MINUTES) })
   try { await sendVerificationEmail(email, code) }
   catch (error) { await PendingRegistration.deleteOne({ challengeId }); throw error }
   return response(pending)
@@ -61,6 +64,7 @@ export async function resendRegistration(challengeId: unknown) {
     expiresAt: new Date(now + TEN_MINUTES), resendAt: new Date(now + 60000),
   } }, { returnDocument: 'after' })
   if (!updated) throw new AuthError('A code was already requested. Please wait one minute.', 429)
+  await PrivacyAcknowledgment.updateOne({ challengeId, userId: null }, { $set: { expiresAt: new Date(now + TEN_MINUTES) } })
   await sendVerificationEmail(updated.email, code)
   return response(updated)
 }
@@ -82,6 +86,8 @@ export async function verifyRegistration(challengeId: unknown, code: unknown) {
       surname: pending.surname, email: pending.email, passwordHash: pending.passwordHash,
       emailVerifiedAt: new Date(),
     }], { session })
+    const receipt = await PrivacyAcknowledgment.updateOne({ challengeId }, { $set: { userId: user._id, expiresAt: null } }, { session })
+    if (!receipt.matchedCount) throw new AuthError('Please start registration again and accept the privacy notice.')
     return user
   })
 }

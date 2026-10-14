@@ -7,6 +7,7 @@ import { publishedItineraryCatalog } from '../lib/publishedItineraryCatalog'
 import { validateItinerary, ItineraryInputError, buildGroundedItinerary, candidatesFor, validateModelOrder } from '../lib/groundedItinerary'
 import { guidedSnapshot } from '../lib/guidedSnapshot'
 import { estimateCosts, fareTables } from '../lib/itineraryCosts'
+import { aiServiceHeaders } from '../lib/aiServiceAuth'
 
 const router = Router()
 const inFlight = new Set<string>()
@@ -35,7 +36,7 @@ router.post('/itinerary/grounded', async (req: AuthRequest, res) => {
     if (candidates.length && (await AISettings.findById('global').lean())?.itineraryNarrative !== false) {
       try {
         const response = await fetch(`${process.env.AI_SERVICE_URL || 'http://localhost:8000'}/itinerary/rank`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(25000),
+          method: 'POST', headers: aiServiceHeaders(), signal: AbortSignal.timeout(25000),
           body: JSON.stringify({ areaId: request.areaId, tripTypes: request.tripTypes, activities: request.activities, travelStyle: request.travelStyle,
             budget: request.budget, visitAllowance: Math.max(0, baseline.remainingMin), mealBudget: request.mealBudget, travelers: request.travelers, days: request.days,
             candidates: candidates.map(e => ({ id: e.id, name: e.name, category: e.category, tag: e.tag, description: (e.description || '').slice(0, 1000),

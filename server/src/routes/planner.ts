@@ -10,6 +10,7 @@ import areas from '../data/plannerAreas.json'
 import fareReference from '../data/pangasinanFares.json'
 import { areaIdFor, buildPlan, PlanningError, savedPlaceIds, validateRequest } from '../lib/planner'
 import { cityGuidePlaces, cityGuideFoods } from '../lib/cityGuides'
+import { aiServiceHeaders } from '../lib/aiServiceAuth'
 
 // Mounted after authentication in ai.ts. All plan IDs are scoped to their owner.
 const router = Router()
@@ -104,7 +105,7 @@ router.post('/planner/:id/narrative', async (req: AuthRequest<{ id: string }>, r
     // The FastAPI service has its own startup cache too. This narrower snapshot
     // keeps a request tied to the exact database records used by this plan.
     const response = await fetch(`${process.env.AI_SERVICE_URL || 'http://localhost:8000'}/narrative`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(25_000),
+      method: 'POST', headers: aiServiceHeaders(), signal: AbortSignal.timeout(25_000),
       body: JSON.stringify({
         days: plan.days.map((day: any) => ({ day: day.day, stops: day.stops.map((stop: any) => ({ placeId: stop.placeId, name: stop.place, facts: stop.activity })) })),
         context: { places: contextPlaces, routes: contextRoutes, foods: contextFoods },

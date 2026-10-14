@@ -38,7 +38,7 @@ let server
     const originalHash = superadmin.passwordHash
     await bootstrapSuperAdmin('different@multraverse.ph', 'Different123!')
     assert.equal((await User.findById(superadmin._id).select('+passwordHash')).passwordHash, originalHash)
-    const token = user => jwt.sign({ userId: String(user._id), role: 'SUPERADMIN', credential: sessionCredential(user.passwordHash) }, process.env.JWT_SECRET)
+    const token = user => jwt.sign({ userId: String(user._id), role: user.role, mfa: true, credential: sessionCredential(user.passwordHash) }, process.env.JWT_SECRET)
     const superToken = token(superadmin)
     const accounts = []
     for (const role of ['ADMIN', 'LGU', 'EXPLORER', 'PRO']) accounts.push(await User.create({ name: role, email: `${role.toLowerCase()}@multraverse.ph`, passwordHash: await bcrypt.hash('Example123!', 4), role, ...(role === 'LGU' ? { municipality: 'Dagupan' } : {}) }))
@@ -59,7 +59,7 @@ let server
     assert.equal((await call('admin/approvals/places', superToken)).status, 403)
     assert.equal((await call('lgu/places', superToken)).status, 403)
     const login = await call('auth/login', undefined, 'POST', { email: superadmin.email, password: 'Superadmin123!' })
-    assert.equal(login.status, 200); assert.equal(login.body.user.role, 'SUPERADMIN')
+    assert.equal(login.status, 200); assert.equal(login.body.mfaRequired, true); assert.equal(login.body.token, undefined)
     assert.equal((await call('users/me', superToken)).body.role, 'SUPERADMIN')
     assert.equal((await call('users/me', token(admin), 'PUT', { role: 'SUPERADMIN' })).status, 400)
     for (const body of [{ ...lguInput, municipality: 'Alamnios' }, { ...lguInput, municipality: { $ne: '' } }, { ...lguInput, password: 'weak' }, { ...lguInput, role: 'SUPERADMIN' }, { ...lguInput, createdBy: String(admin._id) }, { ...lguInput, email: 'bad' }]) assert.equal((await call('users/lgu-accounts', superToken, 'POST', body)).status, 400)

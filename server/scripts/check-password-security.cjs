@@ -45,6 +45,7 @@ let server;
     const { models, jsonSchema } = require('./database-rules.cjs');
     for (const model of models()) { await model.createCollection({ validator: { $jsonSchema: jsonSchema(model.schema) } }); await model.createIndexes(); }
     await preparePasswordResetStorage(); await preparePasswordResetStorage(); // additive/idempotent on an existing schema
+    await require('../dist/models/AccountSecurity').prepareAccountSecurityStorage();
     const initialPassword = 'Travel_2026'; const changedPassword = 'Island_2027'; const resetPassword = 'Summer_2028';
     const owner = await User.create({ name: 'Juan Reyes', email: 'juan.security@gmail.com', passwordHash: await bcrypt.hash(initialPassword, 10) });
     const other = await User.create({ name: 'Maria Santos', email: 'maria.security@gmail.com', passwordHash: await bcrypt.hash(initialPassword, 10) });
@@ -158,7 +159,16 @@ let server;
     // Managed LGU accounts use the same recovery flow, preserving their role and scope.
     await limits();
     const lgu = await User.create({ name: 'Municipal Tourism Officer', email: 'lgu.security@gmail.com', role: 'LGU', municipality: 'Dagupan', passwordHash: await bcrypt.hash('LegacyPass1!', 4) });
-    const lguLogin = password => call('auth/login', { email: lgu.email, password });
+    const lguLogin = async password => {
+      const result = await call('auth/login', { email: lgu.email, password });
+      if (result.status === 200) {
+        assert.equal(result.body.mfaRequired, true); assert.equal(result.body.token, undefined);
+        // This suite tests password/session behavior; the rubric suite tests actual MFA redemption.
+        const current = await User.findById(lgu._id).select('+passwordHash');
+        result.body = { token: jwt.sign({ userId: String(lgu._id), role: current.role, mfa: true, credential: sessionCredential(current.passwordHash) }, process.env.JWT_SECRET), user: current };
+      }
+      return result;
+    };
     let lguSession = await lguLogin('LegacyPass1!'); assert.equal(lguSession.status, 200);
     assert.equal((await call('auth/password/change', { currentPassword: 'LegacyPass1!', newPassword: changedPassword }, lguSession.body.token)).status, 200);
     assert.equal((await call('users/me', undefined, lguSession.body.token, 'GET')).status, 401);

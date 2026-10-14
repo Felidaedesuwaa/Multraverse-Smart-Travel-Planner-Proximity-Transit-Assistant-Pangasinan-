@@ -10,6 +10,8 @@ const { User, Trip, BudgetEntry, SavedPlace } = require('../dist/models');
 const { PlannerDraft } = require('../dist/models/PlannerDraft');
 const { PendingRegistration } = require('../dist/models/PendingRegistration');
 const { PasswordReset } = require('../dist/models/PasswordReset');
+const { AccountFactor, PrivacyAcknowledgment, RevokedSession } = require('../dist/models/AccountSecurity');
+const { GeofenceMonitor } = require('../dist/models/GeofenceMonitor');
 const { AuthLimit } = require('../dist/lib/authLimits');
 const { sessionCredential } = require('../dist/lib/sessionCredential');
 const originalSecret = process.env.JWT_SECRET;
@@ -28,7 +30,8 @@ const replace = (object, key, value) => {
     const owner = { _id: new mongoose.Types.ObjectId(), email: 'owner@example.test', role: 'EXPLORER', passwordHash: await bcrypt.hash(password, 4) };
     const other = { ...owner, _id: new mongoose.Types.ObjectId(), email: 'other@example.test' };
     const accounts = new Map([owner, other].map(user => [String(user._id), user]));
-    const records = new Map([Trip, BudgetEntry, SavedPlace, PlannerDraft, PendingRegistration, PasswordReset].map(model => [model, new Set([String(owner._id), String(other._id)])]));
+    const records = new Map([Trip, BudgetEntry, SavedPlace, PlannerDraft, PendingRegistration, PasswordReset, AccountFactor, PrivacyAcknowledgment, GeofenceMonitor].map(model => [model, new Set([String(owner._id), String(other._id)])]));
+    replace(RevokedSession, 'exists', async () => null);
     let mutations = 0, transactions = 0, attempts = 0, changed = false;
     replace(User, 'findById', id => ({ select: async () => accounts.get(String(id)) || null }));
     replace(AuthLimit, 'findOneAndUpdate', async () => ({ count: ++attempts }));

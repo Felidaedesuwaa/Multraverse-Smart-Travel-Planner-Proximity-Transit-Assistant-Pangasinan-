@@ -4,6 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
+    "test:rubric": "npm run build && node scripts/check-rubric-security.cjs",
     "test:security": "npm run build && node scripts/check-password-security.cjs --isolated-database",
     "test:recovery": "npm run build && node scripts/check-recovery-grants.cjs",
     "test:notifications": "npm run build && node scripts/check-notification-feed.cjs",
@@ -21,7 +22,7 @@
     "test:auth": "npm run build && node scripts/check-registration-api.cjs --isolated-database",
     "check:email": "npm run build && node scripts/check-email.cjs",
     "test:environment": "npm run build && node scripts/check-environment.cjs",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm run build && node scripts/check-rubric-security.cjs && node scripts/check-recovery-grants.cjs && node scripts/check-self-delete.cjs && node scripts/check-database-startup.cjs && node scripts/check-vercel.cjs",
     "migrate:lgu": "npm run build && node scripts/migrate-lgu.cjs",
     "test:lgu": "npm run build && node scripts/check-lgu-api.cjs --isolated-database",
     "seed:superadmin": "ts-node seeds/seedSuperAdmin.ts",

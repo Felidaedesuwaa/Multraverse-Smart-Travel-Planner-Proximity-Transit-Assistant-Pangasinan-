@@ -33,6 +33,7 @@ export default function RegisterPage() {
   const [confirm, setConfirm] = useState("");
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState(null);
+  const [privacyConsent, setPrivacyConsent] = useState(false);
   const submitting = useRef(false);
   const fields = { firstName, middleName, surname, email, password, confirm };
   const fullName = registrationFullName(firstName, middleName, surname);
@@ -44,6 +45,7 @@ export default function RegisterPage() {
 
   const handleSubmit = async () => {
     if (submitting.current || isLoading) return;
+    if (!privacyConsent) { setFormError("Read and accept the privacy notice before registering."); return; }
     const validation = validateRegistration(fields);
     setErrors(validation);
     setFormError(null);
@@ -51,7 +53,7 @@ export default function RegisterPage() {
 
     submitting.current = true;
     try {
-      const success = await register({ firstName: normalizeName(firstName), middleName: normalizeName(middleName), surname: normalizeName(surname), email: email.trim().toLowerCase(), password });
+      const success = await register({ firstName: normalizeName(firstName), middleName: normalizeName(middleName), surname: normalizeName(surname), email: email.trim().toLowerCase(), password, privacyConsent });
       if (success) {
         setPending(success); setPassword(""); setConfirm(""); setNow(Date.now());
       }
@@ -110,6 +112,8 @@ export default function RegisterPage() {
       <AuthInput label="Password" placeholder="e.g. Lakbay_2026 (use your own)" hint="8–72 characters, at least one capital letter and one number. Only letters, numbers, _, - and @; no spaces." value={password} onChangeText={change("password", setPassword)} onBlur={() => validateField("password")} error={errors.password} isPassword autoComplete="new-password" editable={!isLoading} />
       <AuthInput label="Confirm password" placeholder="Repeat your chosen password" value={confirm} onChangeText={change("confirm", setConfirm)} onBlur={() => validateField("confirm")} error={errors.confirm} isPassword autoComplete="new-password" editable={!isLoading} onSubmitEditing={handleSubmit} />
       {formError ? <Text accessibilityRole="alert" style={themeStyle(styles.formError)}>{formError}</Text> : null}
+      <Text style={themeStyle(styles.namePreview)}>Privacy notice (October 15, 2026): We use your name and email to manage your account and send security codes. Your trips, budget and saved places support travel planning. Places you choose to publish are visible to others. Location, photo and microphone access are optional and used for the feature you request; stop transit monitoring or revoke device permissions to withdraw access. Administrators can manage accounts and review published content. You can delete your account and its private travel records in account settings. We do not request payment card details. Account records stay until deletion; security and moderation logs may remain for abuse investigation.</Text>
+      <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: privacyConsent }} onPress={() => setPrivacyConsent(value => !value)} disabled={isLoading} style={styles.codeAction}><Text style={themeStyle(styles.footerLink)}>{privacyConsent ? "[x]" : "[ ]"} I have read and accept this use of my data.</Text></Pressable>
       <GradientButton label="Register" loading={isLoading} onPress={handleSubmit} />
     </AuthLayout>
   );

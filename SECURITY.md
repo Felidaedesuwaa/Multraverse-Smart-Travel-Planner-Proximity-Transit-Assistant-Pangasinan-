@@ -1,5 +1,10 @@
 # Security controls and verification
 
+See [the October 15 rubric review](docs/SECURITY-RUBRIC.md) for the latest MFA,
+logout revocation, privacy acknowledgment, private AI-service controls, dependency
+verification and testing boundaries. It supersedes the historical dependency
+counts and remaining-work descriptions below where those controls have changed.
+
 This describes the October 2026 account-security update. It reduces specific
 risks; it is not a penetration-test certification or a guarantee against every
 attack. Do not disclose passwords, reset codes, JWTs or environment files in

@@ -16,6 +16,7 @@ export const useAuthStore = create((set, get) => ({
   error: null,
   fieldErrors: {},
   acceptSession: async data => {
+    if (!data.token || !data.user) throw new Error('Password saved. Sign in again and verify your authenticator to continue.');
     await storage.setItem('token', data.token)
     await storage.setItem('user', JSON.stringify(data.user))
     set({ ...accountState(data.user), isAuthenticated: true, isLoading: false, error: null })
@@ -29,7 +30,8 @@ export const useAuthStore = create((set, get) => ({
     const token = await storage.getItem('token')
     const user = await storage.getItem('user')
     if (token && user) {
-      set({ ...accountState(JSON.parse(user)), isAuthenticated: true })
+      try { set({ ...accountState(JSON.parse(user)), isAuthenticated: true }) }
+      catch { await get().logout(); return }
       // Refresh account details without preventing cached/offline startup.
       get().refreshProfile()
     }
@@ -63,6 +65,7 @@ export const useAuthStore = create((set, get) => ({
     set({ isLoading: true, error: null })
     try {
       const data = await api.login(email, password)
+      if (data.mfaRequired) { set({ isLoading: false }); return data }
       await storage.setItem('token', data.token)
       await storage.setItem('user', JSON.stringify(data.user))
       set({ ...accountState(data.user), isAuthenticated: true, isLoading: false })
@@ -110,6 +113,7 @@ export const useAuthStore = create((set, get) => ({
       await Promise.all([
         storage.removeItem(`planner:v1:${userId}:plan`),
         storage.removeItem(`planner:v1:${userId}:catalog`),
+        storage.removeItem(`notifications:arrivals:${userId}`),
       ])
     }
   },
@@ -117,7 +121,13 @@ export const useAuthStore = create((set, get) => ({
   logout: async () => {
     try {
       try { await stopTransitAlarm() } finally {
-        await Promise.all([storage.removeItem('token'), storage.removeItem('user')])
+        try {
+          if (await storage.getItem('token')) {
+            try { await api.logout() } catch { /* Clear the device even when offline. */ }
+          }
+        } finally {
+          await Promise.all([storage.removeItem('token'), storage.removeItem('user')])
+        }
       }
     } finally {
       set({ ...accountState(null), isAuthenticated: false, isLoading: false, error: null, fieldErrors: {} })
