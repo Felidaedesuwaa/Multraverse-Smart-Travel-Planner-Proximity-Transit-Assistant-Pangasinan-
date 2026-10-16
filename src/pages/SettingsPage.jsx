@@ -1,6 +1,6 @@
 import { FeedbackPressable } from "../components/WorkspaceMotion";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import Card from "../components/Card";
 import ToggleSwitch from "../components/ToggleSwitch";
 import CurrencyPicker from "../components/CurrencyPicker";
@@ -22,13 +22,9 @@ function Section({ title, children }) {
     </Card>
   );
 }
-function Row({ label, description, control, last, danger, stacked }) {
+function Row({ label, description, control, last, danger }) {
   const { themeStyle } = useAppTheme();
-  return <View style={themeStyle([styles.row, !last && styles.rowBorder, stacked && styles.stacked])}><View style={stacked ? styles.stackedText : styles.rowText}><Text style={themeStyle([styles.rowLabel, danger && styles.dangerText])}>{label}</Text><Text style={themeStyle(styles.rowDescription)}>{description}</Text></View>{control}</View>;
-}
-function CycleButton({ value, values, onChange }) {
-  const { themeStyle } = useAppTheme();
-  return <FeedbackPressable accessibilityRole="button" accessibilityLabel={`Language: ${value}`} onPress={() => onChange(values[(values.indexOf(value) + 1) % values.length])} style={themeStyle(styles.choice)}><Text style={themeStyle(styles.choiceText)}>{value}</Text></FeedbackPressable>;
+  return <View style={themeStyle([styles.row, !last && styles.rowBorder])}><View style={styles.rowText}><Text style={themeStyle([styles.rowLabel, danger && styles.dangerText])}>{label}</Text><Text style={themeStyle(styles.rowDescription)}>{description}</Text></View>{control}</View>;
 }
 
 export default function SettingsPage() {
@@ -50,10 +46,7 @@ export default function SettingsPage() {
   const refreshRates = usePreferencesStore(state => state.refreshRates);
   const selectedCurrency = usePreferencesStore(state => state.currency);
   const [push, setPush] = useState(true);
-  const [sms, setSms] = useState(false);
   const [digest, setDigest] = useState(true);
-  const [language, setLanguage] = useState("English");
-  const [region, setRegion] = useState("Pangasinan, Philippines");
   const name = user?.name || "Traveler";
   return <><ScrollView contentContainerStyle={themeStyle([styles.screen, compact && styles.screenCompact])}>
     <View style={styles.content}>
@@ -81,22 +74,19 @@ export default function SettingsPage() {
     </Section>
     <Section title="Notifications">
       <Row label="Push Notifications" description="Receive alerts on your device" control={<ToggleSwitch accessibilityLabel="Push notifications" checked={push} onChange={setPush} />} />
-      <Row label="SMS Alerts" description="Transit alarm via text message" control={<ToggleSwitch accessibilityLabel="SMS alerts" checked={sms} onChange={setSms} />} />
       <Row label="Email Digest" description="Weekly travel summary" control={<ToggleSwitch accessibilityLabel="Email digest" checked={digest} onChange={setDigest} />} last />
     </Section>
     <Section title="App Preferences">
       <Row label="Dark Mode" description="Use a darker appearance" control={<ToggleSwitch accessibilityLabel="Dark Mode" checked={dark} onChange={setDark} />} />
-      <Row label="Language" description="App display language" control={<CycleButton value={language} values={["English", "Filipino", "Pangasinan"]} onChange={setLanguage} />} />
-      <Row label="Currency" description="Your preferred display currency" control={<CurrencyPicker buttonStyle={styles.choice} />} />
+      <Row label="Currency" description="Your preferred display currency" control={<CurrencyPicker buttonStyle={styles.choice} />} last />
       {selectedCurrency !== "PHP" && (ratesLoading || ratesError) && <View style={styles.rateStatus}>{ratesLoading ? <ActivityIndicator color={themeColor(colors.oceanBlue)} /> : null}{ratesError && <><Text style={themeStyle(styles.rowDescription)}>{ratesError}</Text><FeedbackPressable accessibilityRole="button" accessibilityLabel="Retry exchange rates" onPress={() => refreshRates(true)} style={styles.retry}><Text style={themeStyle(styles.choiceText)}>Retry exchange rates</Text></FeedbackPressable></>}</View>}
-      <Row label="Default Region" description="Pre-filled in trip search" stacked={compact} control={<TextInput accessibilityLabel="Default destination region" value={region} onChangeText={setRegion} style={themeStyle([styles.regionInput, compact && styles.regionInputCompact])} />} last />
     </Section>
     {storageError && <Text style={themeStyle(styles.storageError)}>{storageError}</Text>}
     <Section title="Account Security">
       <Row label="Password" description="Update your password and sign out other sessions" control={<FeedbackPressable accessibilityRole="button" onPress={() => setChangingPassword(true)} style={themeStyle(styles.photo)}><Text style={themeStyle(styles.photoText)}>Change password</Text></FeedbackPressable>} last />
     </Section>
     <Section title="Privacy & Data">
-      <Row label="Location Access" description="For transit alerts and geofencing" control={<Text style={themeStyle(styles.allowed)}>Allowed</Text>} />
+      <Row label="Location Access" description="For transit alerts" control={<Text style={themeStyle(styles.allowed)}>Allowed</Text>} />
       <Row label="Delete Account" description="Password required to permanently remove your data" danger control={<FeedbackPressable accessibilityRole="button" onPress={() => setDeleting(true)} style={({ pressed, hovered }) => [styles.delete, hovered && styles.deleteHovered, pressed && styles.deletePressed]}><Text style={styles.deleteText}>Delete</Text></FeedbackPressable>} last />
     </Section>
     </View>
@@ -130,16 +120,12 @@ const styles = StyleSheet.create({
   sectionTitle: { paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.border, backgroundColor: colors.warmSand, fontSize: 10, fontWeight: "700", letterSpacing: 1, color: colors.textMuted },
   sectionBody: { paddingHorizontal: 16 },
   row: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 16, paddingVertical: 10, minHeight: 64 },
-  stacked: { flexDirection: "column", alignItems: "stretch", gap: 8, paddingVertical: 12 },
   rowBorder: { borderBottomWidth: 1, borderBottomColor: colors.border },
   rowText: { flex: 1, minWidth: 0 },
-  stackedText: { minWidth: 0 },
   rowLabel: { fontSize: 13, fontWeight: "600", lineHeight: 19, color: colors.textPrimary },
   rowDescription: { marginTop: 2, fontSize: 12, lineHeight: 17, color: colors.textMuted },
   choice: { paddingHorizontal: 12, minWidth: 104, minHeight: 44, justifyContent: "center", borderWidth: 1, borderColor: colors.border, borderRadius: 8, backgroundColor: colors.white },
   choiceText: { fontSize: 13, color: colors.textPrimary, textAlign: "center" },
-  regionInput: { width: 220, minHeight: 44, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderColor: colors.border, borderRadius: 8, fontSize: 13, color: colors.textPrimary, backgroundColor: colors.white },
-  regionInputCompact: { width: "100%" },
   allowed: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 6, backgroundColor: colors.palmGreenLight, color: colors.palmGreen, fontSize: 11, fontWeight: "600" },
   dangerText: { color: colors.sunsetCoral },
   delete: { paddingHorizontal: 12, minHeight: 44, alignItems: "center", justifyContent: "center", backgroundColor: "#8F4549", borderWidth: 1, borderColor: "#8F4549", borderRadius: 8 },

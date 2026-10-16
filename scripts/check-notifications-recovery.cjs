@@ -18,7 +18,7 @@ function load(file, mocks = {}, extra = {}) {
   vm.runInNewContext(`(function(require,module,exports){${code}\n})`, { h, Fragment: 'Fragment', console, Date, Set, Promise, AbortController, setTimeout, clearTimeout, setInterval: () => 1, clearInterval() {}, ...extra })(name => mocks[name] || new Proxy({ __esModule: true, default: name }, { get: (target, key) => target[key] || String(key) }), module, module.exports);
   return module.exports;
 }
-const text = node => typeof node === 'string' ? node : node?.children?.map(text).join('') || '';
+const text = node => typeof node === 'string' || typeof node === 'number' ? String(node) : node?.children?.map(text).join('') || '';
 const nodes = node => !node || typeof node !== 'object' ? [] : [node, ...(node.children || []).flatMap(nodes)];
 const find = predicate => nodes(tree).find(predicate);
 let Screen;
@@ -36,19 +36,30 @@ const common = {
   '@react-navigation/native': { useNavigation: () => navigation },
   '@react-native-async-storage/async-storage': { __esModule: true, default: storage },
   '../store/authStore': { useAuthStore: auth },
-  '../theme/useAppTheme': { useAppTheme: () => ({ themeStyle: value => value, palette: {} }) },
+  '../theme/useAppTheme': { useAppTheme: () => ({ themeStyle: value => value, palette: { ink: '#16324A', muted: '#6B8CA8', tint: '#EAF3F8', background: '#FFF', surface: '#FFF', line: '#DDD', primary: '#0B3C5D' } }) },
+  './WorkspaceMotion': { FeedbackPressable: 'Pressable' },
 };
 (async () => {
   const notices = ['review', 'expense', 'password'].map(type => ({ id: type, type, title: type, message: `${type} update`, createdAt: new Date().toISOString(), screen: type === 'password' ? 'PasswordRecovery' : 'MyTrips' }));
+  values.set('notifications:seen:traveler', JSON.stringify(['older-notice']));
   let fail = false;
   Screen = load('src/components/NotificationHeader.jsx', { ...common,
     'react-native-safe-area-context': { useSafeAreaInsets: () => ({ top: 59, bottom: 34 }) },
-    './GeofenceTracking': { useGeofenceTracking: () => ({}), GeofenceControls: 'GPSControls' },
     '../lib/api': { api: { getNotifications: async () => { if (fail) throw Error('offline'); return user.id === 'traveler' ? notices : []; } } },
     '../lib/notificationEvents': { getArrivalNotices: async id => id === 'traveler' ? [{ id: 'arrival', type: 'arrival', title: 'Destination reached', message: 'Dagupan', createdAt: new Date().toISOString(), screen: 'TransitAlarm' }] : [], subscribeNotifications: () => () => {} },
   }).default;
   render(); await flush();
   assert(find(node => node.props.accessibilityLabel === 'Notifications, 4 unread'));
+  assert(text(tree).includes('4 unread'));
+  assert(!find(node => node.type === 'GPSControls'), 'GPS controls are absent from notifications');
+  const refreshButton = find(node => node.props.accessibilityLabel === 'Refresh notifications');
+  assert.equal(text(refreshButton), '', 'Refresh uses an icon without a text label');
+  assert(nodes(refreshButton).some(node => node.type === 'RefreshCw'));
+  for (const label of ['Refresh notifications', 'Mark all as read']) {
+    const control = find(node => node.props.accessibilityLabel === label);
+    assert.equal(control.props.lift, true, `${label} enables hover motion`);
+    assert.notEqual(control.props.style({ hovered: true }).at(-1).backgroundColor, control.props.style({}).at(-1).backgroundColor, `${label} highlights on hover`);
+  }
   await press('Notifications, 4 unread');
   assert.equal(find(node => node.type === 'Modal').props.visible, true);
   const passwordNotice = find(node => node.props.onPress && text(node).includes('Wasn’t you?'));
@@ -56,11 +67,27 @@ const common = {
   assert.equal(navigations.at(-1)[0], 'PasswordRecovery');
   assert.equal(find(node => node.type === 'Modal').props.visible, false);
   assert(JSON.parse(values.get('notifications:seen:traveler')).includes('password'));
-  await press('Notifications, 3 unread'); await press('Mark all read');
+  await press('Notifications, 3 unread'); await press('Mark all as read');
   assert(find(node => node.props.accessibilityLabel === 'Notifications, 0 unread'));
-  fail = true; await press('Refresh'); assert(text(tree).includes('could not be refreshed'));
+  const markUnread = find(node => node.props.accessibilityLabel === 'Mark all as unread');
+  assert(!markUnread.props.disabled, 'Muted unread action remains clickable');
+  assert(markUnread.props.style({}).at(-1).opacity < 1, 'All-read state dims the bulk action');
+  reset(); render(); await flush();
+  assert(find(node => node.props.accessibilityLabel === 'Notifications, 0 unread'), 'Read state survives remount');
+  await press('Mark all as unread');
+  assert(find(node => node.props.accessibilityLabel === 'Notifications, 4 unread'));
+  assert.deepEqual(JSON.parse(values.get('notifications:seen:traveler')), ['older-notice'], 'Reset only affects the current notification feed');
+  reset(); render(); await flush();
+  assert(find(node => node.props.accessibilityLabel === 'Notifications, 4 unread'), 'Unread reset survives remount');
+  await press('Mark all as read');
+  notices.push({ id: 'new-expense', type: 'expense', title: 'New expense', message: 'Latest expense', createdAt: new Date().toISOString(), screen: 'Budget' });
+  await press('Refresh notifications');
+  assert(find(node => node.props.accessibilityLabel === 'Notifications, 1 unread'), 'New notifications restore the read action and badge');
+  assert(find(node => node.props.accessibilityLabel === 'Mark all as read'));
+  fail = true; await press('Refresh notifications'); assert(text(tree).includes('could not be refreshed'));
   fail = false; user = { ...user, id: 'another-user' }; reset(); render(); await flush();
   assert(find(node => node.props.accessibilityLabel === 'Notifications, 0 unread'));
+  assert(find(node => node.props.accessibilityLabel === 'Mark all as read').props.disabled, 'Empty feed disables bulk actions');
   assert(!text(tree).includes('password update'), 'Notifications never leak across accounts');
 
   reset(); user = { ...user, id: 'traveler' }; let verificationCalls = 0, recoveryCalls = 0;
@@ -99,5 +126,5 @@ const common = {
   await assert.rejects(client.api.getNotifications()); assert.equal(logout, 0, 'Polling cannot sign out the user during credential replacement');
   release(); await changing; assert.equal(values.get('token'), 'new-session');
   await assert.rejects(client.api.getNotifications()); assert.equal(logout, 1, 'Ordinary invalid sessions still sign out');
-  console.log('PASS: bell unread/read persistence, arrival/expense/review/password updates, account isolation, offline retry, OTP before single password entry, Dashboard redirect, and password/session polling race.');
+  console.log('PASS: read/unread toggle and persistence, live unread counts, muted clickable reset, icon refresh and hover controls, no GPS option, arrival/expense/review/password updates, account isolation, offline retry, OTP recovery, and session polling race.');
 })().catch(error => { reset(); console.error(error); process.exitCode = 1; });

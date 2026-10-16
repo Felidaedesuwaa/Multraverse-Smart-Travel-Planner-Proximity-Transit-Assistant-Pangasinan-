@@ -72,14 +72,6 @@ function MunicipalEditor({ resource, municipality }) {
         } else if (type.includes('number')) { if (editingId && key === 'entryFee') payload[key] = null }
         else payload[key] = value
       }
-      if (resource === 'geofences') {
-        const pair = /^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$/.exec(payload.coord || '')
-        const radius = /^\s*(\d+(?:\.\d+)?)\s*(m|km)\s*$/i.exec(payload.radius || '')
-        if (!pair) throw new Error('Enter coordinates as latitude, longitude.')
-        if (!radius) throw new Error('Enter a radius in metres or kilometres, such as 200 m.')
-        payload.coordinates = { lat: Number(pair[1]), lng: Number(pair[2]) }
-        payload.radiusMeters = Number(radius[1]) * (radius[2].toLowerCase() === 'km' ? 1000 : 1)
-      }
       await api.submitLGUResource(resource, payload, editingId)
       setDraft(null); setNotice('Submitted for Admin approval.'); await refresh()
     } catch (err) { setError(err.message) } finally { setBusy(false) }

@@ -16,7 +16,7 @@ The migration is idempotent and marks legacy catalog records as approved. It add
 municipality/approval indexes and review revisions. It does not guess municipal
 ownership from addresses or route endpoints. Existing Place municipality values
 are retained; an administrator must assign exact municipality strings to legacy
-food, fare, geofence, and transit records before LGUs can manage them. Use the same
+food, fare, and transit records before LGUs can manage them. Use the same
 spelling on the account and resources (for example `Dagupan`). LGUs cannot assign
 or change that ownership, including through profile updates.
 
@@ -44,7 +44,7 @@ changed or already reviewed submissions return 409 and must be refreshed.
 
 ## API
 
-Resources: `places`, `geofences`, `foods`, `route-prices`, `transit-routes`.
+Resources: `places`, `foods`, `route-prices`, `transit-routes`.
 All routes require `Authorization: Bearer <token>`.
 
 | Method | Path | Behavior |
@@ -65,7 +65,7 @@ cannot restore revoked privileges. Cross-municipality IDs return 404.
 
 ## Frontend and verification
 
-LGU login opens `/lgu` with its own responsive sidebar and five resource editors.
+LGU login opens `/lgu` with its own responsive sidebar and four resource editors.
 The persisted Zustand user includes role and municipality, also exposed as store
 fields. Admins can open LGU approvals from their sidebar or the mobile navigation
 bar. Components remain JSX and reuse the existing shared visual components.
@@ -100,7 +100,7 @@ names matching the generated LGU test-database pattern for interrupted runs.
 - `src/data/lguResources.js`, `src/lib/api.js`, `src/store/authStore.js`, and
   `src/App.jsx`: shared resource definitions, calls, persisted account and routing;
   no per-municipality resource IDs or query filters.
-- `server/src/routes/lgu.ts`: all five models use `req.municipality`, the trusted
+- `server/src/routes/lgu.ts`: all four models use `req.municipality`, the trusted
   equivalent of `req.user.municipality` assigned by authentication from MongoDB.
   Unknown query parameters (including municipality) and body ownership fields are
   rejected. Every read/update/delete and referenced transit route uses that scope.
@@ -112,7 +112,7 @@ names matching the generated LGU test-database pattern for interrupted runs.
 
 Run `node scripts/check-lgu-municipalities.cjs` to check all 48 geographic viewports,
 zoom, aliases, four cities, and parity with the existing backend catalog. The LGU
-API suite additionally exercises all five resource types for each of six scopes,
+API suite additionally exercises all four resource types for each of six scopes,
 including foreign IDs and municipality injection through both body and query.
 
 ## Itinerary images and emergency reserve

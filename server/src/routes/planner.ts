@@ -3,7 +3,7 @@ import { publishedFilter } from '../models/_moderation'
 import { Router } from 'express'
 import mongoose from 'mongoose'
 import { AuthRequest, requireAdmin } from '../middleware/auth'
-import { Place, RoutePrice, TransitRoute, LocalFood, SavedPlace, Geofence, Trip, User } from '../models'
+import { Place, RoutePrice, TransitRoute, LocalFood, SavedPlace, Trip, User } from '../models'
 import { PlannerDraft } from '../models/PlannerDraft'
 import { AISettings } from '../models/AISettings'
 import areas from '../data/plannerAreas.json'
@@ -62,13 +62,13 @@ router.post('/itinerary', async (req: AuthRequest, res) => {
     const areaId = profileAreaId(user?.location)
     if (!areaId) return res.status(400).json({ error: 'Set a supported Pangasinan location in your profile before planning.' })
     const request = validateRequest({ ...req.body, origin: { areaId } })
-    const [places, fares, routes, foods, saved, geofences] = await Promise.all([
+    const [places, fares, routes, foods, saved] = await Promise.all([
       Place.find(publishedFilter).limit(5001).lean(), RoutePrice.find(publishedFilter).limit(5001).lean(), TransitRoute.find(publishedFilter).limit(5001).lean(), LocalFood.find(publishedFilter).limit(5001).lean(),
-      SavedPlace.find({ userId: req.userId }).limit(5001).lean(), Geofence.find({ $and: [publishedFilter], active: true }).limit(5001).lean(),
+      SavedPlace.find({ userId: req.userId }).limit(5001).lean(),
     ])
-    if ([places, fares, routes, foods, saved, geofences].some(items => items.length > 5000)) return res.status(503).json({ error: 'Planner catalog exceeds the current capacity. Contact the administrator.' })
+    if ([places, fares, routes, foods, saved].some(items => items.length > 5000)) return res.status(503).json({ error: 'Planner catalog exceeds the current capacity. Contact the administrator.' })
     const plan = buildPlan(request, { places: cityGuidePlaces(places), fares, routes,
-      foods: cityGuideFoods(foods, request.destinations.map(d => d.areaId)), saved, geofences })
+      foods: cityGuideFoods(foods, request.destinations.map(d => d.areaId)), saved })
     const draft = await PlannerDraft.create({ userId: req.userId, plan, expiresAt: new Date(Date.now() + 86400000) })
     res.json({ ...plan, fareReference, id: String(draft._id) })
   } catch (error) {

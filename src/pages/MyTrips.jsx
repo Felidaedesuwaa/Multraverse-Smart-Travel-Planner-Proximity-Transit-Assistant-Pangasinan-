@@ -1,7 +1,7 @@
-import { tripDisplayTitle } from '../lib/tripTitle';
+import { tripDisplayTitle, tripDurationDays } from '../lib/tripTitle';
 import TripActionConfirmation from '../components/TripActionConfirmation';
 import SuccessBanner from '../components/SuccessBanner';
-import SavedItineraryDetails, { savedTripActionStyle } from '../components/SavedItineraryDetails';
+import SavedItineraryDetails from '../components/SavedItineraryDetails';
 import { FeedbackPressable } from "../components/WorkspaceMotion";
 import MoneyAmount from "../components/MoneyAmount";
 import { useAppTheme } from "../theme/useAppTheme";
@@ -48,7 +48,8 @@ const STATUS_STYLE = {
 // ── Trip Detail Modal ───────────────────────────────────
 function TripDetailModal({ trip, onClose, onDelete, onCancel, onComplete, onExport, confirmation, onDismissConfirmation, onConfirm, canceling, error, message }) {
   const { themeStyle, themeColor, isDark } = useAppTheme();
-  const { height } = useWindowDimensions();
+  const { height, width } = useWindowDimensions();
+  const actionLayout = width < 600 ? { width: '100%' } : { flex: 1 };
 
   if (!trip) return null;
   const Icon = placeIconMap[trip.icon] ?? placeIconMap.landmark;
@@ -167,24 +168,24 @@ function TripDetailModal({ trip, onClose, onDelete, onCancel, onComplete, onExpo
 
           {!!message && <Text accessibilityRole="alert" style={themeStyle({color: colors.palmGreen})}>{message}</Text>}
           {error && <Text accessibilityRole="alert" style={themeStyle({ color: colors.sunsetCoral })}>{error}</Text>}
-          <View style={themeStyle(styles.modalActions)}>
+          <View style={themeStyle([styles.modalActions, width < 600 && { flexDirection: 'column' }])}>
           {trip.status === "UPCOMING" && (
-            <FeedbackPressable onPress={() => onCancel(trip)} disabled={canceling} style={themeStyle(styles.deleteBtn)}>
+            <FeedbackPressable accessibilityRole="button" onPress={() => onCancel(trip)} disabled={canceling} style={themeStyle([styles.deleteBtn, actionLayout])}>
               <X size={15} color={themeColor(colors.sunsetCoral, "color")} />
               <Text style={themeStyle(styles.deleteBtnText)}>{canceling ? "Canceling..." : "Cancel Trip"}</Text>
             </FeedbackPressable>
           )}
-          {trip.status === "UPCOMING" && <FeedbackPressable accessibilityRole="button" onPress={() => onComplete(trip)} disabled={canceling} style={[styles.doneBtn, { backgroundColor: isDark ? '#A8E6CF' : '#D2F0E1', gap: 6 }]}><Check size={15} color="#174B38" /><Text style={[styles.doneBtnText, { color: '#174B38' }]}>Complete Trip</Text></FeedbackPressable>}
+          {trip.status === "UPCOMING" && <FeedbackPressable accessibilityRole="button" onPress={() => onComplete(trip)} disabled={canceling} style={[styles.doneBtn, actionLayout, { backgroundColor: isDark ? '#A8E6CF' : '#D2F0E1', gap: 6 }]}><Check size={15} color="#174B38" /><Text style={[styles.doneBtnText, { color: '#174B38' }]}>Complete Trip</Text></FeedbackPressable>}
           {/* Actions */}
             {['COMPLETED', 'CANCELED'].includes(trip.status) && <FeedbackPressable
               onPress={() => onDelete(trip._id ?? trip.id)}
               disabled={canceling}
-              style={themeStyle(styles.deleteBtn)}
+              style={themeStyle([styles.deleteBtn, actionLayout])}
             >
               <Trash2 size={15} color={themeColor(colors.sunsetCoral, "color")} />
               <Text style={themeStyle(styles.deleteBtnText)}>Delete Trip</Text>
             </FeedbackPressable>}
-            <FeedbackPressable onPress={onClose} disabled={canceling} style={themeStyle(styles.doneBtn)}>
+            <FeedbackPressable accessibilityRole="button" onPress={onClose} disabled={canceling} style={themeStyle([styles.doneBtn, actionLayout])}>
               <Text style={themeStyle(styles.doneBtnText)}>Done</Text>
             </FeedbackPressable>
           </View>
@@ -201,6 +202,7 @@ function TripCard({ trip, onView, compact }) {
   const { themeStyle, themeColor } = useAppTheme();
 
   const Icon = placeIconMap[trip.icon] ?? placeIconMap.landmark;
+  const duration = tripDurationDays(trip);
   const completed = trip.status === "COMPLETED";
   const progress = trip.budget > 0
     ? Math.min(100, (trip.spent / trip.budget) * 100)
@@ -208,7 +210,12 @@ function TripCard({ trip, onView, compact }) {
   const status = STATUS_STYLE[trip.status] ?? STATUS_STYLE.UPCOMING;
 
   return (
-    <View style={themeStyle([styles.tripCard, compact && styles.tripCardCompact])}>
+    <FeedbackPressable
+      accessibilityRole="button"
+      accessibilityLabel={`Open trip details for ${tripDisplayTitle(trip)}`}
+      onPress={() => onView(trip)}
+      style={themeStyle([styles.tripCard, compact && styles.tripCardCompact])}
+    >
       <View style={styles.tripContent}>
         {/* Top */}
         <View style={themeStyle(styles.tripTop)}>
@@ -224,15 +231,20 @@ function TripCard({ trip, onView, compact }) {
 
         {/* Title + location */}
         <Text style={themeStyle(styles.tripTitle)} numberOfLines={1}>{tripDisplayTitle(trip)}</Text>
-        <View style={themeStyle(styles.tripMetaRow)}>
-          <MapPin size={12} color={themeColor("#6B8CA8", "color")} />
-          <Text style={themeStyle(styles.tripMeta)} numberOfLines={1}>
-            {trip.location}
-          </Text>
-        </View>
-        <View style={themeStyle(styles.tripMetaRow)}>
-          <Calendar size={12} color={themeColor("#6B8CA8", "color")} />
-          <Text style={themeStyle(styles.tripMeta)}>{trip.date}</Text>
+        <View style={styles.tripMetaSummary}>
+          <View style={styles.tripMetaDetails}>
+            <View style={themeStyle(styles.tripMetaRow)}>
+              <MapPin size={12} color={themeColor("#6B8CA8", "color")} />
+              <Text style={themeStyle(styles.tripMeta)} numberOfLines={1}>
+                {trip.location}
+              </Text>
+            </View>
+            <View style={themeStyle(styles.tripMetaRow)}>
+              <Calendar size={12} color={themeColor("#6B8CA8", "color")} />
+              <Text style={themeStyle(styles.tripMeta)}>{trip.date}</Text>
+            </View>
+          </View>
+          {duration && <Text style={themeStyle(styles.tripMeta)}>{duration}-day trip</Text>}
         </View>
 
         {/* Budget progress */}
@@ -262,16 +274,10 @@ function TripCard({ trip, onView, compact }) {
           <Text style={themeStyle(styles.stopsText)}>{trip.stops} stops</Text>
         </View>
       </View>
-      <FeedbackPressable
-        accessibilityRole="button"
-        accessibilityLabel={`Open trip details for ${tripDisplayTitle(trip)}`}
-        onPress={() => onView(trip)}
-        lift={false}
-        style={styles.openTripButton}
-      >
+      <View style={styles.openTripButton}>
         <ChevronRight size={36} strokeWidth={2.5} color={themeColor(colors.oceanBlue, "color")} />
-      </FeedbackPressable>
-    </View>
+      </View>
+    </FeedbackPressable>
   );
 }
 
@@ -597,6 +603,8 @@ const styles = StyleSheet.create({
   },
   statusText: { fontSize: 11, fontWeight: "700" },
   tripTitle: { fontSize: 17, fontWeight: "700", color: "#1A2E40" },
+  tripMetaSummary: { flexDirection: "row", alignItems: "center", gap: 16 },
+  tripMetaDetails: { flex: 1, minWidth: 0, gap: 8 },
   tripMetaRow: { flexDirection: "row", alignItems: "center", gap: 5 },
   tripMeta: { fontSize: 12, color: "#6B8CA8", flex: 1 },
 
@@ -623,6 +631,8 @@ const styles = StyleSheet.create({
   // Footer
   tripFooter: {
     flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
     justifyContent: "space-between",
     alignItems: "center",
     marginTop: 8,
@@ -715,11 +725,12 @@ const styles = StyleSheet.create({
   infoText: { fontSize: 13, color: "#4A6880" },
 
   // Modal actions
-  modalActions: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 4 },
+  modalActions: { flexDirection: "row", gap: 10, marginTop: 4 },
   deleteBtn: {
-    ...savedTripActionStyle,
+    minHeight: 48,
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     gap: 6,
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -728,7 +739,7 @@ const styles = StyleSheet.create({
     borderColor: colors.coralLight,
     backgroundColor: "#FFF1EE",
   },
-  deleteBtnText: { fontSize: 13, fontWeight: "600", color: colors.sunsetCoral },
+  deleteBtnText: { fontSize: 13, fontWeight: "700", color: colors.sunsetCoral },
   cancelBtn: {
     paddingHorizontal: 16,
     paddingVertical: 11,
@@ -738,12 +749,15 @@ const styles = StyleSheet.create({
   },
   cancelBtnText: { fontSize: 13, fontWeight: "600", color: "#4A6880" },
   doneBtn: {
-    ...savedTripActionStyle,
+    minHeight: 48,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
     backgroundColor: colors.oceanBlue,
   },
   doneBtnText: { fontSize: 13, fontWeight: "700", color: "#fff" },

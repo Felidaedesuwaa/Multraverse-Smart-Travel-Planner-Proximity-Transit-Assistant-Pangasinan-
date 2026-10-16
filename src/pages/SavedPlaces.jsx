@@ -17,6 +17,7 @@ import {
   Text,
   TextInput,
   View,
+  useWindowDimensions,
 } from "react-native";
 import {
   Bookmark,
@@ -566,6 +567,9 @@ function PlaceCard({ place, onView, onDelete, index }) {
 // ── Main Screen ─────────────────────────────────────────
 export default function SavedPlaces() {
   const { themeStyle, themeColor } = useAppTheme();
+  const { width } = useWindowDimensions();
+  const contentWidth = width >= 768 ? width - 280 : width;
+  const wideToolbar = contentWidth >= 800;
 
   const [notice, setNotice] = useState("");
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
@@ -629,94 +633,99 @@ export default function SavedPlaces() {
   return (
     <ScrollView
       style={themeStyle(styles.container)}
-      contentContainerStyle={themeStyle(styles.screen)}
+      contentContainerStyle={themeStyle([styles.screen, contentWidth < 600 && { padding: 16, paddingBottom: 32 }])}
       showsVerticalScrollIndicator={false}
     >
       {!!notice && <Text accessibilityRole="alert" style={themeStyle({color:colors.palmGreen,padding:14,marginBottom:12,backgroundColor:"#EDF7EE",borderRadius:10})}>{notice}</Text>}
-      {/* Header */}
-      <View style={themeStyle(styles.header)}>
-        <View>
-          <Text style={themeStyle(styles.title)}>Saved Places</Text>
-          <Text style={themeStyle(styles.subtitle)}>
-            {places.length} saved · {ratedCount} rated · {publicCount} public
-          </Text>
+      <View style={styles.controls}>
+        {/* Header */}
+        <View style={themeStyle([styles.header, contentWidth < 440 && { flexDirection: 'column' }])}>
+          <View style={{ minWidth: 0, flexShrink: 1 }}>
+            <Text style={themeStyle(styles.title)}>Saved Places</Text>
+            <Text style={themeStyle(styles.subtitle)}>
+              {places.length} saved · {ratedCount} rated · {publicCount} public
+            </Text>
+          </View>
+          <FeedbackPressable accessibilityRole="button" onPress={() => setShowAdd(true)} style={themeStyle(styles.addBtn)}>
+            <Plus size={15} color={themeColor("#fff", "color")} />
+            <Text style={themeStyle(styles.addBtnText)}>Add Place</Text>
+          </FeedbackPressable>
         </View>
-        <FeedbackPressable onPress={() => setShowAdd(true)} style={themeStyle(styles.addBtn)}>
-          <Plus size={15} color={themeColor("#fff", "color")} />
-          <Text style={themeStyle(styles.addBtnText)}>Add Place</Text>
-        </FeedbackPressable>
-      </View>
 
-      {/* Stats row */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }} contentContainerStyle={themeStyle(styles.statsRow)}>
-        <View style={themeStyle(styles.statChip)}>
-          <Bookmark size={13} color={themeColor(colors.oceanBlue, "color")} />
-          <Text style={themeStyle(styles.statChipText)}>{places.length} Saved</Text>
-        </View>
-        <View style={themeStyle(styles.statChip)}>
-          <Star size={13} color={themeColor("#F59E0B", "color")} fill={themeColor("#F59E0B", "fill")} />
-          <Text style={themeStyle(styles.statChipText)}>{avgRating} Avg Rating</Text>
-        </View>
-        <View style={themeStyle(styles.statChip)}>
-          <Globe size={13} color={themeColor(colors.palmGreen, "color")} />
-          <Text style={themeStyle(styles.statChipText)}>{publicCount} Public</Text>
-        </View>
-        <View style={themeStyle(styles.statChip)}>
-          <Lock size={13} color={themeColor(colors.sunsetCoral, "color")} />
-          <Text style={themeStyle(styles.statChipText)}>
-            {places.length - publicCount} Private
-          </Text>
-        </View>
-      </ScrollView>
+        <View style={[styles.toolbar, wideToolbar && { flexDirection: 'row', alignItems: 'center' }]}>
+          {/* Stats row */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={[styles.statsScroll, wideToolbar && { flexGrow: 1, flexBasis: 0 }]} contentContainerStyle={themeStyle(styles.statsRow)}>
+            <View style={themeStyle(styles.statChip)}>
+              <Bookmark size={13} color={themeColor(colors.oceanBlue, "color")} />
+              <Text style={themeStyle(styles.statChipText)}>{places.length} Saved</Text>
+            </View>
+            <View style={themeStyle(styles.statChip)}>
+              <Star size={13} color={themeColor("#F59E0B", "color")} fill={themeColor("#F59E0B", "fill")} />
+              <Text style={themeStyle(styles.statChipText)}>{avgRating} Avg Rating</Text>
+            </View>
+            <View style={themeStyle(styles.statChip)}>
+              <Globe size={13} color={themeColor(colors.palmGreen, "color")} />
+              <Text style={themeStyle(styles.statChipText)}>{publicCount} Public</Text>
+            </View>
+            <View style={themeStyle(styles.statChip)}>
+              <Lock size={13} color={themeColor(colors.sunsetCoral, "color")} />
+              <Text style={themeStyle(styles.statChipText)}>
+                {places.length - publicCount} Private
+              </Text>
+            </View>
+          </ScrollView>
 
-      {/* Search + Category filter */}
-      <View style={themeStyle(styles.filterRow)}>
-        <View style={themeStyle(styles.searchBox)}>
-          <Search size={15} color={themeColor("#6B8CA8", "color")} />
-          <TextInput
-            value={query}
-            onChangeText={setQuery}
-            placeholder="Search places..."
-            placeholderTextColor={themeColor("#A8BECC", "color")}
-            style={themeStyle(styles.searchInput)}
-          />
-          {query.length > 0 && (
-            <FeedbackPressable onPress={() => setQuery("")}>
-              <X size={14} color={themeColor("#6B8CA8", "color")} />
-            </FeedbackPressable>
-          )}
+          {/* Search + Category filter */}
+          <View style={[styles.filterRow, wideToolbar && { flex: 1 }]}>
+            <View style={themeStyle(styles.searchBox)}>
+              <Search size={15} color={themeColor("#6B8CA8", "color")} />
+              <TextInput
+                accessibilityLabel="Search saved places"
+                value={query}
+                onChangeText={setQuery}
+                placeholder="Search places..."
+                placeholderTextColor={themeColor("#A8BECC", "color")}
+                style={themeStyle(styles.searchInput)}
+              />
+              {query.length > 0 && (
+                <FeedbackPressable accessibilityRole="button" accessibilityLabel="Clear saved places search" onPress={() => setQuery("")}>
+                  <X size={14} color={themeColor("#6B8CA8", "color")} />
+                </FeedbackPressable>
+              )}
+            </View>
+          </View>
         </View>
-      </View>
 
-      {/* Category tabs */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={themeStyle(styles.categoryScroll)}
-        contentContainerStyle={themeStyle(styles.categoryRow)}
-      >
-        {CATEGORIES.map((cat) => (
-          <FeedbackPressable
-            key={cat}
-            accessibilityRole="button"
-            accessibilityState={{ selected: categoryFilter === cat }}
-            onPress={() => setCategoryFilter(cat)}
-            style={themeStyle([
-              styles.catTab,
-              categoryFilter === cat && styles.catTabActive,
-            ])}
-          >
-            <Text
+        {/* Category tabs */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={themeStyle(styles.categoryScroll)}
+          contentContainerStyle={themeStyle(styles.categoryRow)}
+        >
+          {CATEGORIES.map((cat) => (
+            <FeedbackPressable
+              key={cat}
+              accessibilityRole="button"
+              accessibilityState={{ selected: categoryFilter === cat }}
+              onPress={() => setCategoryFilter(cat)}
               style={themeStyle([
-                styles.catTabText,
-                categoryFilter === cat && styles.catTabTextActive,
+                styles.catTab,
+                categoryFilter === cat && styles.catTabActive,
               ])}
             >
-              {cat}
-            </Text>
-          </FeedbackPressable>
-        ))}
-      </ScrollView>
+              <Text
+                style={themeStyle([
+                  styles.catTabText,
+                  categoryFilter === cat && styles.catTabTextActive,
+                ])}
+              >
+                {cat}
+              </Text>
+            </FeedbackPressable>
+          ))}
+        </ScrollView>
+      </View>
 
       {/* Content */}
       {loading ? (
@@ -789,13 +798,15 @@ export default function SavedPlaces() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F7F9FB" },
   screen: { flexGrow: 1, padding: 28, paddingBottom: 48 },
+  controls: { gap: 16, marginBottom: 20 },
+  toolbar: { flexDirection: 'column', gap: 16 },
 
   // Header
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 16,
+    gap: 12,
   },
   title: { fontSize: 26, fontWeight: "700", color: "#1A2E40" },
   subtitle: { fontSize: 13, color: "#6B8CA8", marginTop: 4 },
@@ -811,6 +822,7 @@ const styles = StyleSheet.create({
   addBtnText: { fontSize: 14, fontWeight: "700", color: "#fff" },
 
   // Stats row
+  statsScroll: { height: 36, flexGrow: 0, flexShrink: 0, minWidth: 0 },
   statsRow: {
     flexDirection: "row",
     gap: 6,
@@ -822,6 +834,7 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingHorizontal: 8,
     paddingVertical: 6,
+    minHeight: 36,
     borderRadius: 12,
     backgroundColor: "#fff",
     borderWidth: 1,
@@ -830,7 +843,7 @@ const styles = StyleSheet.create({
   statChipText: { fontSize: 12, fontWeight: "600", color: "#4A6880" },
 
   // Filter
-  filterRow: { marginBottom: 12 },
+  filterRow: { minWidth: 0 },
   searchBox: {
     flexDirection: "row",
     alignItems: "center",
@@ -841,11 +854,12 @@ const styles = StyleSheet.create({
     borderColor: "#E2EBF3",
     paddingHorizontal: 14,
     paddingVertical: 11,
+    minHeight: 44,
   },
-  searchInput: { flex: 1, fontSize: 14, color: "#1A2E40" },
+  searchInput: { flex: 1, minWidth: 0, fontSize: 14, color: "#1A2E40" },
 
   // Category tabs
-  categoryScroll: { marginBottom: 20, flexGrow: 0, flexShrink: 0 },
+  categoryScroll: { flexGrow: 0, flexShrink: 0 },
   categoryRow: { flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 4 },
   catTab: {
     minHeight: 44,

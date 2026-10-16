@@ -10,6 +10,6 @@ async function main() {
     await model.collection.createIndex({ municipality: 1, approvalStatus: 1 })
     console.log(`${name}: ${result.modifiedCount} legacy entries marked approved`)
   }
-  console.log('Assign exact municipality values to legacy geofences, food, fares and transit routes before LGU management. Existing Place municipality values are preserved.')
+  console.log('Assign exact municipality values to legacy food, fares and transit routes before LGU management. Existing Place municipality values are preserved.')
 }
 main().catch(error => { console.error(error); process.exitCode = 1 }).finally(disconnectDatabase)

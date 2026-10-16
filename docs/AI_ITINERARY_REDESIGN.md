@@ -27,7 +27,7 @@ Three qualifications matter:
 | Must-have | Reviewed attraction coverage for all 48 areas | Schema and non-destructive importer/report implemented; actual missing tourism data still requires sourcing. Boundary/photo coverage does not establish attraction coverage. |
 | Should-have | Structured transport graph and last-mile coverage | Directed minimum-fare graph implemented for linked reviewed records; station locations, transfer waiting, first/last services and last-mile pricing still need data and enforcement. |
 | Should-have | Exact geographic route map | Schematic provided; add verified coordinates and a local road-routing engine before labeling lines as routes. |
-| Should-have | Ground saved places, foods and geofences | Linked saved IDs affect rank; matching local foods appear separately; spatial geofences produce advisories when usable coordinates exist. Legacy data is reported, not guessed. |
+| Should-have | Ground saved places and foods | Linked saved IDs affect rank; matching local foods appear separately. Legacy data is reported, not guessed. |
 | Should-have | Edit/regenerate and export | Implemented: replace/remove a stop and rerun math, regenerate current form, JSON export on web and native Share. |
 | Should-have | Useful offline behavior | Implemented: user-scoped cached catalog and latest plan preview. New database plans and saves require backend access. This is not full offline routing. |
 | Should-have | Model-quality evaluation before richer prose | Extractive validation is intentionally conservative; approved text must be a substring of its source description. This sacrifices creative narrative to avoid invented facts. |
@@ -174,7 +174,7 @@ npm.cmd run seed:planner -- --reviewed=./seeds/planner-reviewed.json
 npm.cmd run seed:planner -- --reviewed=./seeds/planner-reviewed.json --apply
 ```
 
-The reviewed importer requires real source URLs and metadata. No reviewed file is shipped because the missing facts have not been collected. Use the report to reach at least one reviewed attraction per area, then expand coverage. Route records also need directed fromAreaId/toAreaId, a linked ACTIVE transit route, durationMinutes, fareBasis, capacity for per-vehicle pricing, and verification date. Reverse routes must be recorded separately. Geofence spatial checks need real coordinates and radiusMeters; existing decorative x/y values are insufficient.
+The reviewed importer requires real source URLs and metadata. No reviewed file is shipped because the missing facts have not been collected. Use the report to reach at least one reviewed attraction per area, then expand coverage. Route records also need directed fromAreaId/toAreaId, a linked ACTIVE transit route, durationMinutes, fareBasis, capacity for per-vehicle pricing, and verification date. Reverse routes must be recorded separately.
 
 ## Improving training and serving
 

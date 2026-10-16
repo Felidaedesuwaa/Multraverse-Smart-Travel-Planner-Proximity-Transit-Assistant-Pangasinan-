@@ -15,7 +15,6 @@ const { User, AuditLog, Trip, BudgetEntry, SavedPlace } = require('../dist/model
 const { PlannerDraft } = require('../dist/models/PlannerDraft')
 const { PasswordReset } = require('../dist/models/PasswordReset')
 const { PendingRegistration } = require('../dist/models/PendingRegistration')
-const { GeofenceMonitor } = require('../dist/models/GeofenceMonitor')
 const { bootstrapSuperAdmin } = require('../dist/lib/bootstrapSuperAdmin')
 const { lguResources } = require('../dist/lib/lguResources')
 const app = express()
@@ -127,12 +126,11 @@ let server
     console.log('PASS managed account edits, deletes, permissions, validation, session revocation and audit rollback')
     const fixtures = {
       places: { name: 'Beach', description: 'Description', location: 'Alaminos', category: 'Beach' },
-      geofences: { location: 'Alaminos', zone: 'Park', radius: '100 m', coordinates: { lat: 16.155, lng: 119.98 }, radiusMeters: 100 },
       foods: { name: 'Food', description: 'Local food', avgPrice: 100, where: 'Market', category: 'Snack' },
       'route-prices': { from: 'Alaminos', to: 'Bolinao', vehicle: 'BUS', price: 100, duration: '1h' },
       'transit-routes': { name: 'Route', type: 'BUS', frequency: '30 min' },
     }
-    const types = { places: 'place', geofences: 'geofence', foods: 'local_food', 'route-prices': 'route_price', 'transit-routes': 'transit_route' }
+    const types = { places: 'place', foods: 'local_food', 'route-prices': 'route_price', 'transit-routes': 'transit_route' }
     for (const [resource, fixture] of Object.entries(fixtures)) {
       for (const decision of ['approve', 'reject']) {
         const item = await lguResources[resource].model.create({ ...fixture, municipality: 'Alaminos', approvalStatus: 'pending' })
@@ -183,7 +181,6 @@ let server
     const personalModels = [Trip, BudgetEntry, SavedPlace, PlannerDraft, PasswordReset]
     for (const model of personalModels) await model.collection.insertOne({ userId: explorer._id })
     await PendingRegistration.collection.insertOne({ email: explorer.email })
-    await GeofenceMonitor.create({ userId: String(explorer._id), states: { fixture: true } })
     const sharedBefore = await lguResources.places.model.countDocuments()
     const originalCleanup = BudgetEntry.deleteMany
     BudgetEntry.deleteMany = async () => { throw new Error('Simulated personal-data cleanup outage') }
@@ -196,7 +193,6 @@ let server
     assert.equal(await User.findById(explorer._id), null)
     for (const model of personalModels) assert.equal(await model.countDocuments({ userId: explorer._id }), 0)
     assert.equal(await PendingRegistration.countDocuments({ email: explorer.email }), 0)
-    assert.equal(await GeofenceMonitor.countDocuments({ userId: String(explorer._id) }), 0)
     assert.equal(await lguResources.places.model.countDocuments(), sharedBefore)
     assert.equal((await call('users/me', token(explorer))).status, 401)
     assert.equal((await call(explorerRoute, superToken, 'DELETE', { confirmation: true })).status, 404)

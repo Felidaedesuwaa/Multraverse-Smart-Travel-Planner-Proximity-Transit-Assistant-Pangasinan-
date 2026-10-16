@@ -1,9 +1,8 @@
 import { Model } from 'mongoose'
-import { Geofence, LocalFood, Place, RoutePrice, TransitRoute } from '../models'
+import { LocalFood, Place, RoutePrice, TransitRoute } from '../models'
 
 export const lguResources: Record<string, { model: Model<any>; fields: string[] }> = {
   places: { model: Place, fields: ['photo', 'name', 'description', 'location', 'category', 'entryFee', 'areaId', 'coordinates', 'visitMinutes', 'bestTime', 'feeBasis', 'accessibility', 'tags', 'sourceUrl', 'openingMinutes', 'closingMinutes', 'closedWeekdays', 'openHours', 'tips', 'highlights'] },
-  geofences: { model: Geofence, fields: ['location', 'zone', 'radius', 'coord', 'coordinates', 'radiusMeters', 'advisory', 'x', 'y', 'active'] },
   foods: { model: LocalFood, fields: ['photo', 'name', 'description', 'avgPrice', 'where', 'category'] },
   'route-prices': { model: RoutePrice, fields: ['from', 'to', 'vehicle', 'price', 'duration', 'notes', 'fromAreaId', 'toAreaId', 'transitRouteId', 'durationMinutes', 'fareBasis', 'capacity', 'sourceUrl'] },
   'transit-routes': { model: TransitRoute, fields: ['name', 'type', 'stops', 'frequency', 'status', 'areaIds', 'stopNames', 'stopLocations', 'firstDeparture', 'lastDeparture', 'sourceUrl'] },

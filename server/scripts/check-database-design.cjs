@@ -15,10 +15,10 @@ const request = {
   preferences: [], transportModes: ['bus'], pace: 'balanced', lodging: { preference: 'none', nightlyBudget: 0, rooms: 1 },
   foodPerPersonPerDay: 100, useSavedPlaces: false, returnToOrigin: false, excludedPlaceIds: [],
 }
-const plan = buildPlan(request, { places: [{ _id: placeId, name: 'Test fixture', municipality: 'Alaminos', location: 'Alaminos', description: 'An in-memory test fixture only.' }], fares: [], routes: [], foods: [], saved: [], geofences: [] })
+const plan = buildPlan(request, { places: [{ _id: placeId, name: 'Test fixture', municipality: 'Alaminos', location: 'Alaminos', description: 'An in-memory test fixture only.' }], fares: [], routes: [], foods: [], saved: [] })
 const basicTrip = { userId: owner, title: 'Test', location: 'Alaminos', date: '2027-01-04' }
 async function main() {
-  assert.equal(models().length, 16)
+  assert.equal(models().length, 15)
   assert.ok(!models().some(m => ['tripstops', 'budgetsettings'].includes(m.collection.collectionName)))
   assert.equal(User.schema.path('budgetSettings').schema.options._id, false)
   assert.equal(Trip.schema.path('plan').schema.options._id, false)
@@ -83,6 +83,6 @@ async function main() {
     await new Promise(resolve => server.close(resolve))
     auth.authenticate = previousAuth; User.findById = previousRead; User.findByIdAndUpdate = previousWrite
   }
-  console.log('PASS: 16 explicit collections including password resets; embedded preferences; typed, bounded itinerary; derived stops/cost; no assumed location/budget; read-only settings GET; validated atomic settings PUT')
+  console.log('PASS: 15 explicit collections including password resets; embedded preferences; typed, bounded itinerary; derived stops/cost; no assumed location/budget; read-only settings GET; validated atomic settings PUT')
 }
 main().catch(error => { console.error(error); process.exitCode = 1 })

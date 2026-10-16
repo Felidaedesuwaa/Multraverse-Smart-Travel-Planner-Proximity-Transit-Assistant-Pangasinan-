@@ -53,7 +53,7 @@ export function distance(a: Point, b: Point) {
 const money = (n: number) => Math.round(n * 100) / 100
 const clock = (minutes: number) => `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`
 const nameOf = (areaId: string) => areas.find(a => a.id === areaId)?.name || areaId
-type Data = { places: any[]; fares: any[]; routes: any[]; foods: any[]; saved: any[]; geofences: any[] }
+type Data = { places: any[]; fares: any[]; routes: any[]; foods: any[]; saved: any[] }
 
 // Directed minimum-fare path over explicitly linked, reviewed records only.
 export function transit(from: string, to: string, request: PlannerRequest, data: Data): any {
@@ -138,7 +138,6 @@ export function buildPlan(request: PlannerRequest, data: Data) {
       if (!place.visitMinutes) notes.push('Visit duration uses a 90-minute planning allowance.')
       if (transfer.minutes === null) notes.push('Transfer uses a 30-minute placeholder; actual journey may be much longer.')
       if (!place.openingMinutes && !place.closingMinutes) notes.push('Opening hours not structured; confirm before departure.')
-      for (const fence of data.geofences) if (fence.active && hasPoint(fence.coordinates) && hasPoint(place.coordinates) && number(fence.radiusMeters, 1, 100_000) && distance(fence.coordinates, place.coordinates) * 1000 <= fence.radiusMeters) notes.push(fence.advisory || `Near ${fence.location}: ${fence.zone}.`)
       days[dayIndex].stops.push({ placeId, areaId: dest.areaId, place: place.name, address: place.location, coordinates: hasPoint(place.coordinates) ? place.coordinates : null,
         time: clock(arrival), endTime: clock(arrival + visitMinutes), visitMinutes, bestTime: place.bestTime || null,
         activity: String(place.description || '').slice(0, 360), narrative: null, entryCost: entry,
@@ -162,7 +161,6 @@ export function buildPlan(request: PlannerRequest, data: Data) {
   if (stops.some(s => s.transit.status === 'recorded')) warnings.add('Station transfers and waiting times are unpriced. Recorded routes are area-to-area, not door-to-door.')
   if (request.days > 1 && request.lodging.preference === 'none') warnings.add('No lodging allowance included; assumes accommodation is already arranged.')
   if (request.preferences.includes('Accessible routes')) warnings.add('Only attraction accessibility is checked. Transport accessibility is unverified; this plan does not guarantee an accessible route.')
-  if (data.geofences.some(f => f.active && !hasPoint(f.coordinates))) warnings.add('Some geofences have no usable coordinates and could not be checked.')
   const covered = new Set(stops.map(s => s.areaId))
   for (const dest of request.destinations) if (!covered.has(dest.areaId)) warnings.add(`${nameOf(dest.areaId)} has no scheduled stop. Adjust selections, days, accessibility requirements or budget.`)
   const costComplete = unknownCosts === 0 && !stops.some(s => s.transit.status === 'recorded') && stops.length > 0

@@ -15,7 +15,7 @@ export class DatabaseLayoutError extends Error {
 export function databaseStartupMessage(error: unknown) {
   if (error instanceof DatabaseLayoutError) return error.message
   const failure = error as { name?: string; code?: number } | null
-  if (failure?.code === 13) return 'Database initialization was denied. The database account needs permission to create the missing collections and their indexes, and update geofence validation.'
+  if (failure?.code === 13) return 'Database initialization was denied. The database account needs permission to create the missing collections and their indexes, and update collection validation.'
   const name = typeof failure?.name === 'string' && /^[A-Za-z][A-Za-z0-9]*$/.test(failure.name) ? failure.name : 'Error'
   const code = typeof failure?.code === 'number' ? `, code ${failure.code}` : ''
   return `Database initialization failed (${name}${code}). Check database configuration and network access.`

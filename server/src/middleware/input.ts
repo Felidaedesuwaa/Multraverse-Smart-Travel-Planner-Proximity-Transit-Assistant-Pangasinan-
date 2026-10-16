@@ -1,7 +1,7 @@
 import { budgetSettingsSchema } from '../models/User'
 import { RequestHandler, Request } from 'express'
 import { Schema } from 'mongoose'
-import { BudgetEntry, Trip, SavedPlace, Place, RoutePrice, LocalFood, Geofence, TransitRoute } from '../models'
+import { BudgetEntry, Trip, SavedPlace, Place, RoutePrice, LocalFood, TransitRoute } from '../models'
 import { lguResources } from '../lib/lguResources'
 import { validateRequest } from '../lib/planner'
 import { tripFieldErrors } from '../lib/tripValidation'
@@ -96,7 +96,7 @@ function fields(body: unknown, rules: Record<string, Rule>, required: string[] =
   object(body)
   if (Object.entries(body).some(([key, value]) => !rules[key]?.(value)) || required.some(k => body[k] === undefined)) invalid('Malformed request fields')
 }
-const catalog: Record<string, any> = { places: Place, 'route-prices': RoutePrice, foods: LocalFood, geofences: Geofence, 'transit-routes': TransitRoute }
+const catalog: Record<string, any> = { places: Place, 'route-prices': RoutePrice, foods: LocalFood, 'transit-routes': TransitRoute }
 const serverFields = ['_id', '__v', 'createdAt', 'updatedAt', 'submittedBy', 'submittedAt', 'reviewedBy', 'reviewedAt', 'reviewRevision', 'approvalStatus', 'pendingDeletion', 'rejectionReason', 'geoPoint']
 
 /** Each router installs this before its handlers, including isolated API tests. */
@@ -147,9 +147,9 @@ export function validateRouter(scope: string): RequestHandler {
       else if (scope === 'lgu') {
         const resource = lguResources[parts[0]]
         if (resource) modelInput(resource.model.schema, body, resource.fields, create)
-      } else if (scope === 'knowledge' || scope === 'geofences' || scope === 'transitRoutes') {
-        const model = scope === 'knowledge' ? catalog[parts[0]] : scope === 'geofences' ? Geofence : TransitRoute
-        if (model) modelInput(model.schema, body, [...new Set(Object.keys(model.schema.paths).map(p => p.split('.')[0]))].filter(k => !serverFields.includes(k) && !(model === Geofence && k === 'alerts')), create)
+      } else if (scope === 'knowledge' || scope === 'transitRoutes') {
+        const model = scope === 'knowledge' ? catalog[parts[0]] : TransitRoute
+        if (model) modelInput(model.schema, body, [...new Set(Object.keys(model.schema.paths).map(p => p.split('.')[0]))].filter(k => !serverFields.includes(k)), create)
       } else if (scope === 'planner' || scope === 'ai') {
         if (req.path === '/settings') fields(body, { itineraryNarrative: bool, translation: bool })
         else if (req.path === '/itinerary') {

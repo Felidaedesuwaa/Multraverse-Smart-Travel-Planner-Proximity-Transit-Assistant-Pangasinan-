@@ -27,6 +27,8 @@
     "test:lgu": "npm run build && node scripts/check-lgu-api.cjs --isolated-database",
     "seed:superadmin": "ts-node seeds/seedSuperAdmin.ts",
     "test:superadmin": "npm run build && node scripts/check-superadmin-api.cjs --isolated-database",
+    "db:remove-geofences": "node scripts/remove-geofences.cjs",
+    "test:geofence-removal": "node scripts/check-geofence-removal.cjs",
     "db:audit": "node scripts/audit-database.cjs",
     "db:harden": "npm run build && node scripts/harden-database.cjs",
     "test:hardening": "npm run build && node scripts/check-database-hardening.cjs",

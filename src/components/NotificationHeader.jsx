@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, AppState, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Bell, X } from 'lucide-react-native';
+import { Bell, RefreshCw, X } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -8,7 +8,7 @@ import { api } from '../lib/api';
 import { getArrivalNotices, subscribeNotifications } from '../lib/notificationEvents';
 import { useAuthStore } from '../store/authStore';
 import { useAppTheme } from '../theme/useAppTheme';
-import { GeofenceControls, useGeofenceTracking } from './GeofenceTracking';
+import { FeedbackPressable } from './WorkspaceMotion';
 
 export default function NotificationHeader({ compact = false } = {}) {
   const { palette: p } = useAppTheme();
@@ -18,8 +18,8 @@ export default function NotificationHeader({ compact = false } = {}) {
   const role = useAuthStore(state => state.user?.role);
   const [open, setOpen] = useState(false), [items, setItems] = useState([]), [seen, setSeen] = useState([]);
   const [loading, setLoading] = useState(false), [error, setError] = useState('');
+  const [seenLoaded, setSeenLoaded] = useState(false);
   const current = useRef(0), controller = useRef(null), seenReady = useRef(false);
-  const tracking = useGeofenceTracking();
   const refresh = useCallback(async () => {
     if (!ownerId) return;
     const revision = ++current.current;
@@ -42,10 +42,10 @@ export default function NotificationHeader({ compact = false } = {}) {
   }, [ownerId]);
   useEffect(() => {
     let alive = true;
-    setItems([]); setSeen([]); seenReady.current = false;
+    setItems([]); setSeen([]); setSeenLoaded(false); seenReady.current = false;
     AsyncStorage.getItem(`notifications:seen:${ownerId}`).then(value => {
-      if (alive) { try { const ids = JSON.parse(value); setSeen(Array.isArray(ids) ? ids : []); } catch { setSeen([]); } seenReady.current = true; }
-    }).catch(() => { if (alive) seenReady.current = true; });
+      if (alive) { try { const ids = JSON.parse(value); setSeen(Array.isArray(ids) ? ids : []); } catch { setSeen([]); } seenReady.current = true; setSeenLoaded(true); }
+    }).catch(() => { if (alive) { seenReady.current = true; setSeenLoaded(true); } });
     refresh();
     const unsubscribe = subscribeNotifications(refresh);
     const timer = setInterval(() => { if (AppState.currentState === 'active') refresh(); }, 30000);
@@ -61,6 +61,19 @@ export default function NotificationHeader({ compact = false } = {}) {
     });
   };
   const unread = items.filter(item => !seen.includes(item.id)).length;
+  const allRead = items.length > 0 && unread === 0;
+  const bulkDisabled = !items.length || !seenLoaded;
+  const bulkLabel = allRead ? 'Mark all as unread' : 'Mark all as read';
+  const toggleAllRead = () => {
+    if (bulkDisabled) return;
+    if (!allRead) { markRead(items.map(item => item.id)); return; }
+    const ids = new Set(items.map(item => item.id));
+    setSeen(previous => {
+      const next = previous.filter(id => !ids.has(id));
+      AsyncStorage.setItem(`notifications:seen:${ownerId}`, JSON.stringify(next)).catch(() => {});
+      return next;
+    });
+  };
   const choose = item => {
     markRead([item.id]); setOpen(false);
     if (item.screen === 'PasswordRecovery') navigation.navigate('PasswordRecovery');
@@ -79,7 +92,15 @@ export default function NotificationHeader({ compact = false } = {}) {
         <Pressable style={StyleSheet.absoluteFillObject} accessibilityLabel="Close notifications" onPress={() => setOpen(false)} />
         <View accessibilityViewIsModal style={[styles.panel, { backgroundColor: p.surface }]}>
           <View style={styles.row}><Text accessibilityRole="header" style={{ color: p.ink, fontSize: 22, fontWeight: '700', flex: 1 }}>Notifications</Text><Pressable accessibilityRole="button" accessibilityLabel="Close notifications" onPress={() => setOpen(false)} style={styles.bell}><X color={p.ink} size={22} /></Pressable></View>
-          <View style={styles.row}><Pressable accessibilityRole="button" onPress={refresh} disabled={loading} style={styles.action}><Text style={{ color: p.ink }}>Refresh</Text></Pressable><Pressable accessibilityRole="button" onPress={() => markRead(items.map(item => item.id))} style={styles.action}><Text style={{ color: p.ink }}>Mark all read</Text></Pressable>{loading && <ActivityIndicator color={p.primary} />}</View>
+          <View style={[styles.row, styles.toolbar]}>
+            <Text accessibilityLiveRegion="polite" style={{ color: p.muted, flex: 1 }}>{unread} unread</Text>
+            <FeedbackPressable lift accessibilityRole="button" accessibilityLabel="Refresh notifications" accessibilityState={{ disabled: loading, busy: loading }} onPress={refresh} disabled={loading} style={({ hovered, pressed }) => [styles.action, styles.refresh, { backgroundColor: (hovered || pressed) && !loading ? p.tint : p.background, opacity: loading ? 0.5 : 1 }]}>
+              {loading ? <ActivityIndicator size="small" color={p.primary} /> : <RefreshCw size={20} color={p.ink} />}
+            </FeedbackPressable>
+            <FeedbackPressable lift accessibilityRole="button" accessibilityLabel={bulkLabel} accessibilityState={{ disabled: bulkDisabled }} onPress={toggleAllRead} disabled={bulkDisabled} style={({ hovered, pressed }) => [styles.action, { backgroundColor: (hovered || pressed) && !bulkDisabled ? p.tint : p.background, opacity: bulkDisabled ? 0.4 : allRead ? 0.65 : 1 }]}>
+              <Text style={{ color: allRead || bulkDisabled ? p.muted : p.ink, fontWeight: '600', fontSize: 13 }}>{bulkLabel}</Text>
+            </FeedbackPressable>
+          </View>
           {!!error && <Text accessibilityRole="alert" style={{ color: p.ink, paddingBottom: 12 }}>{error}</Text>}
           <ScrollView style={{ flex: 1, minHeight: 0 }} contentContainerStyle={{ gap: 10, paddingBottom: 12 }} keyboardShouldPersistTaps="handled">
             {!items.length && <Text style={{ color: p.muted, paddingVertical: 16 }}>{loading ? 'Loading updates…' : 'No notifications yet.'}</Text>}
@@ -89,7 +110,6 @@ export default function NotificationHeader({ compact = false } = {}) {
               <Text style={{ color: p.muted, fontSize: 11 }}>{new Date(item.createdAt).toLocaleString()}</Text>
               {item.type === 'password' && <Text style={{ color: p.ink, fontWeight: '700' }}>Wasn’t you? Secure your account →</Text>}
             </Pressable>)}
-            {!['LGU', 'ADMIN', 'SUPERADMIN'].includes(role) && <GeofenceControls tracking={tracking} />}
           </ScrollView>
         </View>
       </View>
@@ -102,5 +122,7 @@ const styles = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: '#00000066', padding: 16, alignItems: 'center', justifyContent: 'center' },
   panel: { width: '100%', maxWidth: 560, height: '90%', borderRadius: 20, padding: 20, overflow: 'hidden' },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  action: { minHeight: 44, justifyContent: 'center', paddingHorizontal: 8 },
+  toolbar: { flexWrap: 'wrap', gap: 8, paddingBottom: 12 },
+  action: { minHeight: 44, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 12, borderRadius: 10 },
+  refresh: { width: 44, paddingHorizontal: 0 },
 });

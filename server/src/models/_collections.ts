@@ -3,7 +3,7 @@
 export const collectionNames: Record<string, string> = {
   User: 'users', Phrasebook: 'phrasebooks', Trip: 'trips', BudgetEntry: 'budgetentries',
   SavedPlace: 'savedplaces', Place: 'places', LocalFood: 'localfoods',
-  TransitRoute: 'transitroutes', RoutePrice: 'routeprices', Geofence: 'geofences',
+  TransitRoute: 'transitroutes', RoutePrice: 'routeprices',
   PendingRegistration: 'pendingregistrations', PlannerDraft: 'plannerdrafts',
   AuthLimit: 'authlimits', AuditLog: 'auditlogs', AISettings: 'aisettings', PasswordReset: 'passwordresets',
 }

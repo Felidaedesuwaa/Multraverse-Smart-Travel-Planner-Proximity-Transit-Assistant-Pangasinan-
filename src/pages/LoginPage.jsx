@@ -78,7 +78,7 @@ export default function LoginPage() {
       footer={<><Text style={themeStyle(styles.footerText)}>New adventures start here.</Text><Pressable accessibilityRole="button" accessibilityLabel="Sign up" onPress={() => navigation.navigate("Register")} style={styles.signup}><Text style={styles.footerLink}>Create an account →</Text></Pressable></>}
     >
       <AuthInput label="Email" placeholder="you@email.com" value={email} onChangeText={setEmail} error={errors.email} keyboardType="email-address" autoComplete="email" editable={!isLoading} />
-      <AuthInput label="Password" placeholder="••••••••" value={password} onChangeText={setPassword} error={errors.password} isPassword autoComplete="current-password" editable={!isLoading} returnKeyType="go" onSubmitEditing={handleSubmit} />
+      <AuthInput label="Password" value={password} onChangeText={setPassword} error={errors.password} isPassword autoComplete="current-password" editable={!isLoading} returnKeyType="go" onSubmitEditing={handleSubmit} />
       {formError ? <Text accessibilityRole="alert" style={themeStyle(styles.formError)}>{formError}</Text> : null}
       <TravelButton label="Sign In" loading={isLoading} onPress={handleSubmit} />
       <Pressable accessibilityRole="button" onPress={() => navigation.navigate("ForgotPassword")} disabled={isLoading} style={styles.signup}><Text style={[styles.footerLink, { textAlign: "center" }]}>Forgot password?</Text></Pressable>

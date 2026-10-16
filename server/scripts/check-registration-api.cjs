@@ -118,7 +118,7 @@ let server;
       await BudgetEntry.create({ userId, tripId: trip._id, label: 'Lunch', amount: 100 });
       await User.updateOne({ _id: userId }, { $set: { budgetSettings: { monthlyBudget: 500, savingsTarget: 10 } } });
       await SavedPlace.create({ userId, name: 'Test place', category: 'Nature', isPublic: true });
-      await PlannerDraft.create({ userId, plan: require('../dist/lib/planner').buildPlan({ origin: { areaId: 'dagupan' }, destinations: [{ areaId: 'alaminos', placeIds: [] }], dates: { start: '2027-01-01' }, startTime: '08:00', days: 1, budget: 1000, travelers: 1, preferences: [], transportModes: ['bus'], pace: 'balanced', lodging: { preference: 'none', nightlyBudget: 0, rooms: 1 }, foodPerPersonPerDay: 100, useSavedPlaces: false, returnToOrigin: false, excludedPlaceIds: [] }, { places: [], fares: [], routes: [], foods: [], saved: [], geofences: [] }), expiresAt: new Date(Date.now() + 600000) });
+      await PlannerDraft.create({ userId, plan: require('../dist/lib/planner').buildPlan({ origin: { areaId: 'dagupan' }, destinations: [{ areaId: 'alaminos', placeIds: [] }], dates: { start: '2027-01-01' }, startTime: '08:00', days: 1, budget: 1000, travelers: 1, preferences: [], transportModes: ['bus'], pace: 'balanced', lodging: { preference: 'none', nightlyBudget: 0, rooms: 1 }, foodPerPersonPerDay: 100, useSavedPlaces: false, returnToOrigin: false, excludedPlaceIds: [] }, { places: [], fares: [], routes: [], foods: [], saved: [] }), expiresAt: new Date(Date.now() + 600000) });
     }
     const remove = body => call('users/me', body, registered.token, 'DELETE');
     assert.equal((await call('users/me', { password: valid.password, confirmation: true }, null, 'DELETE')).status, 401);

@@ -10,7 +10,6 @@ Audit date: 2026-09-05. The Prisma schema contains **11 models**, not 12. The re
 | `SavedPlace`   | `SavedPlace`   | `userId` → `User`; indexed                                             |
 | `BudgetEntry`  | `BudgetEntry`  | `userId` → `User`; optional `tripId` → `Trip`                          |
 | `TransitRoute` | `TransitRoute` | standalone                                                             |
-| `Geofence`     | `Geofence`     | standalone                                                             |
 | `Place`        | `Place`        | standalone knowledge-base record                                       |
 | `RoutePrice`   | `RoutePrice`   | standalone knowledge-base record                                       |
 | `LocalFood`    | `LocalFood`    | standalone knowledge-base record                                       |
@@ -20,7 +19,7 @@ MongoDB creates ObjectIds as `_id`. Every schema serializes `_id` as the previou
 
 ## API routes audited
 
-`/api/auth`, `/api/trips`, `/api/budget`, `/api/places`, `/api/transit-routes`, `/api/geofences`, `/api/users`, `/api/ai`, `/api/knowledge`, and `/api/health`.
+`/api/auth`, `/api/trips`, `/api/budget`, `/api/places`, `/api/transit-routes`, `/api/users`, `/api/ai`, `/api/knowledge`, and `/api/health`.
 
 ## Current knowledge ingestion
 

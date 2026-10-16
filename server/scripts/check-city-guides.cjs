@@ -25,7 +25,7 @@ async function main() {
     dates: { start: '2027-01-04' }, startTime: '08:00', days: 1, budget: 2000, travelers: 1,
     preferences: [], transportModes: ['bus'], pace: 'balanced', lodging: { preference: 'none', nightlyBudget: 0, rooms: 1 },
     foodPerPersonPerDay: 100, useSavedPlaces: false, returnToOrigin: false, excludedPlaceIds: [] }
-  const plan = buildPlan(request, { places: projected, foods, fares: [], routes: [], saved: [], geofences: [] })
+  const plan = buildPlan(request, { places: projected, foods, fares: [], routes: [], saved: [] })
   assert.equal(plan.days[0].stops.length, 3)
   for (const stop of plan.days[0].stops) {
     assert.equal(stop.areaId, 'dagupan')
@@ -44,7 +44,7 @@ async function main() {
   assert.equal(islandPlaces.length, 8)
   const islandPlan = buildPlan({ ...request, origin: { areaId: 'alaminos' },
     destinations: [{ areaId: 'alaminos', placeIds: [] }], days: 2 },
-    { places: islandPlaces, foods: cityGuideFoods([], ['alaminos']), fares: [], routes: [], saved: [], geofences: [] })
+    { places: islandPlaces, foods: cityGuideFoods([], ['alaminos']), fares: [], routes: [], saved: [] })
   assert.equal(islandPlan.days[0].stops[0].place, 'Lucap Wharf & Lucap Baywalk')
   for (const stop of islandPlan.days.flatMap(d => d.stops)) {
     assert.equal(stop.areaId, 'alaminos')
@@ -63,7 +63,7 @@ async function main() {
   assert.equal(inland.length, 11)
   const inlandPlan = buildPlan({ ...request, origin: { areaId: 'urdaneta' },
     destinations: [{ areaId: 'urdaneta', placeIds: [] }] },
-    { places: inland, foods: cityGuideFoods([], ['urdaneta']), fares: [], routes: [], saved: [], geofences: [] })
+    { places: inland, foods: cityGuideFoods([], ['urdaneta']), fares: [], routes: [], saved: [] })
   assert.equal(inlandPlan.days[0].stops[0].place, 'Urdaneta City Public Market')
   assert.equal(cityGuideFoods([], ['urdaneta']).length, 10)
   for (const stop of inlandPlan.days[0].stops) {
@@ -80,7 +80,7 @@ async function main() {
   assert.equal(scPlaces.length, 9)
   const scPlan = buildPlan({ ...request, origin: { areaId: 'san-carlos' },
     destinations: [{ areaId: 'san-carlos', placeIds: [] }] },
-    { places: scPlaces, foods: cityGuideFoods([], ['san-carlos']), fares: [], routes: [], saved: [], geofences: [] })
+    { places: scPlaces, foods: cityGuideFoods([], ['san-carlos']), fares: [], routes: [], saved: [] })
   assert.equal(scPlan.days[0].stops[0].place, 'City Plaza')
   assert.equal(scPlan.localFoods.length, 6)
   for (const stop of scPlan.days[0].stops) {
@@ -97,7 +97,7 @@ async function main() {
     assert.equal(projected.length, count)
     assert.equal(projected[0]._id, candidates[0]._id)
     const municipalPlan = buildPlan({ ...request, origin: { areaId }, destinations: [{ areaId, placeIds: [] }] },
-      { places: projected, foods: cityGuideFoods([], [areaId]), fares: [], routes: [], saved: [], geofences: [] })
+      { places: projected, foods: cityGuideFoods([], [areaId]), fares: [], routes: [], saved: [] })
     assert.equal(municipalPlan.days[0].stops[0].place, municipal.itinerary_attraction_order[0])
     assert.equal(municipalPlan.localFoods.length, foodCount)
     for (const stop of municipalPlan.days[0].stops) {

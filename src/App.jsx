@@ -31,7 +31,6 @@ import LGUDashboard from "./pages/LGUDashboard";
 import AdminApprovals from "./pages/AdminApprovals";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminRoutes from "./pages/AdminRoutes";
-import AdminGeofences from "./pages/AdminGeofences";
 import UserStackLayout from "./components/UserStackLayout";
 import NotificationHeader from './components/NotificationHeader';
 import AdminUsers from "./pages/AdminUsers";
@@ -41,6 +40,7 @@ import AdminSettings from "./pages/AdminSettings";
 import UserSidebar from "./components/UserSidebar";
 import AdminSidebar from "./components/AdminSidebar";
 import { WorkspaceMotionProvider, ScreenMotion, UserInteractionProvider, FeedbackPressable } from "./components/WorkspaceMotion";
+import ApprovalCountsProvider from './components/ApprovalCountsProvider';
 
 const RootStack = createNativeStackNavigator();
 const UserStack = createNativeStackNavigator();
@@ -81,7 +81,6 @@ const linking = {
           AdminDashboard: "admin",
           AdminApprovals: "admin/approvals",
           AdminRoutes: "admin/routes",
-          AdminGeofences: "admin/geofences",
           AdminUsers: "admin/users",
           AdminAIControls: "admin/ai-controls",
           AdminAnalytics: "admin/analytics",
@@ -198,6 +197,7 @@ function AdminScreens() {
   };
 
   return (
+    <ApprovalCountsProvider>
     <View style={themeStyle(styles.layout)}>
       {isWide && (
         <View style={themeStyle(styles.adminSidebarContainer)}>
@@ -211,7 +211,6 @@ function AdminScreens() {
           <AdminStack.Screen name="AdminDashboard" component={AdminDashboard} />
           <AdminStack.Screen name="AdminApprovals" component={AdminApprovals} />
           <AdminStack.Screen name="AdminRoutes" component={AdminRoutes} />
-          <AdminStack.Screen name="AdminGeofences" component={AdminGeofences} />
           <AdminStack.Screen name="AdminUsers" component={AdminUsers} />
           <AdminStack.Screen name="AdminAIControls" component={AdminAIControls} />
           <AdminStack.Screen name="AdminAnalytics" component={AdminAnalytics} />
@@ -219,6 +218,7 @@ function AdminScreens() {
         </AdminStack.Navigator>
       </View>
     </View>
+    </ApprovalCountsProvider>
   );
 }
 

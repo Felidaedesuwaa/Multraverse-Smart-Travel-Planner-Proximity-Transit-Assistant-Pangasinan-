@@ -6,7 +6,7 @@ const { User, AuditLog, Trip, BudgetEntry, SavedPlace } = require('../dist/model
 const { PlannerDraft } = require('../dist/models/PlannerDraft')
 const { PasswordReset } = require('../dist/models/PasswordReset')
 const { PendingRegistration } = require('../dist/models/PendingRegistration')
-const { GeofenceMonitor } = require('../dist/models/GeofenceMonitor')
+const { AccountFactor, PrivacyAcknowledgment } = require('../dist/models/AccountSecurity')
 const router = require('../dist/routes/users').default
 const actor = new mongoose.Types.ObjectId()
 const target = new mongoose.Types.ObjectId()
@@ -27,7 +27,7 @@ function replace(object, key, value) { originals.push(() => { object[key] = valu
         audited = true
       })
       replace(User, 'findOneAndDelete', async () => { assert.ok(audited, 'Audit must validate before removal'); exists = false; return user })
-      for (const model of [Trip, BudgetEntry, SavedPlace, PlannerDraft, PasswordReset, PendingRegistration, GeofenceMonitor]) replace(model, 'deleteMany', async () => ({}))
+      for (const model of [Trip, BudgetEntry, SavedPlace, PlannerDraft, PasswordReset, PendingRegistration, AccountFactor, PrivacyAcknowledgment]) replace(model, 'deleteMany', async () => ({}))
       const route = router.stack.find(layer => layer.route?.path === (role === 'EXPLORER' ? '/explorers/:id' : `/${role.toLowerCase()}-accounts/:id`) && layer.route.methods.delete).route
       const handler = route.stack.at(-1).handle
       let response

@@ -12,7 +12,6 @@ import { RegistrationError } from '../lib/registration'
 import { deleteAccount } from '../lib/deleteAccount'
 import { AuthError, authLimit } from '../lib/authLimits'
 import { explorerDashboard } from '../lib/explorerUsers'
-import { GeofenceMonitor } from '../models/GeofenceMonitor'
 import { AccountFactor, PrivacyAcknowledgment } from '../models/AccountSecurity'
 
 const router = Router()
@@ -66,7 +65,6 @@ function permanentAccountDeletion(role: 'EXPLORER' | 'ADMIN' | 'LGU') {
         await PlannerDraft.deleteMany({ userId }, { session })
         await PasswordReset.deleteMany({ userId }, { session })
         await PendingRegistration.deleteMany({ email: user.email }, { session })
-        await GeofenceMonitor.deleteMany({ userId: String(userId) }, { session })
         await AccountFactor.deleteMany({ userId }, { session })
         await PrivacyAcknowledgment.deleteMany({ userId }, { session })
       })

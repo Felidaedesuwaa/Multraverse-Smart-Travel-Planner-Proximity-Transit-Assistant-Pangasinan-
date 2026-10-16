@@ -71,7 +71,6 @@ provided for updating or deleting audit events.
 
 - `create_lgu_account`, `create_admin_account`
 - `approve_place`, `reject_place`
-- `approve_geofence`, `reject_geofence`
 - `approve_local_food`, `reject_local_food`
 - `approve_route_price`, `reject_route_price`
 - `approve_transit_route`, `reject_transit_route`
@@ -103,5 +102,5 @@ npx expo export --platform web --output-dir .tmp/superadmin-web
 The API suite creates a random isolated database and removes its records in a
 finally block. Set `SUPERADMIN_TEST_MONGODB_URI` to override MONGODB_URI. Tests cover
 role gates, duplicate races, validation, transactional audit rollback, bootstrap
-idempotence/concurrency, all five approval/rejection types, pagination and filters,
+idempotence/concurrency, all four approval/rejection types, pagination and filters,
 public fields and stale JWT roles. Empty test collections can remain in Atlas.

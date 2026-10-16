@@ -11,7 +11,6 @@ import tripRoutes from './routes/trips'
 import budgetRoutes from './routes/budget'
 import placesRoutes from './routes/places'
 import transitRoutes from './routes/transitRoutes'
-import geofenceRoutes from './routes/geofences'
 import userRoutes from './routes/users'
 import locationRoutes from './routes/locations'
 import aiRoutes from './routes/ai'
@@ -23,7 +22,6 @@ import { User, AuditLog } from './models'
 import { PendingRegistration } from './models/PendingRegistration'
 import { AuthLimit } from './lib/authLimits'
 import { preparePasswordResetStorage } from './models/PasswordReset'
-import { prepareGeofenceStorage } from './models/GeofenceMonitor'
 import { prepareAccountSecurityStorage } from './models/AccountSecurity'
 import { rateLimit, securityHeaders } from './middleware/security'
 
@@ -41,9 +39,9 @@ async function prepareDatabase() {
   // Share initialization between concurrent cold-start requests. Retry a
   // failed attempt instead of leaving this function instance unusable.
   // Keep the database-layout check from the latest application startup.
-  // Existing indexes are provisioned separately. Password reset and geofence
+  // Existing indexes are provisioned separately. Password recovery and account security
   // storage create missing collections without changing account data.
-  indexesReady ??= preparePasswordResetStorage().then(() => prepareGeofenceStorage()).then(() => prepareAccountSecurityStorage()).then(() => verifyDatabaseLayout())
+  indexesReady ??= preparePasswordResetStorage().then(() => prepareAccountSecurityStorage()).then(() => verifyDatabaseLayout())
     .then(() => Promise.all([User.init(), AuditLog.init(), PendingRegistration.init(), AuthLimit.init()]))
     .catch((error) => { indexesReady = undefined; throw error })
   await indexesReady
@@ -94,7 +92,6 @@ app.use('/api/trips', tripRoutes)
 app.use('/api/budget', budgetRoutes)
 app.use('/api/places', placesRoutes)
 app.use('/api/transit-routes', transitRoutes)
-app.use('/api/geofences', geofenceRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/audit-logs', auditLogRoutes)
 app.use('/api/locations', locationRoutes)

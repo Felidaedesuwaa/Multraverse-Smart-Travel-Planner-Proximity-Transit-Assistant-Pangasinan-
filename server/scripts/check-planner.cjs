@@ -15,7 +15,7 @@ const fares = [
   { _id: id(11), fromAreaId: 'alaminos', toAreaId: 'bolinao', transitRouteId: id(21), vehicle: 'bus', price: 200, fareBasis: 'vehicle', capacity: 2, durationMinutes: 60, verifiedAt: '2026-09-01' },
 ];
 const routes = fares.map(f => ({ _id: f.transitRouteId, status: 'ACTIVE', areaIds: [f.fromAreaId, f.toAreaId] }));
-const data = { places, fares, routes, foods: [], saved: [], geofences: [] };
+const data = { places, fares, routes, foods: [], saved: [] };
 validateRequest(request());
 for (const change of [{ budget: NaN }, { budget: -1 }, { travelers: 1.5 }, { days: 8 }, { dates: { start: '2027-02-30' } }, { startTime: '25:00' }, { transportModes: ['teleport'] }, { preferences: ['invent'] }, { destinations: [] }, { origin: { areaId: 'outside' } }]) assert.throws(() => validateRequest({ ...request(), ...change }));
 assert.throws(() => validateRequest(null));

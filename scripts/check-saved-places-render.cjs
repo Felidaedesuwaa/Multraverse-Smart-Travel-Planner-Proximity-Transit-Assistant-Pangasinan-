@@ -3,16 +3,17 @@ const assert = require('node:assert/strict'), fs = require('node:fs'), path = re
 const root = path.resolve(__dirname, '..'), cache = new Map(), instances = new Map();
 let frame, effects = [], nodes = [], dark = true, platform = 'web', pickerCalls = 0, permissionCalls = 0, failSave = false, saved = [], deletedExpenses = [];
 let photoSizes=[],photoResizes=[],photoCompressions=[],releasedContexts=0,releasedImages=0;
+let width=390,savedFeed=[];
 let catalogTrips = [{ id:'trip', title:'Dagupan adventure', status:'COMPLETED', plan:{ version:1 } }];
 const budget = { entries:[{id:'expense',label:'Lunch',category:'Food',amount:100,color:'#123',date:'2026-10-07',tripId:'trip'}], settings:{monthlyBudget:1000,savingsTarget:20}, setEntries(value){this.entries = typeof value === 'function' ? value(this.entries) : value;}, setSettings(value){this.settings=value;} };
-const api = { getTrips:async()=>catalogTrips,getSavedPlaces:async()=>[],getBudget:async()=>budget.entries,getBudgetSettings:async()=>budget.settings,
+const api = { getTrips:async()=>catalogTrips,getSavedPlaces:async()=>savedFeed,getBudget:async()=>budget.entries,getBudgetSettings:async()=>budget.settings,
  createSavedPlace:async value=>{if(failSave)throw new Error('Offline. Try again.');saved.push(value);return {...value,id:'new'};}, updateSavedPlace:async(id,value)=>({...value,id}), deleteSavedPlace:async()=>{},deleteBudgetEntry:async id=>deletedExpenses.push(id) };
 const flatten = value => Array.isArray(value) ? Object.assign({},...value.filter(Boolean).map(flatten)) : value || {};
 const hooks = { useState(initial){const owner=frame,i=frame.index++;if(!(i in owner.slots))owner.slots[i]=typeof initial==='function'?initial():initial;return [owner.slots[i],value=>{owner.slots[i]=typeof value==='function'?value(owner.slots[i]):value;}];},
  useRef(value){const owner=frame,i=frame.index++;return owner.slots[i] ||= {current:value};},
  useEffect(fn,deps){const i=frame.index++,prev=frame.slots[i];if(!prev||!deps||deps.some((v,j)=>v!==prev[j]))effects.push(fn);frame.slots[i]=deps;},
  useCallback(fn){return fn;} };
-const native={...Object.fromEntries(['View','Text','TextInput','Pressable','ScrollView','Modal','ActivityIndicator','Image'].map(n=>[n,n])),StyleSheet:{create:v=>v,flatten,absoluteFillObject:{position:'absolute',inset:0}},Platform:{get OS(){return platform;}},useWindowDimensions:()=>({width:390,height:844})};
+const native={...Object.fromEntries(['View','Text','TextInput','Pressable','ScrollView','Modal','ActivityIndicator','Image'].map(n=>[n,n])),StyleSheet:{create:v=>v,flatten,absoluteFillObject:{position:'absolute',inset:0}},Platform:{get OS(){return platform;}},useWindowDimensions:()=>({width,height:844})};
 function load(file){
  if(cache.has(file))return cache.get(file);
  const code=babel.transformSync(fs.readFileSync(file,'utf8'),{filename:file,babelrc:false,configFile:false,plugins:[['@babel/plugin-transform-react-jsx',{runtime:'automatic'}],'@babel/plugin-transform-modules-commonjs']}).code;
@@ -52,6 +53,22 @@ const tap=label=>{const b=button(label);assert(b,`Find ${label}`);assert(!b.prop
 const hasText=value=>nodes.some(n=>n.type==='Text'&&text(n).includes(value));
 const modals=()=>nodes.filter(n=>n.type==='Modal').length;
 (async()=>{
+ savedFeed=[{id:'beach',name:'Bonuan Beach',category:'Beach',rating:4,isPublic:true},{id:'park',name:'Nature Park',category:'Nature Park',rating:3,isPublic:false}];
+ for(const theme of [false,true])for(const viewport of [320,390,768,1280]){
+  dark=theme;width=viewport;instances.clear();effects=[];render();await flush();
+  const controls=nodes.find(n=>n.type==='View'&&flatten(n.props.style).gap===16&&n.children?.length===3&&text(n).includes('Saved Places')&&text(n).includes('Avg Rating'));
+  assert(controls,'Header, ratings, search, and categories form one compact section');
+  const toolbar=controls.children[1],stats=toolbar.children[0],contentWidth=viewport>=768?viewport-280:viewport;
+  assert.equal(flatten(toolbar.props.style).flexDirection,contentWidth>=800?'row':'column','Search sits beside ratings on desktop and just below them on mobile');
+  assert.equal(flatten(stats.props.style).height,36,'Ratings cannot stretch into the page height');
+  if(contentWidth<800)assert.equal(flatten(stats.props.style).flexGrow,0,'Mobile ratings never consume unused vertical space');
+  const search=nodes.find(n=>n.props.accessibilityLabel==='Search saved places');assert(search);
+  search.props.onChangeText('bonuan');render();assert(hasText('Bonuan Beach'));assert(!hasText('3.0'));
+  tap('Nature Park');assert(hasText('No places match your filters'));
+  tap('Clear saved places search');assert(hasText('3.0'));assert(!hasText('Bonuan Beach'));
+  tap('All');assert(hasText('Bonuan Beach'));
+ }
+ savedFeed=[];width=390;
  for(const theme of [false,true])for(const target of ['web','ios']){
   dark=theme;platform=target;instances.clear();effects=[];Screen=SavedPlaces;render();await flush();tap('Add Place');await flush();assert.equal(modals(),1);
   tap('Select a completed plan');tap('Dagupan adventure');tap('Private');assert.equal(modals(),1);assert(button('Private').props.accessibilityState.selected);assert(hasText('Private photos are visible only to you.'));
@@ -69,5 +86,5 @@ const modals=()=>nodes.filter(n=>n.type==='Modal').length;
  const again=button('Delete expense Lunch');again.props.onPress();render();await tap('Delete expense');await settle();assert.deepEqual(deletedExpenses,['expense']);assert(hasText('No expenses to show.'));assert(hasText('Expense deleted.'));
  Screen=load(path.join(root,'src/components/FullscreenMap.jsx')).default;instances.clear();effects=[];screenProps={height:420,children:React.createElement('View',{testID:'map-surface'})};render();assert.equal(modals(),0);tap('Open fullscreen map');assert.equal(modals(),1);assert.equal(nodes.filter(n=>n.props.testID==='map-surface').length,1);tap('Exit fullscreen map');assert.equal(modals(),0);assert.equal(nodes.filter(n=>n.props.testID==='map-surface').length,1);
  const prepare=load(path.join(root,'src/lib/placePhotos.js')).preparePlacePhoto;photoSizes=[300000,200000];const photo=await prepare({uri:'phone.jpg',width:3000,height:4000});assert(photo.length<=250000);assert.deepEqual(photoResizes,[{width:900,height:1200},{width:675,height:900}]);assert.deepEqual(photoCompressions,[0.75,0.6]);assert.equal(releasedImages,2);assert.equal(releasedContexts,2);photoSizes=[300000,300000,300000,300000];await assert.rejects(()=>prepare({uri:'huge.jpg',width:4000,height:3000}),/too large/);assert.equal(releasedImages,6);assert.equal(releasedContexts,6);await assert.rejects(()=>prepare({uri:'bad',width:0,height:0}),/could not be read/);
- console.log('PASS: Photo compression retries/API limit/resource cleanup; Fullscreen enter/exit and a single map surface; Saved Places direct upload on web/iOS, immediate visibility/colors/copy, persisted photos, save failure/retry, equal actions, single-modal discard and empty dropdown; Budget deletion requires confirmation and updates totals.');
+ console.log('PASS: Compact Saved Places header/ratings/search at mobile and desktop widths in both themes, search/category filtering and clear; photo compression, fullscreen map, uploads on web/iOS, visibility, save retry, confirmations, and Budget deletion.');
 })().catch(e=>{console.error(e);process.exitCode=1;});

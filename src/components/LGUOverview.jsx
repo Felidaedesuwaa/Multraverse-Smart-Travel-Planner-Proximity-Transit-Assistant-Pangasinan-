@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native'
-import { ArrowRight, CheckCircle2, Clock3, FileText, AlertCircle, RefreshCw, MapPin, Utensils, Wallet, Radio, Route } from 'lucide-react-native'
+import { ArrowRight, CheckCircle2, Clock3, FileText, AlertCircle, RefreshCw, MapPin, Utensils, Wallet, Route } from 'lucide-react-native'
 import LGUPage from './LGUPage'
 import LGUMunicipalityMap from './LGUMunicipalityMap'
 import MunicipalStatCard from './MunicipalStatCard'
@@ -10,7 +10,7 @@ import { lguResources } from '../data/lguResources'
 import { colors } from '../theme/colors'
 import { useAppTheme } from '../theme/useAppTheme'
 
-const icons = { places: MapPin, foods: Utensils, 'route-prices': Wallet, geofences: Radio, 'transit-routes': Route }
+const icons = { places: MapPin, foods: Utensils, 'route-prices': Wallet, 'transit-routes': Route }
 export default function LGUOverview({ municipality, onNavigate }) {
   const { themeStyle, themeColor } = useAppTheme()
   const { width } = useWindowDimensions()
@@ -32,7 +32,7 @@ export default function LGUOverview({ municipality, onNavigate }) {
     <View style={styles.stack}>
       {error ? <View accessibilityRole="alert" style={themeStyle(styles.error)}><AlertCircle size={18} color={themeColor(colors.sunsetCoral, 'color')} /><Text style={themeStyle(styles.body)}>{error}</Text></View> : null}
       <View style={styles.grid}>{[
-        ['Total entries', rows.length, 'Across all five categories', FileText, colors.oceanBlueLight],
+        ['Total entries', rows.length, 'Across all categories', FileText, colors.oceanBlueLight],
         ['Pending review', count('pending'), 'Awaiting Admin approval', Clock3, colors.goldLight],
         ['Approved', count('approved'), 'Published local information', CheckCircle2, colors.palmGreenLight],
         ['Needs attention', count('rejected'), 'Review feedback and resubmit', AlertCircle, colors.coralLight],

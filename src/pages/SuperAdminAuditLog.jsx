@@ -5,7 +5,7 @@ import { WorkspaceButton, WorkspacePage, WorkspacePanel, WorkspaceTable, ui } fr
 import SuperAdminSelect from '../components/SuperAdminSelect'
 import { api } from '../lib/api'
 import { useAppTheme } from '../theme/useAppTheme'
-const actions = [...['create', 'update', 'delete'].flatMap(action => [action + '_lgu_account', action + '_admin_account']), ...['place', 'geofence', 'local_food', 'route_price', 'transit_route'].flatMap(type => [`approve_${type}`, `reject_${type}`])]
+const actions = [...['create', 'update', 'delete'].flatMap(action => [action + '_lgu_account', action + '_admin_account']), ...['place', 'local_food', 'route_price', 'transit_route'].flatMap(type => [`approve_${type}`, `reject_${type}`])]
 const actionLabel = value => value.replaceAll('_', ' ').replace(/^./, character => character.toUpperCase())
 export default function SuperAdminAuditLog({ navigation }) {
   const { palette: p } = useAppTheme()

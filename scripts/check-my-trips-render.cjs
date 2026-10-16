@@ -17,7 +17,7 @@ const plan = {
 };
 const trips = ['UPCOMING', 'COMPLETED', 'CANCELED'].map((status, i) => ({
   id: String(i), title: `${status} itinerary`, location: 'Pangasinan', date: '2026-10-05',
-  budget: 2000, spent: 0, stops: 1, status, plan: { guided: plan },
+  budget: 2000, spent: 0, stops: 1, status, plan: { guided: { ...plan, request: { ...plan.request, days: i + 1 } } },
 }));
 let deleted = [];
 const api = {
@@ -121,6 +121,17 @@ const open = () => tap('Open trip details for UPCOMING itinerary');
 const hasText = value => nodes.some(n => n.type === 'Text' && textOf(n).includes(value));
 
 (async () => {
+  const { tripDisplayTitle, tripDurationDays } = load(path.join(root, 'src/lib/tripTitle.js'));
+  const generated = { title: 'Dagupan trip | a1b2c3', plan: { guided: { request: { ...plan.request, tripTypes: ['Nature'] } } } };
+  assert.equal(tripDisplayTitle(generated), 'Dagupan Nature', 'Generated titles omit dates and durations');
+  assert.equal(tripDisplayTitle({ title: 'Dagupan Nature | Oct 5, 2026 | 1 day' }), 'Dagupan Nature', 'Existing formatted titles are also cleaned');
+  assert.equal(tripDisplayTitle({ title: 'Island escape | 2026-10-05 | 3 days' }), 'Island escape');
+  assert.equal(tripDisplayTitle({ title: 'My island weekend' }), 'My island weekend', 'Custom titles remain meaningful');
+  assert.equal(tripDurationDays(generated), 1);
+  assert.equal(tripDurationDays({ plan: { guided: { request: { days: '3' } }, request: { days: 1 } } }), 3, 'Guided itinerary duration takes precedence');
+  assert.equal(tripDurationDays({ plan: { request: { days: 5 }, days: [{}, {}] } }), 5, 'Legacy itinerary request duration is supported');
+  assert.equal(tripDurationDays({ plan: { days: [{}, {}, {}] } }), 3);
+  assert.equal(tripDurationDays({}), null, 'Trips without a plan never display an invented duration');
   for (const theme of [false, true]) for (const viewport of [320, 390, 768, 1280]) {
     dark = theme; width = viewport; instances.clear(); effects = []; render(); await flush();
     const tabs = nodes.find(n => n.type === 'ScrollView' && n.props.horizontal);
@@ -136,6 +147,14 @@ const hasText = value => nodes.some(n => n.type === 'Text' && textOf(n).includes
     assert(!button('Open trip details for UPCOMING itinerary'));
     tap('All, 3 trips');
     assert(!button('View') && !button('Delete Trip'), 'List cards only offer the chevron');
+    const tripCard = button('Open trip details for UPCOMING itinerary');
+    assert(textOf(tripCard).includes('Budget progress') && textOf(tripCard).includes('Pangasinan'), 'The whole trip card is the details button');
+    assert.equal(nodes.filter(n => n.type === 'Pressable' && n.props.accessibilityLabel === 'Open trip details for UPCOMING itinerary').length, 1, 'The chevron is part of one clickable card');
+    for (const [index, status] of ['UPCOMING', 'COMPLETED', 'CANCELED'].entries()) {
+      const card = button(`Open trip details for ${status} itinerary`);
+      assert(textOf(card).includes(`${index + 1}-day trip`), 'Each overview shows its generated duration');
+      assert(textOf(card).includes('2026-10-05'), 'The calendar date stays visible');
+    }
     assert(!nodes.some(n => n.type === 'Icon:Trash2'), 'There is no trash icon in the list');
     const input = nodes.find(n => n.type === 'TextInput');
     input.props.onChangeText('completed'); render();
@@ -143,10 +162,20 @@ const hasText = value => nodes.some(n => n.type === 'Text' && textOf(n).includes
     nodes.find(n => n.type === 'TextInput').props.onChangeText(''); render();
     open(); await flush(); assert.equal(modalCount(), 1);
     assert(!button('Delete Trip'), 'Active trips cannot be deleted');
+    const actionStyles = ['Cancel Trip', 'Complete Trip', 'Done'].map(label => flatten(button(label).props.style));
+    assert(actionStyles.every(style => style.minHeight === 48), 'Trip actions have matching accessible heights');
+    assert(actionStyles.every(style => style.paddingHorizontal === 16 && style.paddingVertical === 12), 'Trip actions use matching padding');
+    if (viewport < 600) {
+      assert(actionStyles.every(style => style.width === '100%'), 'Small screens stack full-width trip actions');
+    } else {
+      assert(actionStyles.every(style => style.flex === 1 && style.width === undefined), 'Large screens give each trip action an equal share of the row');
+    }
     const scroll = nodes.findLast(n => n.type === 'ScrollView' && flatten(n.props.style).minHeight === 0);
     assert.equal(flatten(scroll.props.style).flex, 1, 'Details have a bounded scroll area');
     for (const action of ['Cancel Trip', 'Complete Trip']) {
       tap(action); assert.equal(modalCount(), 1, `${action} uses the existing details modal`);
+      const confirmationStyles = [button('Go back'), button(action)].map(control => flatten(control.props.style));
+      assert(confirmationStyles.every(style => style.flex === 1 && style.width === undefined && style.minHeight === 48), 'Confirmation actions share the full dialog width with matching heights');
       tap('Go back'); assert.equal(modalCount(), 1);
     }
     tap('Done'); assert.equal(modalCount(), 0, 'Closing details dismisses immediately');
@@ -173,5 +202,5 @@ const hasText = value => nodes.some(n => n.type === 'Text' && textOf(n).includes
   failUpdate = true; tap('Cancel Trip'); await tap('Cancel Trip'); await settle();
   assert(hasText('Connection lost. Try again.')); assert.equal(modalCount(), 1);
   tap('Done'); assert.equal(modalCount(), 0);
-  console.log('PASS: My Trips filters/search at mobile and desktop widths in both themes; chevron-only cards; single-modal trip actions, close/reopen, PDF success/failure, busy guards, updates/deletion and API failure recovery.');
+  console.log('PASS: My Trips filters/search at mobile and desktop widths in both themes; fully clickable trip cards; single-modal trip actions, close/reopen, PDF success/failure, busy guards, updates/deletion and API failure recovery.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

@@ -3,12 +3,12 @@ import { addGeo } from './_geo'
 import { collectionNames } from './_collections'
 
 export const budgetCategories = ['Transport', 'Food', 'Accommodation', 'Entrance Fees', 'Activities', 'Shopping', 'Emergency', 'Others']
-const integerFields = /^(stops|passengers|alerts|reviewCount|order|day|attempts|count|reviewRevision|capacity|visitMinutes|durationMinutes|openingMinutes|closingMinutes)$/
+const integerFields = /^(stops|passengers|reviewCount|order|day|attempts|count|reviewRevision|capacity|visitMinutes|durationMinutes|openingMinutes|closingMinutes)$/
 
 /** Shared, explicit policy applied before model compilation (also used by the migration). */
 export function hardenSchema(schema: Schema, name: string) {
   if (collectionNames[name]) schema.set('collection', collectionNames[name])
-  if (name === 'Place' || name === 'Geofence') addGeo(schema)
+  if (name === 'Place') addGeo(schema)
   schema.set('strict', 'throw')
   schema.set('strictQuery', true)
   // Schema/index changes are deployed only by the reviewed migration.

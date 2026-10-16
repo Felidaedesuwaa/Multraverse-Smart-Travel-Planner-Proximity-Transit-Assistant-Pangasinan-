@@ -5,7 +5,6 @@ export const aiModules = [
   { id: "itinerary", icon: Route, title: "AI Itinerary Generator", accuracy: "94% acc", description: "Generates step-by-step travel plans using budget and destination inputs", tag: "claude-sonnet-5", enabled: true },
   { id: "transit", icon: Radio, title: "Transit Prediction", accuracy: "88% acc", description: "Predicts arrival times and optimal public transport routes", tag: "Internal v2.1", enabled: true },
   { id: "voice", icon: Mic, title: "Voice Translator", accuracy: "91% acc", description: "Real-time Filipino, Pangasinan, and English translation", tag: "Whisper-PH + LLM", enabled: true },
-  { id: "geofence", icon: Target, title: "Smart Geofence Alerts", accuracy: "97% acc", description: "ML-based proximity detection and push notifications", tag: "CoreML Proximity", enabled: true },
   { id: "budget", icon: Wallet, title: "Budget Optimizer", description: "Suggests cost-saving alternatives and rebalances trip budgets", tag: "Fine-tuned GPT", enabled: false },
   { id: "recommender", icon: Star, title: "Destination Recommender", description: "Recommendations based on travel history and ratings", tag: "CF Matrix v1.4", enabled: false },
 ];

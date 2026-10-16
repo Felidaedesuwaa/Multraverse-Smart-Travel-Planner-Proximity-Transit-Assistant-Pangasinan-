@@ -2,6 +2,7 @@ import Constants from "expo-constants";
 import { Platform } from "react-native";
 import { storage } from "./storage";
 import { notifyUpdates } from './notificationEvents';
+import { lguResources } from '../data/lguResources';
 
 function getExpoDevHost() {
   const hostUri =
@@ -144,7 +145,20 @@ export const api = {
   getLGUResources: resource => requestList(`/api/lgu/${resource}`),
   submitLGUResource: (resource, data, id) => request(`/api/lgu/${resource}${id ? `/${id}` : ''}`, { method: id ? 'PUT' : 'POST', body: JSON.stringify(data) }),
   deleteLGUResource: (resource, id) => request(`/api/lgu/${resource}/${id}`, { method: 'DELETE' }),
-  getApprovals: resource => requestList(`/api/admin/approvals/${resource}`),
+  getApprovalCounts: async signal => {
+    try { return await request('/api/admin/approvals/counts', { signal }); }
+    catch (error) {
+      if (error.status !== 404) throw error;
+      // Older API servers expose the paginated queues without a counts endpoint.
+      const entries = await Promise.all(Object.keys(lguResources).map(async resource => {
+        const rows = await requestList(`/api/admin/approvals/${resource}`, { signal });
+        return [resource, rows.filter(row => row.approvalStatus === 'pending').length];
+      }));
+      const counts = Object.fromEntries(entries);
+      return { counts, total: entries.reduce((sum, [, count]) => sum + count, 0) };
+    }
+  },
+  getApprovals: (resource, options = {}) => requestList(`/api/admin/approvals/${resource}`, options),
   reviewSubmission: (resource, id, decision, reason, revision) => request(`/api/admin/approvals/${resource}/${id}/${decision}`, { method: 'POST', body: JSON.stringify({ reason, revision }) }),
   // Auth
   requestPasswordReset: email => request('/api/auth/password/forgot', { method: 'POST', body: JSON.stringify({ email }) }),
@@ -199,15 +213,6 @@ export const api = {
   planTransitAlarm: data => request('/api/ai/transit/alarm/plan', { method: 'POST', body: JSON.stringify(data) }),
   checkTransitAlarm: data => request('/api/ai/transit/alarm/check', { method: 'POST', body: JSON.stringify(data) }),
   getTransitRoutes: () => requestList('/api/transit-routes'),
-
-  // Geofences
-  getGeofences: () => requestList('/api/geofences'),
-  createGeofence: data => request('/api/geofences', { method: 'POST', body: JSON.stringify(data) }),
-  deleteGeofence: id => request(`/api/geofences/${id}`, { method: 'DELETE' }),
-  getGeofenceEvents: () => request('/api/geofences/events'),
-  trackGeofences: data => request('/api/geofences/track', { method: 'POST', body: JSON.stringify(data) }),
-  updateGeofence: (id, data) =>
-    request(`/api/geofences/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
 
   // AI
   getPlannerCatalog: (options = {}) => requestCatalog(options),

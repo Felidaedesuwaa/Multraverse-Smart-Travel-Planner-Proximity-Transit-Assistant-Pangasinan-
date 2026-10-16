@@ -16,12 +16,11 @@ const { User } = require('../dist/models')
 const { lguResources } = require('../dist/lib/lguResources')
 const app = express()
 app.use(express.json())
-for (const [url, file] of [['lgu', 'lgu'], ['admin/approvals', 'approvals'], ['knowledge', 'knowledge'], ['geofences', 'geofences'], ['transit-routes', 'transitRoutes'], ['users', 'users'], ['auth', 'auth']]) app.use(`/api/${url}`, require(`../dist/routes/${file}`).default)
+for (const [url, file] of [['lgu', 'lgu'], ['admin/approvals', 'approvals'], ['knowledge', 'knowledge'], ['transit-routes', 'transitRoutes'], ['users', 'users'], ['auth', 'auth']]) app.use(`/api/${url}`, require(`../dist/routes/${file}`).default)
 app.use((error, req, res, next) => res.status(error.status || 500).json({ error: 'Test operation failed' }))
 let server
 const fixtures = {
   places: { name: 'Municipal beach', description: 'A coastal destination', location: 'Barangay One', category: 'Beach' },
-  geofences: { location: 'Town center', zone: 'Tourism zone', radius: '200 m', coordinates: { lat: 16.043, lng: 120.334 }, radiusMeters: 200 },
   foods: { name: 'Bangus', description: 'Local milkfish', avgPrice: 150, where: 'Market', category: 'Seafood' },
   'route-prices': { from: 'Dagupan', to: 'Lingayen', vehicle: 'BUS', price: 50, duration: '30 min' },
   'transit-routes': { name: 'Town loop', type: 'BUS', frequency: '30 min' },
@@ -51,11 +50,15 @@ const fixtures = {
     assert.equal((await call('lgu/places')).status, 401)
     for (const token of [admin.token, explorer.token, pro.token]) assert.equal((await call('lgu/places', token)).status, 403)
     assert.equal((await call('lgu/unknown', lgu.token)).status, 404)
+    for (const method of ['GET', 'POST', 'PUT', 'DELETE']) {
+      assert.equal((await call('lgu/geofences', lgu.token, method, ['POST', 'PUT'].includes(method) ? {} : undefined)).status, 404)
+      assert.equal((await call('admin/approvals/geofences', admin.token)).status, 404)
+    }
     assert.equal((await call('lgu/places/not-an-id', lgu.token)).status, 400)
     assert.equal((await call('lgu/places', lgu.token, 'POST', {})).status, 400)
     for (const [resource, fixture] of Object.entries(fixtures)) {
       const endpoint = `lgu/${resource}`
-      const publicEndpoint = ['geofences', 'transit-routes'].includes(resource) ? resource : `knowledge/${resource}`
+      const publicEndpoint = resource === 'transit-routes' ? resource : `knowledge/${resource}`
       const model = lguResources[resource].model
       if (fixture.name) assert.equal((await call(endpoint, lgu.token, 'POST', { ...fixture, name: 'Name123' })).status, 400, 'Named resource fields must reject digits at the API')
       // Raw legacy record without moderation fields stays readable.
@@ -95,17 +98,14 @@ const fixtures = {
     }
     const foreignRoute = await lguResources['transit-routes'].model.create({ ...fixtures['transit-routes'], municipality: 'Bolinao' })
     assert.equal((await call('lgu/route-prices', lgu.token, 'POST', { ...fixtures['route-prices'], transitRouteId: String(foreignRoute._id) })).status, 400)
-    // The same five route handlers must isolate each of the six sample scopes.
+    // The same resource handlers must isolate each of the six sample scopes.
     const { lguSeedAccounts } = require('../dist/data/lguSeedAccounts')
-    const mapCode = require('node:fs').readFileSync(path.resolve(__dirname, '../../src/data/lguMunicipalities.js'), 'utf8')
-    const { getLGUMunicipality } = await import('data:text/javascript;base64,' + Buffer.from(mapCode).toString('base64'))
     for (const sample of lguSeedAccounts) {
       const municipal = await account('lgu', sample.municipality)
       const profile = await call('users/me', municipal.token)
       assert.equal(profile.body.municipality, sample.municipality)
       for (const [resource, fixture] of Object.entries(fixtures)) {
-        const scopedFixture = resource === 'geofences' ? { ...fixture, coordinates: getLGUMunicipality(sample.municipality).center } : fixture
-        const created = await call(`lgu/${resource}`, municipal.token, 'POST', scopedFixture)
+        const created = await call(`lgu/${resource}`, municipal.token, 'POST', fixture)
         assert.equal(created.status, 201)
         assert.equal(created.body.municipality, sample.municipality)
         const list = await call(`lgu/${resource}`, municipal.token)

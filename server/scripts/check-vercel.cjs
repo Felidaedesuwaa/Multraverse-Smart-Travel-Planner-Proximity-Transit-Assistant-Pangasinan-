@@ -7,8 +7,8 @@ const environmentPath = require.resolve('../dist/lib/environment');
 require.cache[environmentPath] = { id: environmentPath, filename: environmentPath, loaded: true, exports: {} };
 const mongoose = require('mongoose');
 const db = require('../dist/lib/db');
+require('../dist/lib/authLimits').authLimit = async () => {};
 require('../dist/models/PasswordReset').preparePasswordResetStorage = async () => {};
-require('../dist/models/GeofenceMonitor').prepareGeofenceStorage = async () => {};
 require('../dist/models/AccountSecurity').prepareAccountSecurityStorage = async () => {};
 let server;
 
@@ -85,6 +85,10 @@ let server;
   assert.equal(response.headers.get('access-control-allow-origin'), null);
   response = await fetch(`${base}/test-client-ip`, { headers: { 'X-Forwarded-For': '203.0.113.10' } });
   assert.deepEqual(await response.json(), { ip: '203.0.113.10' });
+  for (const method of ['GET', 'POST', 'PUT', 'DELETE']) {
+    response = await fetch(`${base}/api/geofences`, { method });
+    assert.equal(response.status, 404, 'Removed geofence API is unavailable');
+  }
   console.log('Vercel startup, database retry, concurrent initialization, health, CORS, and client IP checks passed.');
 })().catch(error => { console.error(error); process.exitCode = 1; })
   .finally(() => { if (server) { server.closeAllConnections(); server.close(); } });

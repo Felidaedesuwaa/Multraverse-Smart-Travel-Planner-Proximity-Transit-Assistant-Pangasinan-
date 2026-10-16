@@ -1,5 +1,5 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
-import { Compass, MapPin, Utensils, Wallet, Radio, Route, ShieldCheck, LayoutDashboard } from 'lucide-react-native'
+import { Compass, MapPin, Utensils, Wallet, Route, ShieldCheck, LayoutDashboard } from 'lucide-react-native'
 import { getLGUMunicipality } from '../data/lguMunicipalities'
 import { useAuthStore } from '../store/authStore'
 import { lguResources } from '../data/lguResources'
@@ -7,7 +7,7 @@ import { useAppTheme } from '../theme/useAppTheme'
 import ChangePasswordButton from './ChangePasswordButton'
 import SidebarLogoutButton from './SidebarLogoutButton'
 import ProfileAvatar from './ProfileAvatar'
-const resourceIcons = { dashboard: LayoutDashboard, places: MapPin, foods: Utensils, 'route-prices': Wallet, geofences: Radio, 'transit-routes': Route }
+const resourceIcons = { dashboard: LayoutDashboard, places: MapPin, foods: Utensils, 'route-prices': Wallet, 'transit-routes': Route }
 
 export default function LGUSidebar({ activeResource, onNavigate, compact }) {
   const { palette } = useAppTheme()

@@ -1,6 +1,23 @@
 # MongoDB design, version 3
 
-This document supersedes the original 17-collection audit in DATABASE-HARDENING.md. The redesign preserves the existing users and phrasebooks and creates the remaining structure without seeding documents. The current code declares **16 root collections**, including password recovery. Schema definitions for embedded value objects are not separate collections.
+This document supersedes the original 17-collection audit in DATABASE-HARDENING.md. The redesign preserves the existing users and phrasebooks and creates the remaining structure without seeding documents. The current code declares **15 root collections**, including password recovery. Schema definitions for embedded value objects are not separate collections.
+
+## Geofence retirement (October 2026)
+
+Geofence management, tracking, approval entries and planner advisories have been
+removed. The backend no longer registers or provisions `geofences` or
+`geofencemonitors`. Historical audit snapshots below and in DATABASE-HARDENING.md
+retain their original counts and describe the earlier layout.
+
+After stopping older backend processes, inspect the configured database with
+`npm run db:remove-geofences`. Apply the removal with
+`npm run db:remove-geofences -- --apply --database=YOUR_DATABASE_NAME`.
+The migration drops only those two collections; historical audit logs and saved
+itinerary snapshots remain intact. It is safe to run again.
+
+Applied on 2026-10-15 to `multraverse`: both collections contained zero documents,
+were dropped, and a follow-up inspection confirmed both were absent. All other
+collections were retained.
 
 ## Password recovery addition (October 2026)
 
@@ -37,7 +54,6 @@ Deployment is complete. The final apply changed validators only; no documents or
 | localfoods | Shared local-food knowledge and LGU submissions | Independent records with location and price information; reused by many plans |
 | transitroutes | Transit service catalog and LGU submissions | Embeds bounded service/stop-name details; shared by fare records |
 | routeprices | Fare records and LGU submissions | Optional transit-route reference; direction, vehicle and fare basis vary independently from a service |
-| geofences | Geographic advisory zones and LGU submissions | Embeds geographic and moderation data; independent zone lifecycle |
 | pendingregistrations | Email verification before account creation | TTL challenge, password/code hashes hidden by default; never embeds expiry on a permanent user |
 | passwordresets | Email OTP password recovery | One expiring challenge per user with hidden hashes; removed on redemption, password change or account deletion |
 | plannerdrafts | Generate, review, enrich and save an itinerary | Owner reference plus typed embedded plan; TTL expiry distinct from permanent saved trips |

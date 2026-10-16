@@ -12,9 +12,6 @@ export const lguResources = {
   'route-prices': { label: 'Route prices', fields: [
     ['from', 'Origin', 'required'], ['to', 'Destination', 'required'], ['vehicle', 'Vehicle', 'required'], ['price', 'Fare (PHP)', 'required-number'], ['duration', 'Duration (e.g. 30 min)', 'required'], ['notes', 'Notes'],
   ] },
-  geofences: { label: 'Geofences', fields: [
-    ['location', 'Location', 'required'], ['zone', 'Zone', 'required'], ['radius', 'Radius (e.g. 200 m)', 'required'], ['coord', 'Coordinates'], ['advisory', 'Advisory'], ['active', 'Active', 'boolean'],
-  ] },
   'transit-routes': { label: 'Transit routes', fields: [
     ['name', 'Name', 'required'], ['type', 'Vehicle type', 'choice', ['BUS', 'JEEPNEY', 'TRICYCLE', 'VAN']], ['frequency', 'Frequency', 'required'], ['stops', 'Number of stops', 'number'], ['status', 'Service status', 'choice', ['ACTIVE', 'INACTIVE']],
   ] },

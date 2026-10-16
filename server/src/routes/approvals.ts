@@ -9,6 +9,12 @@ const router = Router()
 router.param('id', validateId)
 router.use(sanitizeRequest, validateRouter('approvals'))
 router.use(authenticate, requireAdmin)
+router.get('/counts', async (_req, res) => {
+  const entries = await Promise.all(Object.entries(lguResources).map(async ([resource, { model }]) =>
+    [resource, await model.countDocuments({ approvalStatus: 'pending' })] as const))
+  const counts = Object.fromEntries(entries)
+  res.json({ counts, total: entries.reduce((sum, [, count]) => sum + count, 0) })
+})
 router.use('/:resource', (req, res, next) => {
   if (!Object.prototype.hasOwnProperty.call(lguResources, req.params.resource)) return res.status(404).json({ error: 'Unknown resource' })
   next()
@@ -27,7 +33,7 @@ router.post('/:resource/:id/:decision', async (req: AuthRequest<{ resource: stri
   const revision = req.body?.revision
   if (!Number.isInteger(revision) || revision < 0) return res.status(400).json({ error: 'Provide the submission revision being reviewed' })
   const { model } = lguResources[resource]
-  const types: Record<string, string> = { places: 'place', geofences: 'geofence', foods: 'local_food', 'route-prices': 'route_price', 'transit-routes': 'transit_route' }
+  const types: Record<string, string> = { places: 'place', foods: 'local_food', 'route-prices': 'route_price', 'transit-routes': 'transit_route' }
   const logDecision = (item: any) => AuditLog.create({ actor: req.userId, action: `${decision}_${types[resource]}`, metadata: { itemId: id, municipality: item.municipality, ...(item.pendingDeletion ? { deletion: true } : {}) } })
   if (decision === 'approve') {
     const deleted = await model.findOneAndDelete({ _id: id, approvalStatus: 'pending', pendingDeletion: true, reviewRevision: revision })

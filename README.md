@@ -1,6 +1,6 @@
 # Multraverse
 
-Multraverse is a cross-platform travel companion for Android, iOS, and the web. It includes trip planning, budgets, saved places, transit routes, geofences, phrasebook and translation tools, AI itinerary generation, and admin screens.
+Multraverse is a cross-platform travel companion for Android, iOS, and the web. It includes trip planning, budgets, saved places, transit routes, phrasebook and translation tools, AI itinerary generation, and admin screens.
 
 ## Display preferences
 
@@ -259,7 +259,7 @@ Verification completion and account deletion use MongoDB transactions, requiring
 
 Run `npm run test:auth --prefix server` for integration checks against a **separate randomly named temporary database** on `AUTH_TEST_MONGODB_URI` (or `MONGODB_URI` if omitted). The test needs permission to create and drop collections in that temporary database, mocks all email delivery, and removes its test collections afterward. It checks expiry, attempt/resend limits, simultaneous verification, transaction rollback, deletion ownership, credential removal and token rejection. Existing application accounts are never modified.
 
-The backend provides route groups for authentication, users, trips, budgets, places, transit routes, geofences, AI, and knowledge data. The health check is available at `GET /api/health`.
+The backend provides route groups for authentication, users, trips, budgets, places, transit routes, AI, and knowledge data. The health check is available at `GET /api/health`.
 
 ## Profile settings (web and mobile)
 

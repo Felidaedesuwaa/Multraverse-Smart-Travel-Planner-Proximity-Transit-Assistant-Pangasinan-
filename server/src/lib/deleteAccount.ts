@@ -6,7 +6,6 @@ import { PendingRegistration } from '../models/PendingRegistration'
 import { PasswordReset } from '../models/PasswordReset'
 import { AuthError } from './authLimits'
 import { AccountFactor, PrivacyAcknowledgment } from '../models/AccountSecurity'
-import { GeofenceMonitor } from '../models/GeofenceMonitor'
 
 export async function deleteAccount(userId: string, password: unknown, confirmation: unknown) {
   if (confirmation !== true) throw new AuthError('Confirm that you want to permanently delete your account.')
@@ -27,6 +26,5 @@ export async function deleteAccount(userId: string, password: unknown, confirmat
     await PasswordReset.deleteMany({ userId }, { session })
     await AccountFactor.deleteMany({ userId }, { session })
     await PrivacyAcknowledgment.deleteMany({ userId }, { session })
-    await GeofenceMonitor.deleteMany({ userId }, { session })
   })
 }

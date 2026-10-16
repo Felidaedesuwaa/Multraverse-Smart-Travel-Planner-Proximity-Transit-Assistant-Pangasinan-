@@ -60,7 +60,7 @@ async function main() {
         references.push({ field, target: target.collection.collectionName, dangling: result[0]?.count || 0 })
         if (field === 'userId' && result[0]?.count) report.blockers.push(`${name}: ${result[0].count} records have a missing owner; choose an explicit remediation before rollout`)
       }
-      if (exists && ['places', 'geofences'].includes(name)) {
+      if (exists && name === 'places') {
         const filter = { 'coordinates.lat': { $type: 'number', $gte: -90, $lte: 90 }, 'coordinates.lng': { $type: 'number', $gte: -180, $lte: 180 } }
         report.geoBackfill.push({ collection: name, count: await collection.countDocuments(filter), filter })
       }
