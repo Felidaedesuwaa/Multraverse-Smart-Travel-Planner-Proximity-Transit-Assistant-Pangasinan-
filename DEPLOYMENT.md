@@ -1,5 +1,26 @@
 # Deploy the Multraverse website
 
+## Fix registration showing "Failed to fetch"
+
+The frontend cannot register accounts without the separately deployed Express
+API. An omitted API URL previously sent browser requests to the visitor's
+`localhost:3001`. Vercel web builds now reject a missing or invalid API URL.
+
+1. Deploy `server/` using the backend setup below and confirm its
+   `/api/health` returns `{"status":"ok"}`.
+2. In the frontend Vercel project, set `EXPO_PUBLIC_API_URL` to that backend's
+   HTTPS origin, without `/api`.
+3. In the backend project, add this website origin to `CORS_ORIGINS` (keep
+   other origins as comma-separated entries):
+   `https://multraverse-smart-travel-planner-proximity-transit-z31sf523q.vercel.app`
+4. Redeploy both projects. The frontend URL is embedded during export;
+   restarting local Expo with `dev:clear` does not update Vercel.
+5. Try registration and email verification with your own mailbox. If health
+   succeeds but signup fails with an email error, check the backend SMTP settings.
+
+The client now reports missing configuration and connection failures clearly.
+These messages do not replace deploying and configuring the backend.
+
 This repository contains three applications: the Expo frontend in the root,
 the Express API in `server/`, and the Python model service in `ai-service/`.
 The root Vercel project builds **only the website**. MongoDB stays in Atlas;

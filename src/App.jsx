@@ -28,7 +28,7 @@ import Budget from "./pages/Budget";
 import SavedPlaces from "./pages/SavedPlaces";
 import SettingsPage from "./pages/SettingsPage";
 import LGUDashboard from "./pages/LGUDashboard";
-import AdminApprovals from "./pages/AdminApprovals";
+import AdminApprovals, { AdminPostApprovals } from "./pages/AdminApprovals";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminRoutes from "./pages/AdminRoutes";
 import UserStackLayout from "./components/UserStackLayout";
@@ -80,6 +80,7 @@ const linking = {
         screens: {
           AdminDashboard: "admin",
           AdminApprovals: "admin/approvals",
+          AdminPostApprovals: "admin/post-approvals",
           AdminRoutes: "admin/routes",
           AdminUsers: "admin/users",
           AdminAIControls: "admin/ai-controls",
@@ -210,6 +211,7 @@ function AdminScreens() {
         <AdminStack.Navigator screenListeners={({ route }) => ({ focus: () => setActiveScreen(route.name) })} screenLayout={({ children }) => <ScreenMotion>{children}</ScreenMotion>} screenOptions={{ headerShown: false }}>
           <AdminStack.Screen name="AdminDashboard" component={AdminDashboard} />
           <AdminStack.Screen name="AdminApprovals" component={AdminApprovals} />
+          <AdminStack.Screen name="AdminPostApprovals" component={AdminPostApprovals} />
           <AdminStack.Screen name="AdminRoutes" component={AdminRoutes} />
           <AdminStack.Screen name="AdminUsers" component={AdminUsers} />
           <AdminStack.Screen name="AdminAIControls" component={AdminAIControls} />

@@ -141,7 +141,7 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
     const invalid = !name || (!catalog.some(p => p.name === name) && name !== place?.name);
     setNameError(invalid ? 'Choose a place from the dropdown.' : null);
     if (invalid) return;
-    if (confirmed !== true) { setConfirmation({title:isEdit?'Save changes?':'Share this experience?',message:`Save your description, notes, categories and photos. ${isPublic?'This experience will be public.':'Only you can see this experience.'}`,label:isEdit?'Save changes':'Save experience',run:()=>handleSave(true)}); return; }
+    if (confirmed !== true) { setConfirmation({title:isEdit?'Save changes?':'Share this experience?',message:`Save your description, notes, categories and photos. ${isPublic?'This experience will be public after admin approval.':'This private experience will be submitted for admin approval. Only you and reviewing admins can see it.'}`,label:isEdit?'Save changes':'Save experience',run:()=>handleSave(true)}); return; }
     savingRef.current = true;
     setSaving(true);
     setError(null);
@@ -324,8 +324,8 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
               </View>
               <Text style={themeStyle(styles.visHint)}>
                 {isPublic
-                  ? "Other travelers can see your rating and notes."
-                  : "Only you can see this place and your notes."}
+                  ? "After admin approval, other travelers can see your rating, notes and photos."
+                  : "Private submissions also require admin approval. Only you and reviewing admins can see them."}
               </Text>
             </View>
 
@@ -437,7 +437,7 @@ function PlaceDetailModal({ place, onClose, onEdit, onDelete, confirmation, dele
                 <Text style={themeStyle(styles.noteTitle)}> My Experience</Text>
                 <Text style={themeStyle(styles.noteText)}>{place.userNote}</Text>
               </View>
-            ) : (
+            ) : onEdit ? (
               <FeedbackPressable
                 onPress={() => { onClose(); onEdit(place); }}
                 style={themeStyle(styles.addNoteBtn)}
@@ -447,12 +447,12 @@ function PlaceDetailModal({ place, onClose, onEdit, onDelete, confirmation, dele
                   Add your experience & rating
                 </Text>
               </FeedbackPressable>
-            )}
+            ) : null}
 
             {!!place.photos?.length && <View style={themeStyle(styles.photosSection)}><Text style={themeStyle(styles.detailSectionTitle)}>Photos</Text><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{gap:10}}>{place.photos.map((uri,index)=><Image key={index} source={{uri}} accessibilityLabel={`${place.name} photo ${index+1}`} style={{width:220,height:160,borderRadius:12}} />)}</ScrollView></View>}
 
             {/* Actions */}
-            <View style={themeStyle(styles.detailActions)}>
+            {onEdit && <View style={themeStyle(styles.detailActions)}>
               <FeedbackPressable
                 onPress={() => { onClose(); onEdit(place); }}
                 accessibilityRole="button"
@@ -469,7 +469,7 @@ function PlaceDetailModal({ place, onClose, onEdit, onDelete, confirmation, dele
               >
                 <Text style={themeStyle(styles.deleteDetailBtnText)}>Delete</Text>
               </FeedbackPressable>
-            </View>
+            </View>}
           </ScrollView>
         </View>
         <TripActionConfirmation presentation="inline" action={confirmation} busy={deleting} onDismiss={onDismissConfirmation} onConfirm={onConfirmDelete} />
@@ -516,6 +516,8 @@ function PlaceCard({ place, onView, onDelete, index }) {
 
       {/* Body */}
       <View style={themeStyle(styles.cardBody)}>
+        {!!place.approvalStatus && <Text style={themeStyle(styles.cardRatingText)}>Review: {place.approvalStatus}</Text>}
+        {!!place.rejectionReason && <Text style={themeStyle(styles.cardDesc)}>Reason: {place.rejectionReason}</Text>}
         <Text style={themeStyle(styles.cardName)} numberOfLines={1}>{place.name}</Text>
 
         {/* Rating */}
@@ -549,7 +551,7 @@ function PlaceCard({ place, onView, onDelete, index }) {
             <BookmarkCheck size={13} color={themeColor(colors.oceanBlue, "color")} />
             <Text style={themeStyle(styles.viewBtnText)}>View</Text>
           </FeedbackPressable>
-          <FeedbackPressable
+          {!!onDelete && <FeedbackPressable
             onPress={(e) => {
               e.stopPropagation();
               onDelete(place._id ?? place.id);
@@ -557,7 +559,7 @@ function PlaceCard({ place, onView, onDelete, index }) {
             style={themeStyle(styles.deleteCardBtn)}
           >
             <Trash2 size={13} color={themeColor(colors.sunsetCoral, "color")} />
-          </FeedbackPressable>
+          </FeedbackPressable>}
         </View>
       </View>
     </Pressable>
@@ -574,6 +576,8 @@ export default function SavedPlaces() {
   const [notice, setNotice] = useState("");
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [view, setView] = useState('mine');
+  const [publicPlaces, setPublicPlaces] = useState([]);
   const [places, setPlaces] = useState([]);
   const [query, setQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
@@ -583,11 +587,14 @@ export default function SavedPlaces() {
   const [viewingPlace, setViewingPlace] = useState(null);
 
   useEffect(() => {
-    api.getSavedPlaces()
-      .then(setPlaces)
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+    let active = true;
+    setLoading(true);
+    (view === 'public' ? api.getPublicSavedPlaces() : api.getSavedPlaces())
+      .then(result => { if (active) (view === 'public' ? setPublicPlaces : setPlaces)(result); })
+      .catch(() => { if (active) setNotice('Could not load places. Switch views to try again.'); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [view]);
 
   const handleDelete = id => { setNotice(''); setDeleteConfirmation({id,title:'Delete this experience?',message:'This permanently removes the saved experience and its shared photos.',label:'Delete experience',destructive:true}); };
   const confirmDelete = async () => {
@@ -604,7 +611,7 @@ export default function SavedPlaces() {
   };
 
   const handleSaved = (place, isEdit) => {
-    setNotice(isEdit ? "Experience updated successfully." : "Experience saved successfully.");
+    setNotice(place.approvalStatus === 'pending' ? 'Experience submitted for admin approval.' : isEdit ? "Experience updated successfully." : "Experience saved successfully.");
     if (isEdit) {
       setPlaces((prev) =>
         prev.map((p) => (p._id ?? p.id) === (place._id ?? place.id) ? place : p)
@@ -614,7 +621,7 @@ export default function SavedPlaces() {
     }
   };
 
-  const filtered = places.filter((p) => {
+  const filtered = (view === 'public' ? publicPlaces : places).filter((p) => {
     const matchesQuery = `${p.name} ${(p.categories || [p.category]).join(" ")} ${p.description}`
       .toLowerCase()
       .includes(query.toLowerCase());
@@ -727,6 +734,9 @@ export default function SavedPlaces() {
         </ScrollView>
       </View>
 
+      <View style={themeStyle([styles.visibilityRow, { marginBottom: 16 }])}>
+        {['mine', 'public'].map(value => <FeedbackPressable key={value} accessibilityRole="button" accessibilityState={{ selected: view === value }} onPress={() => { setViewingPlace(null); setNotice(''); setView(value); }} style={themeStyle([styles.catTab, view === value && styles.catTabActive])}><Text style={themeStyle([styles.catTabText, view === value && styles.catTabTextActive])}>{value === 'mine' ? 'My places' : 'Public view'}</Text></FeedbackPressable>)}
+      </View>
       {/* Content */}
       {loading ? (
         <View style={themeStyle(styles.centerBox)}>
@@ -766,7 +776,7 @@ export default function SavedPlaces() {
               place={place}
               index={i}
               onView={setViewingPlace}
-              onDelete={handleDelete}
+              onDelete={view === 'mine' ? handleDelete : undefined}
             />
           ))}
         </View>
@@ -783,8 +793,8 @@ export default function SavedPlaces() {
       <PlaceDetailModal
         place={viewingPlace}
         onClose={() => setViewingPlace(null)}
-        onEdit={(p) => setEditingPlace(p)}
-        onDelete={handleDelete}
+        onEdit={view === 'mine' ? (p) => setEditingPlace(p) : undefined}
+        onDelete={view === 'mine' ? handleDelete : undefined}
         confirmation={deleteConfirmation}
         deleting={deleting}
         onDismissConfirmation={() => setDeleteConfirmation(null)}

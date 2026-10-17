@@ -42,8 +42,12 @@ const { ensureEmailDomain } = require('../dist/lib/emailDomain');
   for (const body of [null, [], {}, { name: 'Legacy Full Name', email: valid.email, password: valid.password }, { ...valid, surname: '' }]) assert.throws(() => registrationDetails(body), RegistrationError);
   await ensureEmailDomain('test@gmail.com', async () => [{ exchange: 'mail.gmail.com', priority: 10 }]);
   for (const records of [[], [{ exchange: '.', priority: 0 }], [{ exchange: '', priority: 0 }]]) await assert.rejects(ensureEmailDomain('test@domain.org', async () => records), e => e.status === 400);
-  for (const code of ['ENODATA', 'ENOTFOUND', 'ETIMEOUT', 'ESERVFAIL', 'ECANCELLED']) {
-    await assert.rejects(ensureEmailDomain('test@domain.org', async () => { throw Object.assign(new Error('DNS'), { code }); }), e => e.status === (['ENODATA', 'ENOTFOUND'].includes(code) ? 400 : 503));
+  for (const code of ['ENODATA', 'ENOTFOUND', 'EBADNAME']) {
+    await assert.rejects(ensureEmailDomain('test@domain.org', async () => { throw Object.assign(new Error('DNS'), { code }); }), e => e.status === 400);
   }
+  for (const code of ['ECONNREFUSED', 'ETIMEOUT', 'ETIMEDOUT', 'ESERVFAIL', 'EREFUSED', 'ECANCELLED', 'EACCES', 'EPERM', 'ENETUNREACH', 'EHOSTUNREACH']) {
+    await ensureEmailDomain('test@gmail.com', async () => { throw Object.assign(new Error('DNS'), { code }); });
+  }
+  await assert.rejects(ensureEmailDomain('test@domain.org', async () => { throw new Error('Unexpected failure'); }), e => e.status === 503);
   console.log('PASS: frontend/server validation parity, name normalization and initials, optional middle name, email syntax/reserved domains, password rules, existing login compatibility, and DNS failure handling.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

@@ -15,9 +15,14 @@ function getExpoDevHost() {
 
 function getBaseUrl() {
   // Use this for deployed APIs or when the backend runs on another machine.
-  if (process.env.EXPO_PUBLIC_API_URL) return process.env.EXPO_PUBLIC_API_URL;
+  const configuredUrl = process.env.EXPO_PUBLIC_API_URL?.trim().replace(/\/+$/, '');
+  if (configuredUrl) return configuredUrl;
 
-  if (Platform.OS === "web") return "http://localhost:3001";
+  if (Platform.OS === "web") {
+    // A hosted browser's localhost is the visitor's computer, not our server.
+    if (typeof window !== 'undefined' && !['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname)) return null;
+    return "http://localhost:3001";
+  }
 
   // Expo Go exposes Metro's LAN host, which is also the computer running
   // Express when the phone and computer are on the same Wi-Fi network.
@@ -49,15 +54,20 @@ async function getToken() {
 }
 
 async function request(path, options = {}) {
+  if (!BASE_URL) throw new Error('The account service is not configured. Please contact the site administrator.');
   const token = await getToken();
-  const res = await fetch(`${BASE_URL}${path}`, {
+  let res;
+  try { res = await fetch(`${BASE_URL}${path}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },
-  })
+  }); } catch (error) {
+    if (error.name === 'AbortError' || options.signal?.aborted) throw error;
+    throw new Error('Unable to connect to the service. Check your connection and try again. If this continues, contact the site administrator.');
+  }
 
   let data;
   try { data = await res.json(); }
@@ -158,7 +168,15 @@ export const api = {
       return { counts, total: entries.reduce((sum, [, count]) => sum + count, 0) };
     }
   },
-  getApprovals: (resource, options = {}) => requestList(`/api/admin/approvals/${resource}`, options),
+  getApprovals: async (resource, options = {}) => {
+    try { return await requestList(`/api/admin/approvals/${resource}`, options); }
+    catch (error) {
+      if (resource === 'saved-places' && error.status === 404 && error.message === 'Unknown resource') {
+        throw new Error('Post approvals require the updated backend. Deploy the latest server/ code to the multraverse-backend Vercel project, then refresh this page.');
+      }
+      throw error;
+    }
+  },
   reviewSubmission: (resource, id, decision, reason, revision) => request(`/api/admin/approvals/${resource}/${id}/${decision}`, { method: 'POST', body: JSON.stringify({ reason, revision }) }),
   // Auth
   requestPasswordReset: email => request('/api/auth/password/forgot', { method: 'POST', body: JSON.stringify({ email }) }),
@@ -199,6 +217,7 @@ export const api = {
     request(`/api/budget/${id}`, { method: 'DELETE' }),
 
   // Saved Places
+  getPublicSavedPlaces: () => requestList('/api/places/public'),
   getSavedPlaces: () => requestList('/api/places'),
   createSavedPlace: (data) =>
     request('/api/places', { method: 'POST', body: JSON.stringify(data) }),

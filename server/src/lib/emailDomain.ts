@@ -35,6 +35,10 @@ export async function ensureEmailDomain(email: string, lookup?: MailLookup): Pro
     if (error instanceof RegistrationError) throw error
     const code = (error as NodeJS.ErrnoException).code
     if (['ENOTFOUND', 'ENODATA', 'EBADNAME'].includes(code || '')) throw new RegistrationError({ email: noMail })
+    // MX preflight is advisory when DNS transport is unavailable (for example,
+    // a VPN blocking DNS queries). Let SMTP attempt delivery; the emailed code
+    // still proves mailbox ownership before an account can be created.
+    if (['ECONNREFUSED', 'ETIMEOUT', 'ETIMEDOUT', 'ESERVFAIL', 'EREFUSED', 'ECANCELLED', 'EACCES', 'EPERM', 'ENETUNREACH', 'EHOSTUNREACH'].includes(code || '')) return
     throw new RegistrationError({ email: 'Email domain could not be checked right now. Please try again shortly' }, 503)
   }
 }

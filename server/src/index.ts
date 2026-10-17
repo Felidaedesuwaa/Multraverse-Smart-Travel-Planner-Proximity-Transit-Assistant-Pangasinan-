@@ -48,7 +48,7 @@ async function prepareDatabase() {
 }
 const configuredOrigins = (process.env.CORS_ORIGINS || '')
   .split(',')
-  .map((origin) => origin.trim())
+  .map((origin) => origin.trim().replace(/\/+$/, ''))
   .filter(Boolean)
 
 app.use(cors({

@@ -6,7 +6,7 @@ let photoSizes=[],photoResizes=[],photoCompressions=[],releasedContexts=0,releas
 let width=390,savedFeed=[];
 let catalogTrips = [{ id:'trip', title:'Dagupan adventure', status:'COMPLETED', plan:{ version:1 } }];
 const budget = { entries:[{id:'expense',label:'Lunch',category:'Food',amount:100,color:'#123',date:'2026-10-07',tripId:'trip'}], settings:{monthlyBudget:1000,savingsTarget:20}, setEntries(value){this.entries = typeof value === 'function' ? value(this.entries) : value;}, setSettings(value){this.settings=value;} };
-const api = { getTrips:async()=>catalogTrips,getSavedPlaces:async()=>savedFeed,getBudget:async()=>budget.entries,getBudgetSettings:async()=>budget.settings,
+const api = { getTrips:async()=>catalogTrips,getSavedPlaces:async()=>savedFeed,getPublicSavedPlaces:async()=>[{id:'shared',name:'Shared experience',category:'Beach',isPublic:true,approvalStatus:'approved'}],getBudget:async()=>budget.entries,getBudgetSettings:async()=>budget.settings,
  createSavedPlace:async value=>{if(failSave)throw new Error('Offline. Try again.');saved.push(value);return {...value,id:'new'};}, updateSavedPlace:async(id,value)=>({...value,id}), deleteSavedPlace:async()=>{},deleteBudgetEntry:async id=>deletedExpenses.push(id) };
 const flatten = value => Array.isArray(value) ? Object.assign({},...value.filter(Boolean).map(flatten)) : value || {};
 const hooks = { useState(initial){const owner=frame,i=frame.index++;if(!(i in owner.slots))owner.slots[i]=typeof initial==='function'?initial():initial;return [owner.slots[i],value=>{owner.slots[i]=typeof value==='function'?value(owner.slots[i]):value;}];},
@@ -68,6 +68,10 @@ const modals=()=>nodes.filter(n=>n.type==='Modal').length;
   tap('Clear saved places search');assert(hasText('3.0'));assert(!hasText('Bonuan Beach'));
   tap('All');assert(hasText('Bonuan Beach'));
  }
+ tap('Public view');await flush();assert(hasText('Shared experience'));assert(!hasText('Bonuan Beach'));
+ assert.equal(nodes.filter(n=>n.type==='Icon:Trash2').length,0,'Public cards cannot delete another user experience');
+ tap('View');assert(!button('Edit place'));assert(!button('Delete place'));assert(!button('Add your experience & rating'));nodes.find(n=>n.type==='Modal').props.onRequestClose();render();
+ tap('My places');await flush();assert(hasText('Bonuan Beach'));
  savedFeed=[];width=390;
  for(const theme of [false,true])for(const target of ['web','ios']){
   dark=theme;platform=target;instances.clear();effects=[];Screen=SavedPlaces;render();await flush();tap('Add Place');await flush();assert.equal(modals(),1);

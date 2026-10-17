@@ -1,28 +1,29 @@
 import { sanitizeRequest, validateRouter, pagination, validateId } from '../middleware/input'
-import { AuditLog } from '../models'
+import { AuditLog, SavedPlace } from '../models'
 import { Router } from 'express'
 import { isValidObjectId } from 'mongoose'
 import { authenticate, AuthRequest, requireAdmin } from '../middleware/auth'
 import { lguResources } from '../lib/lguResources'
 
+const approvalResources: Record<string, { model: typeof SavedPlace }> = { ...lguResources, 'saved-places': { model: SavedPlace } }
 const router = Router()
 router.param('id', validateId)
 router.use(sanitizeRequest, validateRouter('approvals'))
 router.use(authenticate, requireAdmin)
 router.get('/counts', async (_req, res) => {
-  const entries = await Promise.all(Object.entries(lguResources).map(async ([resource, { model }]) =>
+  const entries = await Promise.all(Object.entries(approvalResources).map(async ([resource, { model }]) =>
     [resource, await model.countDocuments({ approvalStatus: 'pending' })] as const))
   const counts = Object.fromEntries(entries)
   res.json({ counts, total: entries.reduce((sum, [, count]) => sum + count, 0) })
 })
 router.use('/:resource', (req, res, next) => {
-  if (!Object.prototype.hasOwnProperty.call(lguResources, req.params.resource)) return res.status(404).json({ error: 'Unknown resource' })
+  if (!Object.prototype.hasOwnProperty.call(approvalResources, req.params.resource)) return res.status(404).json({ error: 'Unknown resource' })
   next()
 })
 router.get('/:resource', async (req: AuthRequest<{ resource: string }>, res) => {
   const status = req.query.status || 'pending'
   if (!['pending', 'approved', 'rejected'].includes(String(status))) return res.status(400).json({ error: 'Invalid status' })
-  res.json(await lguResources[req.params.resource].model.find({ approvalStatus: status }).sort({ submittedAt: -1, _id: -1 }).skip(pagination(req).skip).limit(pagination(req).limit))
+  res.json(await approvalResources[req.params.resource].model.find({ approvalStatus: status }).sort({ submittedAt: -1, _id: -1 }).skip(pagination(req).skip).limit(pagination(req).limit))
 })
 router.post('/:resource/:id/:decision', async (req: AuthRequest<{ resource: string; id: string; decision: string }>, res) => {
   const { id, decision, resource } = req.params
@@ -32,8 +33,8 @@ router.post('/:resource/:id/:decision', async (req: AuthRequest<{ resource: stri
   if (decision === 'reject' && (typeof reason !== 'string' || !reason.trim() || reason.length > 1000)) return res.status(400).json({ error: 'Provide a rejection reason (1–1000 characters)' })
   const revision = req.body?.revision
   if (!Number.isInteger(revision) || revision < 0) return res.status(400).json({ error: 'Provide the submission revision being reviewed' })
-  const { model } = lguResources[resource]
-  const types: Record<string, string> = { places: 'place', foods: 'local_food', 'route-prices': 'route_price', 'transit-routes': 'transit_route' }
+  const { model } = approvalResources[resource]
+  const types: Record<string, string> = { 'saved-places': 'saved_place', places: 'place', foods: 'local_food', 'route-prices': 'route_price', 'transit-routes': 'transit_route' }
   const logDecision = (item: any) => AuditLog.create({ actor: req.userId, action: `${decision}_${types[resource]}`, metadata: { itemId: id, municipality: item.municipality, ...(item.pendingDeletion ? { deletion: true } : {}) } })
   if (decision === 'approve') {
     const deleted = await model.findOneAndDelete({ _id: id, approvalStatus: 'pending', pendingDeletion: true, reviewRevision: revision })

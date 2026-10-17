@@ -8,20 +8,25 @@ import { FeedbackPressable } from '../components/WorkspaceMotion';
 import { useApprovalCounts } from '../components/ApprovalCountsProvider';
 import PendingReviewBadge from '../components/PendingReviewBadge';
 import { api } from '../lib/api';
-import { lguResources } from '../data/lguResources';
+import { lguResources as municipalResources } from '../data/lguResources';
 import { useAppTheme } from '../theme/useAppTheme';
 
+const lguResources = { ...municipalResources, 'saved-places': { label: 'Saved places', fields: [['isPublic', 'Public visibility'], ['userNote', 'Experience / Notes']] } };
 const submissionName = row => row.name || row.location || `${row.from || ''} → ${row.to || ''}`;
 const formatDate = value => value && !Number.isNaN(new Date(value).getTime()) ? new Date(value).toLocaleString() : 'Not available';
-const hiddenFields = new Set(['photo', 'id', '_id', '__v', 'submittedBy', 'reviewedBy', 'reviewRevision', 'pendingDeletion', 'approvalStatus', 'municipality']);
+const hiddenFields = new Set(['photos', 'photo', 'id', '_id', '__v', 'submittedBy', 'reviewedBy', 'reviewRevision', 'pendingDeletion', 'approvalStatus', 'municipality']);
 
-export default function AdminApprovals() {
+export function AdminPostApprovals() {
+  return <AdminApprovals savedPlacesOnly />;
+}
+
+export default function AdminApprovals({ savedPlacesOnly = false }) {
   const { palette: p } = useAppTheme();
   const { counts, total, error, refresh } = useApprovalCounts();
-  const [resource, setResource] = useState('places');
-  return <AdminPage title="LGU approvals" subtitle={`${total} pending submissions · Review municipal information before publishing to Explorers`}>
+  const [resource, setResource] = useState(savedPlacesOnly ? 'saved-places' : 'places');
+  return <AdminPage title={savedPlacesOnly ? "Post approvals" : "Submission approvals"} subtitle={`${total} pending submissions · Review municipal information and public or private saved places`}>
     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categories} contentContainerStyle={styles.categoryRow}>
-      {Object.entries(lguResources).map(([key, value]) => <FeedbackPressable key={key} accessibilityRole="button" accessibilityLabel={`${value.label}, ${counts[key] || 0} pending submissions`} accessibilityState={{ selected: resource === key }} onPress={() => setResource(key)} style={({ hovered, pressed }) => [styles.category, { backgroundColor: resource === key || hovered || pressed ? p.tint : p.surface, borderColor: resource === key ? p.primary : p.line }]}>
+      {Object.entries(lguResources).filter(([key]) => !savedPlacesOnly || key === 'saved-places').map(([key, value]) => <FeedbackPressable key={key} accessibilityRole="button" accessibilityLabel={`${value.label}, ${counts[key] || 0} pending submissions`} accessibilityState={{ selected: resource === key }} onPress={() => setResource(key)} style={({ hovered, pressed }) => [styles.category, { backgroundColor: resource === key || hovered || pressed ? p.tint : p.surface, borderColor: resource === key ? p.primary : p.line }]}>
         <Text style={{ color: p.ink, fontWeight: '600' }}>{value.label}</Text>
         <PendingReviewBadge count={counts[key] || 0} />
       </FeedbackPressable>)}
@@ -106,6 +111,7 @@ function ApprovalReviewDialog({ row, resource, busy, reason, error, onReasonChan
         </View>
         <ScrollView style={{ flexShrink: 1, minHeight: 0 }} contentContainerStyle={styles.dialogBody} keyboardShouldPersistTaps="handled">
           <StatusBadge status={row.approvalStatus} />
+          {row.photos?.map((uri, index) => <Image key={index} source={{ uri }} style={styles.photo} resizeMode="cover" />)}
           {row.photo && <Image source={{ uri: row.photo }} style={styles.photo} resizeMode="cover" />}
           {row.pendingDeletion && <Text style={{ color: p.ink, fontWeight: '700' }}>Deletion request: approving permanently deletes this entry.</Text>}
           {Object.entries(row).filter(([key]) => !hiddenFields.has(key)).map(([key, value]) => <View key={key} style={{ gap: 4 }}>

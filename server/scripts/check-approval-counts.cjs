@@ -1,7 +1,7 @@
 // Exercise the counts endpoint through Express with in-memory models and no database writes.
 const assert = require('node:assert/strict'), fs = require('node:fs'), path = require('node:path'), vm = require('node:vm');
 const express = require('express');
-const resources = ['places', 'foods', 'route-prices', 'transit-routes'];
+const resources = ['places', 'foods', 'route-prices', 'transit-routes', 'saved-places'];
 const queries = [];
 let fail = false, server;
 const rows = Object.fromEntries(resources.map((resource, i) => [resource, [
@@ -9,6 +9,7 @@ const rows = Object.fromEntries(resources.map((resource, i) => [resource, [
   { approvalStatus: 'approved' }, { approvalStatus: 'rejected' }, {},
 ]]));
 const lguResources = Object.fromEntries(resources.map(resource => [resource, { model: {
+  find: filter => ({ sort() { return this; }, skip() { return this; }, limit() { return Promise.resolve(rows[resource].filter(row => row.approvalStatus === filter.approvalStatus)); } }),
   countDocuments: async filter => { queries.push({ resource, filter }); if (fail && resource === 'foods') throw Error('Database unavailable'); return rows[resource].filter(row => row.approvalStatus === filter.approvalStatus).length; },
 } }]));
 const mocks = {
@@ -16,8 +17,8 @@ const mocks = {
     authenticate: (req, res, next) => req.headers['x-test-role'] ? (req.userRole = req.headers['x-test-role'], next()) : res.status(401).json({ error: 'Sign in required' }),
     requireAdmin: (req, res, next) => ['ADMIN', 'SUPERADMIN'].includes(req.userRole) ? next() : res.status(403).json({ error: 'Admin required' }),
   },
-  '../middleware/input': { sanitizeRequest: (_req, _res, next) => next(), validateRouter: () => (_req, _res, next) => next(), validateId: (_req, _res, next) => next() },
-  '../models': {}, '../lib/lguResources': { lguResources },
+  '../middleware/input': { pagination: () => ({ skip: 0, limit: 200 }), sanitizeRequest: (_req, _res, next) => next(), validateRouter: () => (_req, _res, next) => next(), validateId: (_req, _res, next) => next() },
+  '../models': { SavedPlace: lguResources['saved-places'].model }, '../lib/lguResources': { lguResources: Object.fromEntries(Object.entries(lguResources).filter(([key]) => key !== 'saved-places')) },
 };
 const file = path.resolve(__dirname, '../dist/routes/approvals.js'), mod = { exports: {} };
 vm.runInThisContext(`(function(require,module,exports){${fs.readFileSync(file, 'utf8')}\n})`, { filename: file })(name => mocks[name] || require(name), mod, mod.exports);
@@ -31,9 +32,10 @@ app.use((_error, _req, res, _next) => res.status(500).json({ error: 'Unavailable
   assert.equal(queries.length, 0, 'Unauthorized requests cannot count submissions');
   for (const role of ['ADMIN', 'SUPERADMIN']) {
     const result = await call(role); assert.equal(result.status, 200);
-    assert.deepEqual(result.body, { counts: { places: 220, foods: 1, 'route-prices': 2, 'transit-routes': 3 }, total: 226 });
+    assert.deepEqual(result.body, { counts: { places: 220, foods: 1, 'route-prices': 2, 'transit-routes': 3, 'saved-places': 4 }, total: 230 });
   }
   assert(queries.every(query => JSON.stringify(query.filter) === '{"approvalStatus":"pending"}'), 'Only pending submissions are counted, including deletion requests');
+  const posts = await call('ADMIN', 'saved-places'); assert.equal(posts.status, 200, 'Saved places are registered independently of LGU resources'); assert.equal(posts.body.length, 4);
   assert.equal((await call('ADMIN', 'unknown')).status, 404, 'Resource validation stays intact');
   fail = true; assert.equal((await call('ADMIN')).status, 500, 'A failed category never returns misleading partial counts'); fail = false;
   for (const resource of resources) rows[resource] = [];

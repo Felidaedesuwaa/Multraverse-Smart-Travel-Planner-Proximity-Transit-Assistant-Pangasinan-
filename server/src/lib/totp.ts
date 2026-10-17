@@ -45,10 +45,21 @@ export function encryptFactor(secret: string, userId: string): string {
   const ciphertext = Buffer.concat([cipher.update(secret, 'utf8'), cipher.final()])
   return Buffer.concat([iv, cipher.getAuthTag(), ciphertext]).toString('base64')
 }
+export class FactorDecryptionError extends Error {
+  constructor() { super('Authenticator verification is unavailable because the server encryption key does not match the saved authenticator. Restore the original MFA encryption key and try again.'); this.name = 'FactorDecryptionError' }
+}
 export function decryptFactor(encrypted: string, userId: string): string {
+  const currentKey = encryptionKey()
+  const previousKeys = (process.env.MFA_PREVIOUS_ENCRYPTION_KEYS || '').split(',').map(key => key.trim()).filter(Boolean)
+  if (previousKeys.some(key => !/^[a-f0-9]{64}$/i.test(key))) throw new FactorDecryptionError()
   const bytes = Buffer.from(encrypted, 'base64')
-  const cipher = createDecipheriv('aes-256-gcm', encryptionKey(), bytes.subarray(0, 12))
-  cipher.setAAD(Buffer.from(userId)); cipher.setAuthTag(bytes.subarray(12, 28))
-  return Buffer.concat([cipher.update(bytes.subarray(28)), cipher.final()]).toString('utf8')
+  for (const key of [currentKey, ...previousKeys.map(key => Buffer.from(key, 'hex'))]) {
+    try {
+      const cipher = createDecipheriv('aes-256-gcm', key, bytes.subarray(0, 12))
+      cipher.setAAD(Buffer.from(userId)); cipher.setAuthTag(bytes.subarray(12, 28))
+      return Buffer.concat([cipher.update(bytes.subarray(28)), cipher.final()]).toString('utf8')
+    } catch { /* Try a retained key without changing the enrolled authenticator. */ }
+  }
+  throw new FactorDecryptionError()
 }
 export const tokenDigest = (token: string) => createHash('sha256').update(token).digest('hex')

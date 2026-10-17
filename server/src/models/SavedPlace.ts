@@ -1,7 +1,10 @@
+import { moderationFields } from './_moderation'
 import { hardenSchema } from './_hardening'
 import { model, models, Schema } from 'mongoose'
 import { apiSchemaOptions, objectId } from './_helpers'
 const savedPlaceSchema = new Schema({
+  ...moderationFields,
+  approvalStatus: { ...moderationFields.approvalStatus, default: 'pending' },
   placeId: { type: Schema.Types.ObjectId, ref: 'Place' },
   userId: { ...objectId(), ref: 'User', index: true }, name: { type: String, required: true, catalogName: true }, category: { type: String, required: true },
   categories: { type: [String], default: undefined, maxItems: 3, validate: (values: string[]) => values == null || (values.length >= 1 && values.length <= 3 && new Set(values).size === values.length), enum: ['Nature Park', 'Beach', 'Religious', 'Restaurant', 'Landmark', 'Waterway'] },

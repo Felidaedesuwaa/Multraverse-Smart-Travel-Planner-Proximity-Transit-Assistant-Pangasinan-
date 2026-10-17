@@ -11,7 +11,7 @@ import { sessionCredential } from '../lib/sessionCredential'
 import { requestPasswordReset, resetPassword, changePassword, verifyPasswordReset, recoverPassword } from '../lib/passwordSecurity'
 import { mfaChallenge, needsMfa, setupMfa, verifyMfa } from '../lib/mfa'
 import { RevokedSession } from '../models/AccountSecurity'
-import { tokenDigest } from '../lib/totp'
+import { FactorDecryptionError, tokenDigest } from '../lib/totp'
 import { randomUUID } from 'node:crypto'
 
 const router = Router()
@@ -26,6 +26,7 @@ function authResponse(user: any, mfa = false): any {
 }
 function authFailure(error: unknown, res: Response) {
   if (error instanceof RegistrationError) return res.status(error.status).json({ error: error.message, fieldErrors: error.fieldErrors })
+  if (error instanceof FactorDecryptionError) return res.status(503).json({ error: error.message })
   if (error instanceof AuthError) {
     if (error.retryAfter) res.setHeader('Retry-After', String(error.retryAfter))
     return res.status(error.status).json({ error: error.message })

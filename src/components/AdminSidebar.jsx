@@ -3,7 +3,7 @@ import { useAppTheme } from "../theme/useAppTheme";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import {
   BarChart3, Circle, Compass, LayoutGrid,
-  Route, Settings, Users, Zap,
+  Route, Settings, Users, Zap, Globe,
 } from "lucide-react-native";
 import ProfileAvatar from './ProfileAvatar';
 import SidebarLogoutButton from './SidebarLogoutButton';
@@ -13,6 +13,7 @@ import { useApprovalCounts } from './ApprovalCountsProvider';
 import PendingReviewBadge from './PendingReviewBadge';
 
 const items = [
+  { label: "Post approvals", icon: Globe, screen: "AdminPostApprovals" },
   { label: "LGU approvals", icon: LayoutGrid, screen: "AdminApprovals" },
   { label: "Overview", icon: LayoutGrid, screen: "AdminDashboard" },
   { label: "Routes", icon: Route, screen: "AdminRoutes" },
@@ -26,7 +27,7 @@ export default function AdminSidebar({ activeScreen = "AdminDashboard", onNaviga
   const { themeStyle, themeColor, palette } = useAppTheme();
 
   const user = useAuthStore(state => state.user);
-  const { total } = useApprovalCounts();
+  const { total, counts } = useApprovalCounts();
 
   return (
     <View style={themeStyle([styles.sidebar, compact && styles.compact, { backgroundColor: palette.sidebar, borderRightWidth: compact ? 0 : 1, borderBottomWidth: compact ? 1 : 0, borderColor: palette.sidebarBorder }])}>
@@ -51,11 +52,13 @@ export default function AdminSidebar({ activeScreen = "AdminDashboard", onNaviga
         <View style={themeStyle([styles.navSection, compact && { flexDirection: 'row', gap: 12 }])}>
           {items.map(({ label, icon: Icon, screen }) => {
             const active = activeScreen === screen;
+            const pendingCount = screen === "AdminPostApprovals" ? counts?.["saved-places"] || 0 : total;
+            const hasApprovals = ["AdminApprovals", "AdminPostApprovals"].includes(screen);
             return (
               <FeedbackPressable
                 key={screen}
                 accessibilityRole="button"
-                accessibilityLabel={screen === 'AdminApprovals' ? `${label}, ${total} pending submissions` : label}
+                accessibilityLabel={hasApprovals ? `${label}, ${pendingCount} pending submissions` : label}
                 accessibilityState={{ selected: active }}
                 onPress={() => onNavigate?.(screen)}
                 style={themeStyle(({ pressed, hovered }) => [
@@ -72,7 +75,7 @@ export default function AdminSidebar({ activeScreen = "AdminDashboard", onNaviga
                   <Text numberOfLines={1} style={themeStyle([styles.label, { flexShrink: 1 }, active && styles.activeLabel, active && { color: palette.button }])}>
                     {label}
                   </Text>
-                  {screen === 'AdminApprovals' && <PendingReviewBadge count={total} showZero inverse />}
+                  {hasApprovals && <PendingReviewBadge count={pendingCount} showZero inverse />}
                 </View>
               </FeedbackPressable>
             );
@@ -133,7 +136,7 @@ const styles = StyleSheet.create({
   navSection: {
     gap: 10,
   },
-  menuLabel: { flexDirection: 'row', alignItems: 'center', gap: 50, flexShrink: 1, minWidth: 0 },
+  menuLabel: { flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1, minWidth: 0 },
   profile: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, marginBottom: 24, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.06)' },
   item: {
     minHeight: 48,

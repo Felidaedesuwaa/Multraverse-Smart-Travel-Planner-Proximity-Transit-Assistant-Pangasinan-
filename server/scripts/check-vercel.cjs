@@ -1,7 +1,7 @@
 // No real database connection, credentials, or email delivery is used.
 const assert = require('node:assert/strict');
 process.env.VERCEL = '1';
-process.env.CORS_ORIGINS = 'https://web.test';
+process.env.CORS_ORIGINS = 'https://web.test/';
 process.env.MONGODB_URI = 'mongodb://unused.test/checks';
 const environmentPath = require.resolve('../dist/lib/environment');
 require.cache[environmentPath] = { id: environmentPath, filename: environmentPath, loaded: true, exports: {} };
