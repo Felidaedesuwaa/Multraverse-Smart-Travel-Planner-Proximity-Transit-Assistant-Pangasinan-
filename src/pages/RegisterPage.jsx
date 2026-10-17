@@ -1,6 +1,7 @@
 import { useAppTheme } from "../theme/useAppTheme";
 import { useEffect, useRef, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Check } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { colors } from "../theme/colors";
 import AuthInput from "../components/AuthInput";
@@ -34,6 +35,7 @@ export default function RegisterPage() {
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState(null);
   const [privacyConsent, setPrivacyConsent] = useState(false);
+  const [privacyOpen, setPrivacyOpen] = useState(false);
   const submitting = useRef(false);
   const fields = { firstName, middleName, surname, email, password, confirm };
   const fullName = registrationFullName(firstName, middleName, surname);
@@ -112,14 +114,51 @@ export default function RegisterPage() {
       <AuthInput label="Password" placeholder="e.g. Lakbay_2026 (use your own)" hint="8–72 characters, at least one capital letter and one number. Only letters, numbers, _, - and @; no spaces." value={password} onChangeText={change("password", setPassword)} onBlur={() => validateField("password")} error={errors.password} isPassword autoComplete="new-password" editable={!isLoading} />
       <AuthInput label="Confirm password" placeholder="Repeat your chosen password" value={confirm} onChangeText={change("confirm", setConfirm)} onBlur={() => validateField("confirm")} error={errors.confirm} isPassword autoComplete="new-password" editable={!isLoading} onSubmitEditing={handleSubmit} />
       {formError ? <Text accessibilityRole="alert" style={themeStyle(styles.formError)}>{formError}</Text> : null}
-      <Text style={themeStyle(styles.namePreview)}>Privacy notice (October 15, 2026): We use your name and email to manage your account and send security codes. Your trips, budget and saved places support travel planning. Places you choose to publish are visible to others. Location, photo and microphone access are optional and used for the feature you request; stop transit monitoring or revoke device permissions to withdraw access. Administrators can manage accounts and review published content. You can delete your account and its private travel records in account settings. We do not request payment card details. Account records stay until deletion; security and moderation logs may remain for abuse investigation.</Text>
-      <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: privacyConsent }} onPress={() => setPrivacyConsent(value => !value)} disabled={isLoading} style={styles.codeAction}><Text style={themeStyle(styles.footerLink)}>{privacyConsent ? "[x]" : "[ ]"} I have read and accept this use of my data.</Text></Pressable>
+      <View style={styles.consentRow}>
+        <Pressable accessibilityRole="checkbox" accessibilityLabel="I have read and accept this use of my data" accessibilityState={{ checked: privacyConsent, disabled: isLoading }} onPress={() => setPrivacyConsent(value => !value)} disabled={isLoading} style={styles.checkboxTarget}>
+          <View style={[styles.checkbox, privacyConsent && styles.checkboxChecked]}>{privacyConsent && <Check size={17} color={colors.white} strokeWidth={3} />}</View>
+        </Pressable>
+        <Text style={themeStyle(styles.consentText)}>I have read and accept the <Text accessibilityRole="link" onPress={() => setPrivacyOpen(true)} style={themeStyle(styles.privacyLink)}>privacy notice</Text> and this use of my data.</Text>
+      </View>
+      <Modal visible={privacyOpen} transparent animationType="fade" onRequestClose={() => setPrivacyOpen(false)}>
+        <View style={styles.privacyOverlay}>
+          <View accessibilityViewIsModal style={themeStyle(styles.privacyCard)}>
+            <Text accessibilityRole="header" style={themeStyle(styles.privacyTitle)}>Privacy notice</Text>
+            <Text style={themeStyle(styles.privacyDate)}>October 15, 2026</Text>
+            <ScrollView style={styles.privacyScroll} contentContainerStyle={styles.privacyContent}>
+              <Text style={themeStyle(styles.privacyBody)}>{[
+                "We use your name and email to manage your account and send security codes.",
+                "Your trips, budget and saved places support travel planning. Places you choose to publish are visible to others.",
+                "Location, photo and microphone access are optional and used for the feature you request; stop transit monitoring or revoke device permissions to withdraw access.",
+                "Administrators can manage accounts and review published content.",
+                "You can delete your account and its private travel records in account settings. We do not request payment card details.",
+                "Account records stay until deletion; security and moderation logs may remain for abuse investigation.",
+              ].join("\n\n")}</Text>
+            </ScrollView>
+            <Pressable accessibilityRole="button" onPress={() => setPrivacyOpen(false)} style={styles.privacyClose}><Text style={themeStyle(styles.footerLink)}>Close</Text></Pressable>
+          </View>
+        </View>
+      </Modal>
       <GradientButton label="Register" loading={isLoading} onPress={handleSubmit} />
     </AuthLayout>
   );
 }
 
 const styles = StyleSheet.create({
+  consentRow: { flexDirection: "row", alignItems: "center", marginBottom: 16 },
+  checkboxTarget: { minWidth: 44, minHeight: 44, alignItems: "center", justifyContent: "center", marginRight: 4 },
+  checkbox: { width: 22, height: 22, borderRadius: 4, borderWidth: 2, borderColor: colors.sunsetCoral, alignItems: "center", justifyContent: "center" },
+  checkboxChecked: { backgroundColor: colors.sunsetCoral },
+  consentText: { flex: 1, fontFamily: "DMSans", fontSize: 13, lineHeight: 21, color: "#A9C4D4" },
+  privacyLink: { color: colors.sunsetCoral, fontWeight: "600", textDecorationLine: "underline" },
+  privacyOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "center", alignItems: "center", padding: 24 },
+  privacyCard: { width: "100%", maxWidth: 480, maxHeight: "80%", backgroundColor: colors.oceanBlueDark, borderRadius: 20, padding: 24 },
+  privacyTitle: { fontFamily: "Poppins", fontSize: 22, fontWeight: "600", color: colors.white },
+  privacyDate: { fontFamily: "DMSans", fontSize: 13, color: "#A9C4D4", marginTop: 4, marginBottom: 18 },
+  privacyScroll: { flexShrink: 1 },
+  privacyContent: { paddingBottom: 8 },
+  privacyBody: { fontFamily: "DMSans", fontSize: 14, lineHeight: 23, color: "#A9C4D4" },
+  privacyClose: { minHeight: 44, alignItems: "center", justifyContent: "center", marginTop: 16 },
   codeActions: { marginTop: 16, gap: 6, alignItems: "center" },
   codeAction: { minHeight: 44, justifyContent: "center", paddingHorizontal: 12 },
   notice: { fontSize: 13, color: "#A9C4D4", marginTop: 14, textAlign: "center" },
