@@ -1,0 +1,35 @@
+// Exercise actual trip routes and audit validation without database writes.
+const assert = require('node:assert/strict'), fs = require('node:fs'), vm = require('node:vm'), express = require('express'), mongoose = require('mongoose');
+const audit = require('../dist/lib/tripExpenseAudit');
+const owner = '000000000000000000000001', tripId = '000000000000000000000002';
+let trip = { _id: tripId, userId: owner, status: 'UPCOMING', plan: { costs: { categories: { food: 200, transport: 100 } } } };
+let entries = [{ _id: 'existing', userId: owner, tripId, label: 'Lunch', category: 'Food', amount: 50 }], failWrite = false;
+const match = (row, filter) => row && Object.entries(filter).every(([key, value]) => row[key] === value);
+const query = value => ({ session: async () => value, sort: async () => value, then: (yes, no) => Promise.resolve(value).then(yes, no) });
+const document = () => ({ ...trip, toJSON: () => ({ ...trip }) });
+const Trip = { findOne: filter => query(match(trip, filter) ? document() : null), findOneAndUpdate: async (filter, update) => { if (!match(trip, filter)) return null; Object.assign(trip, update.$set); return document(); } };
+const BudgetEntry = { find: filter => query(entries.filter(row => match(row, filter))), updateOne: async (filter, update) => { Object.assign(entries.find(row => match(row, filter)), update.$set); }, create: async rows => { if (failWrite) throw Error('Simulated write failure'); entries.push(...rows.map((row, i) => ({ _id: `new-${entries.length + i}`, ...row }))); } };
+mongoose.connection.transaction = async callback => { const before = structuredClone({ trip, entries }); try { return await callback({}); } catch (error) { trip = before.trip; entries = before.entries; throw error; } };
+const mocks = { '../lib/tripExpenseAudit': audit, '../models': { Trip, BudgetEntry }, '../middleware/input': require('../dist/middleware/input'), '../middleware/auth': { authenticate: (req, res, next) => { req.userId = req.headers['x-owner'] || owner; next(); } } };
+const mod = { exports: {} };
+vm.runInThisContext(`(function(require,module,exports){${fs.readFileSync(require.resolve('../dist/routes/trips'), 'utf8')}\n})`)(name => mocks[name] || require(name), mod, mod.exports);
+const app = express(); app.use(express.json()); app.use('/trips', mod.exports.default);
+let server;
+(async () => {
+ server = app.listen(0, '127.0.0.1'); await new Promise(resolve => server.once('listening', resolve));
+ const call = async (suffix, method = 'GET', body, user = owner) => { const response = await fetch(`http://127.0.0.1:${server.address().port}/trips/${tripId}${suffix}`, { method, headers: { 'Content-Type': 'application/json', 'x-owner': user }, ...(body ? { body: JSON.stringify(body) } : {}) }); return { status: response.status, body: await response.json() }; };
+ assert.equal((await call('/expense-audit', 'GET', undefined, 'other')).status, 404);
+ const draft = await call('/expense-audit'); assert.equal(draft.body.lines.length, 2); assert.equal(draft.body.entries.length, 1);
+ assert.equal((await call('', 'PUT', { status: 'COMPLETED' })).status, 400, 'Direct completion cannot bypass audit');
+ assert.equal((await call('/complete', 'POST', { expenses: [] })).status, 400);
+ assert.equal((await call('/complete', 'POST', { expenses: [], status: 'COMPLETED' })).status, 400, 'Request middleware rejects unexpected completion fields');
+ const expenses = [...draft.body.lines.map(row => ({ key: row.key, label: row.label, category: row.category, amount: 0, reviewed: true })), { key: 'recorded', entryId: 'existing', label: 'Lunch', category: 'Food', amount: 80, reviewed: true }, { key: 'extra', label: 'Souvenirs', category: 'Shopping', amount: 120, reviewed: true }];
+ for (const invalid of [{ ...expenses[0], reviewed: false }, { ...expenses[0], amount: -1 }, { ...expenses[0], amount: 0.123 }]) assert.equal((await call('/complete', 'POST', { expenses: [invalid, ...expenses.slice(1)] })).status, 400);
+ assert.equal((await call('/complete', 'POST', { expenses: expenses.filter(row => !row.entryId) })).status, 400, 'Previously recorded expenses must be audited');
+ failWrite = true; assert.equal((await call('/complete', 'POST', { expenses })).status, 500); assert.equal(trip.status, 'UPCOMING'); assert.equal(entries.length, 1); assert.equal(entries[0].amount, 50, 'Failed completion rolls back spending');
+ failWrite = false; const done = await call('/complete', 'POST', { expenses }); assert.equal(done.status, 200); assert.equal(done.body.spent, 200); assert.equal(trip.status, 'COMPLETED'); assert.equal(entries.filter(row => row._id === 'existing').length, 1); assert.equal(entries.find(row => row._id === 'existing').amount, 80);
+ const size = entries.length; assert.equal((await call('/complete', 'POST', { expenses })).status, 409); assert.equal(entries.length, size, 'Completion retry cannot double-charge');
+ const guided = audit.tripExpenseLines({ plan: { guided: { request: { transportModes: ['Bus', 'Jeepney'], budget: 1000 }, stops: [{ tag: 'Attraction', title: 'Beach', price: null }, { tag: 'Attraction', title: 'Park', price: 50 }] } } });
+ assert.equal(guided.length, 7); assert(guided.some(row => row.key === 'entry-0' && row.estimate === null));
+ console.log('PASS: audit completeness, owner isolation, zero amounts, other expenses, existing expense updates, completion bypass protection, rollback and retry protection.');
+})().catch(error => { console.error(error); process.exitCode = 1; }).finally(() => server?.close());

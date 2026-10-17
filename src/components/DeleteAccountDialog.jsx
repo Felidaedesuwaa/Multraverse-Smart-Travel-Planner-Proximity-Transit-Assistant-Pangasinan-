@@ -29,7 +29,7 @@ export default function DeleteAccountDialog({ onClose }) {
         <View accessibilityViewIsModal style={themeStyle(styles.dialog)}>
           <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
             <Text accessibilityRole="header" style={themeStyle(styles.title)}>Delete your account?</Text>
-            <Text style={themeStyle(styles.description)}>This permanently deletes your sign-in credentials, profile photo, trips, saved places, budgets and itinerary drafts. You will be signed out. This cannot be undone.</Text>
+            <Text style={themeStyle(styles.description)}>This permanently deletes your sign-in credentials, profile photo, trips, travel experiences, budgets and itinerary drafts. You will be signed out. This cannot be undone.</Text>
             <FormField ref={input} label="Current password" password autoFocus autoComplete="current-password" autoCapitalize="none" autoCorrect={false} maxLength={256} returnKeyType="done" placeholder="Enter your current password" hint="For your security, we must verify your password before deleting your account." value={password} onChangeText={value => { setPassword(value); setError(""); }} editable={!busy} onSubmitEditing={remove} error={error} />
             <View style={styles.actions}>
               <FeedbackPressable accessibilityRole="button" disabled={busy} onPress={close} style={themeStyle(styles.cancel)}><Text style={themeStyle(styles.cancelText)}>Keep my account</Text></FeedbackPressable>

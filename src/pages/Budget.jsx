@@ -1,3 +1,4 @@
+import { monthlyExpenses } from '../lib/monthlyExpenses';
 import { useBudgetStore } from "../store/budgetStore";
 import BudgetDropdown from '../components/BudgetDropdown';
 import TripActionConfirmation from '../components/TripActionConfirmation';
@@ -451,14 +452,16 @@ export default function Budget() {
 
   const hasBudget = settings.monthlyBudget != null;
   const monthlyBudget = Number(settings.monthlyBudget) || 0;
-  const spent = entries.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+  const monthlyEntries = monthlyExpenses(entries);
+  const spent = monthlyEntries.reduce((sum, e) => sum + Number(e.amount || 0), 0);
   const remaining = monthlyBudget - spent;
   const savingsRate = monthlyBudget > 0 ? Math.max(0, Math.round((remaining / monthlyBudget) * 100)) : 0;
+  const allSpent = entries.reduce((sum, entry) => sum + Number(entry.amount || 0), 0);
   const maxAmount = Math.max(...entries.map((e) => e.amount), 1);
 
   // Group by category
   const byCategory = CATEGORIES.reduce((acc, cat) => {
-    const catEntries = entries.filter((e) => e.category === cat);
+    const catEntries = monthlyEntries.filter((e) => e.category === cat);
     if (catEntries.length > 0) {
       acc[cat] = catEntries.reduce((s, e) => s + e.amount, 0);
     }
@@ -509,7 +512,7 @@ export default function Budget() {
             <StatCard
               label="Amount Spent"
               value={<MoneyAmount value={spent} />}
-              sub={`${entries.length} expense${entries.length !== 1 ? "s" : ""}`}
+              sub={`${monthlyEntries.length} expenses this month`}
               icon={<TrendingUp size={18} color={themeColor(colors.sunsetCoral, "color")} />}
               iconBg={colors.coralLight}
               valueColor={spent > monthlyBudget ? colors.sunsetCoral : undefined}
@@ -635,7 +638,7 @@ export default function Budget() {
                     <View style={themeStyle(styles.totalRow)}>
                       <Text style={themeStyle(styles.totalLabel)}>Total Spent</Text>
                       <Text style={themeStyle(styles.totalAmount)}>
-                        <MoneyAmount value={spent} />
+                        <MoneyAmount value={allSpent} />
                       </Text>
                     </View>
                   </>
@@ -646,7 +649,7 @@ export default function Budget() {
             {/* Breakdown chart */}
             <View style={themeStyle(styles.rightCol)}>
               <View style={themeStyle(styles.sectionCard)}>
-                <Text style={themeStyle(styles.sectionTitle)}>Expense Breakdown</Text>
+                <Text style={themeStyle(styles.sectionTitle)}>All Recorded Expenses</Text>
                 <View style={themeStyle({ marginTop: 16, gap: 14 })}>
                   {entries.length === 0 ? (
                     <View style={themeStyle(styles.emptyBox)}><Text style={themeStyle(styles.emptyDesc)}>No expenses to show.</Text></View>
@@ -658,7 +661,7 @@ export default function Budget() {
                         amount={entry.amount}
                         total={maxAmount}
                         color={entry.color}
-                        rightLabel={<MoneyAmount value={entry.amount} prefix={`${spent > 0 ? Math.round((entry.amount / spent) * 100) : 0}% · `} />}
+                        rightLabel={<MoneyAmount value={entry.amount} prefix={`${allSpent > 0 ? Math.round((entry.amount / allSpent) * 100) : 0}% · `} />}
                       />
                     ))
                   )}
@@ -667,7 +670,7 @@ export default function Budget() {
                   <View style={themeStyle(styles.breakdownTotal)}>
                     <Text style={themeStyle(styles.totalLabel)}>Total</Text>
                     <Text style={themeStyle(styles.totalAmount)}>
-                      <MoneyAmount value={spent} />
+                      <MoneyAmount value={allSpent} />
                     </Text>
                   </View>
                 )}
@@ -680,7 +683,7 @@ export default function Budget() {
             <View style={themeStyle(styles.sectionCard)}>
               <Text style={themeStyle(styles.sectionTitle)}>Per-Trip Budget</Text>
               <Text style={themeStyle(styles.sectionDesc)}>
-                Tap a trip to see linked expenses. Save an AI Itinerary to automatically populate trip costs.
+                Tap a trip to see linked expenses. Complete a trip and audit its expenses to record actual spending.
               </Text>
               <View style={themeStyle({ marginTop: 16, gap: 0 })}>
                 {trips.map((trip, i) => (

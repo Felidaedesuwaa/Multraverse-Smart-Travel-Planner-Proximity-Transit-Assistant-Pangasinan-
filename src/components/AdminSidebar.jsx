@@ -52,7 +52,7 @@ export default function AdminSidebar({ activeScreen = "AdminDashboard", onNaviga
         <View style={themeStyle([styles.navSection, compact && { flexDirection: 'row', gap: 12 }])}>
           {items.map(({ label, icon: Icon, screen }) => {
             const active = activeScreen === screen;
-            const pendingCount = screen === "AdminPostApprovals" ? counts?.["saved-places"] || 0 : total;
+            const pendingCount = screen === "AdminPostApprovals" ? counts?.["saved-places"] || 0 : Math.max(0, total - (counts?.["saved-places"] || 0));
             const hasApprovals = ["AdminApprovals", "AdminPostApprovals"].includes(screen);
             return (
               <FeedbackPressable

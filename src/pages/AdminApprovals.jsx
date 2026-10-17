@@ -11,7 +11,7 @@ import { api } from '../lib/api';
 import { lguResources as municipalResources } from '../data/lguResources';
 import { useAppTheme } from '../theme/useAppTheme';
 
-const lguResources = { ...municipalResources, 'saved-places': { label: 'Saved places', fields: [['isPublic', 'Public visibility'], ['userNote', 'Experience / Notes']] } };
+const lguResources = { ...municipalResources, 'saved-places': { label: 'Travel experiences', fields: [['isPublic', 'Public visibility'], ['userNote', 'Experience / Notes']] } };
 const submissionName = row => row.name || row.location || `${row.from || ''} → ${row.to || ''}`;
 const formatDate = value => value && !Number.isNaN(new Date(value).getTime()) ? new Date(value).toLocaleString() : 'Not available';
 const hiddenFields = new Set(['photos', 'photo', 'id', '_id', '__v', 'submittedBy', 'reviewedBy', 'reviewRevision', 'pendingDeletion', 'approvalStatus', 'municipality']);
@@ -23,10 +23,12 @@ export function AdminPostApprovals() {
 export default function AdminApprovals({ savedPlacesOnly = false }) {
   const { palette: p } = useAppTheme();
   const { counts, total, error, refresh } = useApprovalCounts();
+  const postCount = counts['saved-places'] || 0;
+  const pageCount = savedPlacesOnly ? postCount : Math.max(0, total - postCount);
   const [resource, setResource] = useState(savedPlacesOnly ? 'saved-places' : 'places');
-  return <AdminPage title={savedPlacesOnly ? "Post approvals" : "Submission approvals"} subtitle={`${total} pending submissions · Review municipal information and public or private saved places`}>
+  return <AdminPage title={savedPlacesOnly ? "Post approvals" : "Submission approvals"} subtitle={`${total} pending submissions · Review municipal information and public or private travel experiences`}>
     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categories} contentContainerStyle={styles.categoryRow}>
-      {Object.entries(lguResources).filter(([key]) => !savedPlacesOnly || key === 'saved-places').map(([key, value]) => <FeedbackPressable key={key} accessibilityRole="button" accessibilityLabel={`${value.label}, ${counts[key] || 0} pending submissions`} accessibilityState={{ selected: resource === key }} onPress={() => setResource(key)} style={({ hovered, pressed }) => [styles.category, { backgroundColor: resource === key || hovered || pressed ? p.tint : p.surface, borderColor: resource === key ? p.primary : p.line }]}>
+      {Object.entries(lguResources).filter(([key]) => savedPlacesOnly ? key === 'saved-places' : key !== 'saved-places').map(([key, value]) => <FeedbackPressable key={key} accessibilityRole="button" accessibilityLabel={`${value.label}, ${counts[key] || 0} pending submissions`} accessibilityState={{ selected: resource === key }} onPress={() => setResource(key)} style={({ hovered, pressed }) => [styles.category, { backgroundColor: resource === key || hovered || pressed ? p.tint : p.surface, borderColor: resource === key ? p.primary : p.line }]}>
         <Text style={{ color: p.ink, fontWeight: '600' }}>{value.label}</Text>
         <PendingReviewBadge count={counts[key] || 0} />
       </FeedbackPressable>)}

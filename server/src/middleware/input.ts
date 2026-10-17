@@ -129,6 +129,7 @@ export function validateRouter(scope: string): RequestHandler {
         const rules: Record<string, Rule> = /^\/explorers\//.test(req.path) ? { name: string, location: string } : req.path === '/me' ? { name: string, firstName: string, middleName: string, surname: string, location: string, photo: (v: any) => v === null || (typeof v === 'string' && v.length <= 700000) } : { email: string, password: string, municipality: string }
         fields(body, rules)
       } else if (scope === 'trips') {
+        if (/^\/[^/]+\/complete$/.test(req.path) && create) { fields(body, { expenses: Array.isArray }, ['expenses']); return next() }
         const errors = tripFieldErrors(body, create)
         if (Object.keys(errors).length) return res.status(400).json({ error: 'Check the highlighted trip fields.', fieldErrors: errors })
         modelInput(Trip.schema, body, create ? ['title', 'location', 'date', 'budget', 'icon'] : ['title', 'location', 'date', 'status', 'budget', 'icon'], create)

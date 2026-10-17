@@ -78,7 +78,7 @@ function StarRating({ rating, size = 14, onRate }) {
   );
 }
 
-// ── Add/Edit Place Modal ────────────────────────────────
+// ── Add/Edit Experience Modal ────────────────────────────────
 function PlaceFormModal({ visible, place, onClose, onSaved }) {
   const { themeStyle, themeColor, isDark } = useAppTheme();
 
@@ -190,7 +190,7 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
       {/* Header */}
             <View style={themeStyle(styles.modalHeader)}>
               <Text style={themeStyle(styles.modalTitle)}>
-                {isEdit ? "Edit Place" : "Add New Place"}
+                {isEdit ? "Edit Experience" : "New Travel Experience"}
               </Text>
               <FeedbackPressable onPress={close} style={themeStyle(styles.closeBtn)}>
                 <X size={18} color={themeColor("#6B8CA8", "color")} />
@@ -348,7 +348,7 @@ function PlaceFormModal({ visible, place, onClose, onSaved }) {
                   <ActivityIndicator size="small" color={themeColor("#fff", "color")} style={themeStyle({ marginRight: 6 })} />
                 )}
                 <Text style={themeStyle(styles.saveBtnText)}>
-                  {saving ? "Saving..." : isEdit ? "Save Changes" : "Add Place"}
+                  {saving ? "Saving..." : isEdit ? "Save Changes" : "Share Experience"}
                 </Text>
               </FeedbackPressable>
             </View>
@@ -384,7 +384,7 @@ function PlaceDetailModal({ place, onClose, onEdit, onDelete, confirmation, dele
             <FeedbackPressable onPress={onClose} style={themeStyle(styles.detailClose)}>
               <X size={18} color={themeColor("#fff", "color")} />
             </FeedbackPressable>
-            {place.isPublic !== false && (
+            {place.isPublic === true && place.approvalStatus === 'approved' && (
               <View style={themeStyle(styles.publicTag)}>
                 <Globe size={10} color={themeColor("#fff", "color")} />
                 <Text style={themeStyle(styles.publicTagText)}>Public</Text>
@@ -451,6 +451,7 @@ function PlaceDetailModal({ place, onClose, onEdit, onDelete, confirmation, dele
 
             {!!place.photos?.length && <View style={themeStyle(styles.photosSection)}><Text style={themeStyle(styles.detailSectionTitle)}>Photos</Text><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{gap:10}}>{place.photos.map((uri,index)=><Image key={index} source={{uri}} accessibilityLabel={`${place.name} photo ${index+1}`} style={{width:220,height:160,borderRadius:12}} />)}</ScrollView></View>}
 
+            <Text style={themeStyle(styles.detailMeta)}>{place.approvalStatus === 'pending' ? 'Pending admin approval. This experience is not published.' : place.approvalStatus === 'rejected' ? 'Rejected. This experience is not published.' : place.approvalStatus !== 'approved' ? 'Admin approval has not been confirmed.' : place.isPublic ? 'Approved for public view.' : 'Approved as private.'}</Text>
             {/* Actions */}
             {onEdit && <View style={themeStyle(styles.detailActions)}>
               <FeedbackPressable
@@ -500,7 +501,7 @@ function PlaceCard({ place, onView, onDelete, index }) {
         </View>
 
         {/* Public badge */}
-        {place.isPublic !== false && (
+        {place.isPublic === true && place.approvalStatus === 'approved' && (
           <View style={themeStyle(styles.cardPublicBadge)}>
             <Globe size={9} color={themeColor("#fff", "color")} />
           </View>
@@ -516,7 +517,7 @@ function PlaceCard({ place, onView, onDelete, index }) {
 
       {/* Body */}
       <View style={themeStyle(styles.cardBody)}>
-        {!!place.approvalStatus && <Text style={themeStyle(styles.cardRatingText)}>Review: {place.approvalStatus}</Text>}
+        <Text style={themeStyle(styles.cardRatingText)}>{place.approvalStatus === 'approved' ? (place.isPublic ? 'Approved ? Public' : 'Approved ? Private') : place.approvalStatus === 'rejected' ? 'Rejected ? Not published' : place.approvalStatus === 'pending' ? 'Pending admin approval ? Not published' : 'Approval not confirmed'}</Text>
         {!!place.rejectionReason && <Text style={themeStyle(styles.cardDesc)}>Reason: {place.rejectionReason}</Text>}
         <Text style={themeStyle(styles.cardName)} numberOfLines={1}>{place.name}</Text>
 
@@ -590,7 +591,7 @@ export default function SavedPlaces() {
     let active = true;
     setLoading(true);
     (view === 'public' ? api.getPublicSavedPlaces() : api.getSavedPlaces())
-      .then(result => { if (active) (view === 'public' ? setPublicPlaces : setPlaces)(result); })
+      .then(result => { if (active) (view === 'public' ? setPublicPlaces : setPlaces)(view === 'public' ? result.filter(p => p.isPublic === true && p.approvalStatus === 'approved') : result); })
       .catch(() => { if (active) setNotice('Could not load places. Switch views to try again.'); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
@@ -635,7 +636,8 @@ export default function SavedPlaces() {
     ? (places.reduce((s, p) => s + (p.rating ?? 0), 0) / places.length).toFixed(1)
     : "0.0";
   const ratedCount = places.filter((p) => p.rating > 0).length;
-  const publicCount = places.filter((p) => p.isPublic !== false).length;
+  const publicCount = places.filter((p) => p.isPublic === true && p.approvalStatus === 'approved').length;
+  const privateCount = places.filter(p => p.isPublic === false).length;
 
   return (
     <ScrollView
@@ -648,14 +650,14 @@ export default function SavedPlaces() {
         {/* Header */}
         <View style={themeStyle([styles.header, contentWidth < 440 && { flexDirection: 'column' }])}>
           <View style={{ minWidth: 0, flexShrink: 1 }}>
-            <Text style={themeStyle(styles.title)}>Saved Places</Text>
+            <Text style={themeStyle(styles.title)}>Travel Experiences</Text>
             <Text style={themeStyle(styles.subtitle)}>
               {places.length} saved · {ratedCount} rated · {publicCount} public
             </Text>
           </View>
           <FeedbackPressable accessibilityRole="button" onPress={() => setShowAdd(true)} style={themeStyle(styles.addBtn)}>
             <Plus size={15} color={themeColor("#fff", "color")} />
-            <Text style={themeStyle(styles.addBtnText)}>Add Place</Text>
+            <Text style={themeStyle(styles.addBtnText)}>Share Experience</Text>
           </FeedbackPressable>
         </View>
 
@@ -677,7 +679,7 @@ export default function SavedPlaces() {
             <View style={themeStyle(styles.statChip)}>
               <Lock size={13} color={themeColor(colors.sunsetCoral, "color")} />
               <Text style={themeStyle(styles.statChipText)}>
-                {places.length - publicCount} Private
+                {privateCount} Private
               </Text>
             </View>
           </ScrollView>
@@ -687,15 +689,15 @@ export default function SavedPlaces() {
             <View style={themeStyle(styles.searchBox)}>
               <Search size={15} color={themeColor("#6B8CA8", "color")} />
               <TextInput
-                accessibilityLabel="Search saved places"
+                accessibilityLabel="Search travel experiences"
                 value={query}
                 onChangeText={setQuery}
-                placeholder="Search places..."
+                placeholder="Search experiences..."
                 placeholderTextColor={themeColor("#A8BECC", "color")}
                 style={themeStyle(styles.searchInput)}
               />
               {query.length > 0 && (
-                <FeedbackPressable accessibilityRole="button" accessibilityLabel="Clear saved places search" onPress={() => setQuery("")}>
+                <FeedbackPressable accessibilityRole="button" accessibilityLabel="Clear travel experiences search" onPress={() => setQuery("")}>
                   <X size={14} color={themeColor("#6B8CA8", "color")} />
                 </FeedbackPressable>
               )}
@@ -735,13 +737,13 @@ export default function SavedPlaces() {
       </View>
 
       <View style={themeStyle([styles.visibilityRow, { marginBottom: 16 }])}>
-        {['mine', 'public'].map(value => <FeedbackPressable key={value} accessibilityRole="button" accessibilityState={{ selected: view === value }} onPress={() => { setViewingPlace(null); setNotice(''); setView(value); }} style={themeStyle([styles.catTab, view === value && styles.catTabActive])}><Text style={themeStyle([styles.catTabText, view === value && styles.catTabTextActive])}>{value === 'mine' ? 'My places' : 'Public view'}</Text></FeedbackPressable>)}
+        {['mine', 'public'].map(value => <FeedbackPressable key={value} accessibilityRole="button" accessibilityState={{ selected: view === value }} onPress={() => { setViewingPlace(null); setNotice(''); setView(value); }} style={themeStyle([styles.catTab, view === value && styles.catTabActive])}><Text style={themeStyle([styles.catTabText, view === value && styles.catTabTextActive])}>{value === 'mine' ? 'My experiences' : 'Public view'}</Text></FeedbackPressable>)}
       </View>
       {/* Content */}
       {loading ? (
         <View style={themeStyle(styles.centerBox)}>
           <ActivityIndicator color={themeColor(colors.oceanBlue, "color")} size="large" />
-          <Text style={themeStyle(styles.loadingText)}>Loading your places...</Text>
+          <Text style={themeStyle(styles.loadingText)}>Loading experiences...</Text>
         </View>
       ) : filtered.length === 0 ? (
         <View style={themeStyle(styles.emptyBox)}>
@@ -750,13 +752,13 @@ export default function SavedPlaces() {
           </View>
           <Text style={themeStyle(styles.emptyTitle)}>
             {query || categoryFilter !== "All"
-              ? "No places match your filters"
-              : "No saved places yet"}
+              ? "No experiences match your filters"
+              : "No travel experiences yet"}
           </Text>
           <Text style={themeStyle(styles.emptyDesc)}>
             {query || categoryFilter !== "All"
               ? "Try different search terms or categories."
-              : "Save places you've visited or plan to visit in Pangasinan."}
+              : "Share ratings, notes and photos from your completed trips in Pangasinan."}
           </Text>
           {!query && categoryFilter === "All" && (
             <FeedbackPressable
@@ -764,7 +766,7 @@ export default function SavedPlaces() {
               style={themeStyle(styles.emptyBtn)}
             >
               <Plus size={14} color={themeColor("#fff", "color")} />
-              <Text style={themeStyle(styles.emptyBtnText)}>Save your first place</Text>
+              <Text style={themeStyle(styles.emptyBtnText)}>Share your first experience</Text>
             </FeedbackPressable>
           )}
         </View>

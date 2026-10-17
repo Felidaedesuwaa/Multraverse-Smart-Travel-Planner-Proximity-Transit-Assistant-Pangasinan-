@@ -1,4 +1,4 @@
-// Run Saved Places and Budget through their actual component trees and API boundaries.
+// Run Travel Experiences and Budget through their actual component trees and API boundaries.
 const assert = require('node:assert/strict'), fs = require('node:fs'), path = require('node:path'), vm = require('node:vm'), React = require('react'), babel = require('@babel/core');
 const root = path.resolve(__dirname, '..'), cache = new Map(), instances = new Map();
 let frame, effects = [], nodes = [], dark = true, platform = 'web', pickerCalls = 0, permissionCalls = 0, failSave = false, saved = [], deletedExpenses = [];
@@ -6,7 +6,7 @@ let photoSizes=[],photoResizes=[],photoCompressions=[],releasedContexts=0,releas
 let width=390,savedFeed=[];
 let catalogTrips = [{ id:'trip', title:'Dagupan adventure', status:'COMPLETED', plan:{ version:1 } }];
 const budget = { entries:[{id:'expense',label:'Lunch',category:'Food',amount:100,color:'#123',date:'2026-10-07',tripId:'trip'}], settings:{monthlyBudget:1000,savingsTarget:20}, setEntries(value){this.entries = typeof value === 'function' ? value(this.entries) : value;}, setSettings(value){this.settings=value;} };
-const api = { getTrips:async()=>catalogTrips,getSavedPlaces:async()=>savedFeed,getPublicSavedPlaces:async()=>[{id:'shared',name:'Shared experience',category:'Beach',isPublic:true,approvalStatus:'approved'}],getBudget:async()=>budget.entries,getBudgetSettings:async()=>budget.settings,
+const api = { getTrips:async()=>catalogTrips,getSavedPlaces:async()=>savedFeed,getPublicSavedPlaces:async()=>[{id:'shared',name:'Shared experience',category:'Beach',isPublic:true,approvalStatus:'approved'},{id:'pending-public',name:'Unapproved shared experience',category:'Beach',isPublic:true,approvalStatus:'pending'}],getBudget:async()=>budget.entries,getBudgetSettings:async()=>budget.settings,
  createSavedPlace:async value=>{if(failSave)throw new Error('Offline. Try again.');saved.push(value);return {...value,id:'new'};}, updateSavedPlace:async(id,value)=>({...value,id}), deleteSavedPlace:async()=>{},deleteBudgetEntry:async id=>deletedExpenses.push(id) };
 const flatten = value => Array.isArray(value) ? Object.assign({},...value.filter(Boolean).map(flatten)) : value || {};
 const hooks = { useState(initial){const owner=frame,i=frame.index++;if(!(i in owner.slots))owner.slots[i]=typeof initial==='function'?initial():initial;return [owner.slots[i],value=>{owner.slots[i]=typeof value==='function'?value(owner.slots[i]):value;}];},
@@ -56,39 +56,43 @@ const modals=()=>nodes.filter(n=>n.type==='Modal').length;
  savedFeed=[{id:'beach',name:'Bonuan Beach',category:'Beach',rating:4,isPublic:true},{id:'park',name:'Nature Park',category:'Nature Park',rating:3,isPublic:false}];
  for(const theme of [false,true])for(const viewport of [320,390,768,1280]){
   dark=theme;width=viewport;instances.clear();effects=[];render();await flush();
-  const controls=nodes.find(n=>n.type==='View'&&flatten(n.props.style).gap===16&&n.children?.length===3&&text(n).includes('Saved Places')&&text(n).includes('Avg Rating'));
+  const controls=nodes.find(n=>n.type==='View'&&flatten(n.props.style).gap===16&&n.children?.length===3&&text(n).includes('Travel Experiences')&&text(n).includes('Avg Rating'));
   assert(controls,'Header, ratings, search, and categories form one compact section');
   const toolbar=controls.children[1],stats=toolbar.children[0],contentWidth=viewport>=768?viewport-280:viewport;
   assert.equal(flatten(toolbar.props.style).flexDirection,contentWidth>=800?'row':'column','Search sits beside ratings on desktop and just below them on mobile');
   assert.equal(flatten(stats.props.style).height,36,'Ratings cannot stretch into the page height');
   if(contentWidth<800)assert.equal(flatten(stats.props.style).flexGrow,0,'Mobile ratings never consume unused vertical space');
-  const search=nodes.find(n=>n.props.accessibilityLabel==='Search saved places');assert(search);
+  const search=nodes.find(n=>n.props.accessibilityLabel==='Search travel experiences');assert(search);
   search.props.onChangeText('bonuan');render();assert(hasText('Bonuan Beach'));assert(!hasText('3.0'));
-  tap('Nature Park');assert(hasText('No places match your filters'));
-  tap('Clear saved places search');assert(hasText('3.0'));assert(!hasText('Bonuan Beach'));
+  tap('Nature Park');assert(hasText('No experiences match your filters'));
+  tap('Clear travel experiences search');assert(hasText('3.0'));assert(!hasText('Bonuan Beach'));
   tap('All');assert(hasText('Bonuan Beach'));
  }
- tap('Public view');await flush();assert(hasText('Shared experience'));assert(!hasText('Bonuan Beach'));
+ tap('Public view');await flush();assert(hasText('Shared experience'));assert(!hasText('Unapproved shared experience'));assert(!hasText('Bonuan Beach'));
  assert.equal(nodes.filter(n=>n.type==='Icon:Trash2').length,0,'Public cards cannot delete another user experience');
  tap('View');assert(!button('Edit place'));assert(!button('Delete place'));assert(!button('Add your experience & rating'));nodes.find(n=>n.type==='Modal').props.onRequestClose();render();
- tap('My places');await flush();assert(hasText('Bonuan Beach'));
+ tap('My experiences');await flush();assert(hasText('Bonuan Beach'));
  savedFeed=[];width=390;
  for(const theme of [false,true])for(const target of ['web','ios']){
-  dark=theme;platform=target;instances.clear();effects=[];Screen=SavedPlaces;render();await flush();tap('Add Place');await flush();assert.equal(modals(),1);
+  dark=theme;platform=target;instances.clear();effects=[];Screen=SavedPlaces;render();await flush();tap('Share Experience');await flush();assert.equal(modals(),1);
   tap('Select a completed plan');tap('Dagupan adventure');tap('Private');assert.equal(modals(),1);assert(button('Private').props.accessibilityState.selected);assert(hasText('Private photos are visible only to you.'));
   if(dark){assert.equal(flatten(button('Private').props.style).backgroundColor,'#F5B8BC');tap('Public');assert.equal(flatten(button('Public').props.style).backgroundColor,'#A8E6CF');tap('Private');}
   const before=pickerCalls;await tap('Upload photos');await settle();assert.equal(pickerCalls,before+1);assert(hasText('Photos (1/3)'));assert.equal(modals(),1,'Photo selection stays in one native modal');
   tap('Remove photo 1');assert.equal(modals(),1);tap('Go back');assert(hasText('Photos (1/3)'));
-  assert.equal(flatten(button('Cancel').props.style).flex,flatten(button('Add Place').props.style).flex);
-  failSave=true;tap('Add Place');assert.equal(modals(),1);await tap('Save experience');await settle();assert(hasText('Offline. Try again.'));assert.equal(saved.length,theme===false&&target==='web'?0:theme===false?1:target==='web'?2:3);
-  failSave=false;tap('Add Place');await tap('Save experience');await settle();assert.equal(modals(),0);assert.equal(saved.at(-1).isPublic,false);assert.equal(saved.at(-1).photos.length,1);assert(hasText('Experience saved successfully.'));
-  tap('Add Place');await flush();tap('Cancel');assert.equal(modals(),1);tap('Go back');assert.equal(modals(),1);tap('Cancel');tap('Discard changes');assert.equal(modals(),0);
+  assert.equal(flatten(button('Cancel').props.style).flex,flatten(button('Share Experience').props.style).flex);
+  failSave=true;tap('Share Experience');assert.equal(modals(),1);await tap('Save experience');await settle();assert(hasText('Offline. Try again.'));assert.equal(saved.length,theme===false&&target==='web'?0:theme===false?1:target==='web'?2:3);
+  failSave=false;tap('Share Experience');await tap('Save experience');await settle();assert.equal(modals(),0);assert.equal(saved.at(-1).isPublic,false);assert.equal(saved.at(-1).photos.length,1);assert(hasText('Experience saved successfully.'));
+  tap('Share Experience');await flush();tap('Cancel');assert.equal(modals(),1);tap('Go back');assert.equal(modals(),1);tap('Cancel');tap('Discard changes');assert.equal(modals(),0);
  }
  assert.equal(permissionCalls,2,'Only native uploads request library permissions');
- instances.clear();effects=[];catalogTrips=[];render();await flush();tap('Add Place');await flush();assert(hasText('-- Nothing here --'));tap('-- Nothing here --');assert(hasText('-- Nothing here --'));tap('Cancel');tap('Discard changes');
+ instances.clear();effects=[];catalogTrips=[];render();await flush();tap('Share Experience');await flush();assert(hasText('-- Nothing here --'));tap('-- Nothing here --');assert(hasText('-- Nothing here --'));tap('Cancel');tap('Discard changes');
  Screen=Budget;instances.clear();effects=[];render();await flush();const trash=button('Delete expense Lunch');assert(trash);trash.props.onPress();render();assert(hasText('Delete this expense?'));assert.equal(deletedExpenses.length,0);tap('Go back');assert.equal(deletedExpenses.length,0);
  const again=button('Delete expense Lunch');again.props.onPress();render();await tap('Delete expense');await settle();assert.deepEqual(deletedExpenses,['expense']);assert(hasText('No expenses to show.'));assert(hasText('Expense deleted.'));
  Screen=load(path.join(root,'src/components/FullscreenMap.jsx')).default;instances.clear();effects=[];screenProps={height:420,children:React.createElement('View',{testID:'map-surface'})};render();assert.equal(modals(),0);tap('Open fullscreen map');assert.equal(modals(),1);assert.equal(nodes.filter(n=>n.props.testID==='map-surface').length,1);tap('Exit fullscreen map');assert.equal(modals(),0);assert.equal(nodes.filter(n=>n.props.testID==='map-surface').length,1);
  const prepare=load(path.join(root,'src/lib/placePhotos.js')).preparePlacePhoto;photoSizes=[300000,200000];const photo=await prepare({uri:'phone.jpg',width:3000,height:4000});assert(photo.length<=250000);assert.deepEqual(photoResizes,[{width:900,height:1200},{width:675,height:900}]);assert.deepEqual(photoCompressions,[0.75,0.6]);assert.equal(releasedImages,2);assert.equal(releasedContexts,2);photoSizes=[300000,300000,300000,300000];await assert.rejects(()=>prepare({uri:'huge.jpg',width:4000,height:3000}),/too large/);assert.equal(releasedImages,6);assert.equal(releasedContexts,6);await assert.rejects(()=>prepare({uri:'bad',width:0,height:0}),/could not be read/);
- console.log('PASS: Compact Saved Places header/ratings/search at mobile and desktop widths in both themes, search/category filtering and clear; photo compression, fullscreen map, uploads on web/iOS, visibility, save retry, confirmations, and Budget deletion.');
+ const monthEntries=load(path.join(root,'src/lib/monthlyExpenses.js')).monthlyExpenses;
+ const monthly=monthEntries([{id:'previous',amount:999,createdAt:'2026-09-30T15:59:59Z'},{id:'october',amount:100,createdAt:'2026-09-30T16:00:00Z'},{id:'end',amount:20,createdAt:'2026-10-31T15:59:59Z'},{id:'next',amount:800,createdAt:'2026-10-31T16:00:00Z'},{id:'invalid',amount:500}],new Date('2026-10-17T00:00:00Z'));
+ assert.deepEqual(monthly.map(row=>row.id),['october','end'],'Monthly spending uses Philippine month boundaries and excludes other months and undated records');
+ assert.equal(monthly.reduce((sum,row)=>sum+row.amount,0),120);
+ console.log('PASS: Compact Travel Experiences header/ratings/search at mobile and desktop widths in both themes, search/category filtering and clear; photo compression, fullscreen map, uploads on web/iOS, visibility, save retry, confirmations, and Budget deletion.');
 })().catch(e=>{console.error(e);process.exitCode=1;});

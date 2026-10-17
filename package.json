@@ -25,7 +25,7 @@
     "lint": "eslint .",
     "test:startup": "node scripts/check-mobile-startup.cjs",
     "test:itinerary": "node scripts/check-itinerary-render.cjs",
-    "test:trips": "node scripts/check-my-trips-render.cjs",
+    "test:trips": "node scripts/check-my-trips-render.cjs && npm run build --prefix server && node server/scripts/check-trip-expense-audit.cjs",
     "test:notifications": "node scripts/check-notifications-recovery.cjs",
     "test:approvals": "node scripts/check-admin-approvals.cjs && node scripts/check-approval-counts-client.cjs && npm run build --prefix server && node server/scripts/check-approval-counts.cjs",
     "test:transit": "node scripts/check-transit-map.cjs && node scripts/check-transit-page.cjs && node scripts/check-transit-alarm.cjs && node scripts/check-transit-alerts.cjs && node scripts/check-transit-permission.cjs && npm run build --prefix server && node server/scripts/check-transit-search.cjs",

@@ -1,3 +1,4 @@
+import TripExpenseAudit from '../components/TripExpenseAudit';
 import { tripDisplayTitle, tripDurationDays } from '../lib/tripTitle';
 import TripActionConfirmation from '../components/TripActionConfirmation';
 import SuccessBanner from '../components/SuccessBanner';
@@ -291,6 +292,7 @@ export default function MyTrips({ route, navigation }) {
 
   const [actionMessage, setActionMessage] = useState("");
   const successMessage = actionMessage;
+  const [auditTrip, setAuditTrip] = useState(null);
   const [confirmation, setConfirmation] = useState(null);
   const [actionBusy, setActionBusy] = useState(false);
   const [filter, setFilter] = useState("all");
@@ -311,11 +313,11 @@ export default function MyTrips({ route, navigation }) {
   }, [route?.params?.successMessage]));
 
   const requestAction = (kind, trip) => {
+    if (kind === 'complete') { setSelectedTrip(null); setConfirmation(null); setAuditTrip(trip); return; }
     if (kind === 'delete' && !['COMPLETED', 'CANCELED'].includes(trip?.status)) return;
     const copy = {
       delete: { title:'Delete this trip?', message:'This removes the saved itinerary. Recorded expenses remain in Budget and are unlinked from the trip.', label:'Delete Trip', destructive:true },
       cancel: { title:'Cancel this trip?', message:'The trip will move to Canceled. Your saved itinerary and recorded expenses will remain available.', label:'Cancel Trip' },
-      complete: { title:'Complete this trip?', message:'Confirm that you have finished this trip. It will move to Completed and keep its itinerary, PDF and expenses.', label:'Complete Trip' },
     };
     setCancelError(null);
     setConfirmation({ ...copy[kind], kind, trip });
@@ -334,11 +336,11 @@ export default function MyTrips({ route, navigation }) {
         setSelectedTrip(null); setActionMessage('');
       } else {
         const id = trip._id ?? trip.id;
-        const updated = await api.updateTrip(id, {status:kind === 'complete' ? 'COMPLETED' : 'CANCELED'});
+        const updated = await api.updateTrip(id, {status:'CANCELED'});
         const next = {...trip,...updated};
         setTrips(prev => prev.map(t => (t._id ?? t.id) === id ? next : t));
         setSelectedTrip(next);
-        setActionMessage(kind === 'complete' ? 'Trip marked as completed successfully.' : 'Trip canceled successfully.');
+        setActionMessage('Trip canceled successfully.');
       }
       setConfirmation(null);
     } catch (cause) {
@@ -469,6 +471,12 @@ export default function MyTrips({ route, navigation }) {
       {cancelError && !selectedTrip && <Text accessibilityRole="alert" style={themeStyle({color:colors.sunsetCoral})}>{cancelError}</Text>}
     </ScrollView>
       {/* Modals */}
+      {auditTrip && <TripExpenseAudit key={auditTrip._id ?? auditTrip.id} trip={auditTrip} onClose={() => setAuditTrip(null)} onCompleted={updated => {
+        const id = updated._id ?? updated.id;
+        setTrips(previous => previous.map(trip => (trip._id ?? trip.id) === id ? { ...trip, ...updated } : trip));
+        setAuditTrip(null); setActionMessage('Trip completed. Audited expenses are recorded in your monthly budget.');
+      }} />}
+
       <TripDetailModal
         trip={selectedTrip}
         onClose={() => { if (!actionBusy) { setSelectedTrip(null); setConfirmation(null); setCancelError(null); } }}

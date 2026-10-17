@@ -19,7 +19,7 @@ const navigationItems = [
   { label: "Home", icon: Home, screen: "Home" },
   { label: "My Trips", icon: MapPin, screen: "MyTrips" },
   { label: "Budget", icon: Wallet, screen: "Budget" },
-  { label: "Saved Places", icon: Bookmark, screen: "SavedPlaces" },
+  { label: "Travel Experiences", icon: Bookmark, screen: "SavedPlaces" },
   { label: "Interactive Map", icon: Map, screen: "InteractiveMap" },
   { label: "Settings", icon: Settings, screen: "Settings" },
 ];

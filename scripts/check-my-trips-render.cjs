@@ -9,6 +9,7 @@ const babel = require('@babel/core');
 const root = path.resolve(__dirname, '..');
 const cache = new Map(), instances = new Map();
 let frame, effects = [], nodes = [], width = 390, dark = false;
+let failAudit = false;
 let pdfCalls = 0, failPdf = false, failUpdate = false, releaseUpdate;
 const plan = {
   id: 'plan',
@@ -21,6 +22,8 @@ const trips = ['UPCOMING', 'COMPLETED', 'CANCELED'].map((status, i) => ({
 }));
 let deleted = [];
 const api = {
+  getTripExpenseAudit: async id => { if (failAudit) throw Object.assign(new Error('Missing route'), { status: 404, code: 'API_ROUTE_NOT_FOUND' }); return { lines: load(path.join(root, 'server/src/lib/tripExpenseAudit.ts')).tripExpenseLines(trips.find(t => t.id === id)), entries: [] }; },
+  completeTrip: async (id, expenses) => { await new Promise(resolve => { releaseUpdate = resolve; }); return { ...trips.find(t => t.id === id), status: 'COMPLETED', spent: expenses.reduce((sum, row) => sum + row.amount, 0) }; },
   getTrips: async () => trips.map(t => ({ ...t })),
   getItineraryCatalog: async () => ({ areas: [], fareTables: [] }),
   deleteTrip: async id => { deleted.push(id); },
@@ -31,6 +34,7 @@ const api = {
   },
 };
 const hooks = {
+  useRef(value) { const index = frame.index++; return frame.slots[index] ||= { current: value }; },
   useState(initial) {
     const owner = frame, index = frame.index++;
     if (!(index in owner.slots)) owner.slots[index] = typeof initial === 'function' ? initial() : initial;
@@ -172,27 +176,45 @@ const hasText = value => nodes.some(n => n.type === 'Text' && textOf(n).includes
     }
     const scroll = nodes.findLast(n => n.type === 'ScrollView' && flatten(n.props.style).minHeight === 0);
     assert.equal(flatten(scroll.props.style).flex, 1, 'Details have a bounded scroll area');
-    for (const action of ['Cancel Trip', 'Complete Trip']) {
+    for (const action of ['Cancel Trip']) {
       tap(action); assert.equal(modalCount(), 1, `${action} uses the existing details modal`);
       const confirmationStyles = [button('Go back'), button(action)].map(control => flatten(control.props.style));
       assert(confirmationStyles.every(style => style.flex === 1 && style.width === undefined && style.minHeight === 48), 'Confirmation actions share the full dialog width with matching heights');
       tap('Go back'); assert.equal(modalCount(), 1);
     }
+    tap('Complete Trip'); await flush(); assert(hasText('Audit trip expenses')); assert(button('Confirm expenses & complete').props.disabled); tap('Go back'); open(); await flush();
     tap('Done'); assert.equal(modalCount(), 0, 'Closing details dismisses immediately');
     assert(!hasText('Trip details closed'), 'Closing has no feedback banner');
     open(); tap('Close trip information'); assert.equal(modalCount(), 0, 'Header close dismisses immediately');
   }
+  instances.clear(); effects = []; render(); await flush();
+  failAudit = true; open(); await flush(); tap('Complete Trip'); await flush();
+  assert(hasText('Expense auditing is not available on the connected server yet'));
+  assert(button('Confirm expenses & complete').props.disabled);
+  failAudit = false; tap('Retry loading expenses'); await flush();
+  assert(nodes.some(n => n.type === 'TextInput' && n.props.accessibilityLabel?.startsWith('Actual amount:')));
+  tap('Go back');
   open(); await flush();
   tap('Export PDF'); assert.equal(modalCount(), 1, 'PDF confirmation does not present a sibling modal');
   await tap('Export PDF'); await settle(); assert.equal(pdfCalls, 1); assert(hasText('PDF is ready'));
   failPdf = true; tap('Export PDF'); await tap('Export PDF'); await settle();
   assert(hasText('PDF could not be downloaded'), 'Asynchronous sharing failures remain visible and retryable');
   failPdf = false;
-  tap('Complete Trip'); const pending = tap('Complete Trip');
-  assert.equal(modalCount(), 1); assert(button('Working...').props.disabled);
-  assert(button('Go back').props.disabled, 'Busy confirmations cannot be dismissed');
-  releaseUpdate(); await pending; await settle(); assert(hasText('Trip marked as completed successfully'));
-  tap('Done');
+  tap('Complete Trip'); await flush();
+  tap('Add other expense');
+  const extraName = nodes.find(n => n.type === 'TextInput' && n.props.accessibilityLabel?.startsWith('Expense name'));
+  extraName.props.onChangeText('Souvenirs'); render();
+  assert(hasText('Souvenirs') || nodes.some(n => n.type === 'TextInput' && n.props.value === 'Souvenirs'));
+  const amounts = nodes.filter(n => n.type === 'TextInput' && n.props.accessibilityLabel?.startsWith('Actual amount:'));
+  assert(amounts.length >= 4);
+  for (const input of amounts) input.props.onChangeText('0'); render();
+  for (const checkbox of nodes.filter(n => n.props.accessibilityRole === 'checkbox')) checkbox.props.onPress(); render();
+  assert(!button('Confirm expenses & complete').props.disabled);
+  const pending = tap('Confirm expenses & complete');
+  assert.equal(modalCount(), 1); assert(button('Saving expenses?').props.disabled);
+  assert(button('Go back').props.disabled, 'Busy audits cannot be dismissed');
+  releaseUpdate(); await pending; await settle(); assert(hasText('Trip completed. Audited expenses'));
+  assert.equal(modalCount(), 0);
   tap('Open trip details for CANCELED itinerary');
   tap('Delete Trip'); await tap('Delete Trip'); await settle();
   assert.deepEqual(deleted, ['2']); assert.equal(modalCount(), 0);

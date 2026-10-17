@@ -8,7 +8,7 @@ import { SummerBrand, TravelButton, useSummerColors } from "../components/Summer
 const features = [
   { Icon: Route, number: "01", title: "Find your kind of adventure", text: "Explore places across Pangasinan and bring your favorites together in an AI itinerary.", note: "A plan that feels like you", color: "#DCECE2" },
   { Icon: Wallet, number: "02", title: "Pack a plan. Keep your budget.", text: "Keep trip costs and expenses in one place, with your preferred currency alongside pesos.", note: "More memories, less guesswork", color: "#F9E3C2" },
-  { Icon: BellRing, number: "03", title: "Enjoy the journey, too", text: "Get ready for the road with transit alerts, saved places, and useful local phrases.", note: "Your travel companion", color: "#F7DDD2" },
+  { Icon: BellRing, number: "03", title: "Enjoy the journey, too", text: "Get ready for the road with transit alerts, travel experiences, and useful local phrases.", note: "Your travel companion", color: "#F7DDD2" },
 ];
 
 export default function LandingPage() {

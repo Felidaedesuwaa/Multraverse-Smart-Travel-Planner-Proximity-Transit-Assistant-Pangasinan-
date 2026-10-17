@@ -33,6 +33,12 @@ function load(hostname, url, fetch) {
   assert.equal(requested, 'https://api.example.com/api/auth/register');
   const offline = load('travel.vercel.app', 'https://api.example.com', async () => { throw new TypeError('Failed to fetch'); });
   await assert.rejects(offline.api.register({}), /Unable to connect/);
+  const missingRoute = load('localhost', 'https://api.example.com', async () => ({ ok: false, status: 404, json: async () => { throw new SyntaxError('HTML response'); } }));
+  await assert.rejects(missingRoute.api.getTripExpenseAudit('trip'), error => error.status === 404 && error.code === 'API_ROUTE_NOT_FOUND');
+  const malformed = load('localhost', 'https://api.example.com', async () => ({ ok: true, status: 200, json: async () => { throw new SyntaxError('Bad response'); } }));
+  await assert.rejects(malformed.api.getTripExpenseAudit('trip'), error => error.status === 200 && !error.code && /invalid response/.test(error.message));
+  const absentTrip = load('localhost', 'https://api.example.com', async () => ({ ok: false, status: 404, headers: { get: () => null }, json: async () => ({ error: 'Trip not found' }) }));
+  await assert.rejects(absentTrip.api.getTripExpenseAudit('trip'), error => error.status === 404 && !error.code && error.message === 'Trip not found');
   for (const [value, expected] of [
     ['', 1], ['http://localhost:3001', 1], ['https://api.example.com/api', 1],
     ['https://192.168.1.2', 1], ['https://api.example.com/', 0],

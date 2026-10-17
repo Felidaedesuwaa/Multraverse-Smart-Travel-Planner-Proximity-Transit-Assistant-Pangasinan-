@@ -128,7 +128,7 @@ export default function RegisterPage() {
             <ScrollView style={styles.privacyScroll} contentContainerStyle={styles.privacyContent}>
               <Text style={themeStyle(styles.privacyBody)}>{[
                 "We use your name and email to manage your account and send security codes.",
-                "Your trips, budget and saved places support travel planning. Places you choose to publish are visible to others.",
+                "Your trips, budget and travel experiences support travel planning. Places you choose to publish are visible to others.",
                 "Location, photo and microphone access are optional and used for the feature you request; stop transit monitoring or revoke device permissions to withdraw access.",
                 "Administrators can manage accounts and review published content.",
                 "You can delete your account and its private travel records in account settings. We do not request payment card details.",

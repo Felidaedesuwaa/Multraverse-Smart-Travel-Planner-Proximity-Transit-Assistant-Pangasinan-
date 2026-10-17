@@ -71,7 +71,12 @@ async function request(path, options = {}) {
 
   let data;
   try { data = await res.json(); }
-  catch { throw new Error('The service returned an invalid response. Please try again.'); }
+  catch {
+    const error = new Error(res.status === 404 ? 'This feature is not available on the connected server yet.' : 'The service returned an invalid response. Please try again.');
+    error.status = res.status;
+    if (res.status === 404) error.code = 'API_ROUTE_NOT_FOUND';
+    throw error;
+  }
   if (!res.ok) {
     if (res.status === 401 && token && !passwordTransition && (!path.startsWith('/api/auth/') || path === '/api/auth/password/change') && await getToken() === token) await unauthorizedHandler?.();
     const error = new Error(data.error || "Request failed");
@@ -202,6 +207,8 @@ export const api = {
   getTrips: () => requestList('/api/trips'),
   createTrip: (data) =>
     request('/api/trips', { method: 'POST', body: JSON.stringify(data) }),
+  getTripExpenseAudit: id => request(`/api/trips/${id}/expense-audit`),
+  completeTrip: (id, expenses) => request(`/api/trips/${id}/complete`, { method: 'POST', body: JSON.stringify({ expenses }) }),
   updateTrip: (id, data) =>
     request(`/api/trips/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteTrip: (id) =>

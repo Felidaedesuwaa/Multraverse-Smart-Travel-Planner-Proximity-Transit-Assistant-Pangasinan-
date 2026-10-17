@@ -1,3 +1,4 @@
+import { tripExpenseLines, validateExpenseAudit } from '../lib/tripExpenseAudit'
 import { sanitizeRequest, validateRouter, pagination, validateId } from '../middleware/input'
 import { Router, Response } from 'express'
 import mongoose from 'mongoose'
@@ -25,7 +26,37 @@ router.post('/', async (req: AuthRequest, res: Response) => {
   res.status(201).json(trip)
 })
 
+router.get('/:id/expense-audit', async (req: AuthRequest<{ id: string }>, res) => {
+  const trip = await Trip.findOne({ _id: req.params.id, userId: req.userId })
+  if (!trip) return res.status(404).json({ error: 'Trip not found' })
+  const entries = await BudgetEntry.find({ tripId: trip._id, userId: req.userId }).sort({ createdAt: 1, _id: 1 })
+  res.json({ lines: tripExpenseLines(trip), entries })
+})
+router.post('/:id/complete', async (req: AuthRequest<{ id: string }>, res) => {
+  try {
+    const result = await mongoose.connection.transaction(async session => {
+      const trip = await Trip.findOne({ _id: req.params.id, userId: req.userId }).session(session)
+      if (!trip) throw Object.assign(new Error('Trip not found'), { status: 404 })
+      if (trip.status !== 'UPCOMING') throw Object.assign(new Error('Only upcoming trips can be completed. Refresh your trips.'), { status: 409 })
+      const existing = await BudgetEntry.find({ tripId: trip._id, userId: req.userId }).session(session)
+      let expenses: any[]
+      try { expenses = validateExpenseAudit(trip, req.body.expenses, existing) }
+      catch (error: any) { throw Object.assign(error, { status: 400 }) }
+      // Claim the completion in the same transaction as every expense write.
+      const updated = await Trip.findOneAndUpdate({ _id: trip._id, userId: req.userId, status: 'UPCOMING' }, { $set: { status: 'COMPLETED' } }, { new: true, session, runValidators: true })
+      if (!updated) throw Object.assign(new Error('Trip already completed. Refresh your trips.'), { status: 409 })
+      for (const row of expenses) {
+        const data = { label: row.label.trim(), category: row.category, amount: row.amount }
+        if (row.entryId) await BudgetEntry.updateOne({ _id: row.entryId, tripId: trip._id, userId: req.userId }, { $set: data }, { session, runValidators: true })
+        else await BudgetEntry.create([{ ...data, userId: req.userId, tripId: trip._id }], { session })
+      }
+      return { ...updated.toJSON(), spent: expenses.reduce((sum: number, row: any) => sum + row.amount, 0) }
+    })
+    res.json(result)
+  } catch (error: any) { res.status(error.status || (['ValidationError', 'CastError'].includes(error.name) ? 400 : 500)).json({ error: error.status ? error.message : 'Could not complete the trip. No expenses were saved. Please try again.' }) }
+})
 router.put('/:id', async (req: AuthRequest<{ id: string }>, res: Response) => {
+  if (req.body.status === 'COMPLETED') return res.status(400).json({ error: 'Audit all trip expenses before completing this trip.' })
   const { id } = req.params
   const allowed = ['title', 'location', 'date', 'status', 'budget', 'icon']
   if (!req.body || Object.keys(req.body).some(key => !allowed.includes(key))) return res.status(400).json({ error: 'Only trip title, location, date, status, budget and icon can be edited. Replan to change itinerary estimates.' })
