@@ -65,7 +65,7 @@ export const useAuthStore = create((set, get) => ({
     set({ isLoading: true, error: null })
     try {
       const data = await api.login(email, password)
-      if (data.mfaRequired) { set({ isLoading: false }); return data }
+      if (data.mfaRequired || data.passwordChangeRequired) { set({ isLoading: false }); return data }
       await storage.setItem('token', data.token)
       await storage.setItem('user', JSON.stringify(data.user))
       set({ ...accountState(data.user), isAuthenticated: true, isLoading: false })

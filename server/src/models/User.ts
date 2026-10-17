@@ -18,6 +18,8 @@ const userSchema = new Schema({
   createdBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
   passwordHash: { type: String, required: true, select: false, minlength: 60, maxlength: 60 },
   emailVerifiedAt: { type: Date, default: null },
+  disabled: { type: Boolean },
+  mustChangePassword: { type: Boolean, default: false },
   role: { type: String, enum: ['EXPLORER', 'PRO', 'ADMIN', 'LGU', 'SUPERADMIN'], uppercase: true, default: 'EXPLORER' },
   municipality: { type: String, trim: true, enum: lguMunicipalityNames, set: normalizeLGUMunicipality, maxlength: 120, required: function (this: { role?: string }) { return this.role === 'LGU' } },
   location: { type: String, trim: true, maxlength: 120 },

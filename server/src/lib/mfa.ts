@@ -16,7 +16,7 @@ async function challengeUser(token: unknown) {
     const claims = jwt.verify(token, process.env.JWT_SECRET!, { algorithms: ['HS256'] }) as jwt.JwtPayload
     if (claims.purpose !== 'mfa' || !/^[a-f\d]{24}$/i.test(claims.userId)) throw new Error()
     const user = await User.findById(claims.userId).select('+passwordHash')
-    if (!user || user.role !== claims.role || !equalDigest(claims.credential, sessionCredential(user.passwordHash))) throw new Error()
+    if (!user || user.disabled || user.role !== claims.role || !equalDigest(claims.credential, sessionCredential(user.passwordHash))) throw new Error()
     return { user, nonce: claims.nonce as string }
   } catch { throw new AuthError('Sign in again to verify your authenticator.', 401) }
 }

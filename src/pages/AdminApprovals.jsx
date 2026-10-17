@@ -12,9 +12,10 @@ import { lguResources as municipalResources } from '../data/lguResources';
 import { useAppTheme } from '../theme/useAppTheme';
 
 const lguResources = { ...municipalResources, 'saved-places': { label: 'Travel experiences', fields: [['isPublic', 'Public visibility'], ['userNote', 'Experience / Notes']] } };
-const submissionName = row => row.name || row.location || `${row.from || ''} → ${row.to || ''}`;
+const submissionName = row => row.name || row.location || `${row.from || ''} Ã¢â€ â€™ ${row.to || ''}`;
+const statusColors = { pending: '#B86E16', approved: '#26816A', rejected: '#C14B45' };
 const formatDate = value => value && !Number.isNaN(new Date(value).getTime()) ? new Date(value).toLocaleString() : 'Not available';
-const hiddenFields = new Set(['photos', 'photo', 'id', '_id', '__v', 'submittedBy', 'reviewedBy', 'reviewRevision', 'pendingDeletion', 'approvalStatus', 'municipality']);
+const hiddenFields = new Set(['photos', 'photo', 'id', '_id', '__v', 'submittedBy', 'reviewedBy', 'reviewRevision', 'pendingDeletion', 'approvalStatus', 'municipality', 'rejectionReason']);
 
 export function AdminPostApprovals() {
   return <AdminApprovals savedPlacesOnly />;
@@ -26,7 +27,8 @@ export default function AdminApprovals({ savedPlacesOnly = false }) {
   const postCount = counts['saved-places'] || 0;
   const pageCount = savedPlacesOnly ? postCount : Math.max(0, total - postCount);
   const [resource, setResource] = useState(savedPlacesOnly ? 'saved-places' : 'places');
-  return <AdminPage title={savedPlacesOnly ? "Post approvals" : "Submission approvals"} subtitle={`${total} pending submissions · Review municipal information and public or private travel experiences`}>
+  const [status, setStatus] = useState('pending');
+  return <AdminPage title={savedPlacesOnly ? "Post approvals" : "Submission approvals"} subtitle={`${pageCount} pending submissions - Review municipal information and public or private travel experiences`}>
     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categories} contentContainerStyle={styles.categoryRow}>
       {Object.entries(lguResources).filter(([key]) => savedPlacesOnly ? key === 'saved-places' : key !== 'saved-places').map(([key, value]) => <FeedbackPressable key={key} accessibilityRole="button" accessibilityLabel={`${value.label}, ${counts[key] || 0} pending submissions`} accessibilityState={{ selected: resource === key }} onPress={() => setResource(key)} style={({ hovered, pressed }) => [styles.category, { backgroundColor: resource === key || hovered || pressed ? p.tint : p.surface, borderColor: resource === key ? p.primary : p.line }]}>
         <Text style={{ color: p.ink, fontWeight: '600' }}>{value.label}</Text>
@@ -34,11 +36,16 @@ export default function AdminApprovals({ savedPlacesOnly = false }) {
       </FeedbackPressable>)}
     </ScrollView>
     {!!error && <Text accessibilityRole="alert" style={{ color: p.muted, marginBottom: 12 }}>{error}</Text>}
-    <ApprovalQueue key={resource} resource={resource} pendingCount={counts[resource]} refreshCounts={refresh} />
+    <View style={[styles.statusTabs, { borderBottomColor: p.line }]}>
+      {['pending', 'approved', 'rejected'].map(value => <FeedbackPressable key={value} accessibilityRole="button" accessibilityLabel={`${value[0].toUpperCase() + value.slice(1)} submissions`} accessibilityState={{ selected: status === value }} onPress={() => setStatus(value)} style={({ hovered, pressed }) => [styles.statusTab, { borderBottomColor: statusColors[value], opacity: status === value || hovered || pressed ? 1 : 0.55 }]}>
+        <Text style={{ color: statusColors[value], fontWeight: status === value ? '700' : '500', textTransform: 'capitalize' }}>{value}</Text>
+      </FeedbackPressable>)}
+    </View>
+    <ApprovalQueue key={`${resource}-${status}`} resource={resource} status={status} pendingCount={counts[resource]} refreshCounts={refresh} />
   </AdminPage>;
 }
 
-function ApprovalQueue({ resource, pendingCount, refreshCounts }) {
+function ApprovalQueue({ resource, status, pendingCount, refreshCounts }) {
   const { palette: p } = useAppTheme();
   const { width } = useWindowDimensions();
   const [rows, setRows] = useState([]), [selected, setSelected] = useState(null);
@@ -53,16 +60,16 @@ function ApprovalQueue({ resource, pendingCount, refreshCounts }) {
     const timeout = setTimeout(() => request.abort(), 15000);
     setLoading(true);
     try {
-      const result = await api.getApprovals(resource, { signal: request.signal });
+      const result = await api.getApprovals(resource, { status, signal: request.signal });
       if (revision === current.current) { setRows(result); setError(''); }
     } catch (err) {
-      if (revision === current.current) setError(err.message || 'Could not load pending submissions.');
+      if (revision === current.current) setError(err.message || 'Could not load submissions.');
     } finally { clearTimeout(timeout); if (revision === current.current) setLoading(false); }
-  }, [resource]);
+  }, [resource, status]);
   useEffect(() => { refresh(); }, [refresh, pendingCount]);
   useEffect(() => () => { current.current++; controller.current?.abort(); }, []);
   const review = async decision => {
-    if (busyRef.current || !selected || (decision === 'reject' && !reasons[selected.id]?.trim())) return;
+    if (status !== 'pending' || busyRef.current || !selected || (decision === 'reject' && !reasons[selected.id]?.trim())) return;
     busyRef.current = true; setBusy(true); setError(''); setMessage('');
     try {
       await api.reviewSubmission(resource, selected.id, decision, reasons[selected.id], selected.reviewRevision);
@@ -75,7 +82,6 @@ function ApprovalQueue({ resource, pendingCount, refreshCounts }) {
   };
   return <View style={{ gap: 16 }}>
     <View style={styles.queueHeader}>
-      <Text accessibilityRole="header" style={{ color: p.ink, fontSize: 18, fontWeight: '700', flex: 1 }}>{lguResources[resource].label}</Text>
       <FeedbackPressable lift accessibilityRole="button" accessibilityLabel="Refresh approval queue" disabled={loading || busy} onPress={() => Promise.all([refresh(), refreshCounts()])} style={({ hovered }) => [styles.refresh, { backgroundColor: hovered ? p.tint : p.surface, opacity: loading || busy ? 0.5 : 1 }]}><RefreshCw size={20} color={p.ink} /></FeedbackPressable>
     </View>
     {!!message && <Text accessibilityLiveRegion="polite" style={{ color: p.ink }}>{message}</Text>}
@@ -88,12 +94,14 @@ function ApprovalQueue({ resource, pendingCount, refreshCounts }) {
           <Text style={{ color: p.ink, fontSize: 18, fontWeight: '700' }} numberOfLines={2}>{submissionName(row)}</Text>
           <View style={styles.meta}><MapPin size={14} color={p.muted} /><Text style={{ color: p.muted, flexShrink: 1 }}>{row.municipality || 'Municipality not provided'}</Text></View>
           <Text style={{ color: p.muted, fontSize: 12 }}>Submitted {formatDate(row.submittedAt)}</Text>
+          {status !== 'pending' && <Text style={{ color: p.muted, fontSize: 12 }}>Reviewed {formatDate(row.reviewedAt)}</Text>}
+          {row.approvalStatus === 'rejected' && <Text style={{ color: p.ink, lineHeight: 22 }}>Rejection reason: {row.rejectionReason || 'No reason recorded.'}</Text>}
           {row.pendingDeletion && <Text style={{ color: p.ink, fontWeight: '600' }}>Deletion request</Text>}
         </View>
         <ChevronRight size={28} color={p.ink} />
       </FeedbackPressable>)}
     </View>
-    {!loading && !rows.length && !error && <Text style={{ color: p.muted }}>No pending submissions.</Text>}
+    {!loading && !rows.length && !error && <Text style={{ color: p.muted }}>No {status} submissions.</Text>}
     <ApprovalReviewDialog row={selected} resource={resource} busy={busy} reason={selected ? reasons[selected.id] || '' : ''} error={error} onReasonChange={value => setReasons(previous => ({ ...previous, [selected.id]: value }))} onClose={() => { if (!busyRef.current) { setSelected(null); setError(''); } }} onReview={review} />
   </View>;
 }
@@ -108,24 +116,27 @@ function ApprovalReviewDialog({ row, resource, busy, reason, error, onReasonChan
       <Pressable accessibilityLabel="Close submission review" style={StyleSheet.absoluteFillObject} disabled={busy} onPress={onClose} />
       <View accessibilityViewIsModal style={[styles.dialog, { backgroundColor: p.surface, maxHeight: Math.max(240, height - insets.top - insets.bottom - 32) }]}>
         <View style={styles.dialogHeader}>
-          <View style={{ flex: 1, minWidth: 0, gap: 4 }}><Text accessibilityRole="header" style={{ color: p.ink, fontSize: 22, fontWeight: '700' }}>{submissionName(row)}</Text><Text style={{ color: p.muted }}>{lguResources[resource].label} · {row.municipality || 'Municipality not provided'}</Text></View>
+          <View style={{ flex: 1, minWidth: 0, gap: 4 }}><Text accessibilityRole="header" style={{ color: p.ink, fontSize: 22, fontWeight: '700' }}>{submissionName(row)}</Text><Text style={{ color: p.muted }}>{lguResources[resource].label} Ã‚Â· {row.municipality || 'Municipality not provided'}</Text></View>
           <FeedbackPressable accessibilityRole="button" accessibilityLabel="Close submission details" disabled={busy} onPress={onClose} style={styles.refresh}><X size={22} color={p.ink} /></FeedbackPressable>
         </View>
         <ScrollView style={{ flexShrink: 1, minHeight: 0 }} contentContainerStyle={styles.dialogBody} keyboardShouldPersistTaps="handled">
           <StatusBadge status={row.approvalStatus} />
           {row.photos?.map((uri, index) => <Image key={index} source={{ uri }} style={styles.photo} resizeMode="cover" />)}
           {row.photo && <Image source={{ uri: row.photo }} style={styles.photo} resizeMode="cover" />}
-          {row.pendingDeletion && <Text style={{ color: p.ink, fontWeight: '700' }}>Deletion request: approving permanently deletes this entry.</Text>}
+          {row.pendingDeletion && row.approvalStatus === 'pending' && <Text style={{ color: p.ink, fontWeight: '700' }}>Deletion request: approving permanently deletes this entry.</Text>}
           {Object.entries(row).filter(([key]) => !hiddenFields.has(key)).map(([key, value]) => <View key={key} style={{ gap: 4 }}>
             <Text style={{ color: p.muted, fontSize: 12, fontWeight: '600', textTransform: 'capitalize' }}>{lguResources[resource].fields.find(([field]) => field === key)?.[1] || key.replace(/([A-Z])/g, ' $1')}</Text>
             <Text style={{ color: p.ink, fontSize: 14, lineHeight: 22 }}>{/At$/.test(key) ? formatDate(value) : typeof value === 'object' ? JSON.stringify(value) : String(value)}</Text>
           </View>)}
+          {row.approvalStatus === 'rejected' && <View style={{ gap: 6 }}><Text style={{ color: p.ink, fontWeight: '700' }}>Rejection reason</Text><Text style={{ color: p.ink, lineHeight: 22 }}>{row.rejectionReason || 'No reason recorded.'}</Text></View>}
+          {row.approvalStatus === 'pending' && <>
           <View style={{ gap: 6 }}><Text style={{ color: p.ink, fontWeight: '600' }}>Rejection reason</Text><TextInput accessibilityLabel="Rejection reason" placeholder="Reason required for rejection" placeholderTextColor={p.muted} value={reason} onChangeText={onReasonChange} editable={!busy} multiline maxLength={1000} style={[styles.reason, { backgroundColor: p.background, color: p.ink, borderColor: p.line }]} /></View>
           {!!error && <Text accessibilityRole="alert" style={{ color: p.ink }}>{error}</Text>}
           <View style={styles.reviewActions}>
             <FeedbackPressable accessibilityRole="button" accessibilityLabel={row.pendingDeletion ? 'Approve deletion' : 'Approve publication'} disabled={busy} onPress={() => onReview('approve')} style={[styles.reviewButton, { backgroundColor: p.primary, opacity: busy ? 0.5 : 1 }]}><Text style={{ color: p.onPrimary, fontWeight: '700', textAlign: 'center' }}>{row.pendingDeletion ? 'Approve deletion' : 'Approve publication'}</Text></FeedbackPressable>
             <FeedbackPressable accessibilityRole="button" accessibilityLabel="Reject submission" disabled={busy || !reason.trim()} onPress={() => onReview('reject')} style={[styles.reviewButton, { backgroundColor: '#B42318', opacity: busy || !reason.trim() ? 0.4 : 1 }]}><Text style={{ color: '#FFFFFF', fontWeight: '700' }}>Reject</Text></FeedbackPressable>
           </View>
+          </>}
           {busy && <ActivityIndicator accessibilityLabel="Saving review decision" color={p.primary} />}
         </ScrollView>
       </View>
@@ -134,10 +145,12 @@ function ApprovalReviewDialog({ row, resource, busy, reason, error, onReasonChan
 }
 
 const styles = StyleSheet.create({
+  statusTabs: { flexDirection: 'row', gap: 20, borderBottomWidth: 1, marginBottom: 12 },
+  statusTab: { minHeight: 48, paddingHorizontal: 8, paddingVertical: 14, borderBottomWidth: 3, justifyContent: 'center', alignItems: 'center' },
   categories: { flexGrow: 0, marginBottom: 20 },
   categoryRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 4 },
   category: { minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, borderWidth: 1, borderRadius: 12 },
-  queueHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  queueHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 12 },
   refresh: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderRadius: 10 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
   card: { flexDirection: 'row', alignItems: 'center', flexGrow: 1, flexBasis: 300, maxWidth: 520, minWidth: 0, padding: 20, borderWidth: 1, borderRadius: 16, gap: 12 },

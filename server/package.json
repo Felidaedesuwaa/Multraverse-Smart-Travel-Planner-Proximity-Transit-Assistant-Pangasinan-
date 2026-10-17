@@ -24,6 +24,7 @@
     "test:environment": "npm run build && node scripts/check-environment.cjs",
     "test": "npm run build && node scripts/check-rubric-security.cjs && node scripts/check-recovery-grants.cjs && node scripts/check-self-delete.cjs && node scripts/check-database-startup.cjs && node scripts/check-vercel.cjs",
     "migrate:lgu": "npm run build && node scripts/migrate-lgu.cjs",
+    "migrate:managed-accounts": "npm run build && node scripts/migrate-managed-onboarding.cjs",
     "test:lgu": "npm run build && node scripts/check-lgu-api.cjs --isolated-database",
     "seed:superadmin": "ts-node seeds/seedSuperAdmin.ts",
     "test:superadmin": "npm run build && node scripts/check-superadmin-api.cjs --isolated-database",

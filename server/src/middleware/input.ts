@@ -116,6 +116,7 @@ export function validateRouter(scope: string): RequestHandler {
           fields(body, { firstName: string, middleName: string, surname: string, email: string, password: string, privacyConsent: v => v === true }, ['firstName', 'surname', 'email', 'password', 'privacyConsent'])
           return next()
         }
+        if (req.path === '/password/first-sign-in') { fields(body, { challengeToken: string, currentPassword: string, newPassword: string }, ['challengeToken', 'currentPassword', 'newPassword']); return next() }
         if (req.path === '/logout') { fields(body, {}); return next() }
         if (req.path === '/mfa/setup' || req.path === '/mfa/verify') {
           fields(body, { challengeToken: string, ...(req.path.endsWith('/verify') ? { code: v => typeof v === 'string' && /^\d{6}$/.test(v) } : {}) }, req.path.endsWith('/verify') ? ['challengeToken', 'code'] : ['challengeToken'])
@@ -126,7 +127,8 @@ export function validateRouter(scope: string): RequestHandler {
         const passwordKeys = req.path === '/password/recovery-code' ? [] : req.path === '/password/recover' ? ['grantToken', 'newPassword'] : keys
         fields(body, Object.fromEntries(passwordKeys.map(k => [k, rules[k]])), passwordKeys.filter(k => k !== 'middleName'))
       } else if (scope === 'users') {
-        const rules: Record<string, Rule> = /^\/explorers\//.test(req.path) ? { name: string, location: string } : req.path === '/me' ? { name: string, firstName: string, middleName: string, surname: string, location: string, photo: (v: any) => v === null || (typeof v === 'string' && v.length <= 700000) } : { email: string, password: string, municipality: string }
+        if (/^\/(?:explorers|lgu-accounts|admin-accounts)\/[^/]+\/status$/.test(req.path)) { fields(body, { disabled: v => typeof v === 'boolean' }, ['disabled']); return next() }
+        const rules: Record<string, Rule> = /^\/explorers\//.test(req.path) ? { name: string, location: string } : req.path === '/me' ? { name: string, firstName: string, middleName: string, surname: string, location: string, photo: (v: any) => v === null || (typeof v === 'string' && v.length <= 700000) } : { name: string, firstName: string, surname: string, email: string, municipality: string }
         fields(body, rules)
       } else if (scope === 'trips') {
         if (/^\/[^/]+\/complete$/.test(req.path) && create) { fields(body, { expenses: Array.isArray }, ['expenses']); return next() }
@@ -136,7 +138,7 @@ export function validateRouter(scope: string): RequestHandler {
       }
       else if (scope === 'budget') modelInput(req.path === '/settings' ? budgetSettingsSchema : BudgetEntry.schema, body, req.path === '/settings' ? ['monthlyBudget', 'savingsTarget'] : ['label', 'category', 'amount', 'color', 'tripId'], create || req.path === '/settings')
       else if (scope === 'places') {
-        if ('name' in body && (typeof body.name !== 'string' || body.name.trim().length < 2 || body.name.trim().length > 120 || !/\p{L}/u.test(body.name) || /[<>\x00-\x1f\x7f]/.test(body.name))) invalid('Enter a place name with letters, 2–120 characters, without markup.')
+        if ('name' in body && (typeof body.name !== 'string' || body.name.trim().length < 2 || body.name.trim().length > 120 || !/\p{L}/u.test(body.name) || /[<>\x00-\x1f\x7f]/.test(body.name))) invalid('Enter a place name with letters, 2ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“120 characters, without markup.')
         if ('photos' in body && (!Array.isArray(body.photos) || body.photos.length > 3 || body.photos.some((photo: unknown) => typeof photo !== 'string' || photo.length > 250000 || !/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(photo)))) invalid('Upload up to 3 valid images, each under 250 KB.')
         if ('categories' in body) {
           if (!Array.isArray(body.categories) || body.categories.length < 1 || body.categories.length > 3 || new Set(body.categories).size !== body.categories.length || body.categories.some((value: unknown) => !['Nature Park', 'Beach', 'Religious', 'Restaurant', 'Landmark', 'Waterway'].includes(String(value)))) invalid('Choose 1 to 3 different categories.')

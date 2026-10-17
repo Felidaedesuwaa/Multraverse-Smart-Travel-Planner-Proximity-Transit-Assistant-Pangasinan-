@@ -30,11 +30,9 @@ import SettingsPage from "./pages/SettingsPage";
 import LGUDashboard from "./pages/LGUDashboard";
 import AdminApprovals, { AdminPostApprovals } from "./pages/AdminApprovals";
 import AdminDashboard from "./pages/AdminDashboard";
-import AdminRoutes from "./pages/AdminRoutes";
 import UserStackLayout from "./components/UserStackLayout";
 import NotificationHeader from './components/NotificationHeader';
 import AdminUsers from "./pages/AdminUsers";
-import AdminAIControls from "./pages/AdminAIControls";
 import AdminAnalytics from "./pages/AdminAnalytics";
 import AdminSettings from "./pages/AdminSettings";
 import UserSidebar from "./components/UserSidebar";
@@ -81,9 +79,7 @@ const linking = {
           AdminDashboard: "admin",
           AdminApprovals: "admin/approvals",
           AdminPostApprovals: "admin/post-approvals",
-          AdminRoutes: "admin/routes",
           AdminUsers: "admin/users",
-          AdminAIControls: "admin/ai-controls",
           AdminAnalytics: "admin/analytics",
           AdminSettings: "admin/settings",
         },
@@ -212,9 +208,7 @@ function AdminScreens() {
           <AdminStack.Screen name="AdminDashboard" component={AdminDashboard} />
           <AdminStack.Screen name="AdminApprovals" component={AdminApprovals} />
           <AdminStack.Screen name="AdminPostApprovals" component={AdminPostApprovals} />
-          <AdminStack.Screen name="AdminRoutes" component={AdminRoutes} />
           <AdminStack.Screen name="AdminUsers" component={AdminUsers} />
-          <AdminStack.Screen name="AdminAIControls" component={AdminAIControls} />
           <AdminStack.Screen name="AdminAnalytics" component={AdminAnalytics} />
           <AdminStack.Screen name="AdminSettings" component={AdminSettings} />
         </AdminStack.Navigator>

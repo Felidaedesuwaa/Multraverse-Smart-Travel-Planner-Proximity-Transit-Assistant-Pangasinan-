@@ -27,6 +27,21 @@ router.get('/explorers', requireRole(['ADMIN', 'SUPERADMIN']), async (req, res) 
   res.json(await explorerDashboard(search, skip, limit))
 })
 
+router.put('/explorers/:id/status', requireRole(['ADMIN', 'SUPERADMIN']), async (req: AuthRequest, res, next) => {
+  if (typeof req.body?.disabled !== 'boolean' || Object.keys(req.body).some(key => key !== 'disabled')) return res.status(400).json({ error: 'Provide a disabled status.' })
+  try {
+    await mongoose.connection.transaction(async session => {
+      const user = await User.findOneAndUpdate({ _id: req.params.id, role: 'EXPLORER' }, { $set: { disabled: req.body.disabled } }, { new: true, runValidators: true, session })
+      if (!user) throw new AuthError('Account not found.', 404)
+      await AuditLog.create([{ actor: req.userId, action: req.body.disabled ? 'disable_explorer_account' : 'reactivate_explorer_account', targetUser: user._id }], { session })
+    })
+    res.json({ disabled: req.body.disabled })
+  } catch (error) {
+    if (error instanceof AuthError) return res.status(error.status).json({ error: error.message })
+    next(error)
+  }
+})
+
 router.put('/explorers/:id', requireRole(['ADMIN', 'SUPERADMIN']), async (req: AuthRequest, res, next) => {
   let input
   try {
@@ -79,6 +94,20 @@ function permanentAccountDeletion(role: 'EXPLORER' | 'ADMIN' | 'LGU') {
 router.delete('/explorers/:id', requireSuperAdmin, permanentAccountDeletion('EXPLORER'))
 
 for (const [path, role] of [['lgu-accounts', 'LGU'], ['admin-accounts', 'ADMIN']] as const) {
+  router.put(`/${path}/:id/status`, requireSuperAdmin, async (req: AuthRequest, res, next) => {
+    if (typeof req.body?.disabled !== 'boolean' || Object.keys(req.body).some(key => key !== 'disabled')) return res.status(400).json({ error: 'Provide a disabled status.' })
+    try {
+      await mongoose.connection.transaction(async session => {
+        const user = await User.findOneAndUpdate({ _id: req.params.id, role }, { $set: { disabled: req.body.disabled } }, { new: true, runValidators: true, session })
+        if (!user) throw new AuthError('Account not found.', 404)
+        await AuditLog.create([{ actor: req.userId, action: `${req.body.disabled ? 'disable' : 'reactivate'}_${role.toLowerCase()}_account`, targetUser: user._id }], { session })
+      })
+      res.json({ disabled: req.body.disabled })
+    } catch (error) {
+      if (error instanceof AuthError) return res.status(error.status).json({ error: error.message })
+      next(error)
+    }
+  })
   router.put(`/${path}/:id`, requireSuperAdmin, async (req: AuthRequest, res, next) => {
     let input
     try { input = managedAccountEditInput(req.body, role) }
@@ -111,6 +140,7 @@ for (const [path, role] of [['lgu-accounts', 'LGU'], ['admin-accounts', 'ADMIN']
       res.status(201).json(user)
     } catch (error: any) {
       if (error.code === 11000) return res.status(409).json({ error: 'An account with this email already exists' })
+      if (error.code === 121) return res.status(503).json({ error: 'Account storage needs an update. Run npm run migrate:managed-accounts --prefix server, then try again.' })
       next(error)
     }
   })

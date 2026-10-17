@@ -6,7 +6,7 @@ const listeners = new Set(), intervals = new Map();
 let frame, effects = [], nodes = [], width = 390, dark = false, nextTimer = 0, owner = { id: 'admin', role: 'ADMIN' };
 let failure = '', deferred = false, release, calls = [], failCounts = false, countRequests = 0;
 const fixture = (id, extra = {}) => ({ id, name: id, municipality: 'Lingayen', approvalStatus: 'pending', submittedAt: '2026-10-05T14:00:59Z', reviewRevision: 3, description: 'Full municipal description', photo: 'https://example.test/place.jpg', ...extra });
-let feed;
+let feed, postMode = false;
 const initialFeed = () => ({ places: [fixture('Beach'), fixture('Park')], foods: [fixture('Bangus')], 'route-prices': [fixture('Fare', { name: undefined, from: 'Dagupan', to: 'Lingayen' })], 'transit-routes': [fixture('Bus route', { pendingDeletion: true })] });
 const events = () => listeners.forEach(fn => fn());
 const api = {
@@ -16,7 +16,7 @@ const api = {
     const counts = Object.fromEntries(Object.entries(feed).map(([key, rows]) => [key, rows.filter(row => row.approvalStatus === 'pending').length]));
     return { counts, total: Object.values(counts).reduce((sum, value) => sum + value, 0) };
   },
-  getApprovals: async resource => feed[resource].filter(row => row.approvalStatus === 'pending').map(row => ({ ...row })),
+  getApprovals: async (resource, { status = 'pending' } = {}) => feed[resource].filter(row => row.approvalStatus === status).map(row => ({ ...row })),
   async reviewSubmission(resource, id, decision, reason, revision) {
     calls.push({ resource, id, decision, reason, revision });
     if (deferred) await new Promise(resolve => { release = resolve; });
@@ -24,6 +24,7 @@ const api = {
     const row = feed[resource].find(row => row.id === id);
     assert.equal(revision, row.reviewRevision, 'Review uses the displayed revision');
     row.approvalStatus = decision === 'approve' ? 'approved' : 'rejected';
+    row.rejectionReason = decision === 'reject' ? reason : null;
     events();
   },
 };
@@ -60,7 +61,7 @@ function load(file) {
 const Provider = load(path.join(root, 'src/components/ApprovalCountsProvider.jsx')).default;
 const Sidebar = load(path.join(root, 'src/components/AdminSidebar.jsx')).default;
 const Approvals = load(path.join(root, 'src/pages/AdminApprovals.jsx')).default;
-const Screen = () => React.createElement(Provider, {}, React.createElement(Sidebar, { compact: width < 768 }), React.createElement(Approvals));
+const Screen = () => React.createElement(Provider, {}, React.createElement(Sidebar, { compact: width < 768 }), React.createElement(Approvals, { savedPlacesOnly: postMode }));
 function expand(el, location = 'root') {
   if (!el || typeof el !== 'object') return el;
   if (Array.isArray(el)) return el.map((child, i) => expand(child, `${location}/${child?.key ?? i}`));
@@ -123,6 +124,26 @@ function reset() { for (const instance of instances.values()) for (const slot of
   for (const resource of Object.keys(feed)) feed[resource] = [];
   events(); await drain();
   assert.equal(text(button('LGU approvals, 0 pending submissions')), 'LGU approvals0', 'Sidebar always displays the total, including a confirmed zero');
+  for (const posts of [false, true]) {
+    postMode = posts;
+    feed = initialFeed();
+    const resource = posts ? 'saved-places' : 'places';
+    feed[resource] = [fixture('Accepted', { approvalStatus: 'approved', reviewedAt: '2026-10-05T15:00:00Z' }), fixture('Declined', { approvalStatus: 'rejected', rejectionReason: 'Missing supporting details', reviewedAt: '2026-10-05T15:00:00Z' })];
+    reset(); render(); await drain();
+    assert(hasText('No pending submissions.'));
+    tap('Approved submissions'); await drain();
+    assert(button('Review submission Accepted')); assert(!button('Review submission Declined'));
+    tap('Review submission Accepted');
+    assert(!button('Approve publication') && !button('Reject submission'));
+    tap('Close submission details');
+    tap('Rejected submissions'); await drain();
+    assert(hasText('Rejection reason: Missing supporting details'));
+    tap('Review submission Declined'); assert(hasText('Missing supporting details'));
+    assert(!button('Approve publication') && !button('Reject submission'));
+    assert(!nodes.some(node => node.type === 'TextInput' && node.props.accessibilityLabel === 'Rejection reason'));
+    tap('Close submission details');
+  }
+  postMode = false;
   const requests = countRequests; owner = { id: 'traveler', role: 'EXPLORER' }; feed = initialFeed(); reset(); render(); await drain(); assert.equal(countRequests, requests, 'Non-admin accounts never fetch privileged counts'); assert(button('LGU approvals, 0 pending submissions'));
   reset(); assert.equal(listeners.size, 0); assert.equal(intervals.size, 0);
   console.log('PASS: shared sidebar/category pending badges, polling and update events, hidden full reviews, clickable overview cards, scrollable dialogs, approve/reject/delete decisions, reasons/revisions, busy guards, failures/retry, zero badges, and count isolation at mobile/desktop widths in both themes.');

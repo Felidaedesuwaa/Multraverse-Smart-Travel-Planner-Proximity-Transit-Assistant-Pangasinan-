@@ -1,18 +1,91 @@
-import ChangePasswordButton from "../components/ChangePasswordButton";
-import { useAppTheme } from "../theme/useAppTheme";
-import { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { KeyRound, Shield, ShieldAlert } from "lucide-react-native";
+import { useEffect, useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
+import { FeedbackPressable } from "../components/WorkspaceMotion";
+import ProfileAvatar from "../components/ProfileAvatar";
+import ProfileEditor from "../components/ProfileEditor";
+import ToggleSwitch from "../components/ToggleSwitch";
+import { useAuthStore } from "../store/authStore";
+import { usePreferencesStore } from "../store/preferencesStore";
 import AdminPage from "../components/AdminPage";
 import Card from "../components/Card";
-import ToggleSwitch from "../components/ToggleSwitch";
+import ChangePasswordButton from "../components/ChangePasswordButton";
+import { useAppTheme } from "../theme/useAppTheme";
 import { colors } from "../theme/colors";
-const services = [["API Server", "Operational"], ["AI Inference", "Operational"], ["GPS Service", "Operational"], ["Push Notifications", "Degraded"], ["Offline Sync", "Operational"], ["Data Backup", "Operational"]];
-const initialIntegrations = [["Google Maps API", "AIza••••••••••••Xk9Q", true], ["Anthropic Claude", "sk-ant-••••••••••••", true], ["Firebase FCM", "AAAA••••••••••••", true], ["SMS Gateway", "SG.••••••••••••", false]];
-function Section({ title, children }) {
-  const { themeStyle } = useAppTheme();
- return <Card style={themeStyle(styles.section)}><Text style={themeStyle(styles.sectionTitle)}>{title}</Text>{children}</Card>; }
+
 export default function AdminSettings() {
-  const { themeStyle, themeColor } = useAppTheme();
- const [integrations, setIntegrations] = useState(initialIntegrations); const [maintenance, setMaintenance] = useState(false); return <AdminPage title="Admin Settings" subtitle="System configuration and service health"><Section title="Account Security"><ChangePasswordButton /></Section><View style={themeStyle(styles.columns)}><Section title="System Status">{services.map(([name, status]) => <View key={name} style={themeStyle(styles.row)}><View style={themeStyle(styles.service)}><View style={themeStyle([styles.dot, { backgroundColor: status === "Operational" ? colors.palmGreen : colors.gold }])} /><Text style={themeStyle(styles.name)}>{name}</Text></View><Text style={themeStyle([styles.status, { color: status === "Operational" ? colors.palmGreen : colors.gold }])}>{status}</Text></View>)}</Section><Section title="System Controls"><View style={themeStyle(styles.row)}><View><Text style={themeStyle(styles.name)}>Maintenance mode</Text><Text style={themeStyle(styles.sub)}>Disable user access while updating</Text></View><ToggleSwitch checked={maintenance} onChange={setMaintenance} /></View><View style={themeStyle(styles.row)}><View style={themeStyle(styles.service)}><Shield size={17} color={themeColor(colors.oceanBlue, "color")} /><Text style={themeStyle(styles.name)}>Security audit</Text></View><Pressable style={themeStyle(styles.outline)}><Text style={themeStyle(styles.outlineText)}>Run audit</Text></Pressable></View><View style={themeStyle(styles.row)}><View style={themeStyle(styles.service)}><ShieldAlert size={17} color={themeColor(colors.sunsetCoral, "color")} /><Text style={themeStyle(styles.name)}>Clear cached data</Text></View><Pressable style={themeStyle(styles.danger)}><Text style={themeStyle(styles.dangerText)}>Clear</Text></Pressable></View></Section></View><Section title="Integrations">{integrations.map(([name, key, enabled], index) => <View key={name} style={themeStyle([styles.integration, index < integrations.length - 1 && styles.border])}><View style={themeStyle(styles.integrationInfo)}><View style={themeStyle(styles.service)}><KeyRound size={16} color={themeColor(colors.oceanBlue, "color")} /><Text style={themeStyle(styles.name)}>{name}</Text></View><Text style={themeStyle(styles.sub)}>{key}</Text></View><ToggleSwitch checked={enabled} onChange={(value) => setIntegrations((current) => current.map((item) => item[0] === name ? [item[0], item[1], value] : item))} /></View>)}</Section></AdminPage>; }
-const styles = StyleSheet.create({ columns: { flexDirection: "row", gap: 20 }, section: { flex: 1, padding: 0, marginBottom: 20 }, sectionTitle: { padding: 16, borderBottomWidth: 1, borderBottomColor: colors.border, fontFamily: "Poppins", fontSize: 16, fontWeight: "700", color: colors.oceanBlue }, row: { minHeight: 64, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 16, padding: 16, borderBottomWidth: 1, borderBottomColor: colors.border }, service: { flexDirection: "row", alignItems: "center", gap: 9 }, dot: { width: 9, height: 9, borderRadius: 5 }, name: { fontFamily: "DMSans", fontSize: 14, fontWeight: "600", color: colors.textPrimary }, sub: { marginTop: 3, fontFamily: "DMSans", fontSize: 12, color: colors.textMuted }, status: { fontFamily: "DMSans", fontSize: 12, fontWeight: "700" }, outline: { paddingHorizontal: 14, paddingVertical: 8, borderWidth: 1, borderColor: colors.border, borderRadius: 9 }, outlineText: { fontFamily: "DMSans", fontSize: 12, fontWeight: "600", color: colors.textPrimary }, danger: { paddingHorizontal: 14, paddingVertical: 8, borderWidth: 1, borderColor: colors.coralLight, borderRadius: 9 }, dangerText: { fontFamily: "DMSans", fontSize: 12, fontWeight: "600", color: colors.sunsetCoral }, integration: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 16 }, border: { borderBottomWidth: 1, borderBottomColor: colors.border }, integrationInfo: { flex: 1 } });
+  const { themeStyle } = useAppTheme();
+  const user = useAuthStore(state => state.user);
+  const accountLabel = user?.role === 'SUPERADMIN' ? 'Super Admin' : 'Admin';
+  const darkMode = usePreferencesStore(state => state.darkMode);
+  const setDarkMode = usePreferencesStore(state => state.setDarkMode);
+  const storageError = usePreferencesStore(state => state.storageError);
+  const [editor, setEditor] = useState(null);
+  const [message, setMessage] = useState(null);
+
+  useEffect(() => { useAuthStore.getState().refreshProfile(); }, []);
+  const edit = mode => { setMessage(null); setEditor(mode); };
+
+  return (
+    <>
+    <AdminPage title={`${accountLabel} Settings`} subtitle="Manage your profile, appearance and account security">
+      <Card style={themeStyle(styles.section)}>
+        <Text accessibilityRole="header" style={themeStyle(styles.sectionTitle)}>{accountLabel} Profile</Text>
+        <View style={styles.body}>
+          <View style={styles.identity}>
+            <ProfileAvatar user={user} size={56} />
+            <View style={styles.identityText}>
+              <Text style={themeStyle(styles.name)}>{user?.name || accountLabel}</Text>
+              {!!user?.email && <Text style={themeStyle(styles.description)}>{user.email}</Text>}
+              <Text style={themeStyle(styles.description)}>{user?.role === 'SUPERADMIN' ? 'Super Administrator' : 'Administrator'}</Text>
+              {!!user?.location && <Text style={themeStyle(styles.description)}>{user.location}</Text>}
+            </View>
+          </View>
+          <View style={styles.actions}>
+            {[['details', 'Edit Profile'], ['photo', 'Change Photo']].map(([mode, label]) => (
+              <FeedbackPressable key={mode} accessibilityRole="button" onPress={() => edit(mode)} style={themeStyle(styles.button)}>
+                <Text style={themeStyle(styles.buttonText)}>{label}</Text>
+              </FeedbackPressable>
+            ))}
+          </View>
+          {!!message && <Text accessibilityLiveRegion="polite" style={themeStyle(styles.success)}>{message}</Text>}
+        </View>
+      </Card>
+      <Card style={themeStyle(styles.section)}>
+        <Text accessibilityRole="header" style={themeStyle(styles.sectionTitle)}>Appearance</Text>
+        <View style={styles.preference}>
+          <View style={styles.identityText}>
+            <Text style={themeStyle(styles.name)}>Dark mode</Text>
+            <Text style={themeStyle(styles.description)}>Use a darker appearance. Saved on this device.</Text>
+          </View>
+          <ToggleSwitch accessibilityLabel="Dark mode" checked={darkMode} onChange={setDarkMode} />
+        </View>
+        {!!storageError && <Text accessibilityRole="alert" style={themeStyle(styles.error)}>{storageError}</Text>}
+      </Card>
+      <Card style={themeStyle(styles.section)}>
+        <Text accessibilityRole="header" style={themeStyle(styles.sectionTitle)}>Account Security</Text>
+        <View style={styles.body}>
+          <Text style={themeStyle(styles.description)}>Update your password and sign out other sessions.</Text>
+          <ChangePasswordButton />
+        </View>
+      </Card>
+    </AdminPage>
+    {editor && <ProfileEditor key={editor} mode={editor} onClose={() => setEditor(null)} onSaved={text => { setEditor(null); setMessage(text); }} />}
+    </>
+  );
+}
+
+const styles = StyleSheet.create({
+  section: { padding: 0, marginBottom: 20 },
+  sectionTitle: { padding: 16, borderBottomWidth: 1, borderBottomColor: colors.border, fontFamily: "Poppins", fontSize: 16, fontWeight: "700", color: colors.oceanBlue },
+  body: { padding: 16, alignItems: "flex-start", gap: 8 },
+  description: { fontFamily: "DMSans", fontSize: 14, color: colors.textMuted },
+  identity: { flexDirection: "row", alignItems: "center", gap: 14, width: "100%" },
+  identityText: { flex: 1, minWidth: 0, gap: 4 },
+  name: { fontFamily: "DMSans", fontSize: 15, fontWeight: "700", color: colors.textPrimary },
+  actions: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 8 },
+  button: { minHeight: 44, justifyContent: "center", paddingHorizontal: 16, paddingVertical: 10, borderWidth: 1, borderColor: colors.border, borderRadius: 10 },
+  buttonText: { fontFamily: "DMSans", fontWeight: "600", color: colors.oceanBlue },
+  preference: { flexDirection: "row", alignItems: "center", gap: 16, padding: 16 },
+  success: { color: colors.palmGreen, fontSize: 14 },
+  error: { color: colors.sunsetCoral, fontSize: 14, padding: 16 },
+});

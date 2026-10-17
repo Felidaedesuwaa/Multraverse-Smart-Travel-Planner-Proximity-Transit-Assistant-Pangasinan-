@@ -3,7 +3,7 @@ import { useAppTheme } from "../theme/useAppTheme";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import {
   BarChart3, Circle, Compass, LayoutGrid,
-  Route, Settings, Users, Zap, Globe,
+  Settings, Users, Globe,
 } from "lucide-react-native";
 import ProfileAvatar from './ProfileAvatar';
 import SidebarLogoutButton from './SidebarLogoutButton';
@@ -15,10 +15,7 @@ import PendingReviewBadge from './PendingReviewBadge';
 const items = [
   { label: "Post approvals", icon: Globe, screen: "AdminPostApprovals" },
   { label: "LGU approvals", icon: LayoutGrid, screen: "AdminApprovals" },
-  { label: "Overview", icon: LayoutGrid, screen: "AdminDashboard" },
-  { label: "Routes", icon: Route, screen: "AdminRoutes" },
   { label: "Users", icon: Users, screen: "AdminUsers" },
-  { label: "AI Controls", icon: Zap, screen: "AdminAIControls" },
   { label: "Analytics", icon: BarChart3, screen: "AdminAnalytics" },
   { label: "Settings", icon: Settings, screen: "AdminSettings" },
 ];

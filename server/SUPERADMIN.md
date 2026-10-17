@@ -43,19 +43,31 @@ All these endpoints require a Super Admin bearer token:
 
 | Method | Path | Input / result |
 | --- | --- | --- |
-| POST | `/api/users/lgu-accounts` | `{email,password,municipality}`; canonical municipality from the 48-name catalog |
-| POST | `/api/users/admin-accounts` | `{email,password}` |
+| POST | `/api/users/lgu-accounts` | `{name,email,municipality}`; canonical municipality from the 48-name catalog |
+| POST | `/api/users/admin-accounts` | `{name,email}` |
 | GET | `/api/users/lgu-accounts` | LGU public fields, municipality, createdAt, populated createdBy email/role |
 | GET | `/api/users/admin-accounts` | Admin public fields and creator attribution |
 | GET | `/api/audit-logs` | `page=1&limit=25&action=approve_place&actor=<ObjectId>`; all filters optional |
 
 Account creation returns 201; duplicate normalized emails return 409, including
-concurrent requests. Invalid fields, weak passwords, or misspelled municipalities
-return 400. Passwords require at least 8 characters, uppercase, lowercase and a
-number, and at most 72 UTF-8 bytes. Symbols such as `!` are supported. Hashes and
-plaintext passwords are never returned, logged, or put into audit metadata.
-Managed accounts can sign in immediately; the assigned initial password is given
-to their officer by the provisioning administrator.
+concurrent requests. Invalid names, emails, or misspelled municipalities return 400.
+Personal passwords follow the registration password policy: at least 8 characters,
+uppercase, lowercase and a number, with only letters, numbers, `_`, `-`, and `@`.
+A cryptographically random temporary password is generated on the server and returned
+only in the successful creation response for private sharing. Only its bcrypt hash
+is stored; it is never included in account lists or audit metadata. The creator
+provides the account holder's name and email, plus municipality for LGU accounts.
+First sign-in returns a short-lived password-change challenge, without app access.
+POST `/api/auth/password/first-sign-in` accepts `{challengeToken,currentPassword,newPassword}`.
+The new password must differ from the temporary password. Saving it invalidates the
+temporary password and challenge, then continues to required authenticator verification.
+
+Managed account emails are sign-in identifiers: provisioning does not perform DNS
+or mailbox verification or send an email. Addresses such as
+`lgu.urbiztondo@multraverse.ph` work without a real mailbox.
+Existing databases with strict user validation need
+`npm run migrate:managed-accounts --prefix server` once to allow the optional
+`mustChangePassword` field. This preserves existing validation and account records.
 
 Account + audit writes use a MongoDB transaction and therefore require Atlas or
 a replica set (including local development). If audit insertion fails, no new

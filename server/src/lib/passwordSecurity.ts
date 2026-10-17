@@ -100,7 +100,7 @@ async function applyPasswordReset(reset: any, challengeId: string, newPassword: 
     // Consume the code in the same transaction as the password and audit event.
     const consumed = await PasswordReset.findOneAndDelete({ _id: reset._id, challengeId, codeHash: reset.codeHash, expiresAt: { $gt: new Date() } }, { session })
     if (!consumed) throw invalidCode()
-    const updated = await User.updateOne({ _id: user._id, passwordHash: user.passwordHash }, { $set: { passwordHash } }, { session })
+    const updated = await User.updateOne({ _id: user._id, passwordHash: user.passwordHash }, { $set: { passwordHash, mustChangePassword: false } }, { session })
     if (updated.modifiedCount !== 1) throw invalidCode()
     await AuditLog.create([{ actor: user._id, targetUser: user._id, action: 'password_reset', metadata: { method: 'email_otp' } }], { session })
   })
@@ -116,7 +116,7 @@ export async function changePassword(userId: string, currentPassword: unknown, n
   if (await bcrypt.compare(newPassword, user.passwordHash)) throw new RegistrationError({ newPassword: 'Choose a password different from your current password.' })
   const passwordHash = await bcrypt.hash(newPassword, 12)
   await mongoose.connection.transaction(async session => {
-    const updated = await User.updateOne({ _id: userId, passwordHash: user.passwordHash }, { $set: { passwordHash } }, { session })
+    const updated = await User.updateOne({ _id: userId, passwordHash: user.passwordHash }, { $set: { passwordHash, mustChangePassword: false } }, { session })
     if (updated.modifiedCount !== 1) throw new AuthError('Your account changed. Please sign in again.', 409)
     await PasswordReset.deleteMany({ userId }, { session })
     await AuditLog.create([{ actor: userId, targetUser: userId, action: 'password_changed', metadata: { method: 'current_password' } }], { session })

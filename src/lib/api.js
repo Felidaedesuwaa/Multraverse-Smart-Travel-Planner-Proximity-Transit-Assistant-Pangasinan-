@@ -153,6 +153,7 @@ export const api = {
   getItineraryCatalog: (options = {}) => request('/api/ai/itinerary/catalog', options),
   generateGroundedItinerary: (data, options = {}) => request('/api/ai/itinerary/grounded', { ...options, method: 'POST', body: JSON.stringify(data) }),
   updateManagedAccount: (type, id, data) => request('/api/users/' + type + '-accounts/' + id, { method: 'PUT', body: JSON.stringify(data) }),
+  setManagedAccountDisabled: (type, id, disabled) => request(`/api/users/${type}-accounts/${id}/status`, { method: 'PUT', body: JSON.stringify({ disabled }) }),
   deleteManagedAccount: (type, id) => request('/api/users/' + type + '-accounts/' + id, { method: 'DELETE', body: JSON.stringify({ confirmation: true }) }),
   getManagedAccounts: (type = 'lgu') => requestList(`/api/users/${type}-accounts`),
   createManagedAccount: (type, data) => request(`/api/users/${type}-accounts`, { method: 'POST', body: JSON.stringify(data) }),
@@ -174,7 +175,8 @@ export const api = {
     }
   },
   getApprovals: async (resource, options = {}) => {
-    try { return await requestList(`/api/admin/approvals/${resource}`, options); }
+    const { status = 'pending', ...requestOptions } = options;
+    try { return await requestList(`/api/admin/approvals/${resource}?status=${encodeURIComponent(status)}`, requestOptions); }
     catch (error) {
       if (resource === 'saved-places' && error.status === 404 && error.message === 'Unknown resource') {
         throw new Error('Post approvals require the updated backend. Deploy the latest server/ code to the multraverse-backend Vercel project, then refresh this page.');
@@ -187,6 +189,7 @@ export const api = {
   requestPasswordReset: email => request('/api/auth/password/forgot', { method: 'POST', body: JSON.stringify({ email }) }),
   resetPassword: (challengeId, code, newPassword) => request('/api/auth/password/reset', { method: 'POST', body: JSON.stringify({ challengeId, code, newPassword }) }),
   changePassword: (currentPassword, newPassword) => passwordSessionRequest('/api/auth/password/change', { currentPassword, newPassword }),
+  completeFirstSignIn: (challengeToken, currentPassword, newPassword) => request('/api/auth/password/first-sign-in', { method: 'POST', body: JSON.stringify({ challengeToken, currentPassword, newPassword }) }),
   login: (email, password) =>
     request('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }),
 
@@ -264,6 +267,7 @@ export const api = {
   getAllUsers: () => requestList('/api/users'),
   getExplorerDashboard: ({ page = 1, search = '', signal } = {}) => request(`/api/users/explorers?page=${page}&limit=20&search=${encodeURIComponent(search)}`, { signal }),
   updateExplorerAccount: (id, data) => request(`/api/users/explorers/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  setExplorerDisabled: (id, disabled) => request(`/api/users/explorers/${id}/status`, { method: 'PUT', body: JSON.stringify({ disabled }) }),
   deleteExplorerAccount: id => request(`/api/users/explorers/${id}`, { method: 'DELETE', body: JSON.stringify({ confirmation: true }) }),
   getAnalytics: () => request('/api/analytics'),
   getDashboardAnalytics: () => request('/api/analytics/dashboard'),

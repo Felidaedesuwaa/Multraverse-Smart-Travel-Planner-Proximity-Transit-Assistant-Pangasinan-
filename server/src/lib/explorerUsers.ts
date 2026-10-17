@@ -22,7 +22,7 @@ export async function explorerDashboard(search: string, skip: number, limit: num
         matching: [...searchStage, { $count: 'total' }],
         users: [...searchStage, { $sort: { createdAt: -1, _id: -1 } }, { $skip: skip }, { $limit: limit },
           { $lookup: { from: Trip.collection.collectionName, let: { user: '$_id' }, pipeline: [{ $match: { $expr: { $eq: ['$userId', '$$user'] } } }, { $count: 'total' }], as: 'tripTotals' } },
-          { $project: { name: 1, email: 1, role: 1, location: 1, createdAt: 1, emailVerifiedAt: 1, tripCount: { $ifNull: [{ $arrayElemAt: ['$tripTotals.total', 0] }, 0] } } }],
+          { $project: { name: 1, email: 1, role: 1, location: 1, disabled: 1, createdAt: 1, emailVerifiedAt: 1, tripCount: { $ifNull: [{ $arrayElemAt: ['$tripTotals.total', 0] }, 0] } } }],
       } },
     ]),
     Trip.aggregate([

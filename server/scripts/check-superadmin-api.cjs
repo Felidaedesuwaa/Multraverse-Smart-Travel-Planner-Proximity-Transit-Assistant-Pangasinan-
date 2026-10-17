@@ -47,8 +47,8 @@ let server
       const response = await fetch(`http://127.0.0.1:${server.address().port}/api/${url}`, { method, headers: { 'Content-Type': 'application/json', ...(auth ? { Authorization: `Bearer ${auth}` } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) })
       return { status: response.status, body: await response.json() }
     }
-    const lguInput = { email: 'newlgu@multraverse.ph', password: 'NewLgu123!', municipality: 'Alaminos' }
-    const adminInput = { email: 'newadmin@multraverse.ph', password: 'NewAdmin123!' }
+    const lguInput = { name: 'Juan Reyes', email: 'newlgu@multraverse.ph', municipality: 'Alaminos' }
+    const adminInput = { name: 'Maria Santos', email: 'admin.maria.santos@multraverse.ph' }
     for (const auth of [undefined, ...accounts.map(token)]) {
       const expected = auth ? 403 : 401
       for (const route of ['users/lgu-accounts', 'users/admin-accounts', 'audit-logs']) assert.equal((await call(route, auth)).status, expected)
@@ -68,25 +68,54 @@ let server
     assert.equal(created.body.role, 'LGU'); assert.equal(created.body.createdBy.email, superadmin.email)
     assert.equal(created.body.passwordHash, undefined); assert.equal(created.body.password, undefined)
     const saved = await User.findById(created.body.id).select('+passwordHash')
-    assert.ok(await bcrypt.compare(lguInput.password, saved.passwordHash))
+    assert.ok(await bcrypt.compare(created.body.temporaryPassword, saved.passwordHash))
+    assert.equal(saved.name, lguInput.name)
+    assert.equal(saved.mustChangePassword, true)
     const accountAudit = await AuditLog.findOne({ action: 'create_lgu_account', targetUser: saved._id })
     assert.equal(String(accountAudit.actor), String(superadmin._id)); assert.equal(accountAudit.metadata.municipality, 'Alaminos')
     const newAdmin = await call('users/admin-accounts', superToken, 'POST', adminInput)
     assert.equal(newAdmin.status, 201); assert.equal(newAdmin.body.role, 'ADMIN'); assert.equal(newAdmin.body.municipality, undefined)
     assert.equal((await call('users/lgu-accounts', superToken, 'POST', { ...lguInput, email: ' NEWLGU@MULTRAVERSE.PH ' })).status, 409)
-    const concurrent = await Promise.all([1, 2].map(() => call('users/admin-accounts', superToken, 'POST', { ...adminInput, email: 'race@multraverse.ph' })))
+    const concurrent = await Promise.all([1, 2].map(() => call('users/admin-accounts', superToken, 'POST', { ...adminInput, email: 'admin.race@multraverse.ph' })))
     assert.deepEqual(concurrent.map(result => result.status).sort(), [201, 409])
     // Simulate a write failure to prove account + audit atomicity.
     const nativeCreate = AuditLog.create
     AuditLog.create = async () => { throw new Error('Simulated audit outage') }
     try {
-      assert.equal((await call('users/admin-accounts', superToken, 'POST', { ...adminInput, email: 'rollback@multraverse.ph' })).status, 500)
-      assert.equal(await User.countDocuments({ email: 'rollback@multraverse.ph' }), 0)
+      assert.equal((await call('users/admin-accounts', superToken, 'POST', { ...adminInput, email: 'admin.rollback@multraverse.ph' })).status, 500)
+      assert.equal(await User.countDocuments({ email: 'admin.rollback@multraverse.ph' }), 0)
     } finally { AuditLog.create = nativeCreate }
     for (const kind of ['lgu', 'admin']) {
       const list = await call(`users/${kind}-accounts`, superToken)
       assert.equal(list.status, 200)
-      assert.ok(list.body.every(user => user.role === kind.toUpperCase() && user.passwordHash === undefined))
+      assert.ok(list.body.every(user => user.role === kind.toUpperCase() && user.passwordHash === undefined && user.temporaryPassword === undefined))
+    }
+    for (const account of [created, newAdmin]) {
+      const email = account.body.email
+      const currentPassword = account.body.temporaryPassword
+      assert.ok(currentPassword.length >= 20)
+      const login = await call('auth/login', undefined, 'POST', { email, password: currentPassword })
+      assert.equal(login.body.passwordChangeRequired, true)
+      assert.equal(login.body.token, undefined)
+      const challengeToken = login.body.challengeToken
+      assert.equal((await call('users/me', challengeToken)).status, 401)
+      assert.equal((await call('users/me', token(await User.findById(account.body.id).select('+passwordHash')))).status, 401)
+      const route = 'auth/password/first-sign-in'
+      const payload = { challengeToken, currentPassword, newPassword: 'PersonalPass2026_' }
+      assert.equal((await call(route, undefined, 'POST', { ...payload, newPassword: 'weak' })).status, 400)
+      assert.equal((await call(route, undefined, 'POST', { ...payload, newPassword: currentPassword })).status, 400)
+      assert.equal((await call(route, undefined, 'POST', { ...payload, currentPassword: 'Wrong123!' })).status, 400)
+      const changed = await call(route, undefined, 'POST', payload)
+      assert.equal(changed.status, 200, JSON.stringify(changed.body))
+      assert.equal(changed.body.mfaRequired, true)
+      assert.equal(changed.body.token, undefined)
+      assert.equal((await User.findById(account.body.id)).mustChangePassword, false)
+      assert.equal((await call(route, undefined, 'POST', payload)).status, 401)
+      assert.equal((await call('auth/login', undefined, 'POST', { email, password: currentPassword })).status, 401)
+      assert.equal((await call('auth/login', undefined, 'POST', { email, password: payload.newPassword })).body.mfaRequired, true)
+      assert.equal((await call('users/me', changed.body.challengeToken)).status, 401)
+      // Later edit assertions compare the current personal password.
+      account.body.temporaryPassword = payload.newPassword
     }
     console.log('PASS bootstrap concurrency/idempotence, authorization, login, validation, creator attribution, duplicates, public fields and audit rollback')
     // Managed edits and deletes are restricted, audited, and transactional.
@@ -102,7 +131,7 @@ let server
     const edited = await call(editRoute, superToken, 'PUT', { email: 'edited@multraverse.ph' })
     assert.equal(edited.status, 200); assert.equal(edited.body.email, 'edited@multraverse.ph'); assert.equal(edited.body.passwordHash, undefined)
     const editedUser = await User.findById(newAdmin.body.id).select('+passwordHash')
-    assert.ok(await bcrypt.compare(adminInput.password, editedUser.passwordHash))
+    assert.ok(await bcrypt.compare(newAdmin.body.temporaryPassword, editedUser.passwordHash))
     assert.equal(await AuditLog.countDocuments({ action: 'update_admin_account', targetUser: editedUser._id }), 1)
     assert.equal((await call(editRoute, superToken, 'DELETE', {})).status, 400)
     assert.equal((await call(`users/admin-accounts/${superadmin._id}`, superToken, 'DELETE', { confirmation: true })).status, 404)

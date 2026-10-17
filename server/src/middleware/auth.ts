@@ -36,8 +36,10 @@ export async function authenticate(req: AuthRequest, res: Response, next: NextFu
   try {
     if (await RevokedSession.exists({ digest: tokenDigest(token) })) return res.status(401).json({ error: 'Your session has ended. Please sign in again.' })
     // A signed token cannot restore a deleted account or stale admin role.
-    const user = await User.findById(decoded.userId).select('role municipality +passwordHash')
+    const user = await User.findById(decoded.userId).select('role municipality disabled mustChangePassword +passwordHash')
     if (!user) return res.status(401).json({ error: 'Your account is no longer available. Please sign in again.' })
+    if (user.disabled) return res.status(401).json({ error: 'Your account is temporarily disabled. Contact an administrator.' })
+    if (user.mustChangePassword) return res.status(401).json({ error: 'Change your temporary password before continuing.' })
     if (!equalDigest(decoded.credential, sessionCredential(user.passwordHash))) return res.status(401).json({ error: 'Your session has expired. Please sign in again.' })
     if (needsMfa(user.role) && (decoded.mfa !== true || decoded.role !== user.role)) return res.status(401).json({ error: 'Sign in with your authenticator to access this account.' })
     req.userId = decoded.userId

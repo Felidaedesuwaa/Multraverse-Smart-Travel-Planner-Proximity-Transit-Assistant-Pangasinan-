@@ -7,7 +7,7 @@ import { RegistrationError } from '../lib/registration'
 import { AuthError, authLimit } from '../lib/authLimits'
 import { beginRegistration, resendRegistration, verifyRegistration } from '../lib/registrationVerification'
 import { authenticate, AuthRequest } from '../middleware/auth'
-import { sessionCredential } from '../lib/sessionCredential'
+import { equalDigest, sessionCredential } from '../lib/sessionCredential'
 import { requestPasswordReset, resetPassword, changePassword, verifyPasswordReset, recoverPassword } from '../lib/passwordSecurity'
 import { mfaChallenge, needsMfa, setupMfa, verifyMfa } from '../lib/mfa'
 import { RevokedSession } from '../models/AccountSecurity'
@@ -18,6 +18,11 @@ const router = Router()
 router.param('id', validateId)
 router.use(sanitizeRequest, validateRouter('auth'))
 function authResponse(user: any, mfa = false): any {
+  if (user.disabled) throw new AuthError('Your account is temporarily disabled. Contact an administrator.', 403)
+  if (user.mustChangePassword) return {
+    passwordChangeRequired: true,
+    challengeToken: jwt.sign({ purpose: 'first-password', userId: String(user._id), credential: sessionCredential(user.passwordHash) }, process.env.JWT_SECRET!, { algorithm: 'HS256', expiresIn: '10m' }),
+  }
   if (needsMfa(user.role) && !mfa) return mfaChallenge(user)
   return {
     token: jwt.sign({ userId: user._id.toString(), role: user.role, credential: sessionCredential(user.passwordHash), mfa }, process.env.JWT_SECRET!, { algorithm: 'HS256', jwtid: randomUUID(), expiresIn: needsMfa(user.role) ? '1h' : '7d' }),
@@ -65,6 +70,22 @@ router.post('/login', async (req, res) => {
     const valid = await bcrypt.compare(password, user?.passwordHash || '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxOPjLZFdFTLoFqsSGPPHYvhq9m')
     if (!user || !valid) return res.status(401).json({ error: 'Invalid credentials' })
     res.json(authResponse(user))
+  } catch (error) { authFailure(error, res) }
+})
+router.post('/password/first-sign-in', async (req, res) => {
+  try {
+    await authLimit('first-password-ip', req.ip || 'unknown', 20, 15 * 60 * 1000)
+    let claims: jwt.JwtPayload
+    try {
+      const decoded = jwt.verify(req.body.challengeToken, process.env.JWT_SECRET!, { algorithms: ['HS256'] })
+      if (typeof decoded === 'string' || decoded.purpose !== 'first-password' || !/^[a-f\d]{24}$/i.test(decoded.userId || '')) throw new Error()
+      claims = decoded
+    } catch { throw new AuthError('Sign in again to change your temporary password.', 401) }
+    const user = await User.findById(claims.userId).select('+passwordHash')
+    if (!user || user.disabled || !user.mustChangePassword || !equalDigest(claims.credential, sessionCredential(user.passwordHash))) throw new AuthError('Sign in again to change your temporary password.', 401)
+    await authLimit('first-password-user', String(user._id), 5, 15 * 60 * 1000)
+    await changePassword(String(user._id), req.body.currentPassword, req.body.newPassword)
+    res.json(authResponse(await User.findById(user._id).select('+passwordHash')))
   } catch (error) { authFailure(error, res) }
 })
 router.post('/mfa/setup', async (req, res) => {
