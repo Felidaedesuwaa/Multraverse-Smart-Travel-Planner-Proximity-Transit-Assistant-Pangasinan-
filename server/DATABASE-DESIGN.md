@@ -19,6 +19,12 @@ Applied on 2026-10-15 to `multraverse`: both collections contained zero document
 were dropped, and a follow-up inspection confirmed both were absent. All other
 collections were retained.
 
+Reapplied on 2026-10-17 to `multraverse`: both retired collections were present
+with zero documents and were dropped again. A separate follow-up inspection
+confirmed both were absent, and all unrelated collections were retained. The
+current backend build and startup checks also confirmed that the geofence API
+is unavailable and geofence storage is no longer initialized.
+
 ## Password recovery addition (October 2026)
 
 Version 3 adds `passwordresets`: one temporary challenge per user, unique random
