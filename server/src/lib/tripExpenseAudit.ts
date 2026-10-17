@@ -1,23 +1,22 @@
+import { calculateBudgetTotals, finiteNumber } from './fareCalculation'
+
 export const expenseCategories = ['Transport', 'Food', 'Accommodation', 'Entrance Fees', 'Activities', 'Shopping', 'Emergency', 'Others']
 export function tripExpenseLines(trip: any) {
-  const lines: { key: string; label: string; category: string; estimate: number | null }[] = []
-  const add = (key: string, label: string, category: string, value: any) => lines.push({ key, label: label.slice(0, 120), category, estimate: typeof value === 'number' && Number.isFinite(value) ? value : null })
-  const plan = trip.plan
-  if (plan?.guided) {
-    const g = plan.guided, c = g.costEstimate || {}, r = g.request || {}
-    add('meals', 'Meals', 'Food', c.meals ?? r.mealBudget * r.days * r.travelers)
-    add('lodging', 'Lodging', 'Accommodation', c.lodging?.max ?? 0)
-    for (const [i, mode] of (r.transportModes || []).entries()) add(`transport-${i}`, `${mode} fares`, 'Transport', c.transport?.find((f: any) => f.mode === mode)?.total)
-    if (!(r.transportModes || []).length) add('transport', 'Transport', 'Transport', c.transportTotal ?? 0)
-    for (const [i, stop] of (g.stops || []).entries()) if (stop.tag === 'Attraction') add(`entry-${i}`, `${stop.title} entry fee`, 'Entrance Fees', stop.price)
-    add('emergency', 'Emergency reserve (record only what you spent)', 'Emergency', c.emergency ?? r.budget * 0.1)
-  } else {
-    const categories = plan?.costs?.categories && Object.keys(plan.costs.categories).length ? plan.costs.categories : { food: null, lodging: null, entry: null, transport: null }
-    const names: Record<string, string> = { food: 'Food', lodging: 'Accommodation', entry: 'Entrance Fees', transport: 'Transport', buffer: 'Emergency' }
-    for (const [key, value] of Object.entries(categories)) add(key, key, names[key] || 'Others', value)
-    if (!('buffer' in categories) && plan?.allocation?.buffer != null) add('buffer', 'Emergency reserve (record only what you spent)', 'Emergency', plan.allocation.buffer)
-  }
-  return lines
+  const plan = trip.plan, guided = plan?.guided, stored = guided?.costEstimate || {}, request = guided?.request || {}
+  const categories = plan?.costs?.categories || {}
+  // Use the same saved values and fallbacks as the itinerary cost summary.
+  const meals = guided ? finiteNumber(stored.meals, finiteNumber(request.mealBudget) * finiteNumber(request.days) * finiteNumber(request.travelers)) : categories.food ?? null
+  const entryFees = guided ? finiteNumber(stored.entryFees, (guided.stops || []).filter((stop: any) => stop.tag === 'Attraction').reduce((sum: number, stop: any) => sum + finiteNumber(stop.price), 0)) : categories.entry ?? null
+  const transportation = guided ? (request.transportModes || []).reduce((sum: number, mode: string) => sum + finiteNumber(stored.transport?.find((fare: any) => fare.mode === mode)?.total), 0) : categories.transport ?? null
+  const hotel = guided ? finiteNumber(stored.lodging?.max) : categories.lodging ?? null
+  const emergency = guided ? calculateBudgetTotals(request.budget, request.travelers, {}).emergency : categories.buffer ?? plan?.allocation?.buffer ?? null
+  return [
+    { key: 'meals', label: 'Meals', category: 'Food', estimate: meals },
+    { key: 'emergency', label: 'Emergency', category: 'Emergency', estimate: emergency },
+    { key: 'entry', label: 'Listed entry fees', category: 'Entrance Fees', estimate: entryFees },
+    { key: 'lodging', label: 'Hotel', category: 'Accommodation', estimate: hotel },
+    { key: 'transport', label: 'Transportation', category: 'Transport', estimate: transportation },
+  ]
 }
 export function validateExpenseAudit(trip: any, expenses: any, existing: any[]) {
   if (!Array.isArray(expenses) || expenses.length > 300) throw new Error('Review all breakdown items and enter valid actual expenses.')

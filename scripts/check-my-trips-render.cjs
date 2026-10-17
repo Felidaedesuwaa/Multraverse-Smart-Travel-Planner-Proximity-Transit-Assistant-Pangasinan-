@@ -182,7 +182,20 @@ const hasText = value => nodes.some(n => n.type === 'Text' && textOf(n).includes
       assert(confirmationStyles.every(style => style.flex === 1 && style.width === undefined && style.minHeight === 48), 'Confirmation actions share the full dialog width with matching heights');
       tap('Go back'); assert.equal(modalCount(), 1);
     }
-    tap('Complete Trip'); await flush(); assert(hasText('Audit trip expenses')); assert(button('Confirm expenses & complete').props.disabled); tap('Go back'); open(); await flush();
+    tap('Complete Trip'); await flush(); assert(hasText('Audit trip expenses')); assert(button('Confirm expenses & complete').props.disabled);
+    assert(hasText('0 of 5 expenses reviewed'));
+    const cards = nodes.filter(n => n.type === 'View' && flatten(n.props.style).borderRadius === 17);
+    assert.equal(cards.length, 5);
+    assert(cards.every(n => flatten(n.props.style).width === (viewport < 620 ? '100%' : '48.5%')), 'Audit cards stack on mobile and use two columns on desktop');
+    tap('Use planned amount for Meals');
+    assert(nodes.some(n => n.type === 'TextInput' && n.props.accessibilityLabel === 'Actual amount: Meals' && n.props.value === '200.00'));
+    const pesoInput = () => nodes.find(n => n.type === 'TextInput' && n.props.accessibilityLabel === 'Actual amount: Meals');
+    for (const invalid of ['abc', '200a', '1e3', '-20', '12.345', '1.2.3']) { pesoInput().props.onChangeText(invalid); render(); assert.equal(pesoInput().props.value, '200.00', 'Peso input rejects letters and malformed amounts'); }
+    pesoInput().props.onChangeText('125.50'); render(); assert.equal(pesoInput().props.value, '125.50');
+    tap('No expense for Meals');
+    assert(nodes.some(n => n.type === 'TextInput' && n.props.accessibilityLabel === 'Actual amount: Meals' && n.props.value === '0'));
+    tap('Review Meals'); assert(hasText('1 of 5 expenses reviewed')); assert(button('Confirm expenses & complete').props.disabled);
+    tap('Go back'); open(); await flush();
     tap('Done'); assert.equal(modalCount(), 0, 'Closing details dismisses immediately');
     assert(!hasText('Trip details closed'), 'Closing has no feedback banner');
     open(); tap('Close trip information'); assert.equal(modalCount(), 0, 'Header close dismisses immediately');
@@ -211,7 +224,7 @@ const hasText = value => nodes.some(n => n.type === 'Text' && textOf(n).includes
   for (const checkbox of nodes.filter(n => n.props.accessibilityRole === 'checkbox')) checkbox.props.onPress(); render();
   assert(!button('Confirm expenses & complete').props.disabled);
   const pending = tap('Confirm expenses & complete');
-  assert.equal(modalCount(), 1); assert(button('Saving expenses?').props.disabled);
+  assert.equal(modalCount(), 1); assert(button('Saving expenses...').props.disabled);
   assert(button('Go back').props.disabled, 'Busy audits cannot be dismissed');
   releaseUpdate(); await pending; await settle(); assert(hasText('Trip completed. Audited expenses'));
   assert.equal(modalCount(), 0);
