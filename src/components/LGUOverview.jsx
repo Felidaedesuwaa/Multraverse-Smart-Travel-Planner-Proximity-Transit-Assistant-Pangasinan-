@@ -45,19 +45,33 @@ export default function LGUOverview({ municipality, onNavigate }) {
             const pending = entries.filter(row => row.approvalStatus === 'pending').length
             return <Pressable key={key} accessibilityRole="button" accessibilityLabel={`Manage ${definition.label}`} onPress={() => onNavigate(key)} style={({ pressed, hovered }) => themeStyle([styles.category, (pressed || hovered) && styles.hover])}>
               <View style={themeStyle(styles.categoryIcon)}><Icon size={20} color={themeColor(colors.oceanBlue, 'color')} /></View>
-              <View style={styles.grow}><Text style={themeStyle(styles.name)}>{definition.label}</Text><Text style={themeStyle(styles.caption)}>{error ? 'Open category to load entries' : `${entries.length} entries · ${pending} pending review`}</Text></View><ArrowRight size={18} color={themeColor(colors.textMuted, 'color')} />
+              <View style={styles.grow}><Text style={themeStyle(styles.name)}>{definition.label}</Text><Text style={themeStyle(styles.caption)}>{error ? 'Open category to load entries' : `${entries.length} entries / ${pending} pending review`}</Text></View><ArrowRight size={18} color={themeColor(colors.textMuted, 'color')} />
             </Pressable>
           })}
         </Card>
-        <View style={styles.map}><LGUMunicipalityMap municipality={municipality} /><Card style={styles.note}><Text style={themeStyle(styles.heading)}>Publication workflow</Text><Text style={themeStyle(styles.body)}>Submit accurate local information. An Admin reviews new entries and changes before travelers can see them. Rejected entries include feedback in their category.</Text></Card></View>
+        <View style={styles.map}><LGUMunicipalityMap municipality={municipality} /></View>
       </View>
+      <Card style={styles.note}>
+        <Text style={themeStyle(styles.heading)}>From local knowledge to published guide</Text>
+        <Text style={themeStyle(styles.caption)}>Keep travelers informed with accurate, up-to-date information.</Text>
+        <View style={styles.workflow}>
+          {[
+            ['1', 'Submit information', 'Add a new entry or update an existing one in its category.'],
+            ['2', 'Admin review', 'An Admin checks your submission before it appears to travelers.'],
+            ['3', 'Publish or improve', 'Approved entries go live. If rejected, read the feedback, update the entry and resubmit.'],
+          ].map(([step, title, description]) => <View key={step} style={styles.workflowStep}>
+            <View style={themeStyle(styles.categoryIcon)}><Text style={themeStyle(styles.name)}>{step}</Text></View>
+            <View style={styles.grow}><Text style={themeStyle(styles.name)}>{title}</Text><Text style={themeStyle(styles.caption)}>{description}</Text></View>
+          </View>)}
+        </View>
+      </Card>
     </View>
   </LGUPage>
 }
 const styles = StyleSheet.create({
   stack: { gap: 24 }, grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 }, stat: { flexGrow: 1 },
-  columns: { flexDirection: 'row', gap: 24, alignItems: 'flex-start' }, vertical: { flexDirection: 'column', alignItems: 'stretch' },
-  management: { flex: 1, width: '100%', gap: 10, shadowOpacity: 0, elevation: 0, padding: 24 }, map: { flex: 1, width: '100%', gap: 20 }, note: { gap: 10, shadowOpacity: 0, elevation: 0 },
+  columns: { flexDirection: 'row', gap: 24, alignItems: 'stretch' }, vertical: { flexDirection: 'column', alignItems: 'stretch' },
+  management: { flex: 1, minWidth: 0, gap: 10, shadowOpacity: 0, elevation: 0, padding: 24 }, map: { flex: 1, minWidth: 0 }, workflow: { flexDirection: 'row', flexWrap: 'wrap', gap: 24, marginTop: 10 }, workflowStep: { flexDirection: 'row', flexGrow: 1, flexBasis: 240, gap: 14, alignItems: 'flex-start' }, note: { padding: 24, gap: 10, shadowOpacity: 0, elevation: 0 },
   heading: { fontFamily: 'Poppins', fontSize: 17, fontWeight: '600', color: colors.textPrimary },
   caption: { fontFamily: 'DMSans', fontSize: 12, color: colors.textMuted, lineHeight: 20 },
   body: { fontFamily: 'DMSans', fontSize: 13, color: colors.textPrimary, lineHeight: 22, flexShrink: 1 },

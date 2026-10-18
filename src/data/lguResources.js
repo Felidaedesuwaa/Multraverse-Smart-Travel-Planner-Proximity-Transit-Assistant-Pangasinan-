@@ -3,16 +3,16 @@ export const lguResources = {
   places: { label: 'Places', fields: [
     ['photo', 'Entry image', 'image'],
     ['name', 'Name', 'required'], ['description', 'Description', 'required'], ['location', 'Address / location', 'required'],
-    ['category', 'Category', 'required'], ['entryFee', 'Entry fee (PHP)', 'number'], ['openHours', 'Opening hours'], ['tips', 'Visitor tips'], ['sourceUrl', 'Source URL'],
+    ['category', 'Category', 'required'], ['entryFee', 'Entry fee (PHP)', 'number'], ['openHours', 'Opening hours'],
   ] },
   foods: { label: 'Local food', fields: [
     ['photo', 'Entry image', 'image'],
     ['name', 'Name', 'required'], ['description', 'Description', 'required'], ['avgPrice', 'Average price (PHP)', 'required-number'], ['where', 'Where to find it', 'required'], ['category', 'Category', 'required'],
   ] },
   'route-prices': { label: 'Route prices', fields: [
-    ['from', 'Origin', 'required'], ['to', 'Destination', 'required'], ['vehicle', 'Vehicle', 'required'], ['price', 'Fare (PHP)', 'required-number'], ['duration', 'Duration (e.g. 30 min)', 'required'], ['notes', 'Notes'],
+    ['from', 'Origin', 'required'], ['to', 'Destination', 'required'], ['vehicle', 'Vehicle', 'required'], ['price', 'Fare (PHP)', 'required-number'], ['duration', 'Duration (e.g. 30 min)', 'required'],
   ] },
   'transit-routes': { label: 'Transit routes', fields: [
-    ['name', 'Name', 'required'], ['type', 'Vehicle type', 'choice', ['BUS', 'JEEPNEY', 'TRICYCLE', 'VAN']], ['frequency', 'Frequency', 'required'], ['stops', 'Number of stops', 'number'], ['status', 'Service status', 'choice', ['ACTIVE', 'INACTIVE']],
+    ['name', 'Route name / destination', 'required'], ['type', 'Vehicle type', 'required'], ['frequency', 'Frequency', 'required'], ['stops', 'Number of stops', 'number'], ['status', 'Service status', 'choice', ['ACTIVE', 'INACTIVE']],
   ] },
 }

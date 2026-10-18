@@ -8,7 +8,7 @@ import { boundaryBounds, boundaryRings, constrainCenter, containsLocation, fitZo
 import { useAppTheme } from '../theme/useAppTheme'
 import Card from './Card'
 
-const HEIGHT = 300
+const HEIGHT = 360
 const tileTemplate = process.env.EXPO_PUBLIC_MAP_TILE_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
 
 export default function LGUMunicipalityMap({ municipality }) {
@@ -43,8 +43,8 @@ export default function LGUMunicipalityMap({ municipality }) {
   const left = center[0] * scale - width / 2, top = center[1] * scale - HEIGHT / 2
   const path = rings.map(ring => 'M' + ring.map(p => `${p[0] * scale - left},${p[1] * scale - top}`).join('L') + 'Z').join('')
   const tiles = []
-  if (bounds) for (let x = Math.max(Math.floor(left / 256), Math.floor(bounds.left * scale / 256)); x <= Math.min(Math.floor((left + width) / 256), Math.floor(bounds.right * scale / 256)); x++) {
-    for (let y = Math.max(Math.floor(top / 256), Math.floor(bounds.top * scale / 256)); y <= Math.min(Math.floor((top + HEIGHT) / 256), Math.floor(bounds.bottom * scale / 256)); y++) {
+  if (bounds) for (let x = Math.max(0, Math.floor(left / 256)); x <= Math.min(2 ** zoom - 1, Math.floor((left + width) / 256)); x++) {
+    for (let y = Math.max(0, Math.floor(top / 256)); y <= Math.min(2 ** zoom - 1, Math.floor((top + HEIGHT) / 256)); y++) {
       const uri = tileTemplate.replace('{z}', zoom).replace('{x}', x).replace('{y}', y)
       tiles.push(<Image key={`${zoom}/${x}/${y}`} x={x * 256 - left} y={y * 256 - top} width={256} height={256} href={Platform.OS === 'web' ? uri : { uri, headers: { 'User-Agent': 'Multraverse/1.0 (com.jolly18.multraverse)' } }} onError={() => setTileError(true)} />)
     }
@@ -78,14 +78,14 @@ export default function LGUMunicipalityMap({ municipality }) {
   function control(label, Icon, onPress, disabled = false) {
     return <Pressable accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ disabled }} disabled={disabled} onPress={onPress} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, padding: 10, borderRadius: 8, backgroundColor: surface, opacity: disabled ? 0.45 : 1 }}><Icon size={16} color={text} /><Text style={{ color: text, fontFamily: 'DMSans', fontSize: 12 }}>{label}</Text></Pressable>
   }
-  return <Card style={{ gap: 12 }}>
+  return <Card style={{ gap: 16, padding: 18, flex: 1, shadowOpacity: 0, elevation: 0 }}>
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}><MapPin size={18} color={text} /><Text style={{ flex: 1, color: text, fontFamily: 'Poppins', fontSize: 16, fontWeight: '600' }}>{municipality.name} {municipality.kind.toLowerCase()} map</Text></View>
-    <View onLayout={event => setWidth(Math.max(1, event.nativeEvent.layout.width))} {...pan.panHandlers} style={{ height: HEIGHT, overflow: 'hidden', borderRadius: 12, backgroundColor: surface, ...(Platform.OS === 'web' ? { touchAction: 'none', cursor: 'grab' } : {}) }}>
+    <View onLayout={event => setWidth(Math.max(1, event.nativeEvent.layout.width))} {...pan.panHandlers} style={{ height: HEIGHT, overflow: 'hidden', borderRadius: 12, backgroundColor: palette.tint, ...(Platform.OS === 'web' ? { touchAction: 'none', cursor: 'grab' } : {}) }}>
       <Svg width="100%" height={HEIGHT} viewBox={`0 0 ${width} ${HEIGHT}`} accessibilityLabel={`Interactive map of ${municipality.name} only`}>
         <Defs><ClipPath id={`lgu-${municipality.id}`}><Path d={path} clipRule="evenodd" /></ClipPath></Defs>
+        {tiles}
         <Path d={path} fill={palette.brand} fillOpacity={0.12} fillRule="evenodd" />
         <G clipPath={`url(#lgu-${municipality.id})`}>
-          {tiles}
           {gps && <Circle cx={gps[0] * scale - left} cy={gps[1] * scale - top} r={8} fill="#2563eb" stroke="#fff" strokeWidth={3} />}
         </G>
         <Path d={path} fill="none" stroke={palette.brand} strokeWidth={2} />

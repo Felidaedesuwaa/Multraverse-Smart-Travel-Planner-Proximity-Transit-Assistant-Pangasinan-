@@ -1,0 +1,12 @@
+const assert = require('node:assert/strict')
+const { routePriceSubmissionError } = require('../dist/lib/routePriceSubmission')
+const valid = { from: 'Sual Public Market', to: 'Dagupan terminal', vehicle: 'Jeepney', price: 75.50, duration: '1 hour 15 min' }
+assert.equal(routePriceSubmissionError(valid, true), null)
+for (const field of ['from', 'to', 'vehicle', 'duration']) assert.ok(routePriceSubmissionError({ ...valid, [field]: '' }, true))
+assert.ok(routePriceSubmissionError({ ...valid, to: '  SUAL PUBLIC MARKET ' }, true))
+assert.ok(routePriceSubmissionError({ ...valid, vehicle: '<script>test</script>' }, true))
+for (const price of [undefined, null, '50', -1, NaN, Infinity, 1000001, 0.999]) assert.ok(routePriceSubmissionError({ ...valid, price }, true))
+for (const duration of ['soon', '0 min', '-5 min', '25 hours', '5']) assert.ok(routePriceSubmissionError({ ...valid, duration }, true))
+for (const duration of ['1 min', '30 min', '1h 15m', '24 hours']) assert.equal(routePriceSubmissionError({ ...valid, duration }, true), null)
+assert.equal(routePriceSubmissionError({ price: 0 }, false), null)
+console.log('PASS route price required fields, distinct endpoints, plain text, price limits/precision, duration formats/bounds and partial edits')

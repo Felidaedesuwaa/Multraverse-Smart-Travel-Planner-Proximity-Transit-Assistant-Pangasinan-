@@ -5,6 +5,10 @@ import { BudgetEntry, Trip, SavedPlace, Place, RoutePrice, LocalFood, TransitRou
 import { lguResources } from '../lib/lguResources'
 import { validateRequest } from '../lib/planner'
 import { tripFieldErrors } from '../lib/tripValidation'
+import { placeSubmissionError } from '../lib/placeSubmission'
+import { foodSubmissionError } from '../lib/foodSubmission'
+import { routePriceSubmissionError } from '../lib/routePriceSubmission'
+import { transitRouteSubmissionError } from '../lib/transitRouteSubmission'
 
 function invalid(message = 'Invalid request'): never { throw Object.assign(new Error(message), { status: 400 }) }
 function object(value: unknown): asserts value is Record<string, any> {
@@ -148,6 +152,22 @@ export function validateRouter(scope: string): RequestHandler {
       }
       else if (scope === 'approvals') fields(body, { reason: string, revision: v => number(v) && Number.isInteger(v) }, ['revision'])
       else if (scope === 'lgu') {
+        if (parts[0] === 'transit-routes') {
+          const error = transitRouteSubmissionError(body, create)
+          if (error) invalid(error)
+        }
+        if (parts[0] === 'route-prices') {
+          const error = routePriceSubmissionError(body, create)
+          if (error) invalid(error)
+        }
+        if (parts[0] === 'foods') {
+          const error = foodSubmissionError(body, create)
+          if (error) invalid(error)
+        }
+        if (parts[0] === 'places') {
+          const error = placeSubmissionError(body, create)
+          if (error) invalid(error)
+        }
         const resource = lguResources[parts[0]]
         if (resource) modelInput(resource.model.schema, body, resource.fields, create)
       } else if (scope === 'knowledge' || scope === 'transitRoutes') {

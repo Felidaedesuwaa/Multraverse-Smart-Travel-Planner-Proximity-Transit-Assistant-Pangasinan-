@@ -1,0 +1,11 @@
+const assert = require('node:assert/strict')
+const { transitRouteSubmissionError: validate } = require('../dist/lib/transitRouteSubmission')
+const valid = { name: 'Sual to Dagupan', type: 'BUS', frequency: 'Every 30 minutes', stops: 5, status: 'ACTIVE' }
+assert.equal(validate(valid, true), null)
+for (const name of ['', 'Sual', 'Sual to sual', 'Sual to ', '<script> to Dagupan']) assert.ok(validate({ ...valid, name }, true))
+assert.equal(validate({ ...valid, name: 'Route 1 - Dagupan' }, true), null)
+for (const stops of [-1, 1.5, 501, NaN, '5']) assert.ok(validate({ ...valid, stops }, true))
+assert.ok(validate({ ...valid, type: 'INVALID' }, true))
+assert.ok(validate({ ...valid, frequency: '' }, true))
+assert.equal(validate({ frequency: 'On demand', stops: 0 }, false), null)
+console.log('PASS transit route destinations, numbered labels, vehicle types, frequency, stop counts and partial edits')

@@ -12,5 +12,7 @@ const transitRouteSchema = new Schema({
   stopLocations: [{ name: { type: String, required: true }, areaId: { type: String, required: true }, lat: { type: Number, required: true, min: -90, max: 90 }, lng: { type: Number, required: true, min: -180, max: 180 } }],
   verifiedAt: Date, sourceUrl: String,
 }, apiSchemaOptions)
+// Route labels can include destinations, route numbers and separators.
+;(transitRouteSchema.path('name') as any).options.catalogName = true
 hardenSchema(transitRouteSchema, 'TransitRoute')
 export const TransitRoute = models.TransitRoute || model('TransitRoute', transitRouteSchema)

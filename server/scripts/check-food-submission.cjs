@@ -1,0 +1,12 @@
+const assert = require('node:assert/strict')
+const { foodSubmissionError } = require('../dist/lib/foodSubmission')
+const valid = { name: 'Inihaw na Bangus', description: 'Grilled milkfish.\nServed with rice.', where: 'Public market', category: 'Seafood', avgPrice: 150.50 }
+assert.equal(foodSubmissionError(valid, true), null)
+for (const field of ['name', 'description', 'where', 'category']) assert.ok(foodSubmissionError({ ...valid, [field]: ' ' }, true))
+for (const avgPrice of [undefined, null, '', '150', -1, NaN, Infinity, 1000001, 1.999]) assert.ok(foodSubmissionError({ ...valid, avgPrice }, true))
+for (const avgPrice of [0, 25.50, 1000000]) assert.equal(foodSubmissionError({ ...valid, avgPrice }, true), null)
+assert.ok(foodSubmissionError({ ...valid, name: 'A' }, true))
+assert.ok(foodSubmissionError({ ...valid, where: 'x'.repeat(301) }, true))
+assert.ok(foodSubmissionError({ ...valid, description: '<script>test</script>' }, true))
+assert.equal(foodSubmissionError({ category: 'Dessert' }, false), null)
+console.log('PASS local food required fields, multiline text, limits, markup rejection, price precision and partial edits')

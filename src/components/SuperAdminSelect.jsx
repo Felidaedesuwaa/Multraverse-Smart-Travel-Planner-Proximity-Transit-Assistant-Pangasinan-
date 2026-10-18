@@ -4,12 +4,12 @@ import { Check, ChevronDown } from 'lucide-react-native'
 import { FeedbackPressable } from './WorkspaceMotion'
 import { WorkspaceButton, ui } from './SuperAdminWorkspace'
 import { useAppTheme } from '../theme/useAppTheme'
-export default function SuperAdminSelect({ label, value, options, onChange, disabled }) {
+export default function SuperAdminSelect({ label, value, options, onChange, disabled, hideLabel = false, placeholder = 'Select an option' }) {
   const [open, setOpen] = useState(false)
   const { palette: p } = useAppTheme()
   return <View style={{ gap: 8 }}>
-    <Text style={[ui.buttonText, { color: p.ink }]}>{label}</Text>
-    <FeedbackPressable disabled={disabled} accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ expanded: open, disabled: !!disabled }} onPress={() => setOpen(true)} style={[ui.input, { flexDirection: 'row', alignItems: 'center', gap: 12, borderColor: p.line, backgroundColor: p.background, opacity: disabled ? 0.5 : 1 }]}><Text style={[ui.body, { color: p.ink, flex: 1 }]}>{options.find(option => option.value === value)?.label || 'Select an option'}</Text><ChevronDown size={16} color={p.muted} /></FeedbackPressable>
+    {!hideLabel && <Text style={[ui.buttonText, { color: p.ink }]}>{label}</Text>}
+    <FeedbackPressable disabled={disabled} accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ expanded: open, disabled: !!disabled }} onPress={() => setOpen(true)} style={[ui.input, { flexDirection: 'row', alignItems: 'center', gap: 12, borderColor: p.line, backgroundColor: p.background, opacity: disabled ? 0.5 : 1 }]}><Text style={[ui.body, { color: p.ink, flex: 1 }]}>{options.find(option => option.value === value)?.label || placeholder}</Text><ChevronDown size={16} color={p.muted} /></FeedbackPressable>
     <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
       <View style={{ flex: 1, justifyContent: 'center', padding: 24, backgroundColor: 'rgba(0,0,0,0.5)' }}>
         <View accessibilityViewIsModal style={{ backgroundColor: p.surface, width: '100%', maxWidth: 520, alignSelf: 'center', maxHeight: '80%', padding: 20, borderRadius: 16, gap: 16 }}>

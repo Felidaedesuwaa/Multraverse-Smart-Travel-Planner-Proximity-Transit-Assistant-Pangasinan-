@@ -15,7 +15,7 @@ import { colors } from "../theme/colors";
 export default function AdminSettings() {
   const { themeStyle } = useAppTheme();
   const user = useAuthStore(state => state.user);
-  const accountLabel = user?.role === 'SUPERADMIN' ? 'Super Admin' : 'Admin';
+  const accountLabel = user?.role === 'SUPERADMIN' ? 'Super Admin' : user?.role === 'LGU' ? 'LGU' : 'Admin';
   const darkMode = usePreferencesStore(state => state.darkMode);
   const setDarkMode = usePreferencesStore(state => state.setDarkMode);
   const storageError = usePreferencesStore(state => state.storageError);
@@ -36,7 +36,7 @@ export default function AdminSettings() {
             <View style={styles.identityText}>
               <Text style={themeStyle(styles.name)}>{user?.name || accountLabel}</Text>
               {!!user?.email && <Text style={themeStyle(styles.description)}>{user.email}</Text>}
-              <Text style={themeStyle(styles.description)}>{user?.role === 'SUPERADMIN' ? 'Super Administrator' : 'Administrator'}</Text>
+              <Text style={themeStyle(styles.description)}>{user?.role === 'SUPERADMIN' ? 'Super Administrator' : user?.role === 'LGU' ? 'Municipal tourism officer' : 'Administrator'}</Text>
               {!!user?.location && <Text style={themeStyle(styles.description)}>{user.location}</Text>}
             </View>
           </View>
