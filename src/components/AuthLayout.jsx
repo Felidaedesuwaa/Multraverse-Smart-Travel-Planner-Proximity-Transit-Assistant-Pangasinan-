@@ -1,9 +1,10 @@
 import { useAppTheme } from "../theme/useAppTheme";
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
+import { FeedbackPressable } from "./WorkspaceMotion";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
-import { ChevronLeft, Compass } from "lucide-react-native";
+import { ArrowLeft, Compass } from "lucide-react-native";
 import Svg, { Path } from "react-native-svg";
 import { colors } from "../theme/colors";
 
@@ -15,10 +16,15 @@ export default function AuthLayout({ title, subtitle, children, footer, showBack
   return (
     <SafeAreaView style={themeStyle(styles.screen)}>
       <Svg style={themeStyle(styles.wave)} viewBox="0 0 500 150" preserveAspectRatio="none"><Path d="M0,80 C120,120 380,20 500,80 L500,150 L0,150 Z" fill={themeColor("rgba(255,255,255,0.06)", "fill")} /></Svg>
+      {showBack ? <View style={styles.navigation}>
+        <FeedbackPressable accessibilityRole="button" accessibilityLabel="Back to Login" lift onPress={() => navigation.navigate("Login")} style={({ hovered, pressed }) => themeStyle([styles.back, hovered && styles.backHovered, pressed && styles.backPressed])}>
+          <ArrowLeft size={19} color={themeColor(colors.white, "color")} />
+          <Text style={themeStyle(styles.backLabel)}>Back to Login</Text>
+        </FeedbackPressable>
+      </View> : null}
       <KeyboardAvoidingView style={styles.keyboard} behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scroll}>
       <View style={themeStyle(styles.content)}>
-        {showBack && navigation.canGoBack() ? <Pressable accessibilityRole="button" onPress={() => navigation.goBack()} style={themeStyle(styles.back)}><ChevronLeft size={22} color={themeColor(colors.white, "color")} /></Pressable> : null}
         <View style={themeStyle(styles.heading)}>
           <LinearGradient colors={([colors.sunsetCoral, "#F2A63E"]).map(value => themeColor(value, "backgroundColor"))} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={themeStyle(styles.logo)}><Compass size={34} color={themeColor(colors.white, "color")} /></LinearGradient>
           <Text style={themeStyle(styles.title)}>{title}</Text>
@@ -39,7 +45,11 @@ const styles = StyleSheet.create({
   scroll: { flexGrow: 1, alignItems: "center", justifyContent: "center", padding: 24 },
   wave: { position: "absolute", bottom: 0, left: 0, width: "100%", height: 140, opacity: 0.5 },
   content: { width: "100%", maxWidth: 420, zIndex: 1 },
-  back: { alignSelf: "flex-start", marginBottom: 16, padding: 2 },
+  navigation: { alignSelf: "stretch", paddingHorizontal: 16, paddingVertical: 12, zIndex: 2 },
+  back: { alignSelf: "flex-start", minHeight: 48, paddingHorizontal: 12, flexDirection: "row", gap: 9, alignItems: "center", justifyContent: "center", borderRadius: 12, backgroundColor: "transparent" },
+  backHovered: { backgroundColor: "rgba(255,255,255,0.16)" },
+  backPressed: { backgroundColor: "rgba(255,255,255,0.24)" },
+  backLabel: { fontFamily: "DMSans", fontSize: 14, color: colors.white },
   heading: { alignItems: "center", marginBottom: 28 },
   logo: { width: 72, height: 72, borderRadius: 20, alignItems: "center", justifyContent: "center", marginBottom: 18 },
   title: { fontFamily: "Poppins", fontWeight: "700", fontSize: 26, color: colors.white, textAlign: "center" },

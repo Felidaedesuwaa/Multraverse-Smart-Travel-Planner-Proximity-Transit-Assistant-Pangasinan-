@@ -1,5 +1,17 @@
 # Deploy the Multraverse website
 
+## Link-sharing preview
+
+The web build includes a landing-page screenshot at `/multraverse-preview.png`
+and Open Graph / Twitter metadata in the initial HTML. On Vercel, the build
+uses `VERCEL_PROJECT_PRODUCTION_URL` (or `VERCEL_URL`) for absolute preview URLs.
+For a custom domain, set `EXPO_PUBLIC_SITE_URL` to its HTTPS origin, such as
+`https://your-domain.com`, before deploying. This is the frontend URL, separate
+from `EXPO_PUBLIC_API_URL`.
+
+Deploy the updated frontend to publish the preview. Previously shared links
+may retain a cached preview until the sharing service fetches the URL again.
+
 ## Fix registration showing "Failed to fetch"
 
 The frontend cannot register accounts without the separately deployed Express

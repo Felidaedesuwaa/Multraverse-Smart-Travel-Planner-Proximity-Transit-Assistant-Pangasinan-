@@ -249,6 +249,22 @@ MAIL_FROM="Multraverse <your-sender@gmail.com>"
 
 Use your provider's SMTP credentials and an authorized sender address. For Gmail, use an app password with two-step verification enabled on the sender account. Other SMTP providers can use their own host and credentials. Port 465 uses TLS; port 587 requires STARTTLS. See [Nodemailer SMTP configuration](https://nodemailer.com/smtp) and [Google app passwords](https://support.google.com/accounts/answer/185833). Never put SMTP credentials in the frontend `.env` or any `EXPO_PUBLIC_*` variable. Run `npm run check:email --prefix server` to verify the SMTP connection and authentication without sending an email.
 
+Connection verification does not test message sending or inbox delivery. To send
+one diagnostic message to an address you have chosen, run
+`npm run check:email --prefix server -- --send-to=YOUR_EMAIL_ADDRESS`.
+The message contains no OTP and does not create an account. An SMTP acceptance
+still requires checking the recipient's inbox and spam folder. Gmail can rewrite
+the From address to the authenticated account; use that account or an authorized
+alias in `MAIL_FROM`.
+
+The backend logs `email_smtp_accepted` after provider handoff and
+`email_smtp_failed` when sending fails, with only safe SMTP status fields. Check
+these events in the local terminal or Vercel runtime logs: `EAUTH`/535 indicates
+authentication rejection; `ETIMEDOUT` indicates a timeout. Credentials, recipient
+addresses, OTPs and raw provider responses are excluded. Registration creates a
+temporary `pendingregistrations` record first; it creates `users` only after
+successful code verification.
+
 Signup is two steps on web, Android and iOS: submit the registration details, then enter the emailed code. Codes expire after 10 minutes, permit five attempts, and can be resent after 60 seconds. Resending replaces the previous code. Database-backed email/IP limits restrict abuse; configure a trusted reverse proxy correctly if deploying behind one (do not blindly trust forwarded client IP headers). Unverified signups expire automatically; passwords are bcrypt hashes and codes are HMAC hashes, never returned to the app or logged. Existing accounts can still sign in without repeating signup verification. Without SMTP configuration, new signup returns a clear service-unavailable error instead of bypassing verification.
 
 ### Delete an account

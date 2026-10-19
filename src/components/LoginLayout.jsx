@@ -9,13 +9,13 @@ export default function LoginLayout({ title, subtitle, children, footer, onBack,
   const compact = width < 900;
   const palette = useSummerColors();
   return <SafeAreaView style={{ flex: 1, backgroundColor: palette.background }}>
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[styles.scroll, compact && styles.scrollCompact]}>
         <View style={styles.topbar}>
           <Pressable accessibilityRole="button" accessibilityLabel={backLabel} onPress={onBack} style={({ pressed, hovered }) => [styles.back, (pressed || hovered) && { backgroundColor: palette.tint }]}><ArrowLeft size={19} color={palette.ink} /><Text style={[styles.backText, { color: palette.ink }]}>{backLabel}</Text></Pressable>
-          {!compact && <SummerBrand />}
+          {!compact && <View style={{ marginRight: Math.max(0, (width - 1120) / 2 - 16) }}><SummerBrand /></View>}
           {compact && <Compass size={24} color={palette.accent} />}
         </View>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[styles.scroll, compact && styles.scrollCompact]}>
         <View style={[styles.main, compact && styles.mainCompact]}>
           {!compact && <View style={styles.story}>
             <View style={styles.eyebrow}><Sun size={17} color={palette.accent} /><Text style={[styles.kicker, { color: palette.accent }]}>LET THE GOOD DAYS BEGIN</Text></View>
@@ -44,7 +44,7 @@ export default function LoginLayout({ title, subtitle, children, footer, onBack,
 const styles = StyleSheet.create({
   scroll: { flexGrow: 1, paddingHorizontal: 36, paddingTop: 22, paddingBottom: 36 },
   scrollCompact: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 24 },
-  topbar: { width: "100%", maxWidth: 1120, alignSelf: "center", flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 16 },
+  topbar: { width: "100%", paddingHorizontal: 16, paddingVertical: 12, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 16 },
   back: { minHeight: 48, flexDirection: "row", alignItems: "center", gap: 9, paddingHorizontal: 12, borderRadius: 12 },
   backText: { fontFamily: "DMSans", fontSize: 14 },
   main: { flexGrow: 1, width: "100%", maxWidth: 1060, alignSelf: "center", flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 70, paddingVertical: 34 },
