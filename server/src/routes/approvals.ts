@@ -1,5 +1,5 @@
 import { sanitizeRequest, validateRouter, pagination, validateId } from '../middleware/input'
-import { AuditLog, SavedPlace } from '../models'
+import { AuditLog, SavedPlace, User } from '../models'
 import { Router } from 'express'
 import { isValidObjectId } from 'mongoose'
 import { authenticate, AuthRequest, requireAdmin } from '../middleware/auth'
@@ -23,7 +23,11 @@ router.use('/:resource', (req, res, next) => {
 router.get('/:resource', async (req: AuthRequest<{ resource: string }>, res) => {
   const status = req.query.status || 'pending'
   if (!['pending', 'approved', 'rejected'].includes(String(status))) return res.status(400).json({ error: 'Invalid status' })
-  res.json(await approvalResources[req.params.resource].model.find({ approvalStatus: status }).sort({ submittedAt: -1, _id: -1 }).skip(pagination(req).skip).limit(pagination(req).limit))
+  const rows = await approvalResources[req.params.resource].model.find({ approvalStatus: status }).sort({ submittedAt: -1, _id: -1 }).skip(pagination(req).skip).limit(pagination(req).limit)
+  if (req.params.resource !== 'saved-places') return res.json(rows)
+  const users = await User.find({ _id: { $in: rows.map(row => row.userId).filter(Boolean) } }).select('name firstName middleName surname').lean()
+  const names = new Map(users.map(user => [String(user._id), [user.firstName, user.middleName, user.surname].filter(Boolean).join(' ').trim() || user.name]))
+  return res.json(rows.map(row => ({ ...row.toJSON(), submitterName: names.get(String(row.userId)) || 'User unavailable' })))
 })
 router.post('/:resource/:id/:decision', async (req: AuthRequest<{ resource: string; id: string; decision: string }>, res) => {
   const { id, decision, resource } = req.params

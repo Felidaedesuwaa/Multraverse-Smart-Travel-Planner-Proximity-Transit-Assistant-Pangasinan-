@@ -1,5 +1,37 @@
 # Deploy the Multraverse website
 
+## Create the first superadmin
+
+The deployment operator creates the highest-role account with a seed command;
+no existing administrator or public signup is needed.
+
+1. In the backend host's private environment settings, set `MONGODB_URI`,
+   `SUPERADMIN_SEED_EMAIL` and `SUPERADMIN_SEED_PASSWORD`. Use your own email and
+   a password meeting the application's signup password rules. There are no
+   default credentials. Keep `MFA_ENCRYPTION_KEY` configured for authenticator setup.
+2. Deploy the updated backend (`npm run build` in `server/`). Then run this
+   one-time command in the backend host's shell, from `server/`:
+
+   ```sh
+   npm run seed:superadmin
+   ```
+
+   From the repository root, the same command forwards to the server. For a local
+   build, first run `npm run build --prefix server`; put the private variables in
+   `server/.env`. A host without a shell can use a one-time job with the backend
+   build and the same private environment. The production command uses compiled
+   JavaScript and does not require `ts-node` or development dependencies.
+3. Sign in on the deployed site's regular login page using those credentials
+   and complete authenticator enrollment. The seed marks the account email as
+   verified and never prints the password.
+4. Remove `SUPERADMIN_SEED_EMAIL` and `SUPERADMIN_SEED_PASSWORD` from the host's
+   environment after creation. Keep the other backend settings.
+
+Repeat runs preserve the existing superadmin and its password. Concurrent runs
+cannot create multiple superadmins. If the chosen email already belongs to
+another role, the seed stops without promoting that account. This command
+creates only the superadmin; it does not reset or reseed the application data.
+
 ## Link-sharing preview
 
 The web build includes a landing-page screenshot at `/multraverse-preview.png`

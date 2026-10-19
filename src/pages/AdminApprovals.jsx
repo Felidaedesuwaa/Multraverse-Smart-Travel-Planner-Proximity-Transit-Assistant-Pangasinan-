@@ -12,7 +12,7 @@ import { lguResources as municipalResources } from '../data/lguResources';
 import { useAppTheme } from '../theme/useAppTheme';
 
 const lguResources = { ...municipalResources, 'saved-places': { label: 'Travel experiences', fields: [['isPublic', 'Public visibility'], ['userNote', 'Experience / Notes']] } };
-const submissionName = row => row.name || row.location || `${row.from || ''} Ã¢â€ â€™ ${row.to || ''}`;
+const submissionName = row => row.name || row.location || `${row.from || ''} ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ ${row.to || ''}`;
 const statusColors = { pending: '#B86E16', approved: '#26816A', rejected: '#C14B45' };
 const formatDate = value => value && !Number.isNaN(new Date(value).getTime()) ? new Date(value).toLocaleString() : 'Not available';
 const hiddenFields = new Set(['photos', 'photo', 'id', '_id', '__v', 'submittedBy', 'reviewedBy', 'reviewRevision', 'pendingDeletion', 'approvalStatus', 'municipality', 'rejectionReason']);
@@ -92,7 +92,7 @@ function ApprovalQueue({ resource, status, pendingCount, refreshCounts }) {
         <View style={styles.cardContent}>
           <StatusBadge status={row.approvalStatus} />
           <Text style={{ color: p.ink, fontSize: 18, fontWeight: '700' }} numberOfLines={2}>{submissionName(row)}</Text>
-          <View style={styles.meta}><MapPin size={14} color={p.muted} /><Text style={{ color: p.muted, flexShrink: 1 }}>{row.municipality || 'Municipality not provided'}</Text></View>
+          {resource === 'saved-places' ? <Text style={{ color: p.muted }}>By {row.submitterName || 'User unavailable'}</Text> : <View style={styles.meta}><MapPin size={14} color={p.muted} /><Text style={{ color: p.muted, flexShrink: 1 }}>{row.municipality || 'Municipality not provided'}</Text></View>}
           <Text style={{ color: p.muted, fontSize: 12 }}>Submitted {formatDate(row.submittedAt)}</Text>
           {status !== 'pending' && <Text style={{ color: p.muted, fontSize: 12 }}>Reviewed {formatDate(row.reviewedAt)}</Text>}
           {row.approvalStatus === 'rejected' && <Text style={{ color: p.ink, lineHeight: 22 }}>Rejection reason: {row.rejectionReason || 'No reason recorded.'}</Text>}
@@ -116,7 +116,7 @@ function ApprovalReviewDialog({ row, resource, busy, reason, error, onReasonChan
       <Pressable accessibilityLabel="Close submission review" style={StyleSheet.absoluteFillObject} disabled={busy} onPress={onClose} />
       <View accessibilityViewIsModal style={[styles.dialog, { backgroundColor: p.surface, maxHeight: Math.max(240, height - insets.top - insets.bottom - 32) }]}>
         <View style={styles.dialogHeader}>
-          <View style={{ flex: 1, minWidth: 0, gap: 4 }}><Text accessibilityRole="header" style={{ color: p.ink, fontSize: 22, fontWeight: '700' }}>{submissionName(row)}</Text><Text style={{ color: p.muted }}>{lguResources[resource].label} Ã‚Â· {row.municipality || 'Municipality not provided'}</Text></View>
+          <View style={{ flex: 1, minWidth: 0, gap: 4 }}><Text accessibilityRole="header" style={{ color: p.ink, fontSize: 22, fontWeight: '700' }}>{submissionName(row)}</Text>{resource !== 'saved-places' && <Text style={{ color: p.muted }}>{lguResources[resource].label}{row.municipality ? ' · ' + row.municipality : ''}</Text>}</View>
           <FeedbackPressable accessibilityRole="button" accessibilityLabel="Close submission details" disabled={busy} onPress={onClose} style={styles.refresh}><X size={22} color={p.ink} /></FeedbackPressable>
         </View>
         <ScrollView style={{ flexShrink: 1, minHeight: 0 }} contentContainerStyle={styles.dialogBody} keyboardShouldPersistTaps="handled">
@@ -124,10 +124,7 @@ function ApprovalReviewDialog({ row, resource, busy, reason, error, onReasonChan
           {row.photos?.map((uri, index) => <Image key={index} source={{ uri }} style={styles.photo} resizeMode="cover" />)}
           {row.photo && <Image source={{ uri: row.photo }} style={styles.photo} resizeMode="cover" />}
           {row.pendingDeletion && row.approvalStatus === 'pending' && <Text style={{ color: p.ink, fontWeight: '700' }}>Deletion request: approving permanently deletes this entry.</Text>}
-          {Object.entries(row).filter(([key]) => !hiddenFields.has(key)).map(([key, value]) => <View key={key} style={{ gap: 4 }}>
-            <Text style={{ color: p.muted, fontSize: 12, fontWeight: '600', textTransform: 'capitalize' }}>{lguResources[resource].fields.find(([field]) => field === key)?.[1] || key.replace(/([A-Z])/g, ' $1')}</Text>
-            <Text style={{ color: p.ink, fontSize: 14, lineHeight: 22 }}>{/At$/.test(key) ? formatDate(value) : typeof value === 'object' ? JSON.stringify(value) : String(value)}</Text>
-          </View>)}
+          {resource === 'saved-places' ? <PostDetails row={row} /> : <MunicipalDetails row={row} resource={resource} />}
           {row.approvalStatus === 'rejected' && <View style={{ gap: 6 }}><Text style={{ color: p.ink, fontWeight: '700' }}>Rejection reason</Text><Text style={{ color: p.ink, lineHeight: 22 }}>{row.rejectionReason || 'No reason recorded.'}</Text></View>}
           {row.approvalStatus === 'pending' && <>
           <View style={{ gap: 6 }}><Text style={{ color: p.ink, fontWeight: '600' }}>Rejection reason</Text><TextInput accessibilityLabel="Rejection reason" placeholder="Reason required for rejection" placeholderTextColor={p.muted} value={reason} onChangeText={onReasonChange} editable={!busy} multiline maxLength={1000} style={[styles.reason, { backgroundColor: p.background, color: p.ink, borderColor: p.line }]} /></View>
@@ -144,7 +141,58 @@ function ApprovalReviewDialog({ row, resource, busy, reason, error, onReasonChan
   </Modal>;
 }
 
+function MunicipalDetails({ row, resource }) {
+  const { palette: p } = useAppTheme();
+  const hidden = new Set([...hiddenFields, 'name', 'createdAt', 'updatedAt', 'submittedAt', 'reviewedAt']);
+  const labels = { feeBasis: 'Fee basis', accessibility: 'Accessibility', tags: 'Tags', closedWeekdays: 'Closed on', sourceUrl: 'Source', verifiedAt: 'Last verified' };
+  const present = value => value != null && value !== '' && value !== 'unknown' && (!Array.isArray(value) || value.length > 0);
+  const display = (key, value) => {
+    if (/At$/.test(key)) return formatDate(value);
+    if (key === 'entryFee') return Number(value) === 0 ? 'Free entry' : `PHP ${Number(value).toLocaleString('en-PH')}`;
+    if (key === 'feeBasis') return value === 'person' ? 'Per person' : value === 'group' ? 'Per group' : String(value);
+    if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+    if (Array.isArray(value)) return value.map(item => typeof item === 'object' && item ? Object.values(item).filter(present).join(' · ') : String(item)).join(', ');
+    if (typeof value === 'object') return Object.entries(value).filter(([, item]) => present(item)).map(([label, item]) => `${label.replace(/([A-Z])/g, ' $1')}: ${String(item)}`).join(' · ');
+    return String(value);
+  };
+  const entries = Object.entries(row).filter(([key, value]) => !hidden.has(key) && present(value) && !(key === 'feeBasis' && Number(row.entryFee) === 0));
+  // Use the editor's field order so core information comes before secondary details.
+  const order = lguResources[resource].fields.map(([key]) => key);
+  entries.sort(([a], [b]) => (order.includes(a) ? order.indexOf(a) : 100) - (order.includes(b) ? order.indexOf(b) : 100));
+  return <View style={{ gap: 14 }}>
+    {entries.map(([key, value]) => <View key={key} style={[styles.postPanel, { backgroundColor: p.paper, borderColor: p.line }]}>
+      <Text style={[styles.postLabel, { color: p.muted }]}>{lguResources[resource].fields.find(([field]) => field === key)?.[1] || labels[key] || key.replace(/([A-Z])/g, ' $1')}</Text>
+      <Text style={{ color: p.ink, fontSize: 15, lineHeight: 24 }}>{display(key, value)}</Text>
+    </View>)}
+    <Text style={{ color: p.muted, fontSize: 12 }}>Submitted {formatDate(row.submittedAt || row.createdAt)}</Text>
+  </View>;
+}
+
+function PostDetails({ row }) {
+  const { palette: p } = useAppTheme();
+  const categories = [...new Set((row.categories?.length ? row.categories : [row.category]).filter(Boolean))];
+  return <View style={{ gap: 16 }}>
+    <View style={[styles.postPanel, { backgroundColor: p.paper, borderColor: p.line }]}>
+      <Text style={[styles.postLabel, { color: p.muted }]}>Submitted by</Text>
+      <Text style={{ color: p.ink, fontSize: 17, fontWeight: '700' }}>{row.submitterName || 'User unavailable'}</Text>
+      <Text style={{ color: p.muted, fontSize: 12 }}>User ID: {String(row.userId || 'Unavailable')}</Text>
+    </View>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+      {categories.map(category => <View key={category} style={[styles.postChip, { backgroundColor: p.tint }]}><Text style={{ color: p.ink, fontSize: 12, fontWeight: '600' }}>{category}</Text></View>)}
+      <View style={[styles.postChip, { backgroundColor: p.paper }]}><Text style={{ color: p.muted, fontSize: 12 }}>{row.isPublic ? 'Public post' : 'Private post'}</Text></View>
+      {Number(row.rating) > 0 && <View style={[styles.postChip, { backgroundColor: p.paper }]}><Text style={{ color: p.ink, fontSize: 12 }}>Rating: {row.rating} / 5</Text></View>}
+    </View>
+    {[['Description', row.description], ['Experience / Notes', row.userNote]].filter(([, value]) => typeof value === 'string' && value.trim()).map(([label, value]) => <View key={label} style={[styles.postPanel, { backgroundColor: p.paper, borderColor: p.line }]}>
+      <Text style={[styles.postLabel, { color: p.muted }]}>{label}</Text><Text style={{ color: p.ink, fontSize: 15, lineHeight: 24 }}>{value}</Text>
+    </View>)}
+    <Text style={{ color: p.muted, fontSize: 12 }}>Submitted {formatDate(row.submittedAt || row.createdAt)}</Text>
+  </View>;
+}
+
 const styles = StyleSheet.create({
+  postPanel: { borderWidth: 1, borderRadius: 14, padding: 16, gap: 8 },
+  postLabel: { fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.7 },
+  postChip: { borderRadius: 20, paddingHorizontal: 12, paddingVertical: 7 },
   statusTabs: { flexDirection: 'row', gap: 20, borderBottomWidth: 1, marginBottom: 12 },
   statusTab: { minHeight: 48, paddingHorizontal: 8, paddingVertical: 14, borderBottomWidth: 3, justifyContent: 'center', alignItems: 'center' },
   categories: { flexGrow: 0, marginBottom: 20 },
