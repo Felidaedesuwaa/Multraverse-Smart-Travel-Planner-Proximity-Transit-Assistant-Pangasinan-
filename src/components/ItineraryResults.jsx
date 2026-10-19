@@ -2,6 +2,7 @@ import { itinerarySummary } from '../lib/itinerarySummary';
 import { calculateTransport, finiteNumber } from '../../server/src/lib/fareCalculation';
 import { downloadItineraryPdf } from '../lib/itineraryPdf';
 import { useState } from 'react';
+import { useAppTheme } from '../theme/useAppTheme';
 import { Bus, Utensils, BedDouble, Wallet, Users, CalendarDays, MapPin, Clock, Info, BookmarkPlus, Download, Pencil, Compass } from 'lucide-react-native';
 
 const money = n => n == null || !Number.isFinite(Number(n)) ? 'Pending' : `₱${Number(n).toLocaleString('en-PH', { maximumFractionDigits: 2 })}`;
@@ -9,6 +10,22 @@ const detailCopy = value => String(value || '').replace(/Source:\s*.*?(?:,\s*pag
 const range = (min, max) => min === max ? money(min) : `${money(min)}–${money(max)}`;
 
 export default function ItineraryResults({ plan, fareTables = [], areaName, onEdit, onSave, saved, saving }) {
+  const { palette, isDark } = useAppTheme();
+  const themeVariables = {
+    colorScheme: isDark ? 'dark' : 'light',
+    '--aip-surface': palette.surface,
+    '--aip-paper': palette.paper,
+    '--aip-ink': palette.ink,
+    '--aip-muted': palette.muted,
+    '--aip-border': palette.line,
+    '--aip-primary': palette.primary,
+    '--aip-on-primary': palette.onPrimary,
+    '--aip-accent': palette.accent,
+    '--aip-focus': palette.accent,
+    '--aip-success': isDark ? '#9AD8B7' : '#316B59',
+    '--aip-success-tint': isDark ? '#203D37' : '#EDF6F0',
+    '--aip-danger-tint': isDark ? '#422F31' : '#FFF0EB',
+  };
   const r = plan.request;
   const stored = plan.costEstimate;
   const transport = fareTables.length ? calculateTransport(r, fareTables) : stored?.transport;
@@ -20,7 +37,7 @@ export default function ItineraryResults({ plan, fareTables = [], areaName, onEd
     try { downloadItineraryPdf({ ...plan, costEstimate: c }, areaName); setExportFailed(false); setExportMessage('Your itinerary PDF download has started.'); }
     catch { setExportFailed(true); setExportMessage('The PDF could not be downloaded. Please try again.'); }
   };
-  return <section className="air-results">
+  return <section className="air-results" style={themeVariables}>
     <style>{styles}</style>
     {exportMessage && <p role={exportFailed ? 'alert' : 'status'} className={exportFailed ? 'aip-error' : 'aip-success'}>{exportMessage}</p>}
     <header className="air-header">
@@ -89,9 +106,19 @@ function Stat({ Icon, label, value, note, alert }) { return <div className={`air
 function Cost({ Icon, label, value, note }) { return <div className="air-cost"><Icon size={17} /><div><span>{label}</span>{note && <small>{note}</small>}</div><strong>{value}</strong></div>; }
 const styles = `
 .air-food-options { margin-bottom:24px; }.air-food-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr)); gap:12px; margin-top:16px; }.air-food-card { background:var(--aip-paper); border:1px solid var(--aip-border); border-radius:12px; padding:16px; }.air-food-card h4 { margin:0 0 8px; font-size:15px; }
-.air-results { color: var(--aip-ink); }
+.air-results { color: var(--aip-ink); font-family:DMSans,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; width:100%; min-width:0; }
+.air-results, .air-results * { box-sizing:border-box; }
+.air-results h2,.air-results h3,.air-results h4 { font-family:Poppins,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+.air-results .aip-btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px; padding:12px 18px; border:1px solid var(--aip-border); border-radius:12px; background:var(--aip-surface); color:var(--aip-ink); font:inherit; font-size:13px; font-weight:600; cursor:pointer; }
+.air-results .aip-btn:hover { border-color:var(--aip-primary); }
+.air-results .aip-btn:focus-visible { outline:2px solid var(--aip-focus); outline-offset:3px; }
+.air-results .aip-btn:disabled { opacity:.55; cursor:default; }
+.air-results .aip-btn-dark { background:var(--aip-primary); color:var(--aip-on-primary); border-color:var(--aip-primary); }
+.air-results .aip-btn-block { width:100%; margin-top:14px; }
+.air-results .aip-error { color:var(--aip-accent); }
+.air-results .aip-success { color:var(--aip-success); }
 .air-header, .air-actions, .air-meta { display:flex; align-items:center; flex-wrap:wrap; gap:12px; }
-.air-header { justify-content:space-between; margin:0 0 16px; }
+.air-header { justify-content:space-between; margin:0 0 16px; padding:24px; background:var(--aip-surface); border:1px solid var(--aip-border); border-radius:18px; }
 .air-eyebrow { font-size:11px; letter-spacing:.12em; color:var(--aip-muted); font-weight:700; }
 .air-header h2 { font-size:28px; margin:4px 0; }
 .air-header p { font-size:13px; color:var(--aip-muted); margin:0; }
@@ -106,7 +133,7 @@ const styles = `
 .air-alert { background:var(--aip-danger-tint); border-color:var(--aip-border); }
 .air-notice { display:flex; gap:8px; font-size:12px; color:var(--aip-muted); margin:16px 0 24px; }
 .air-layout { display:grid; grid-template-columns:minmax(0,1.6fr) minmax(290px,1fr); gap:22px; align-items:start; }
-.air-day { margin-bottom:24px; }
+.air-day { margin-bottom:24px; padding:20px; background:var(--aip-paper); border:1px solid var(--aip-border); border-radius:18px; }
 .air-day h3,.air-panel h3 { display:flex; align-items:center; gap:8px; font-size:16px; margin:0 0 14px; }
 .air-day h3 > span { font-size:11px; font-weight:400; color:var(--aip-muted); margin-left:auto; }
 .air-stop { display:flex; gap:12px; padding:18px; margin-bottom:12px; background:var(--aip-surface); border:1px solid var(--aip-border); border-radius:14px; }
@@ -120,6 +147,7 @@ const styles = `
 .air-results details summary { cursor:pointer; font-size:11px; color:var(--aip-ink); padding:8px 0; }
 .air-results details summary:focus-visible { outline:2px solid var(--aip-focus); outline-offset:2px; }
 .air-panel { background:var(--aip-surface); border:1px solid var(--aip-border); border-radius:14px; padding:20px; margin-bottom:16px; min-width:0; }
+.air-stat,.air-panel,.air-header { box-shadow:0 4px 18px rgba(15,55,65,.045); }
 .air-cost { display:flex; gap:8px; align-items:flex-start; padding:13px 0; border-bottom:1px solid var(--aip-border); font-size:12px; }
 .air-cost > div { flex:1; min-width:0; }.air-cost small { display:block; font-size:10px; color:var(--aip-muted); margin-top:4px; }.air-cost > strong { max-width:48%; text-align:right; overflow-wrap:anywhere; }
 .air-total { display:flex; justify-content:space-between; gap:12px; font-size:13px; padding:18px 0; }.air-total strong { text-align:right; }

@@ -13,10 +13,10 @@ import { useApprovalCounts } from './ApprovalCountsProvider';
 import PendingReviewBadge from './PendingReviewBadge';
 
 const items = [
+  { label: "Analytics", icon: BarChart3, screen: "AdminAnalytics" },
   { label: "Post approvals", icon: Globe, screen: "AdminPostApprovals" },
   { label: "LGU approvals", icon: LayoutGrid, screen: "AdminApprovals" },
   { label: "Users", icon: Users, screen: "AdminUsers" },
-  { label: "Analytics", icon: BarChart3, screen: "AdminAnalytics" },
   { label: "Settings", icon: Settings, screen: "AdminSettings" },
 ];
 

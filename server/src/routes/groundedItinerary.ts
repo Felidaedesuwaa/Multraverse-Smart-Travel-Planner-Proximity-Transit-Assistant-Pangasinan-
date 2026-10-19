@@ -8,16 +8,19 @@ import { validateItinerary, ItineraryInputError, buildGroundedItinerary, candida
 import { guidedSnapshot } from '../lib/guidedSnapshot'
 import { estimateCosts, fareTables } from '../lib/itineraryCosts'
 import { aiServiceHeaders } from '../lib/aiServiceAuth'
+import { automaticItineraryInput } from '../lib/automaticItinerary'
 
 const router = Router()
 const inFlight = new Set<string>()
 router.get('/itinerary/catalog', async (_req, res) => res.json({ areas: await publishedItineraryCatalog(), fareTables }))
-router.post('/itinerary/grounded', async (req: AuthRequest, res) => {
+router.post(['/itinerary/grounded', '/itinerary/automatic'], async (req: AuthRequest, res) => {
   const userId = req.userId!
   if (inFlight.has(userId)) return res.status(409).json({ error: 'A plan is already being generated for your account.' })
   inFlight.add(userId)
   try {
-    const request = validateItinerary(req.body)
+    const catalog = await publishedItineraryCatalog()
+    const automatic = req.path === '/itinerary/automatic'
+    const request = automatic ? automaticItineraryInput(req.body, catalog) : validateItinerary(req.body)
     // Exact sorted sets, not array order or a caller-supplied identity.
     const match = { userId, 'plan.guided.request.areaId': request.areaId,
       'plan.guided.request.tripTypes': request.tripTypes, 'plan.guided.request.activities': request.activities }
@@ -28,7 +31,6 @@ router.post('/itinerary/grounded', async (req: AuthRequest, res) => {
     const history = [...drafts, ...trips].map(d => d.plan.guided).sort((a,b) => b.generatedAt.localeCompare(a.generatedAt))
       .filter((p,i,all) => all.findIndex(other => other.generatedAt === p.generatedAt) === i).slice(0,3)
     const used = new Set<string>(history.flatMap(p => p.chosenIds))
-    const catalog = await publishedItineraryCatalog()
     const candidates = candidatesFor(request, used, catalog)
     let order: string[] = []
     const baseline = estimateCosts(request, catalog.find(a => a.id === request.areaId)?.lodging.find(e => e.id === request.lodgingId)?.lodgingDetails)
@@ -48,6 +50,7 @@ router.post('/itinerary/grounded', async (req: AuthRequest, res) => {
       } catch { modelStatus = 'The AI model was unavailable or returned an invalid selection. This plan uses catalog matching only.' }
     } else if (candidates.length) modelStatus = 'AI assistance is disabled. This plan uses catalog matching only.'
     const plan = buildGroundedItinerary(request, used, order, catalog)
+    if (automatic) plan.warnings.push('Automatic planning assumptions: today, one day from 07:00, balanced pace, PHP 2,000 per person, PHP 300 meals per person, no overnight stay and return to origin. Transport uses two rides at the first listed fare distance, or a provisional PHP 150 per person per ride allowance where no matrix applies. Confirm actual distances and costs locally.')
     if (!order.length) plan.warnings.push(modelStatus)
     const draft = await PlannerDraft.create({ userId, plan: guidedSnapshot(plan), expiresAt: new Date(Date.now() + 365*86400000) })
     return res.json({ ...plan, id: String(draft._id) })

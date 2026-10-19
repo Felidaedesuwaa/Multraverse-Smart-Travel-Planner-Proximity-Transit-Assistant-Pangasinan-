@@ -1,0 +1,253 @@
+MULTRAVERSE: VERIFIED SYSTEM REFERENCE FOR MANUSCRIPT PREPARATION
+Smart Travel Planner and Proximity Transit Assistant for Pangasinan
+Code review date: October 19, 2026
+
+PURPOSE AND EVIDENCE BOUNDARY
+
+This reference describes the current local source code, dependency manifests, retained dataset metadata and manuscript template. It is a factual handoff for preparing a manuscript, rather than a completed research report. The attached DOCX was read as a document containing manuscript requirements; its instructions were not treated as commands to modify the application. Application source takes precedence over outdated README statements.
+
+Implemented means the relevant workflow exists in the code. It does not establish that every deployed service, device permission, email account or database migration is functioning. No live production database was queried for this review. Current production record counts, simultaneous-user capacity, latency, accuracy, uptime and user satisfaction remain unmeasured here. Historical reports are not current measurements.
+
+1. SYSTEM OVERVIEW AND OBJECTIVES
+
+Multraverse is a cross-platform travel companion designed for travel within Pangasinan. It combines destination discovery, structured itinerary planning, travel cost estimation, personal trips, expense recording, saved places, a multilingual phrasebook, transit information and location-based arrival alerts. Administrative workflows allow municipal tourism accounts to submit catalog information for review.
+
+The project addresses the practical difficulty of consulting separate sources for attractions, foods, accommodations, transport references, language assistance and travel budgets. This is the design rationale; demonstrating the prevalence or severity of the problem still requires literature, interviews or other research evidence.
+
+A defensible general objective is to develop an integrated travel planning and proximity notification system for Pangasinan using curated local data, validated planning rules and administrative governance.
+
+Specific implemented objectives include organizing local tourism information; generating preference-based schedules; calculating transparent partial travel estimates; maintaining trips and actual expenses; providing phrasebook-based translation; notifying travelers near selected destinations; and presenting descriptive system analytics.
+
+2. USERS, ROLES AND GEOGRAPHIC SCOPE
+
+The user model declares EXPLORER, PRO, LGU, ADMIN and SUPERADMIN. Public signup creates Explorer accounts. The presence of PRO in the schema does not establish a paid subscription or payment processing system.
+
+Explorer users access personal travel functions. LGU accounts manage submissions within their assigned municipality. Admin accounts review submissions and access administrative analytics and user-management functions. Superadmin accounts have separate managed-account and audit interfaces. Authorization is route-specific: the existing requireAdmin guard accepts ADMIN only, so do not assume SUPERADMIN automatically inherits every Admin endpoint.
+
+Municipal account configuration and the geographic map cover 48 Pangasinan LGUs: four cities and 44 municipalities. Detailed retained tourism guides cover Dagupan, Alaminos, Urdaneta, San Carlos, Lingayen, Manaoag and Bolinao. The Express catalog registers all areas and can incorporate approved local submissions; areas without guide data start empty. The Python model-ranking request schema accepts those seven guide areas. Thus province-wide map/account coverage does not mean equally complete tourism knowledge or model assistance across all 48 LGUs.
+
+3. CURRENT TECHNOLOGY STACK
+
+Frontend: JavaScript and JSX, React 19.2.3, React Native 0.86.3, Expo SDK 57 with declared Expo version ~57.0.26, React Native Web ^0.21.2, React Navigation 7, Zustand 5, AsyncStorage 2.2.0, Expo SecureStore, React Native SVG, Lucide icons, and Poppins/DM Sans fonts. Platform-specific files adapt selected features to native and browser environments. Expo packages supply location, background task management, notifications, image selection/manipulation, file access and sharing.
+
+Backend: Node.js, TypeScript, Express ^5.2.1, Mongoose ^9.9.5 and MongoDB. Authentication uses jsonwebtoken ^9.0.3 and bcryptjs ^3.0.3. Nodemailer ^10.0.10 supports email delivery; dotenv supplies environment configuration and cors implements browser origin rules. Backend TypeScript is declared ^5.7.3; root development TypeScript is ~6.0.3. Deployment instructions specify Node 22.x. These are manifest declarations, not an assertion that every caret-ranged dependency resolves to that exact version.
+
+AI/speech service: Python, FastAPI 0.115.0, Uvicorn 0.32.0, Transformers 4.45.0, PyTorch 2.4.1, Datasets 3.0.0, PEFT 0.13.0, Accelerate 1.0.0, SentencePiece 0.2.0, NumPy 1.26.4, PyMongo 4.10.1, faster-whisper 1.1.0 and pyttsx3 2.98, as pinned in requirements.txt.
+
+The current implementation does not establish active Groq, Anthropic or Gemini integrations. The README still mentions them, but the current backend dependencies and AI routes use the separate Python service. MongoDB is the active database. The historical directory name server/prisma does not mean the system currently uses Prisma ORM or a relational database.
+
+External dependencies include SMTP email delivery, optional MongoDB Atlas hosting, ExchangeRate-API currency references and Google Maps JavaScript loading for the browser transit pin map. Municipal boundary geometry is bundled locally. These serve different purposes and should not be described as one universal mapping service.
+
+4. ARCHITECTURE AND DATA WORKFLOW
+
+Architecture in plain text:
+Browser / Android / iOS client -> Express REST API -> MongoDB
+Express REST API -> authenticated private FastAPI AI/speech service
+Express REST API -> SMTP email service
+Client -> optional external map and exchange-rate services
+
+The client sends JSON requests with bearer authentication to protected API routes. Express validates input, authenticates the session, reloads the current account, applies role/ownership/municipal restrictions and reads or updates MongoDB. AI-related requests go through Express to FastAPI using a separate service credential. The client is not intended to receive database, JWT-signing, SMTP or AI-service secrets.
+
+The frontend, API and Python service are separately runnable applications. The root Vercel configuration exports the website; a separate backend project can host Express. The Python service needs separate hosting. A published frontend URL alone does not establish deployment of the entire system.
+
+Ingestion -> Processing -> Storage -> Analytics -> Visualization:
+Retained guide/reference files, approved LGU submissions and user actions supply input. Import/preparation scripts normalize source material and retain provenance. Server validation and administrative review control acceptance. MongoDB stores application records; retained JSON files provide curated reference material. Aggregation pipelines and deterministic calculations produce metrics, estimates and selections. React Native screens show charts, summaries, maps and generated itineraries.
+
+5. IMPLEMENTED TRAVEL FEATURES
+
+Destination discovery: interactive Pangasinan boundary map, municipal exploration and destination previews. Shared geographic geometry supports location validation and municipal views. Pan, zoom and pin interactions exist; boundary-map graphics are not road-navigation output.
+
+Guided itinerary: users select area, trip types, activities, traveler grouping, pace, date, group size, duration, budget, transport modes and fare inputs, meal allowance and optional lodging. Trip types and activities each require one to three selections. Duration is one to seven days; travelers and room counts are whole numbers from one to 30. The server checks valid future/current dates against Manila and independently validates the request. Current trip budget validation accepts PHP 1 through PHP 1,000,000.
+
+Catalog-based selection: the planner combines retained guide entries with approved LGU places and foods. Matching names can receive approved descriptions, photos and cost information. Selected activities/categories affect candidate selection. Recent matching plans influence variety rather than permanently banning previously selected places. The selected lodging is retained. Food-focused choices preserve a complete destination food suggestion list while scheduling a smaller shortlist; listing a food does not mean the user purchases every suggestion.
+
+Outputs include suggested time slots, attractions/food/lodging/transit entries, source references, warnings, group and per-person estimates, a cost breakdown and explicit model-assisted or catalog-only status. Suggested times are not confirmed opening hours, measured travel times or guaranteed feasible appointments. The application supports saving generated itineraries and PDF export/sharing.
+
+Trips: users can save and manage personal trip records. Guided snapshots retain the generated details, rather than being silently rewritten when catalog data changes. A generated draft and a saved trip are separate records. Guided drafts currently expire after 365 days; older planner drafts may use a 24-hour lifetime. Permanent saved trips have a separate lifecycle. Generated-trip save identity is designed to prevent duplicate saves of the same draft.
+
+Trip expense audit: completion workflows require review of the cost breakdown and recorded expenses. Actual expenses must be explicitly supplied/reviewed; estimates are not automatically established as real spending. Cost items include meals, emergency, entry fees, lodging and transport, with additional permitted categories.
+
+Budget: personal expense entry and removal, categories, optional trip association, monthly spending totals, monthly budget preference, remaining budget and a savings-style percentage indicator. Remaining budget equals the configured monthly budget minus recorded monthly expenses. A displayed remaining-budget percentage is not proof that money has actually been saved in an account.
+
+Saved places: personal bookmarks, ratings and notes, with catalog references where applicable and moderation-related handling for shared information. Personal ownership and public catalog publication are distinct concepts.
+
+Language tools: English, Filipino and Pangasinan phrasebook translation. Ninety-five retained phrase entries support the six cross-language directions. Translation is constrained to recognized phrasebook content; unknown phrases can return an unsupported/not-found result. Do not describe this as unrestricted neural translation or demonstrate arbitrary sentence translation as an established capability. Speech endpoints provide local Whisper transcription and operating-system speech synthesis; available voices and native/browser recording behavior require device testing.
+
+Preferences/profile: persisted dark mode and display currency, name/location editing and profile photo changes. Profile photos are processed to square 512-by-512 JPEGs, capped at 512 KB and stored with the user. Financial values remain PHP internally. The currency interface supports 166 currency options, caches successful rates for 24 hours and labels unavailable conversions appropriately. Converted amounts are reference estimates rather than financial quotations.
+
+Notifications: the authenticated feed assembles relevant password, expense and moderation events. Transit arrival notices also have device-side behavior. This is not evidence of a general remote push messaging platform.
+
+6. TRANSIT AND PROXIMITY ASSISTANCE
+
+Transit search relies on published/reference route candidates and structured endpoint/stop matching. Python search ranks matching supplied routes by stop count. This is deterministic filtering, not learned prediction, real-time traffic estimation, vehicle tracking or a shortest-road-path algorithm.
+
+Users can select/pin a location and destination within Pangasinan, select an alert radius and choose vibration, sound or notification behavior. Radius options are 100, 300, 500, 1,000 and 2,000 meters. The distance computation uses the Haversine formula with Earth radius 6,371,000 meters. It measures straight-line distance, not billed transport kilometers or road distance.
+
+Arrival requires a GPS fix younger than 30 seconds, accuracy no greater than min(100 meters, radius/2), valid local geography and distance plus reported accuracy within the selected radius. The accuracy margin reduces premature alerts but does not eliminate GPS or operating-system failure. Alerts are designed to fire once. Native sessions expire after eight hours and tracking stops when the user stops it or logs out.
+
+Native background tracking uses Expo Location and TaskManager, with foreground/background permissions and platform notification setup. It requires an appropriate installed native build; Expo Go does not supply this background-alarm workflow. Browser tracking uses the foreground page; the browser background-tracking module explicitly rejects background alarms. Browser suspension and mobile power-management policies can prevent timely delivery.
+
+The browser pin map uses Google Maps when correctly configured. The native pin map delegates to the bundled SVG journey map. The drawn connector is not a verified road itinerary. Retired geofence-management collections and approval workflows should not be listed as current features. Proximity-based arrival checking remains implemented separately.
+
+7. AI MODEL: DESIGN, TRAINING CONFIGURATION AND ACTUAL ARTIFACT STATUS
+
+Configured base model: TinyLlama/TinyLlama-1.1B-Chat-v1.0, a pretrained approximately 1.1-billion-parameter causal language model. The project contains LoRA fine-tuning code using PEFT. It does not train a foundation model from scratch.
+
+Training configuration: LoRA rank 8, alpha 32, dropout 0.05, target modules q_proj and v_proj, no bias adaptation, three epochs, per-device batch size 2, gradient accumulation 4, learning rate 0.0002 and maximum training sequence length 512. Training uses float32 with fp16 disabled. Assistant-response labels are used while prompt tokens are masked from the loss. Long responses are chunked rather than silently truncated. Runtime model loading uses local files, CPU float32 and a generation lock that serializes inference inside a process.
+
+Important observed status: the locally configured pangasinan-travel-model directory contains no adapter_config.json, no adapter weights and no knowledge_manifest.json. The retained training provenance contains 1,120 records, with zero marked reviewed. No trained adapter, completed run, evaluation score or successful model inference was demonstrated by this inspection. An external deployed model could differ; it was not inspected. The accurate current claim is that LoRA training/inference support is implemented, while trained-model availability is unverified and local adapter artifacts are absent.
+
+prepare_data.py prepares the corpus and provenance; running it does not retrain weights. train.py checks the corpus manifest and review status, refusing unreviewed material by default unless explicitly overridden for an experimental run. Adapter loading also checks compatibility with the current corpus manifest. This helps detect stale artifacts but does not prove model accuracy or source truthfulness.
+
+Runtime planner role: Python can rank only supplied candidate options. Express checks that the output is a complete, nonduplicated permutation of allowed IDs. It retains control over names, descriptions, categories, prices, schedules and arithmetic. Invalid, disabled or unavailable model ranking produces an explicitly labeled deterministic catalog fallback. The ranking call has a 25-second API timeout. The small model context and complete-permutation requirement can cause fallback for large candidate lists.
+
+The narrative endpoint is constrained separately. Knowledge answers and phrasebook translation can operate through retrieval without trained model weights. The best description is a catalog-grounded hybrid decision-support design with optional language-model ranking, deterministic planning and retrieval-based language assistance. Do not call it an evaluated end-to-end generative travel agent or a vector-database RAG system; no vector retrieval stack was established.
+
+Speech is a separate model path: faster-whisper defaults to its base model on CPU with int8 computation. pyttsx3 uses installed speech engines. Neither is the TinyLlama itinerary model, and neither establishes specialized Pangasinan recognition accuracy.
+
+8. DATASETS, PREPARATION AND QUALITY
+
+The retained knowledge manifest reports 1,120 instruction-response preparation records, 95 phrases, seven LGUs/seven guides, four fare sections, 53 local-food reference entries and 28 lodging properties. These are dataset/preparation counts. They are not current MongoDB collection counts, unique attractions, users, observations in an evaluation set or training examples proven to have been used in a completed run. Training chunking can change the number of actual training sequences.
+
+Retained sources include cityGuides.json, phrasebook V2 material, pangasinanFares.json, localFoodReference.json and lodging references for Dagupan, Alaminos, San Carlos and Urdaneta. Guides retain source filenames/pages; selected imports and preparation artifacts retain SHA-256 provenance. Boundary data originates from the 2023 Philippines JSON Maps dataset with MIT attribution. The Alaminos guide records September 2026 at month precision; Dagupan source date is unknown. Source-file dates should not be invented or replaced with the date of this review.
+
+Preparation includes extracting/structuring source content, standardizing area IDs and categories, generating stable catalog identifiers, preparing multilingual instruction-response examples and validating retained provenance. Import scripts support preservation/upsert behavior rather than indiscriminate replacement. Runtime selection limits data to appropriate locations and approval states.
+
+Missing operating hours, admission costs and other unsupported facts remain unknown/null. Unknown prices must not be treated as free. Source listing and administrative approval do not independently verify present-day availability, road access, safety, hours or prices. Local-food locality associations are not proof of availability in every town. No statistical outlier-removal experiment was established; numeric bounds are validation rules rather than a demonstrated outlier-detection method.
+
+9. DATABASE DESIGN AND LIFECYCLES
+
+MongoDB documents embed bounded information read with its parent and reference shared or independently growing records. Trips embed itinerary days/stops and guided snapshots; user documents embed budget preferences. Expenses and administrative history remain separate collections.
+
+The central registry lists 15 collections: users, phrasebooks, trips, budgetentries, savedplaces, places, localfoods, transitroutes, routeprices, pendingregistrations, passwordresets, plannerdrafts, authlimits, auditlogs and aisettings.
+
+Current security code additionally defines accountfactors, revokedsessions and privacyacknowledgments. Therefore the complete current application model set comprises 18 intended collections, although the central 15-collection registry and older documentation omit these three additive stores. Startup prepares the security stores separately. Actual installed production collections were not counted in this review.
+
+Schema controls include Mongoose validation, strict field handling and MongoDB JSON Schema provisioning. Declared indexes cover uniqueness, ownership/query patterns and TTL expiry. Transactions protect sensitive multi-record workflows, requiring a transaction-capable MongoDB deployment such as Atlas or an appropriately configured replica set. A generic standalone MongoDB instance is not equivalent for these operations.
+
+TTL storage is used for challenges, rate-limit buckets, drafts and revoked sessions. TTL removal is asynchronous; explicit expiry checks remain necessary for security. Saved snapshots preserve historical planning assumptions. Historical audit records can outlive the originating account/resource. The application does not establish unlimited immutable retention, comprehensive backups or automated disaster recovery merely by using MongoDB.
+
+10. SECURITY AND PRIVACY CONTROLS
+
+Authentication: salted bcrypt password hashes, email-verified registration, signed HS256 bearer JWTs and live account checks. New passwords require 8-72 ASCII characters, an uppercase letter and a digit; allowed symbols are underscore, hyphen and @. Password changes/resets use bcrypt cost 12. Older hashes may retain earlier costs. Password hashes are hidden from normal model selection/API output.
+
+Registration validates names/emails, normalizes addresses and checks email-domain MX records before email verification. A six-digit emailed challenge precedes creation of a login-capable account. Signup requires affirmative privacy acknowledgment with version/time records.
+
+Privileged MFA: ADMIN, LGU and SUPERADMIN require a six-digit time-based authenticator factor. Enrollment must be confirmed before a full privileged session is issued. Secrets use AES-256-GCM encryption with a separate MFA_ENCRYPTION_KEY and user binding. Expiring, password-bound challenge tokens cannot access ordinary private APIs. Code counters prevent replay. Explorer password login does not have the same mandatory authenticator requirement.
+
+Sessions: privileged JWT lifetime is one hour; ordinary sessions are seven days. Private requests check the current account, credential fingerprint, disabled/temporary-password flags and revocation digest. Password changes, account deletion and relevant privilege changes are checked against the current account rather than trusting stale token claims. Online logout records server revocation. Offline logout clears the device but cannot immediately revoke a previously copied token without server communication.
+
+Recovery: random challenge identifiers and six-digit email codes, ten-minute expiration, at most five verification attempts, keyed code hashes and rate limits. Generic reset responses reduce email enumeration. Sensitive password changes/challenge consumption/audit writes use transactions. Email recovery does not remove privileged MFA; authenticator loss requires an independently verified operational recovery process.
+
+Authorization: owner-scoped personal data, role guards and municipal restrictions loaded from MongoDB. LGU users cannot assign their own municipality or modify another municipality's records. Field allowlists reject owner/role/moderation mass assignment. Administrative account management has separate controls.
+
+Validation and injection defense: rejected MongoDB operators/prototype keys, validated ObjectIds, finite numbers, actual calendar dates, bounded strings/lists, request body limits and independent server validation. CORS permits configured origins plus coded local development origins; native requests without Origin are permitted to proceed to the applicable authentication controls. CORS is not authentication.
+
+Abuse controls: MongoDB-backed atomic fixed-window counters support limits across API processes/restarts. General API limit is 300 requests per minute per IP, excluding GET health; authentication is 60 per 15 minutes per IP; authenticated AI POSTs are 10 per minute per user. Login and recovery have additional scopes. HMAC keys avoid raw email/IP values in limit keys. Limits are not measured system capacity or host-level DDoS protection.
+
+Data handling: native bearer tokens use SecureStore; browser tokens remain JavaScript-readable in browser-backed storage. Some profile/preferences/travel caches use AsyncStorage and should not be described as fully encrypted. Security headers, generic errors, request IDs, response caching restrictions and redacted upstream failures reduce information exposure. A strict script CSP and HttpOnly browser session architecture are not established.
+
+Private AI service: matching AI_SERVICE_TOKEN values authenticate API-to-Python requests. Python binds to loopback by default, fails closed without the credential and bounds input. Its health endpoint remains public. Shared secrets require private networking or TLS when services run on different hosts. HTTPS, Atlas network controls, least-privilege database accounts and protected backups depend on actual hosting configuration.
+
+Privacy: names/emails, profile photos, travel records, expenses, saved notes, location permissions and MFA material require protection. Optional device permissions gate relevant features; tracking can be stopped. Self-deletion and managed deletion include associated-data cleanup, with historical governance/audit retention boundaries. Privacy acknowledgment is not proof of legal compliance, external audit or certification.
+
+11. MUNICIPAL CONTENT GOVERNANCE
+
+LGU accounts submit places, local foods, route prices and transit routes. Approval states are pending, approved and rejected. Transit operational ACTIVE/INACTIVE status is separate from editorial approval. LGU creates/edits enter pending status; pending and rejected content is withheld from normal published catalog queries. In-place edits hide the revised record until approval instead of preserving a separately published old version. Independent retained guide baselines may still provide source-listed content; hiding a submitted database record does not erase every retained source mentioning the same place.
+
+Deletion requests require review. Revision checks reject stale approval decisions with HTTP 409. Administrators can approve/reject and provide feedback. Audit history supports accountability but is not cryptographically immutable evidence. Governance recommendations include source rechecking, price review dates, source licensing, incident procedures, log retention and documented recovery responsibility.
+
+12. ANALYTICS FUNCTIONS AND EXACT INTERPRETATIONS
+
+Function A: account/trip growth and registration trend.
+Purpose: describe adoption and record creation. Input: User and Trip creation timestamps. Method: MongoDB aggregation counts current/previous monthly creation and groups registrations into six UTC calendar months. Output: total users, total trips, monthly registrations and growth percentages. Growth equals (current minus previous)/previous times 100 when previous is nonzero; the implementation returns 100 when previous is zero and current is positive, otherwise zero. Interpretation: a coded display convention, not a mathematically defined percentage increase from zero. The current partial month is compared with the entire previous month, so it is not a like-for-like completed-month comparison.
+
+Function B: daily active-trip creators and returning-user ratio.
+Purpose: describe repeated trip creation. Input: Trip user IDs/timestamps and total User count. Method: count distinct trip creators by UTC day over the displayed seven-day window; count users with more than one Trip document. Output: daily bars and returning users divided by all registered users times 100. Interpretation: trip-creation activity, not login activity or unique weekly users. Returning users is a simple all-history repeat-trip ratio, not cohort retention. Deleted-account remnants or inconsistent records would affect interpretation and require data-quality checks.
+
+Function C: destination frequency ranking.
+Purpose: identify commonly recorded trip destinations. Input: Trip.location. Method: trim strings, group/count, sort descending and return the top five. Output: ranked destination counts. Interpretation: destination frequency in application trip records, not actual tourist arrivals or verified visits. Trim alone does not merge spelling/case aliases. The Admin Analytics page shows a ranked list rather than a dedicated destination chart.
+
+Function D: spending and budget analysis.
+Purpose: support personal budget decisions and summarize recorded expenses. Input: BudgetEntry amounts/categories and budget preferences. Method: sums, category grouping, budget subtraction and percentage calculation. Output: recorded expenses, category breakdown, budget progress and remaining amount. Interpretation: user-entered spending, not audited payment transactions. The backend legacy field totalRevenue sums expenses; it is not platform earnings, tourism revenue, profit or booking sales. One Admin Dashboard label still says Trip Revenue, so manuscript terminology should correct that interpretation.
+
+Function E: itinerary cost and preference decision support.
+Purpose: propose catalog-constrained schedules with explicit budget assumptions. Method: category matching, optional validated model ordering, recent-history variety preference and deterministic arithmetic. Meals = daily per-person allowance times travelers times days. Transport = selected per-person per-ride fare or allowance times rides times travelers. Supported room-night estimates multiply the listed range by rooms and days minus one. Emergency reserve = 10 percent of total budget. Admission calculations use known person/group bases. Output: group/per-person range, remaining range and partial/may-exceed/over-budget status. Unknown charges are excluded, so a partial estimate is never proof of full affordability. Fare kilometers are user-selected billed distances, not inferred from the straight-line transit map.
+
+13. DASHBOARD REQUIREMENTS AND TEMPLATE GAPS
+
+The Admin Analytics page supplies four KPI cards: total users, total trips, recorded expenses and returning-user percentage. It renders two bar charts, New users by month and Weekly active travelers, plus a top-destinations ranked list. The separate Admin Dashboard shows account/route/spending summaries and recent route records. These are computed from application data rather than proof of tourist-population statistics.
+
+The supplied manuscript template asks for at least three analytics functions, three visualizations, three to five KPIs and at least one interactive dashboard filter. Multiple analytics functions and four KPI cards are implemented. The ranked destination list can be described accurately as a third visual presentation if accepted by the evaluator; it should not be called a chart that does not exist. If three charts are specifically required, the current analytics page does not supply three charts.
+
+The Admin Analytics page has fixed time windows and no implemented interactive date/destination/role filter in the reviewed component. Filters elsewhere, such as My Trips status/search, should not be misrepresented as an analytics-dashboard filter. This is an implementation gap to resolve or disclose. The template alone does not establish that the requirement is already satisfied.
+
+14. SCALABILITY: EXISTING SUPPORT AND BOUNDARIES
+
+Existing support includes separate frontend/API/inference processes, reusable MongoDB connections, concurrent independent reads, schema indexes, bounded/paginated queries where implemented, TTL operational storage, owner-scoped records and shared authentication limits. Static frontend assets can be served separately. Native location monitoring occurs on the device, reducing the need for continuous server GPS polling. These design choices provide a basis for growth, not demonstrated load capacity.
+
+Potential bottlenecks include scanning/grouping large operational collections for dashboard totals; repeated full retrieval of published places/foods in publishedItineraryCatalog; embedded base64 images; growing draft/snapshot documents; inference CPU/RAM; model startup; serialized generation; synchronous request lifetimes; and increased database traffic from authorization/revocation/rate-limit checks. The per-user itinerary in-flight Set is process-local and does not prevent simultaneous generation across multiple API instances.
+
+10-times growth scenario: let N be the measured baseline record count, so the scenario is 10N rather than an invented absolute number. More records increase scans, sorting, transfer size and memory. More concurrent AI requests produce waiting or failures because inference is serialized. Proposed measures: inspect query plans, add appropriate compound indexes, move catalog filtering into database queries, paginate large lists, cache carefully with moderation invalidation, measure aggregation cost and use a bounded inference queue. These are recommendations unless already demonstrated in code.
+
+100-times growth scenario: repeated analytics scans and large image/doc transfers become more expensive; CPU inference and synchronous request duration are likely stronger limits. Proposed measures include preaggregated analytics, asynchronous jobs, distributed generation locks/idempotency, dedicated inference workers, object storage for images, load-balanced API replicas, archival policies, monitoring and measured database capacity upgrades. Consider sharding only after measurement justifies its complexity. No implemented Redis, message broker, Kubernetes deployment, Spark pipeline or sharded cluster was established.
+
+Current capacity must be reported using actual database counts, hardware/hosting resources and repeatable load tests. Measure p50/p95 response time, throughput, errors, concurrent requests, CPU/RAM, database query latency and model versus fallback timing separately. A rate limit, 500-candidate request bound or 48-area configuration is not a simultaneous-user benchmark. Growth projections should be explicitly hypothetical.
+
+15. TESTING, RESULTS AND CLAIMS REQUIRING EVIDENCE
+
+The repository includes server security/recovery/deletion/startup checks; planner, registration, municipality and database checks; frontend regression scripts; and Python knowledge, transit, fare, ranking and security tests. Some use mocked persistence or fake inference, while selected suites require isolated MongoDB databases. Their existence does not establish that every suite passed on the present deployment. Current verification results from this review are recorded separately below.
+
+No model accuracy, BLEU score, recommendation precision, success rate, load-test throughput, tourism impact, field GPS reliability or user acceptance score was established. Do not invent numerical findings or claim the system improves travel time/cost by a percentage. Support implementation findings with source inspection/screenshots and support effectiveness claims with a documented evaluation method.
+
+Use the actual dataset/preparation counts above for the dataset description. Obtain live counts of users/trips/expenses/catalog records separately, including collection date and inclusion rules. Capture real dashboard values and explain empty data honestly. Do not reuse historical database counts as present-day statistics.
+
+Security documentation contains historical dependency audit counts and older stack descriptions. They were not refreshed through an internet advisory audit in this review and must not be presented as current vulnerability totals. Passing application tests is not penetration-test certification.
+
+Verification performed on October 19, 2026: npm.cmd test --prefix server completed successfully. It compiled the TypeScript backend and passed the rubric-security, recovery-grants, self-deletion, database-startup and Vercel-startup suites. Coverage included authenticator vectors/encryption/replay protection, privileged MFA, session revocation, consent/injection handling, recovery challenge behavior, deletion ownership/cleanup, initialization retry/concurrency, health, CORS and client-IP handling. These use mocked/in-memory persistence or startup stubs; they do not verify production MongoDB transactions/indexes, live SMTP, actual model inference, native devices, load capacity or deployment security. Python and frontend suites were not rerun for this reference. No application feature code was changed by this review.
+
+16. DEFENSE LIMITATIONS TO STATE EXPLICITLY
+
+Detailed guide coverage is uneven across municipalities. Local trained TinyLlama adapter artifacts are absent. Translation is phrasebook-constrained. Unknown charges remain unknown. Reference fares/rates require date/locality confirmation. Dagupan tricycle matrix values are not established province-wide; other areas require local allowances. The fare data is a retained reference rather than a live operator feed. No transport booking, hotel reservation, payment processing, real-time vehicle feed, live congestion model or shortest-road-route optimization was established. Suggested schedules are not guaranteed feasible. Background alerts depend on native builds, permissions, location quality and operating-system behavior. Core authenticated data functions require the API/database; cached references do not make the complete system offline-capable.
+
+17. MANUSCRIPT COMPLETION GUIDE
+
+Abstract: summarize problem, purpose, retained sources, descriptive analytics, implemented travel functions and governance. Avoid empirical improvement or model-training claims without results. Suitable keywords include Pangasinan, travel planning, proximity alerts, descriptive analytics and catalog-grounded decision support.
+
+Introduction: use project rationale/objectives and geographic boundaries; add actual literature or user research with verified citations.
+
+Dataset section: describe source files, localities, preparation/provenance, missing-value policy and the distinction between reference records and operational records. Include the date of any live extraction.
+
+Analytics section: choose at least three functions above and describe purpose, input, method, output and interpretation. Use real measured outputs for findings. Document UTC administrative windows and local/Manila date behavior rather than claiming every calculation uses one timezone.
+
+Architecture/workflow: diagram the client, Express, MongoDB, private Python service, SMTP and relevant external services. Show ingestion, processing, storage, analytics and visualization separately.
+
+Dashboard: capture actual KPI cards, both charts, the destination list and any separately demonstrated budget views. Disclose the missing analytics filter unless implemented later.
+
+Decision support: connect an observed output to a supported action, for example an over-budget estimate to revising the allowance/duration, frequent destinations to reviewing catalog coverage, or pending submissions to an administrator review queue. Frequency alone should not dictate tourism investment.
+
+Scalability: enter actual baseline counts/resources, then reason about 10N/100N with stated assumptions. Separate existing architecture from proposed scaling infrastructure.
+
+Governance: discuss uneven geographic coverage, selection bias, stale source data, possible model preference bias, privacy, moderation, retention, account recovery and dataset/map attribution.
+
+Demonstration: use screenshots of signup verification, privileged MFA, itinerary inputs/result/fallback label, partial cost breakdown, PDF, trips and expense audit, saved places, budget, phrasebook, map, transit permissions/arrival behavior, LGU submission, Admin approval, analytics and Superadmin audit. Mask personal information, credentials, codes and tokens. Screenshot captions should describe only what is visible and demonstrated.
+
+Results/conclusion: state verified implementation outcomes and limitations. Add field/user/benchmark findings only when collected. Do not invent individual contributions; obtain them from team members. The October 23, 2026 date printed in the template is a document date, not evidence that testing occurred then.
+
+References/appendices: cite actual guides/reference files and their provenance, boundary-data attribution, repository and relevant official documentation used by the team. This review did not browse external sources, so it does not provide a verified academic bibliography. Include architecture diagrams, dataset descriptions, selected source excerpts and real screenshots. Do not include environment secrets or the credential notes in text1.txt.
+
+18. PRIMARY REPOSITORY EVIDENCE FOR FOLLOW-UP
+
+Stack: package.json; server/package.json; ai-service/requirements.txt.
+API wiring/security limits: server/src/index.ts; server/src/middleware/auth.ts; server/src/middleware/input.ts; server/src/middleware/security.ts.
+Account security: server/src/lib/mfa.ts; server/src/lib/totp.ts; server/src/lib/passwordSecurity.ts; server/src/lib/registrationVerification.ts; server/src/models/AccountSecurity.ts; src/lib/storage.js.
+Planner: server/src/routes/groundedItinerary.ts; server/src/lib/groundedItinerary.ts; server/src/lib/publishedItineraryCatalog.ts; server/src/lib/itineraryCosts.ts; server/src/lib/fareCalculation.ts; server/src/data/itineraryCatalog.ts.
+AI/training: ai-service/main.py; ai-service/train.py; ai-service/prepare_data.py; ai-service/training_chunks.py; ai-service/service_security.py; ai-service/data/knowledge_manifest.json; ai-service/data/provenance.json.
+Transit: ai-service/transit.py; src/pages/TransitAlarm.jsx; src/lib/transitGeometry.js; src/lib/transitTracking.native.js; src/lib/transitTracking.web.js; src/components/TransitJourneyMap.jsx; src/components/TransitPinMap.web.jsx.
+Analytics: server/src/routes/analytics.ts; src/pages/AdminAnalytics.jsx; src/pages/AdminDashboard.jsx; src/pages/Budget.jsx.
+Governance/storage: server/src/routes/lgu.ts; server/src/routes/approvals.ts; server/src/models/_collections.ts; server/src/models/AccountSecurity.ts; server/src/lib/tripExpenseAudit.ts; server/src/routes/notifications.ts.
+Historical/context documents: docs/SECURITY-RUBRIC.md; SECURITY.md; DEPLOYMENT.md; server/DATABASE-DESIGN.md; server/LGU.md; server/PLANNER-DRAFTS.md; ai-service/README.md. Read these alongside current code because some counts and descriptions are outdated.
+
+HANDOFF INSTRUCTION FOR A MANUSCRIPT-WRITING AI
+
+Use this reference as evidence about the inspected implementation. Preserve distinctions among implemented code, available local artifacts, historical reports, deployment-dependent behavior, proposed improvements and missing research evidence. Request or mark missing live counts, screenshots, evaluation results, bibliographic metadata and individual contributions instead of inventing them. Do not claim completed TinyLlama training, unrestricted translation, actual platform revenue, verified full-budget affordability, a dashboard filter, measured scale or legal/security certification without additional evidence.

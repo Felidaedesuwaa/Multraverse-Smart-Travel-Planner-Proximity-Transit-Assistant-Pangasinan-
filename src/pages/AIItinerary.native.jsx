@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Image, Keyboard, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { ActivityIndicator, Image, Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { ArrowLeft, ArrowRight, BedDouble, ChevronDown, ChevronUp, Home, Info, MapPin, Sparkles, Utensils, Wallet } from 'lucide-react-native';
 import { useAppTheme } from '../theme/useAppTheme';
 import { useItineraryPlanner, TRIP_TYPES, ACTIVITIES, TRAVELER_TYPES, TRAVEL_STYLES, TRANSPORT_MODES, BUDGET_PACKAGES, todayInManila, hotelBudget } from '../hooks/useItineraryPlanner';
@@ -63,6 +64,11 @@ export default function AIItinerary({ navigation }) {
       <AIToolHeader eyebrow="PANGASINAN TRIP PLANNER" title="AI Itinerary" subtitle="Build a practical trip plan using verified places, transport fares, and local food guides." badges={[{ label: 'Verified local data' }, { label: 'Budget-aware planning' }]} Icon={Sparkles} compact />
       {!!planner.error && <Copy alert>{planner.error}</Copy>}
       {!!planner.notice && <Copy>{planner.notice}</Copy>}
+      {planner.showForm && <Pressable accessibilityRole="button" accessibilityLabel="Let AI plan for me, just 3 details" onPress={() => navigation.navigate('AutomaticItinerary')} style={({ pressed }) => ({ borderRadius: 16, overflow: 'hidden', opacity: pressed ? 0.85 : 1 })}>
+        <LinearGradient colors={['#075985', '#1D4ED8', '#C2410C']} locations={[0, 0.4, 1]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 18, minHeight: 60 }}>
+          <Sparkles size={22} color="#fff" /><Text style={{ flex: 1, color: '#fff', fontFamily: 'DMSans', fontSize: 15, fontWeight: '700' }}>Let AI plan for me · just 3 details</Text><ArrowRight size={20} color="#fff" />
+        </LinearGradient>
+      </Pressable>}
       {planner.showForm && <>
         <Copy heading>Plan step {step} of 3</Copy><Copy muted>{planner.stepLabel}</Copy>
         <View style={styles.row}>{[1, 2, 3].map(number => <View key={number} style={{ flex: 1, height: 6, borderRadius: 6, backgroundColor: number <= step ? palette.accent : palette.line }} />)}</View>
@@ -80,7 +86,7 @@ export default function AIItinerary({ navigation }) {
           <Card>
             <Copy heading>Trip details</Copy>
             <Field label="Travel date (YYYY-MM-DD)" value={form.date} onFocus={() => planner.setToday(todayInManila())} onChange={value => set('date', value)} error={fieldErrors.date} placeholder={planner.today} />
-            <Field label="Travelers" numeric value={form.travelers} onChange={value => set('travelers', value)} error={fieldErrors.travelers} />
+            <Select label="Travelers" value={Number(form.travelers)} onChange={value => set('travelers', value)} options={Array.from({ length: 30 }, (_, index) => ({ id: index + 1, label: `${index + 1} traveler${index ? 's' : ''}` }))} error={fieldErrors.travelers} />
             <Select label="How many days?" options={[1, 2, 3, 4, 5, 6, 7].map(number => ({ id: number, label: `${number} day${number === 1 ? '' : 's'}` }))} value={form.days} onChange={value => set('days', value)} error={fieldErrors.days} />
             <Choices label="Total trip budget" options={BUDGET_PACKAGES.map(tier => ({ id: tier.id, Icon: tier.Icon, label: `${tier.label} · ${range(tier.min, tier.max ?? tier.min)}${tier.max == null ? '+' : ''} / person / day` }))} values={planner.budgetTier} onChange={id => planner.chooseBudget(BUDGET_PACKAGES.find(tier => tier.id === id))} error={fieldErrors.budget} />
             <Copy>{planner.selectedBudget ? `${planner.selectedBudget.label}: ${money(form.budget)} for ${form.travelers} travelers × ${form.days} days` : 'Choose a budget above.'}</Copy>
