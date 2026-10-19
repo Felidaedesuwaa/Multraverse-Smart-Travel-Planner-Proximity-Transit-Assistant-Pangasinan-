@@ -1,6 +1,6 @@
 import { useAppTheme } from "../theme/useAppTheme";
 import { useEffect, useRef, useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Check } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { colors } from "../theme/colors";
@@ -37,7 +37,9 @@ export default function RegisterPage() {
   const [privacyConsent, setPrivacyConsent] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const submitting = useRef(false);
+  const codeInputs = useRef([]);
   const fields = { firstName, middleName, surname, email, password, confirm };
+  const canRegister = privacyConsent && !Object.values(validateRegistration(fields)).some(Boolean);
   const fullName = registrationFullName(firstName, middleName, surname);
   const validateField = field => setErrors(current => ({ ...current, [field]: validateRegistration(fields)[field] }));
   const change = (field, setter) => value => {
@@ -46,7 +48,7 @@ export default function RegisterPage() {
   };
 
   const handleSubmit = async () => {
-    if (submitting.current || isLoading) return;
+    if (submitting.current || isLoading || !canRegister) return;
     if (!privacyConsent) { setFormError("Read and accept the privacy notice before registering."); return; }
     const validation = validateRegistration(fields);
     setErrors(validation);
@@ -67,7 +69,7 @@ export default function RegisterPage() {
   };
 
   const verify = async () => {
-    if (submitting.current || isLoading || resending) return;
+    if (submitting.current || isLoading || resending || !pending || Date.now() >= new Date(pending.expiresAt).getTime()) return;
     if (!/^\d{6}$/.test(code)) { setFormError("Enter the six-digit code from your email."); return; }
     submitting.current = true;
     setFormError(null);
@@ -85,13 +87,51 @@ export default function RegisterPage() {
     } catch (error) { setFormError(error.message); }
     finally { submitting.current = false; setResending(false); }
   };
+  const changeCode = (index, value) => {
+    const digits = value.replace(/\D/g, "").slice(0, 6);
+    if (value && !digits) return;
+    const next = code.padEnd(6, " ").split("");
+    const start = digits.length === 6 ? 0 : index;
+    if (!digits) next[index] = " ";
+    else for (let offset = 0; offset < digits.length && start + offset < 6; offset++) next[start + offset] = digits[offset];
+    setCode(next.join("").trimEnd());
+    setFormError(null);
+    if (digits) codeInputs.current[Math.min(start + digits.length, 5)]?.focus();
+  };
   if (pending) {
     const wait = Math.max(0, Math.ceil((new Date(pending.resendAt).getTime() - now) / 1000));
     const expired = now >= new Date(pending.expiresAt).getTime();
     return <AuthLayout title="Verify your email" subtitle={`Step 2 of 2 · We sent a code to ${email.trim().toLowerCase()}`}>
       <Text style={themeStyle(styles.namePreview)}>Check your inbox and spam folder. Your account will be created after verification.</Text>
-      <AuthInput label="Verification code" placeholder="Enter 6-digit code" value={code} onChangeText={value => { setCode(value.replace(/\D/g, "").slice(0, 6)); setFormError(null); }} keyboardType="number-pad" autoComplete="one-time-code" textContentType="oneTimeCode" maxLength={6} autoFocus editable={!isLoading && !resending} onSubmitEditing={verify} error={formError} hint={expired ? "This code has expired. Request a new code below." : "Your code expires in 10 minutes and can only be used once."} />
-      <GradientButton label="Verify & Create Account" onPress={verify} loading={isLoading} disabled={resending || expired} />
+      <Text style={themeStyle(styles.namePreview)}>Use a 6-digit code to verify your email</Text>
+      <View style={styles.codeInputs}>
+        {Array.from({ length: 6 }, (_, index) => <TextInput
+          key={index}
+          ref={node => { codeInputs.current[index] = node; }}
+          accessibilityLabel={`Verification code digit ${index + 1} of 6`}
+          aria-invalid={!!formError}
+          value={code[index]?.trim() || ""}
+          onChangeText={value => changeCode(index, value)}
+          onKeyPress={({ nativeEvent }) => {
+            if (nativeEvent.key === "Backspace" && !code[index]?.trim() && index > 0) {
+              changeCode(index - 1, "");
+              codeInputs.current[index - 1]?.focus();
+            }
+          }}
+          keyboardType="number-pad"
+          autoComplete={index === 0 ? "one-time-code" : "off"}
+          textContentType={index === 0 ? "oneTimeCode" : "none"}
+          maxLength={6}
+          selectTextOnFocus
+          autoFocus={index === 0}
+          editable={!isLoading && !resending && !expired}
+          onSubmitEditing={verify}
+          style={themeStyle([styles.codeInput, formError && { borderColor: colors.sunsetCoral }])}
+        />)}
+      </View>
+      {formError ? <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={themeStyle(styles.formError)}>{formError}</Text> : null}
+      <Text style={themeStyle(styles.namePreview)}>{expired ? "This code has expired. Request a new code below." : "Your code expires in 10 minutes and can only be used once."}</Text>
+      <GradientButton label="Verify & Create Account" onPress={verify} loading={isLoading} disabled={resending || expired || !/^\d{6}$/.test(code)} />
       {!!notice && <Text accessibilityLiveRegion="polite" style={themeStyle(styles.notice)}>{notice}</Text>}
       <View style={styles.codeActions}>
         <Pressable accessibilityRole="button" disabled={wait > 0 || isLoading || resending} onPress={resend} style={styles.codeAction}><Text style={themeStyle(styles.footerLink)}>{resending ? "Sending…" : wait ? `Resend code in ${wait}s` : "Resend code"}</Text></Pressable>
@@ -139,7 +179,7 @@ export default function RegisterPage() {
           </View>
         </View>
       </Modal>
-      <GradientButton label="Register" loading={isLoading} onPress={handleSubmit} />
+      <GradientButton label="Register" loading={isLoading} disabled={!canRegister} onPress={handleSubmit} />
     </AuthLayout>
   );
 }
@@ -159,6 +199,8 @@ const styles = StyleSheet.create({
   privacyContent: { paddingBottom: 8 },
   privacyBody: { fontFamily: "DMSans", fontSize: 14, lineHeight: 23, color: "#A9C4D4" },
   privacyClose: { minHeight: 44, alignItems: "center", justifyContent: "center", marginTop: 16 },
+  codeInputs: { flexDirection: "row", gap: 8, marginBottom: 18 },
+  codeInput: { flex: 1, minWidth: 0, height: 54, borderRadius: 12, borderWidth: 1, borderColor: "rgba(255,255,255,0.15)", backgroundColor: "rgba(255,255,255,0.08)", color: colors.white, fontFamily: "DMSans", fontSize: 22, textAlign: "center", paddingHorizontal: 0 },
   codeActions: { marginTop: 16, gap: 6, alignItems: "center" },
   codeAction: { minHeight: 44, justifyContent: "center", paddingHorizontal: 12 },
   notice: { fontSize: 13, color: "#A9C4D4", marginTop: 14, textAlign: "center" },

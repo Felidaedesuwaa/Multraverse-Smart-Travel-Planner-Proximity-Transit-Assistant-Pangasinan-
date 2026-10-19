@@ -21,6 +21,7 @@
     "test:registration": "npm run build && node scripts/check-registration.cjs",
     "test:auth": "npm run build && node scripts/check-registration-api.cjs --isolated-database",
     "check:email": "npm run build && node scripts/check-email.cjs",
+    "test:email": "npm run build && node scripts/check-email-delivery.cjs",
     "test:environment": "npm run build && node scripts/check-environment.cjs",
     "test": "npm run build && node scripts/check-rubric-security.cjs && node scripts/check-recovery-grants.cjs && node scripts/check-self-delete.cjs && node scripts/check-database-startup.cjs && node scripts/check-vercel.cjs",
     "migrate:lgu": "npm run build && node scripts/migrate-lgu.cjs",

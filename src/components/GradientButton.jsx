@@ -9,7 +9,7 @@ export default function GradientButton({ label, loading, disabled, onPress, onCl
 
   const isDisabled = disabled || loading;
   return (
-    <FeedbackPressable accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ disabled: !!isDisabled, busy: !!loading }} disabled={isDisabled} onPress={onPress || onClick} style={themeStyle([styles.pressable, style])}>
+    <FeedbackPressable accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ disabled: !!isDisabled, busy: !!loading }} disabled={isDisabled} onPress={isDisabled ? undefined : onPress || onClick} style={themeStyle([styles.pressable, style, isDisabled && styles.disabled])}>
       <LinearGradient
         colors={(isDisabled ? ["#B8B8B8", "#9E9E9E"] : [colors.sunsetCoral, "#F2A63E"]).map(value => themeColor(value, "backgroundColor"))}
         start={{ x: 0, y: 0 }}
@@ -24,6 +24,7 @@ export default function GradientButton({ label, loading, disabled, onPress, onCl
 
 const styles = StyleSheet.create({
   pressable: { width: "100%", height: 54, borderRadius: 16, overflow: "hidden" },
+  disabled: { opacity: 0.5 },
   gradient: { flex: 1, alignItems: "center", justifyContent: "center" },
   label: { color: colors.white, fontFamily: "Poppins", fontWeight: "600", fontSize: 16 },
 });
