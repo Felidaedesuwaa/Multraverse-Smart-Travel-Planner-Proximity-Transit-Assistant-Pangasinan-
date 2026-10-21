@@ -1,10 +1,49 @@
-server
-server/**
-server/.agents
-server/.claude
-server/.windsurf
-node_modules
-.expo
-dist
+﻿# Logs
+logs
 *.log
-.git
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+.expo/
+dist
+dist-ssr
+*.local
+
+# Local credentials and personal development notes stay on this device.
+.env
+.env.*
+!.env.example
+/text.txt
+/test.txt
+/text1.txt
+/.tmp/
+/.tmp-itinerary-web-check/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Services and local artifacts are not part of the mobile app.
+/ai-service
+/.git
+/.tmp
+/docs
+/server/*
+# EAS checks directory paths without a trailing slash while walking the tree.
+# Re-include the directories themselves so it reaches the shared module.
+!/server/src
+/server/src/*
+!/server/src/lib
+/server/src/lib/*
+!/server/src/lib/fareCalculation.ts

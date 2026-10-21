@@ -25,6 +25,7 @@
     "build:web": "node scripts/check-web-deployment.cjs && expo export --platform web && node scripts/finalize-share-preview.cjs",
     "lint": "eslint .",
     "test:startup": "node scripts/check-mobile-startup.cjs",
+    "test:mobile-package": "node scripts/check-mobile-package.cjs",
     "test:captcha": "npm run build --prefix server && node server/scripts/check-captcha.cjs && node scripts/check-registration-captcha.cjs",
     "test:itinerary": "node scripts/check-itinerary-render.cjs",
     "test:trips": "node scripts/check-my-trips-render.cjs && npm run build --prefix server && node server/scripts/check-trip-expense-audit.cjs",
@@ -53,6 +54,7 @@
     "expo-secure-store": "~57.0.4",
     "expo-sharing": "~57.0.22",
     "expo-task-manager": "~57.0.21",
+    "expo-updates": "~57.0.26",
     "lucide-react-native": "^1.33.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
@@ -63,6 +65,7 @@
     "react-native-svg": "15.15.4",
     "react-native-web": "^0.21.2",
     "react-native-webview": "13.16.1",
+    "toqr": "^0.1.1",
     "zustand": "^5.0.15"
   },
   "devDependencies": {

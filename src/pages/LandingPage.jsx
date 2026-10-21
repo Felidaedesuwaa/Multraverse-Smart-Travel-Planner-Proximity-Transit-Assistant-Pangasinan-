@@ -3,6 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { ArrowRight, BellRing, Compass, MapPin, Route, Sun, Umbrella, Wallet, Waves } from "lucide-react-native";
 import SummerScene from "../components/SummerScene";
+import AppDownload from "../components/AppDownload";
 import { SummerBrand, TravelButton, useSummerColors } from "../components/SummerUI";
 
 const features = [
@@ -20,7 +21,7 @@ export default function LandingPage() {
   const login = () => navigation.navigate("Login");
   return <SafeAreaView style={{ flex: 1, backgroundColor: palette.background }} edges={["top", "left", "right"]}>
     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1 }}>
-      <View style={[styles.nav, { borderBottomColor: palette.line }]}><View style={styles.navInner}>
+      <View style={[styles.nav, { borderBottomColor: palette.line }]}><View style={[styles.navInner, compact && { flexWrap: 'wrap', paddingVertical: 16 }]}>
         <SummerBrand />
         <View style={styles.actions}>
           <Pressable accessibilityRole="button" onPress={login} style={({ pressed, hovered }) => [styles.navLogin, (pressed || hovered) && { backgroundColor: palette.tint }]}><Text style={[styles.link, { color: palette.ink }]}>Log in</Text><ArrowRight size={16} color={palette.ink} /></Pressable>
@@ -34,6 +35,7 @@ export default function LandingPage() {
           <Text style={[styles.heroText, { color: palette.muted }]}>From island days to unhurried coastal stops, make room for the good stuff. Your places, your budget, your next great trip.</Text>
           <View style={styles.ctas}><TravelButton label="Plan my getaway" onPress={signUp} /><TravelButton label="Sign in" onPress={login} secondary arrow={false} /></View>
           <View style={styles.heroNote}><Compass size={18} color={palette.muted} /><Text style={[styles.small, { color: palette.muted }]}>Made for exploring Pangasinan, at your pace.</Text></View>
+          <AppDownload />
         </View>
         <View style={[styles.postcard, compact && styles.fullWidth]}>
           <View style={[styles.postcardFrame, { backgroundColor: palette.surface, borderColor: palette.line }]}>
@@ -67,7 +69,7 @@ export default function LandingPage() {
 const styles = StyleSheet.create({
   nav: { borderBottomWidth: 1, paddingHorizontal: 24 },
   navInner: { width: "100%", maxWidth: 1200, alignSelf: "center", minHeight: 92, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
-  actions: { flexDirection: "row", alignItems: "center", gap: 18 },
+  actions: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 12 },
   navLogin: { minHeight: 44, paddingHorizontal: 10, borderRadius: 12, flexDirection: "row", alignItems: "center", gap: 8 },
   link: { fontFamily: "Poppins", fontSize: 13 },
   hero: { width: "100%", maxWidth: 1248, alignSelf: "center", paddingHorizontal: 24, paddingTop: 62, paddingBottom: 64, flexDirection: "row", alignItems: "center", gap: 54 },

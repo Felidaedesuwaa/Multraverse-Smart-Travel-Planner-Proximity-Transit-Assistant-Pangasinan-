@@ -1,5 +1,92 @@
 # Deploy the Multraverse website
 
+## Automatic releases after pushing to master
+
+`.github/workflows/android-release.yml` builds Android on every push to `master`
+and can also be run from GitHub Actions. It verifies the mobile environment,
+builds the `android-device` profile, waits for success, publishes a GitHub Release
+containing `Multraverse-app.apk`, then publishes an Android Expo Update to the
+`production` channel using the same Expo **Production** environment as the APK.
+Publishing is serialized; stale commits do not replace the public release.
+Failures leave the previous APK available. Each push consumes EAS build usage
+and GitHub Actions time; an EAS queue can delay publication.
+
+One-time setup:
+
+1. Push to the intended repository. This checkout's `origin` is
+   `Nasurada-M/Multraverse-Smart-Travel-Planner-Proximity-Transit-Assistant-Pangasinan-`;
+   `Felidaedesuwaa/...` is its `upstream`, not the current push destination.
+2. Create an access token in your Expo account settings. In that GitHub repository,
+   open **Settings → Secrets and variables → Actions → New repository secret**
+   and save it as `EXPO_TOKEN`. The Expo account needs access to this app. Never
+   put this token in source files or an `EXPO_PUBLIC_*` setting. Enable Actions
+   if this fork has them disabled. The workflow uses GitHub's built-in token to
+   publish releases; repository/organization policy must permit contents write.
+3. In Expo's **Production** environment, set `EXPO_PUBLIC_API_URL`,
+   `EXPO_PUBLIC_SITE_URL`, and `EXPO_PUBLIC_TURNSTILE_SITE_KEY`. Use plaintext or
+   sensitive visibility, not secret visibility, for these public build values.
+   APK builds and OTA updates now both use these settings; the old API URL
+   override in `eas.json` was removed to prevent build/update differences.
+4. Keep the existing Android signing credentials in Expo. Remote Android version
+   codes auto-increment. If EAS requests initial version setup, run
+   `npx eas-cli@latest build:version:set --platform android --profile android-device`
+   locally and initialize from the highest version code already distributed.
+5. In **both** the frontend and backend Vercel projects, verify the connected Git
+   repository is the same repository as step 1 and its Production branch is
+   `master`. Keep existing environment variables; the frontend root is `./` and
+   the backend root is `server`. Vercel's Git integration automatically deploys
+   pushes. No extra Vercel token or duplicate deployment workflow is necessary.
+6. After the first successful Android workflow publishes a release, set the
+   frontend Vercel Production variable `EXPO_PUBLIC_ANDROID_DOWNLOAD_URL` to:
+
+   ```text
+   https://github.com/Nasurada-M/Multraverse-Smart-Travel-Planner-Proximity-Transit-Assistant-Pangasinan-/releases/latest/download/Multraverse-app.apk
+   ```
+
+   Redeploy the frontend once. The button and QR code then follow the newest
+   successful release without editing links on each build. This requires a
+   **public repository** for downloads without GitHub login. If using another
+   repository, use the link printed in the workflow's summary instead. Until
+   this step, the website keeps its existing Expo build link. Do not mark an
+   unrelated release without this APK as the repository's latest release.
+
+Existing installed APKs do not have Expo Updates enabled. Install the first
+new APK from this workflow once. Subsequent compatible JavaScript/assets updates
+download on launch and apply after download and a later restart; they do not
+interrupt an active trip. Native dependencies, permissions, or other native
+changes alter the fingerprint runtime and require installing the new APK.
+An offline phone keeps its existing version. The workflow automates Android;
+iOS still requires its own signing/distribution setup and is not auto-published.
+Web, API, and Android deployments are independent, not an atomic release:
+keep API changes compatible with older installed clients.
+
+Validation: `npm run test:mobile-package`, `npm run build:web`, and inspect the
+GitHub Actions run, Vercel deployments, and Expo update channel after pushing.
+If a build succeeds but the update step fails, the APK is still available; rerun
+the workflow after fixing the reported issue.
+
+References: [Expo CI](https://docs.expo.dev/build/building-on-ci/),
+[Expo Updates](https://docs.expo.dev/eas-update/getting-started/),
+[Vercel Git deployments](https://vercel.com/docs/git).
+
+## Android app download from the website
+
+After an EAS Android APK build finishes, copy its public HTTPS APK download
+link. In the frontend Vercel project, set `EXPO_PUBLIC_ANDROID_DOWNLOAD_URL`
+for Production to that link, then redeploy the website. Check the link in a
+signed-out browser before publishing so visitors do not need your Expo account.
+
+The landing page displays **Download for Android**, installation instructions,
+and a QR code generated locally from the same URL as the button. With no override,
+it opens the bundled Expo release page for build
+`3d325ab1-73bc-41d1-a8ef-19547b12836d`. That build currently denies anonymous
+metadata access; use a public APK URL for installation without an Expo login.
+An invalid nonempty override hides the section. Visitors choose to download and confirm installation on
+Android; the website cannot install an app automatically. This APK does not
+install on iPhones. Replace the link and redeploy when releasing a new APK.
+
+For local web previews, set the variable in the root `.env` and restart Expo.
+
 ## Registration CAPTCHA (web, Android and iOS)
 
 Registration requires Cloudflare Turnstile. After accepting the privacy notice,

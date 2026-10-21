@@ -3,6 +3,12 @@
     "name": "Multraverse",
     "slug": "multraverse",
     "version": "1.0.0",
+    "runtimeVersion": { "policy": "fingerprint" },
+    "updates": {
+      "url": "https://u.expo.dev/087072c2-f5fa-4dba-af03-74cae74dfb4f",
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
+    },
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "plugins": [
@@ -29,7 +35,9 @@
       [
         "expo-notifications",
         {
-          "sounds": ["./assets/sounds/transit_vibrate.wav"]
+          "sounds": [
+            "./assets/sounds/transit_vibrate.wav"
+          ]
         }
       ],
       "expo-sharing"
@@ -39,11 +47,6 @@
     ],
     "web": {
       "bundler": "metro"
-    },
-    "extra": {
-      "eas": {
-        "projectId": "b42f74cc-5c67-4e39-ad05-5102a85dd00f"
-      }
     },
     "android": {
       "package": "com.jolly18.multraverse",
@@ -62,6 +65,12 @@
         "UIViewControllerBasedStatusBarAppearance": false,
         "ITSAppUsesNonExemptEncryption": false
       }
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "087072c2-f5fa-4dba-af03-74cae74dfb4f"
+      }
+    },
+    "owner": "miguelnasurada"
   }
 }

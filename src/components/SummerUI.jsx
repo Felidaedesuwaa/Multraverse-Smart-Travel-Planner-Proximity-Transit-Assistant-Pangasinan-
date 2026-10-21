@@ -11,12 +11,12 @@ export function SummerBrand() {
   return <View style={styles.brand}><View style={styles.logo}><Compass size={23} color="#FFF8EB" strokeWidth={1.6} /></View><View><Text style={[styles.brandName, { color: palette.ink }]}>Multraverse</Text><Text style={[styles.brandSub, { color: palette.muted }]}>PANGASINAN EDITION</Text></View></View>;
 }
 
-export function TravelButton({ label, onPress, secondary = false, loading = false, arrow = true, style }) {
+export function TravelButton({ label, onPress, secondary = false, loading = false, arrow = true, style, textColor, Icon }) {
   const palette = useSummerColors();
-  const color = secondary ? palette.ink : "#153C45";
+  const color = textColor ?? (secondary ? palette.ink : "#153C45");
   return <Pressable accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ disabled: loading, busy: loading }} disabled={loading} onPress={onPress}
     style={({ pressed, hovered }) => [styles.button, { backgroundColor: secondary ? palette.surface : "#F4B183", borderColor: secondary ? palette.line : "#F4B183", opacity: loading ? 0.7 : 1 }, (pressed || hovered) && { backgroundColor: secondary ? palette.tint : "#F7C5A3", transform: [{ translateY: pressed ? 1 : -2 }] }, style]}>
-    {loading ? <ActivityIndicator color={color} /> : <><Text style={[styles.buttonText, { color }]}>{label}</Text>{arrow && <ArrowUpRight size={19} color={color} />}</>}
+    {loading ? <ActivityIndicator color={color} /> : <><Text style={[styles.buttonText, { color }]}>{label}</Text>{Icon ? <Icon size={19} color={color} /> : arrow && <ArrowUpRight size={19} color={color} />}</>}
   </Pressable>;
 }
 

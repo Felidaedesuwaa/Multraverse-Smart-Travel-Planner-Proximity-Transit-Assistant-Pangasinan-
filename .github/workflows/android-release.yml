@@ -1,0 +1,73 @@
+name: Android release and updates
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# Serialize publishing so older builds cannot replace a newer release.
+concurrency:
+  group: android-production-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Check Expo authentication is configured
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "::error::Add EXPO_TOKEN under repository Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+      - run: npm ci
+      - run: npm run test:mobile-package
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      - name: Verify release environment
+        run: |
+          eas env:exec production 'node scripts/check-mobile-environment.cjs' --non-interactive
+      - name: Build signed Android APK
+        run: |
+          mkdir -p .tmp
+          eas build --platform android --profile android-device --non-interactive --wait --json > .tmp/android-build.json
+      - name: Download and validate completed APK
+        run: node scripts/download-eas-apk.cjs .tmp/android-build.json .tmp/Multraverse-app.apk
+      - name: Check this is still the newest commit
+        id: current
+        run: |
+          latest_sha=$(gh api "repos/$GITHUB_REPOSITORY/commits/master" --jq .sha)
+          if [ "$latest_sha" = "$GITHUB_SHA" ]; then
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "A newer commit exists. Keeping the current public release until that build succeeds."
+          fi
+      - name: Publish named APK
+        if: steps.current.outputs.publish == 'true'
+        run: |
+          tag="android-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          printf 'Android APK built from commit %s.\n\nInstall Multraverse-app.apk on Android. Existing installations need this APK when native features change.\n' "$GITHUB_SHA" > .tmp/release-notes.md
+          gh release create "$tag" .tmp/Multraverse-app.apk --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "Multraverse Android ${GITHUB_RUN_NUMBER}" --notes-file .tmp/release-notes.md --draft
+          gh release edit "$tag" --repo "$GITHUB_REPOSITORY" --draft=false --latest
+      - name: Publish compatible automatic Android update
+        if: steps.current.outputs.publish == 'true'
+        run: eas update --channel production --platform android --environment production --message "master $GITHUB_SHA" --non-interactive
+      - name: Download link
+        if: steps.current.outputs.publish == 'true'
+        run: |
+          printf '### Android download\nhttps://github.com/%s/releases/latest/download/Multraverse-app.apk\n' "$GITHUB_REPOSITORY" >> "$GITHUB_STEP_SUMMARY"
