@@ -1,5 +1,74 @@
 # Deploy the Multraverse website
 
+## Registration CAPTCHA (web, Android and iOS)
+
+Registration requires Cloudflare Turnstile. After accepting the privacy notice,
+press **Prove you're not a bot** to open the challenge. The checkbox checks only
+after the API validates Cloudflare's token, then stays checked and disabled for
+that registration screen. Refresh the website or leave and reopen registration
+in the app to reset it. The Register button also requires this verification.
+
+Cloudflare tokens expire in five minutes and can only be validated once. The
+API exchanges the token immediately for an opaque, single-use registration pass
+valid for 30 minutes. The checkbox stays checked when the pass expires or is
+used; expired/used passes require refreshing/reopening registration. Passes are
+kept only in component memory, never persisted in local storage. The backend
+consumes the pass before issuing the signup email, and rejects missing, forged,
+expired or reused passes even if a caller bypasses the UI. Resending an existing
+email challenge continues to use its existing cooldown and rate limits.
+
+1. Create a widget in **Cloudflare Dashboard → Turnstile → Add widget**. Choose
+   **Managed** mode and add the hostname
+   `multraverse-smart-travel-planner-pr.vercel.app` (no scheme or path).
+   Add `localhost` if testing locally. Cloudflare can complete managed checks
+   automatically; an interactive checkbox is shown when needed.
+2. Copy the widget's **Site Key** and **Secret Key**. In Vercel, set the following
+   variables for **Production** in the indicated projects:
+
+   | Project | Variable | Value |
+   | --- | --- | --- |
+   | Frontend | `EXPO_PUBLIC_TURNSTILE_SITE_KEY` | Widget Site Key (public) |
+   | Frontend | `EXPO_PUBLIC_SITE_URL` | `https://multraverse-smart-travel-planner-pr.vercel.app` |
+   | Frontend | `EXPO_PUBLIC_API_URL` | `https://multraverse-backend.vercel.app` |
+   | Backend | `TURNSTILE_SECRET_KEY` | Widget Secret Key (private) |
+   | Backend | `TURNSTILE_ALLOWED_HOSTNAMES` | `multraverse-smart-travel-planner-pr.vercel.app` |
+   | Backend | `CORS_ORIGINS` | `https://multraverse-smart-travel-planner-pr.vercel.app` |
+
+   Keep other required origins as comma-separated entries in `CORS_ORIGINS`.
+   `TURNSTILE_ALLOWED_HOSTNAMES` accepts comma-separated hostnames only; both
+   native and web challenges use the website hostname. Never put the secret in
+   an `EXPO_PUBLIC_*` variable. Use real widget keys in production. Missing
+   CAPTCHA configuration blocks registration rather than allowing a bypass.
+3. Deploy the backend and frontend together as a coordinated release. The API
+   requires a pass and old clients cannot register once the API is updated.
+   The frontend build requires its site key on Vercel. Backend startup creates
+   the additive `captchaverifications` collection and its TTL/unique indexes;
+   the database user needs the same create-collection/index permissions already
+   used for account security storage. No database rebuild or data deletion is needed.
+4. Native apps embed the public page `/captcha.html` in `react-native-webview`.
+   Set `EXPO_PUBLIC_TURNSTILE_SITE_KEY`, `EXPO_PUBLIC_SITE_URL` and
+   `EXPO_PUBLIC_API_URL` in the app's Expo/EAS build environment as well.
+   Vercel variables do not configure native builds. Rebuild installed Android/iOS
+   binaries after adding the WebView dependency. Expo Go must support the
+   project's Expo SDK. Publish the frontend first so the page is available.
+5. For local development, copy the public values into the root `.env`, the secret
+   and hostname list into `server/.env`, include `localhost` in both Cloudflare's
+   widget configuration and the backend hostname list, then restart Expo and
+   the API. On a phone, the CAPTCHA page still loads from `EXPO_PUBLIC_SITE_URL`,
+   so it needs a reachable HTTPS deployment. Preview domains also need explicit
+   Cloudflare hostname, backend hostname-list and CORS entries if you use them.
+
+Verify after release: registration stays disabled before CAPTCHA, cancelling
+leaves the checkbox unchecked, a successful check locks it, and a refresh resets
+it. Test both an Android and an iOS device. If blocked, check the widget's allowed
+hostname, matching key pair, the API's hostname list and CORS configuration.
+Ad blockers or networks that block `challenges.cloudflare.com` can prevent the
+challenge from loading; close it and retry after resolving the connection.
+
+Run `npm run test:captcha` for the local mocked-provider/API and UI behavior checks.
+Provider documentation: [server validation](https://developers.cloudflare.com/turnstile/get-started/server-side-validation/)
+and [native WebView integration](https://developers.cloudflare.com/turnstile/get-started/mobile-implementation/).
+
 ## Link-sharing preview
 
 The web build includes a landing-page screenshot at `/multraverse-preview.png`
@@ -24,7 +93,7 @@ API. An omitted API URL previously sent browser requests to the visitor's
    HTTPS origin, without `/api`.
 3. In the backend project, add this website origin to `CORS_ORIGINS` (keep
    other origins as comma-separated entries):
-   `https://multraverse-smart-travel-planner-proximity-transit-z31sf523q.vercel.app`
+   `https://multraverse-smart-travel-planner-pr.vercel.app`
 4. Redeploy both projects. The frontend URL is embedded during export;
    restarting local Expo with `dev:clear` does not update Vercel.
 5. Try registration and email verification with your own mailbox. If health

@@ -56,7 +56,16 @@ let server;
       return { status: response.status, body: await response.json() };
     };
     const valid = { firstName: 'Juan', middleName: 'Reyes', surname: 'dela Cruz', email: 'juan@gmail.com', password: 'Lakbay_2026', privacyConsent: true };
-    const register = body => call('auth/register', { ...valid, ...body });
+    const register = async body => {
+      // Email/registration integration checks use a locally issued pass;
+      // check-captcha.cjs covers Cloudflare validation and pass consumption.
+      const captchaProof = randomBytes(32).toString('hex');
+      await require('../dist/models/CaptchaVerification').CaptchaVerification.create({
+        digest: require('node:crypto').createHash('sha256').update(captchaProof).digest('hex'),
+        expiresAt: new Date(Date.now() + 60000),
+      });
+      return call('auth/register', { ...valid, captchaProof, ...body });
+    };
     const verify = (challengeId, code) => call('auth/register/verify', { challengeId, code });
     const resetLimits = () => AuthLimit.deleteMany({});
     for (const body of [{ firstName: '' }, { email: 'a@example.com' }, { password: 'bad password' }, { firstName: {} }]) assert.equal((await register(body)).status, 400);

@@ -193,6 +193,7 @@ export const api = {
   login: (email, password) =>
     request('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }),
 
+  verifyCaptcha: token => request('/api/auth/captcha/verify', { method: 'POST', body: JSON.stringify({ token }) }),
   register: (fields) =>
     request('/api/auth/register', { method: 'POST', body: JSON.stringify(fields) }),
   verifyRegistration: (challengeId, code) =>

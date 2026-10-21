@@ -116,8 +116,12 @@ export function validateRouter(scope: string): RequestHandler {
       object(body)
       const create = req.method === 'POST'
       if (scope === 'auth') {
+        if (req.path === '/captcha/verify') {
+          fields(body, { token: v => typeof v === 'string' && v.length > 0 && v.length <= 2048 }, ['token'])
+          return next()
+        }
         if (req.path === '/register') {
-          fields(body, { firstName: string, middleName: string, surname: string, email: string, password: string, privacyConsent: v => v === true }, ['firstName', 'surname', 'email', 'password', 'privacyConsent'])
+          fields(body, { firstName: string, middleName: string, surname: string, email: string, password: string, privacyConsent: v => v === true, captchaProof: string }, ['firstName', 'surname', 'email', 'password', 'privacyConsent'])
           return next()
         }
         if (req.path === '/password/first-sign-in') { fields(body, { challengeToken: string, currentPassword: string, newPassword: string }, ['challengeToken', 'currentPassword', 'newPassword']); return next() }

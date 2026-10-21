@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Multraverse bot verification</title>
+  <style>body{margin:0;padding:16px;font:16px system-ui;background:#fff;color:#163e50}#challenge{min-height:75px}p{line-height:1.5}</style>
+</head>
+<body>
+  <p id="status" role="status">Complete the security check to continue.</p>
+  <div id="challenge"></div>
+  <script>
+    function send(message) {
+      if (window.ReactNativeWebView) window.ReactNativeWebView.postMessage(JSON.stringify(message));
+    }
+    function failed() {
+      document.getElementById('status').textContent = 'Verification could not complete. Close this challenge and try again.';
+      send({ type: 'captcha-error' });
+      return true;
+    }
+    var loadTimer = setTimeout(failed, 20000);
+    function startChallenge() {
+      clearTimeout(loadTimer);
+      var key = new URLSearchParams(location.search).get('sitekey') || '';
+      if (!/^[a-zA-Z0-9_-]{10,100}$/.test(key)) return failed();
+      try {
+        turnstile.render('#challenge', {
+          sitekey: key, action: 'register', theme: 'light', size: 'flexible',
+          callback: function(token) {
+            document.getElementById('status').textContent = 'Checking verification…';
+            send({ type: 'captcha-token', token: token });
+          },
+          'error-callback': failed, 'expired-callback': failed, 'timeout-callback': failed
+        });
+      } catch (error) { failed(); }
+    }
+  </script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=startChallenge&amp;render=explicit" async defer onerror="failed()"></script>
+</body>
+</html>

@@ -10,6 +10,7 @@ const db = require('../dist/lib/db');
 require('../dist/lib/authLimits').authLimit = async () => {};
 require('../dist/models/PasswordReset').preparePasswordResetStorage = async () => {};
 require('../dist/models/AccountSecurity').prepareAccountSecurityStorage = async () => {};
+require('../dist/models/CaptchaVerification').prepareCaptchaStorage = async () => {};
 let server;
 
 (async () => {

@@ -8,6 +8,7 @@ import { ensureEmailDomain } from './emailDomain'
 import { AuthError, authLimit } from './authLimits'
 import { emailTransport, sendVerificationEmail } from './verificationEmail'
 import { PrivacyAcknowledgment } from '../models/AccountSecurity'
+import { consumeCaptcha } from './captcha'
 
 const TEN_MINUTES = 10 * 60 * 1000
 const invalidCode = () => new AuthError('Invalid or expired code. Use the latest email, or request a new code.')
@@ -26,6 +27,7 @@ export async function beginRegistration(body: Record<string, unknown>) {
   if (await User.findOne({ email })) throw new RegistrationError({ email: 'Email already in use' })
   await deliveryLimit(email)
   await ensureEmailDomain(email)
+  await consumeCaptcha(body.captchaProof)
   const now = Date.now()
   const challengeId = randomBytes(32).toString('hex')
   const code = randomInt(0, 1000000).toString().padStart(6, '0')

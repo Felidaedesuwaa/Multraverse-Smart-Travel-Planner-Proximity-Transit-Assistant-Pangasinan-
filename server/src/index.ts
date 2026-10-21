@@ -23,6 +23,7 @@ import { PendingRegistration } from './models/PendingRegistration'
 import { AuthLimit } from './lib/authLimits'
 import { preparePasswordResetStorage } from './models/PasswordReset'
 import { prepareAccountSecurityStorage } from './models/AccountSecurity'
+import { prepareCaptchaStorage } from './models/CaptchaVerification'
 import { rateLimit, securityHeaders } from './middleware/security'
 
 const app = express()
@@ -41,7 +42,7 @@ async function prepareDatabase() {
   // Keep the database-layout check from the latest application startup.
   // Existing indexes are provisioned separately. Password recovery and account security
   // storage create missing collections without changing account data.
-  indexesReady ??= preparePasswordResetStorage().then(() => prepareAccountSecurityStorage()).then(() => verifyDatabaseLayout())
+  indexesReady ??= preparePasswordResetStorage().then(() => prepareAccountSecurityStorage()).then(() => prepareCaptchaStorage()).then(() => verifyDatabaseLayout())
     .then(() => Promise.all([User.init(), AuditLog.init(), PendingRegistration.init(), AuthLimit.init()]))
     .catch((error) => { indexesReady = undefined; throw error })
   await indexesReady

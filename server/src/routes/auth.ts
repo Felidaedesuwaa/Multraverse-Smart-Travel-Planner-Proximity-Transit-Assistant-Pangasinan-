@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { User } from '../models'
 import { RegistrationError } from '../lib/registration'
+import { verifyCaptcha } from '../lib/captcha'
 import { AuthError, authLimit } from '../lib/authLimits'
 import { beginRegistration, resendRegistration, verifyRegistration } from '../lib/registrationVerification'
 import { authenticate, AuthRequest } from '../middleware/auth'
@@ -40,6 +41,12 @@ function authFailure(error: unknown, res: Response) {
   return res.status(500).json({ error: 'Could not complete your request. Please try again.' })
 }
 
+router.post('/captcha/verify', async (req, res) => {
+  try {
+    await authLimit('captcha-ip', req.ip || 'unknown', 20, 60 * 60 * 1000)
+    res.json(await verifyCaptcha(req.body.token, req.ip))
+  } catch (error) { authFailure(error, res) }
+})
 router.post('/register', async (req, res) => {
   try {
     await authLimit('signup-ip', req.ip || 'unknown', 20, 60 * 60 * 1000)

@@ -7,6 +7,7 @@ import { colors } from "../theme/colors";
 import AuthInput from "../components/AuthInput";
 import AuthLayout from "../components/AuthLayout";
 import GradientButton from "../components/GradientButton";
+import RegistrationCaptcha from "../components/RegistrationCaptcha";
 import { useAuthStore } from "../store/authStore";
 import { normalizeName, registrationFullName, validateRegistration } from "../utils/validation";
 import { api } from "../lib/api";
@@ -36,10 +37,11 @@ export default function RegisterPage() {
   const [formError, setFormError] = useState(null);
   const [privacyConsent, setPrivacyConsent] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
+  const [captcha, setCaptcha] = useState(null);
   const submitting = useRef(false);
   const codeInputs = useRef([]);
   const fields = { firstName, middleName, surname, email, password, confirm };
-  const canRegister = privacyConsent && !Object.values(validateRegistration(fields)).some(Boolean);
+  const canRegister = privacyConsent && !!captcha && !Object.values(validateRegistration(fields)).some(Boolean);
   const fullName = registrationFullName(firstName, middleName, surname);
   const validateField = field => setErrors(current => ({ ...current, [field]: validateRegistration(fields)[field] }));
   const change = (field, setter) => value => {
@@ -50,6 +52,9 @@ export default function RegisterPage() {
   const handleSubmit = async () => {
     if (submitting.current || isLoading || !canRegister) return;
     if (!privacyConsent) { setFormError("Read and accept the privacy notice before registering."); return; }
+    if (Date.now() >= new Date(captcha.expiresAt).getTime()) {
+      setFormError("Bot verification has expired. Refresh this page or reopen registration in the app to verify again."); return;
+    }
     const validation = validateRegistration(fields);
     setErrors(validation);
     setFormError(null);
@@ -57,7 +62,7 @@ export default function RegisterPage() {
 
     submitting.current = true;
     try {
-      const success = await register({ firstName: normalizeName(firstName), middleName: normalizeName(middleName), surname: normalizeName(surname), email: email.trim().toLowerCase(), password, privacyConsent });
+      const success = await register({ firstName: normalizeName(firstName), middleName: normalizeName(middleName), surname: normalizeName(surname), email: email.trim().toLowerCase(), password, privacyConsent, captchaProof: captcha.captchaProof });
       if (success) {
         setPending(success); setPassword(""); setConfirm(""); setNow(Date.now());
       }
@@ -160,6 +165,7 @@ export default function RegisterPage() {
         </Pressable>
         <Text style={themeStyle(styles.consentText)}>I have read and accept the <Text accessibilityRole="link" onPress={() => setPrivacyOpen(true)} style={themeStyle(styles.privacyLink)}>privacy notice</Text> and this use of my data.</Text>
       </View>
+      <RegistrationCaptcha proof={captcha} onVerified={setCaptcha} disabled={!privacyConsent || isLoading} />
       <Modal visible={privacyOpen} transparent animationType="fade" onRequestClose={() => setPrivacyOpen(false)}>
         <View style={styles.privacyOverlay}>
           <View accessibilityViewIsModal style={themeStyle(styles.privacyCard)}>
@@ -168,6 +174,7 @@ export default function RegisterPage() {
             <ScrollView style={styles.privacyScroll} contentContainerStyle={styles.privacyContent}>
               <Text style={themeStyle(styles.privacyBody)}>{[
                 "We use your name and email to manage your account and send security codes.",
+                "Cloudflare Turnstile processes browser and device signals to prevent automated registrations.",
                 "Your trips, budget and travel experiences support travel planning. Places you choose to publish are visible to others.",
                 "Location, photo and microphone access are optional and used for the feature you request; stop transit monitoring or revoke device permissions to withdraw access.",
                 "Administrators can manage accounts and review published content.",

@@ -24,6 +24,7 @@
     "build:web": "node scripts/check-web-deployment.cjs && expo export --platform web && node scripts/finalize-share-preview.cjs",
     "lint": "eslint .",
     "test:startup": "node scripts/check-mobile-startup.cjs",
+    "test:captcha": "npm run build --prefix server && node server/scripts/check-captcha.cjs && node scripts/check-registration-captcha.cjs",
     "test:itinerary": "node scripts/check-itinerary-render.cjs",
     "test:trips": "node scripts/check-my-trips-render.cjs && npm run build --prefix server && node server/scripts/check-trip-expense-audit.cjs",
     "test:notifications": "node scripts/check-notifications-recovery.cjs",
@@ -60,6 +61,7 @@
     "react-native-screens": "~4.26.0",
     "react-native-svg": "15.15.4",
     "react-native-web": "^0.21.2",
+    "react-native-webview": "13.16.1",
     "zustand": "^5.0.15"
   },
   "devDependencies": {

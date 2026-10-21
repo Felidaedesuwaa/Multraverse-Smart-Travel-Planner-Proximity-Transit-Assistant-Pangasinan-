@@ -1,5 +1,10 @@
 // Run before the Vercel export so a missing API URL cannot ship silently.
 if (process.env.VERCEL === '1') {
+  const siteKey = process.env.EXPO_PUBLIC_TURNSTILE_SITE_KEY?.trim();
+  if (!siteKey || !/^[a-zA-Z0-9_-]{10,100}$/.test(siteKey) || (process.env.VERCEL_ENV === 'production' && /^[123]x00000000000000000000/.test(siteKey))) {
+    console.error('Set EXPO_PUBLIC_TURNSTILE_SITE_KEY to a real Cloudflare Turnstile site key in the Vercel frontend project. See DEPLOYMENT.md.');
+    process.exitCode = 1;
+  }
   const value = process.env.EXPO_PUBLIC_API_URL?.trim();
   let url;
   try { url = new URL(value); } catch { /* Report an actionable build error below. */ }
