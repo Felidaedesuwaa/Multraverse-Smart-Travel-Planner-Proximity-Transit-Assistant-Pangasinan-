@@ -27,7 +27,7 @@
     "migrate:lgu": "npm run build && node scripts/migrate-lgu.cjs",
     "migrate:managed-accounts": "npm run build && node scripts/migrate-managed-onboarding.cjs",
     "test:lgu": "npm run build && node scripts/check-lgu-api.cjs --isolated-database",
-    "seed:superadmin": "ts-node seeds/seedSuperAdmin.ts",
+    "seed:superadmin": "node dist/scripts/seedSuperAdmin.js",
     "test:superadmin": "npm run build && node scripts/check-superadmin-api.cjs --isolated-database",
     "db:remove-geofences": "node scripts/remove-geofences.cjs",
     "test:geofence-removal": "node scripts/check-geofence-removal.cjs",

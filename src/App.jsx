@@ -22,6 +22,7 @@ import UserDashboard from "./pages/UserDashboard";
 import InteractiveMap from "./pages/InteractiveMap";
 import TransitAlarm from "./pages/TransitAlarm";
 import AIItinerary from "./pages/AIItinerary";
+import AutomaticItinerary from "./pages/AutomaticItinerary";
 import Translator from "./pages/Translator";
 import MyTrips from "./pages/MyTrips";
 import Budget from "./pages/Budget";
@@ -68,6 +69,7 @@ const linking = {
           SavedPlaces: "saved-places",
           Settings: "settings",
           AIItinerary: "ai-itinerary",
+          AutomaticItinerary: "ai-itinerary/automatic",
           TransitAlarm: "transit-alarm",
           Translator: "translator",
         },
@@ -131,6 +133,7 @@ function UserScreens() {
           <UserStack.Screen name="InteractiveMap" component={InteractiveMap} />
           <UserStack.Screen name="Settings" component={SettingsPage} />
           <UserStack.Screen name="AIItinerary" component={AIItinerary} />
+          <UserStack.Screen name="AutomaticItinerary" component={AutomaticItinerary} />
           <UserStack.Screen name="TransitAlarm" component={TransitAlarm} />
           <UserStack.Screen name="Translator" component={Translator} />
         </UserStack.Navigator>

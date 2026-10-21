@@ -152,6 +152,7 @@ export const api = {
   recoverPassword: (grantToken, newPassword) => passwordSessionRequest('/api/auth/password/recover', { grantToken, newPassword }),
   getItineraryCatalog: (options = {}) => request('/api/ai/itinerary/catalog', options),
   generateGroundedItinerary: (data, options = {}) => request('/api/ai/itinerary/grounded', { ...options, method: 'POST', body: JSON.stringify(data) }),
+  generateAutomaticItinerary: (data, options = {}) => request('/api/ai/itinerary/automatic', { ...options, method: 'POST', body: JSON.stringify(data) }),
   updateManagedAccount: (type, id, data) => request('/api/users/' + type + '-accounts/' + id, { method: 'PUT', body: JSON.stringify(data) }),
   setManagedAccountDisabled: (type, id, disabled) => request(`/api/users/${type}-accounts/${id}/status`, { method: 'PUT', body: JSON.stringify({ disabled }) }),
   deleteManagedAccount: (type, id) => request('/api/users/' + type + '-accounts/' + id, { method: 'DELETE', body: JSON.stringify({ confirmation: true }) }),

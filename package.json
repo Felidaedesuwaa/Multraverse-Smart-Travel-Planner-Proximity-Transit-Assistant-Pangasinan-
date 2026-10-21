@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "main": "index.js",
   "scripts": {
+    "seed:superadmin": "npm run seed:superadmin --prefix server",
     "start": "expo start",
     "android": "expo start --android",
     "android:emulator": "expo start --android --localhost",

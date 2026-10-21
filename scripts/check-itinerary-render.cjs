@@ -81,6 +81,7 @@ function makeLoader(webMode = false) {
     function imports(name) {
       if (name === 'react') return webMode ? React : hooks;
       if (name === 'react-native') return webMode ? web : native;
+      if (name === 'expo-linear-gradient') return { LinearGradient: webMode ? web.View : native.View };
       // Reproduce a presenting screen/initial native modal measurement that
       // reports zero insets. The window's camera/home-indicator space must hold.
       if (name === 'react-native-safe-area-context') return { SafeAreaView: native.View, SafeAreaProvider: host('SafeAreaProvider'), initialWindowMetrics: { insets: modalInsets }, useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }) };

@@ -271,6 +271,7 @@ export default function AIItinerary({ navigation }) {
           </div>
           {error && <p className="aip-error" role="alert">{error}</p>}
           {notice && <p className="aip-success" role="status">{notice}</p>}
+          {showForm && <button type="button" className="aip-btn aip-auto-plan" onClick={() => navigation.navigate('AutomaticItinerary')}><Sparkles size={20} color="#fff" />Let AI plan for me · just 3 details<ChevronRight size={18} color="#fff" /></button>}
           {showForm && (
             <>
               <div className="aip-progress-header">
@@ -341,7 +342,7 @@ export default function AIItinerary({ navigation }) {
                         <input id="aip-travel-date" type="date" required min={today} className="aip-input" value={form.date} aria-invalid={!!dateError && (attemptedNext || !!form.date)} aria-describedby={dateError ? "aip-date-error" : undefined} onFocus={() => setToday(todayInManila())} onChange={(e) => set("date", e.target.value)} />
                         {dateError && (attemptedNext || form.date) && <p id="aip-date-error" className="aip-error" role="alert">{dateError}</p>}
                       </div>
-                      <div className="aip-field"><label className="aip-label">Travelers</label><input type="number" min={1} step={1} className="aip-input" value={form.travelers} max={30} required onChange={(e) => set("travelers", e.target.value)} />{fieldError("travelers")}</div>
+                      <div className="aip-field"><label className="aip-label" htmlFor="aip-travelers">Travelers</label><select id="aip-travelers" className="aip-select" value={form.travelers} required onChange={(e) => set("travelers", Number(e.target.value))}>{Array.from({ length: 30 }, (_, index) => <option key={index + 1} value={index + 1}>{index + 1} traveler{index ? 's' : ''}</option>)}</select>{fieldError("travelers")}</div>
                       <div className="aip-field">
                         <label className="aip-label" htmlFor="aip-trip-days">How many days?</label>
                         <select id="aip-trip-days" className="aip-select" value={form.days} onChange={(e) => set("days", Number(e.target.value))}>
@@ -505,6 +506,9 @@ function plannerCSS(palette, themeColor) {
 .aip-shell, .aip-shell * { box-sizing: border-box; }
 .aip-shell { display: flex; flex: 1; height: 100%; min-height: 0; overflow-y: auto; overflow-x: hidden; background: ${colors.page}; font-family: ${fonts.body}; font-size: 16px; line-height: 1.5; color: ${colors.ink}; }
 .aip-shell svg { flex-shrink: 0; }
+.aip-shell .aip-auto-plan { margin-bottom:20px; padding:16px 22px; min-height:56px; border:1px solid rgba(255,255,255,.25); border-radius:16px; background:linear-gradient(115deg,#075985 0%,#1D4ED8 40%,#C2410C 100%); color:#fff; font-weight:700; box-shadow:0 8px 24px rgba(7,89,133,.25); gap:12px; }
+.aip-shell .aip-auto-plan:hover { box-shadow:0 12px 30px rgba(194,65,12,.3); filter:brightness(1.08); }
+.aip-shell .aip-auto-plan:focus-visible { outline:3px solid #F97316; outline-offset:4px; }
 .aip-shell button, .aip-shell input, .aip-shell select { font-family: inherit; }
 .aip-shell button { overflow-wrap: anywhere; transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 180ms ease, background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease; }
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
